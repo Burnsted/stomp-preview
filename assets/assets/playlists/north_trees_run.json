@@ -1,0 +1,70 @@
+{
+  "id": "pl_north_trees_v0",
+  "name": "North Trees — AM run",
+  "resort": "Demo Mountain",
+  "createdAt": "2026-10-26T16:21:00-04:00",
+  "notes": "Ted sample playlist for self-guided tour v0.",
+  "waypoints": [
+    {
+      "id": "wp_lift",
+      "order": 0,
+      "label": "Lift unload",
+      "kind": "segment",
+      "lat": 39.5821,
+      "lng": -106.1084,
+      "distanceAlongRunFt": 0,
+      "note": "Drop in — keep speed for the cat-track."
+    },
+    {
+      "id": "wp_cat",
+      "order": 1,
+      "label": "Cat-track",
+      "kind": "flatZone",
+      "lat": 39.5814,
+      "lng": -106.1072,
+      "distanceAlongRunFt": 420,
+      "note": "Cat-track in 200 ft — push or skate."
+    },
+    {
+      "id": "wp_dogleg",
+      "order": 2,
+      "label": "Dog-leg left",
+      "kind": "dogLeg",
+      "lat": 39.5806,
+      "lng": -106.1061,
+      "distanceAlongRunFt": 780,
+      "note": "Cut left before the fence — classic dog-leg."
+    },
+    {
+      "id": "wp_stash",
+      "order": 3,
+      "label": "North trees stash",
+      "kind": "stash",
+      "lat": 39.5798,
+      "lng": -106.1054,
+      "distanceAlongRunFt": 1100,
+      "note": "Personal stash · North trees"
+    },
+    {
+      "id": "wp_trick",
+      "order": 4,
+      "label": "Side hit",
+      "kind": "trickCue",
+      "lat": 39.5790,
+      "lng": -106.1048,
+      "distanceAlongRunFt": 1450,
+      "note": "Pop the side hit — backside 360 if you're feeling it."
+    },
+    {
+      "id": "wp_new_line",
+      "order": 5,
+      "label": "Untouched left trees",
+      "kind": "segment",
+      "lat": 39.5784,
+      "lng": -106.1059,
+      "distanceAlongRunFt": 1680,
+      "note": "New line suggestion: cut left into trees — you haven’t ridden this.",
+      "neverRidden": true
+    }
+  ]
+}
