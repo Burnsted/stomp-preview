@@ -1,21 +1,29 @@
+# Batch 1 + Batch 2 test evidence
 
-> stomp-batch1-local@0.1.0 test
-> vitest run
+## Environment
+node: v22.23.4
+npm: 10.9.9
+cwd: batch1/
+branch: woz/batch1-dev-2026-10-29
+baseline tip: 702cf32a2a6284177bdc2697766d5a34fceca39e
 
+## Batch 1 (prior)
+Commands:
+  npm run typecheck
+  npm test
+Result: Test Files 3 passed (3) · Tests 15 passed (15)
 
- RUN  v2.1.9 /workspace/batch1
+## Batch 2 (2026-10-29)
+Commands:
+  cd batch1
+  npm run typecheck
+  npm test
 
- ✓ tests/session-registry.test.ts (4 tests) 3ms
- ✓ tests/stompers.test.ts (4 tests) 4ms
- ✓ tests/unlink.test.ts (7 tests) 4ms
+Result:
+  typecheck: pass (tsc --noEmit)
+  Test Files  6 passed (6)
+  Tests       25 passed (25)
+  Suites: unlink, owner-transfer, stompers, session-registry,
+          session-settings, campfire-identity
 
- Test Files  3 passed (3)
-      Tests  15 passed (15)
-   Start at  22:36:59
-   Duration  463ms (transform 99ms, setup 0ms, collect 157ms, tests 11ms, environment 741ms, prepare 122ms)
-
-JSON report written to /workspace/batch1/test-results/vitest-results.json
-v22.23.4
-10.9.9
-commit: 09277808650fbc9e1ba7c99b31d26367821f7907
-date_utc: 2026-10-29T22:36:59Z
+date_utc: 2026-10-29T22:41:27Z

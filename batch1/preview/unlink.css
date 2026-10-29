@@ -47,7 +47,18 @@ h1 {
 
 .lede {
   line-height: 1.45;
-  margin: 0 0 1.75rem;
+  margin: 0 0 1rem;
+}
+
+.nav {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.nav a {
+  color: var(--ink);
 }
 
 .panel {

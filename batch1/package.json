@@ -9,7 +9,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "build": "tsc --noEmit && vite build",
-    "preview:unlink": "vite --open /unlink.html"
+    "preview:unlink": "vite --open /unlink.html",
+    "preview:session": "vite --open /session-settings.html"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",

@@ -13,6 +13,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         unlink: resolve(rootDir, "preview/unlink.html"),
+        sessionSettings: resolve(rootDir, "preview/session-settings.html"),
       },
     },
   },

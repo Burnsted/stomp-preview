@@ -53,7 +53,7 @@ export function beginUnlinkConfirm(
       crewName: crew?.name ?? null,
     };
   }
-  if (membership.role === "owner") {
+  if (membership.role === "owner" || crew.ownerId === stomperId) {
     const activeOthers = snapshot.memberships.filter(
       (m) =>
         m.crewId === crewId &&
@@ -65,7 +65,7 @@ export function beginUnlinkConfirm(
         ...state,
         phase: "error",
         message:
-          "Owner unlink blocked while other members are active (local rule). Transfer ownership first (not implemented in Batch 1).",
+          "Owner unlink blocked while other members are active (local rule). Transfer ownership first (see owner-transfer).",
         crewId,
         stomperId,
         crewName: crew.name,

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>STOMP Batch 2 — SESSION Settings (local preview)</title>
+    <link rel="stylesheet" href="./session-settings.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <p class="eyebrow">Woz Batch 2 · local Settings stub · not Grok Build</p>
+      <h1 id="title">SESSION</h1>
+      <p class="lede" id="subtitle"></p>
+
+      <nav class="nav">
+        <a href="./unlink.html">Crew Unlink</a>
+        <span aria-current="page">SESSION Settings</span>
+      </nav>
+
+      <section class="panel" aria-labelledby="wake-heading">
+        <h2 id="wake-heading">Wake names</h2>
+        <ul id="wake-list" class="list"></ul>
+      </section>
+
+      <section class="panel" aria-labelledby="cmd-heading">
+        <h2 id="cmd-heading">Command registry</h2>
+        <p class="hint">
+          Same set intended for phone audio / Cardo / Sena / Aleck / BT — registry
+          docs only; compatibility not claimed.
+        </p>
+        <ul id="command-list" class="list commands"></ul>
+      </section>
+
+      <section class="panel" aria-labelledby="guard-heading">
+        <h2 id="guard-heading">Guards</h2>
+        <ul id="guard-list" class="list"></ul>
+        <p id="listen-mode" class="status"></p>
+      </section>
+    </main>
+    <script type="module" src="./session-settings-ui.ts"></script>
+  </body>
+</html>
