@@ -1,0 +1,21 @@
+
+> stomp-batch1-local@0.1.0 test
+> vitest run
+
+
+ RUN  v2.1.9 /workspace/batch1
+
+ ✓ tests/session-registry.test.ts (4 tests) 3ms
+ ✓ tests/stompers.test.ts (4 tests) 4ms
+ ✓ tests/unlink.test.ts (7 tests) 4ms
+
+ Test Files  3 passed (3)
+      Tests  15 passed (15)
+   Start at  22:36:59
+   Duration  463ms (transform 99ms, setup 0ms, collect 157ms, tests 11ms, environment 741ms, prepare 122ms)
+
+JSON report written to /workspace/batch1/test-results/vitest-results.json
+v22.23.4
+10.9.9
+commit: 09277808650fbc9e1ba7c99b31d26367821f7907
+date_utc: 2026-10-29T22:36:59Z
