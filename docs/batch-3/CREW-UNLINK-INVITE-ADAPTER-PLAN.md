@@ -45,3 +45,8 @@ interface InviteUnlinkAdapter {
 - Unlink/owner-transfer behavior and tests are preserved; adapter is additive.
 - Pending-invite revocation is GB's responsibility; Woz only emits events.
 - No live auth, location, or sharing.
+
+## Batch 4 follow-through
+Steps 3–5 done in a thin, Invite-UX-free form: `gb-phone/src/lib/stomp/woz-bridge/invite-adapter.ts`
+implements `GbInvitePort` over the read-only invite mirror and a `LocalUnlinkPort` that records intents.
+See `docs/batch-4/BATCH4-DEVICE-A11Y-ADAPTER.md`. greet.tsx remains byte-identical.

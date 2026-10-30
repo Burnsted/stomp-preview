@@ -43,5 +43,30 @@ await p.screenshot({ path: "test-results/e2e-session-quick.png" });
 await step("ride double-start guarded", async () => { await p.getByRole("tab", { name: "Ride" }).click(); const live = await p.getByRole("button", { name: "Start" }).isDisabled(); if (!live) { await p.getByRole("button", { name: "Start" }).click(); } if (!(await p.getByRole("button", { name: "Start" }).isDisabled())) throw new Error("start not disabled while live"); });
 await step("tab persists after reload", async () => { await p.reload(); await p.waitForTimeout(1200); await p.getByTestId("woz-lab").waitFor(); await p.getByTestId("run-builder").waitFor(); });
 await p.screenshot({ path: "test-results/e2e-ride.png" });
+// batch4: keyboard tabs, export/import/clear-all (local only), focus on Back, GB round trip
+await step("keyboard arrow moves tabs", async () => { await p.getByRole("tab", { name: "Ride" }).focus(); await p.keyboard.press("ArrowRight"); await p.getByRole("tab", { name: "Campfire", selected: true }).waitFor(); const id = await p.evaluate(() => document.activeElement?.id); if (id !== "woz-tab-campfire") throw new Error(id); });
+await step("export → clear → import", async () => {
+  await p.getByRole("tab", { name: "Crew" }).click(); await p.getByTestId("woz-data").locator("summary").click();
+  await p.getByRole("button", { name: "Export Crew Tools data" }).click(); const dump = await p.getByLabel("exported data").inputValue(); if (!dump.includes("stomp-woz-dump")) throw new Error("no dump");
+  await p.getByLabel("clear confirm word").fill("CLEAR"); await p.getByRole("button", { name: "Clear all Crew Tools data" }).click();
+  await p.getByTestId("data-msg").filter({ hasText: "cleared" }).waitFor();
+  await p.getByLabel("import data").fill(dump); await p.getByRole("button", { name: "Import Crew Tools data" }).click();
+  await p.getByTestId("data-msg").filter({ hasText: "Imported" }).waitFor();
+  const gb = await p.evaluate(() => JSON.parse(localStorage.getItem("stomp-line")).state.crew.length); if (gb !== 3) throw new Error("gb crew " + gb);
+});
+await p.screenshot({ path: "test-results/e2e-data.png" });
+await step("Back restores focus to opener", async () => {
+  await p.evaluate(() => { const s = JSON.parse(localStorage.getItem("stomp-line")); s.state.screen = "stompers"; localStorage.setItem("stomp-line", JSON.stringify(s)); });
+  await p.reload(); await p.waitForTimeout(1200); await p.getByTestId("woz-entry-smartid").focus(); await p.keyboard.press("Enter"); await p.getByTestId("woz-lab").waitFor();
+  await p.getByTestId("woz-back").focus(); await p.keyboard.press("Enter"); await p.waitForTimeout(200);
+  const t = await p.evaluate(() => document.activeElement?.getAttribute("data-testid")); if (t !== "woz-entry-smartid") throw new Error(String(t));
+});
+await step("GB round trip Home→Run→Park→Session→Stompers→More→Crew Tools", async () => {
+  for (const s of ["home", "run", "park", "session", "stompers", "log"]) {
+    await p.evaluate((sc) => { const st = JSON.parse(localStorage.getItem("stomp-line")); st.state.screen = sc; localStorage.setItem("stomp-line", JSON.stringify(st)); }, s);
+    await p.reload(); await p.waitForTimeout(900); if ((await p.locator("body").innerText()).length < 20) throw new Error("blank " + s);
+  }
+  await p.getByTestId("chrome-crew-tools").click(); await p.getByTestId("woz-lab").waitFor(); await p.getByTestId("woz-back").click(); await p.getByTestId("chrome-crew-tools").waitFor();
+});
 console.log(log.join("\n")); console.log("pageerrors", errs); if (log.some((l) => l.startsWith("FAIL")) || errs.length) process.exitCode = 1;
 await b.close();

@@ -3,11 +3,14 @@
  * Session text commands, Ride/Run Builder, Campfire and Smart ID.
  * Crew Invite stays in GB's greet.tsx — this screen links to it, never re-implements it.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { HomeButton } from "@/components/stomp/chrome";
 import { useStomp } from "@/lib/stomp/store";
 import { SESSIONS } from "@/lib/stomp/sessions";
-import { useWoz, WOZ_TABS } from "@/lib/stomp/woz-bridge/woz-store";
+import { useWoz, WOZ_TABS, restoreFocusAfterBack } from "@/lib/stomp/woz-bridge/woz-store";
+import { CLEAR_CONFIRM_WORD } from "@/lib/stomp/woz-bridge/dump";
+import { gbInviteAdapter } from "@/lib/stomp/woz-bridge/invite-mirror-gb";
 import * as C from "@/lib/stomp/woz-bridge/crew";
 import { routeTyped, SESSION_BRIDGE_FLAGS, helpText, type GbAction } from "@/lib/stomp/woz-bridge/session";
 import { ride as R, runFromGbSession, type FeatureKind } from "@/lib/stomp/woz-bridge/ride";
@@ -18,8 +21,9 @@ import { MAX_UTTERANCE } from "@/lib/stomp/woz-bridge/session";
 
 const nowIso = () => new Date().toISOString();
 const btn = "h-10 rounded-full px-4 text-sm font-semibold ";
-const chip = btn + "bg-snow ring-1 ring-line disabled:opacity-40";
-const primary = btn + "bg-ink text-snow disabled:opacity-40";
+const focus = "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ";
+const chip = btn + focus + "bg-snow ring-1 ring-line disabled:opacity-40";
+const primary = btn + focus + "bg-ink text-snow disabled:opacity-40";
 
 export function DemoBadge({ label = "Demo · local only" }: { label?: string }) {
   return <span data-testid="demo-badge" className="rounded-full bg-lime px-2 py-0.5 text-xs font-bold">{label}</span>;
@@ -33,21 +37,31 @@ export function WozLab() {
   const setError = useWoz((s) => s.setError);
   const returnTo = useWoz((s) => s.returnTo);
   const setScreen = useStomp((s) => s.setScreen);
-  useEffect(() => { hydrate(); }, [hydrate]);
+  useEffect(() => { if (!useWoz.getState().hydrated) hydrate(); }, [hydrate]);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  useEffect(() => { headingRef.current?.focus({ preventScroll: true }); }, []);
+  const onTabKey = (e: KeyboardEvent<HTMLButtonElement>, i: number) => {
+    const n = WOZ_TABS.length;
+    const j = e.key === "ArrowRight" ? (i + 1) % n : e.key === "ArrowLeft" ? (i - 1 + n) % n : e.key === "Home" ? 0 : e.key === "End" ? n - 1 : -1;
+    if (j < 0) return;
+    e.preventDefault(); setTab(WOZ_TABS[j]!.id); tabRefs.current[j]?.focus();
+  };
   return (
     <div className="px-1 pb-10" data-testid="woz-lab">
       <header className="flex items-center gap-3 px-4 pt-5">
         {returnTo ? (
-          <button type="button" data-testid="woz-back" onClick={() => setScreen(returnTo)} className="flex h-11 items-center rounded-full bg-snow px-3 text-sm font-semibold text-ink ring-1 ring-line">‹ Back</button>
+          <button type="button" data-testid="woz-back" aria-label={`Back to previous screen`} onClick={() => { setScreen(returnTo); restoreFocusAfterBack(); }} className="flex h-11 items-center rounded-full bg-snow px-3 text-sm font-semibold text-ink ring-1 ring-line">‹ Back</button>
         ) : <HomeButton />}
-        <h1 className="font-display text-3xl tracking-wide">CREW TOOLS</h1>
+        <h1 ref={headingRef} tabIndex={-1} id="woz-title" className="font-display text-3xl tracking-wide outline-none">CREW TOOLS</h1>
         <DemoBadge />
       </header>
       <p className="px-5 pt-2 text-sm text-muted">Demo tools — everything stays on this phone. No cloud, NFC, GPS or background listening.</p>
-      <div className="mt-3 flex gap-2 overflow-x-auto px-4" role="tablist">
-        {WOZ_TABS.map((t) => (
-          <button key={t.id} role="tab" aria-selected={tab === t.id} type="button" onClick={() => setTab(t.id)}
-            className={btn + "shrink-0 " + (tab === t.id ? "bg-ink text-snow" : "bg-snow ring-1 ring-line")}>{t.label}</button>
+      <div className="mt-3 flex gap-2 overflow-x-auto px-4" role="tablist" aria-label="Crew Tools sections">
+        {WOZ_TABS.map((t, i) => (
+          <button key={t.id} ref={(el) => { tabRefs.current[i] = el; }} id={`woz-tab-${t.id}`} role="tab" aria-selected={tab === t.id} aria-controls="woz-panel"
+            tabIndex={tab === t.id ? 0 : -1} type="button" onClick={() => setTab(t.id)} onKeyDown={(e) => onTabKey(e, i)}
+            className={btn + focus + "shrink-0 " + (tab === t.id ? "bg-ink text-snow" : "bg-snow ring-1 ring-line")}>{t.label}</button>
         ))}
       </div>
       {lastError ? (
@@ -56,13 +70,14 @@ export function WozLab() {
           <button type="button" className={chip} onClick={() => setError(null)} aria-label="dismiss error">Dismiss</button>
         </div>
       ) : null}
-      <section className="space-y-3 px-4 pt-4">
+      <section className="space-y-3 px-4 pt-4" id="woz-panel" role="tabpanel" aria-labelledby={`woz-tab-${tab}`} data-testid="woz-panel">
         {tab === "crew" ? <CrewPanel /> : null}
         {tab === "session" ? <SessionPanel /> : null}
         {tab === "ride" ? <RidePanel /> : null}
         {tab === "campfire" ? <CampfirePanel /> : null}
         {tab === "smartid" ? <SmartIdPanel /> : null}
       </section>
+      <DataPanel />
     </div>
   );
 }
@@ -74,7 +89,7 @@ function InviteActivity() {
     <div className="rounded-3xl bg-snow p-4 ring-1 ring-line" data-testid="invite-activity">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold">Invite activity</h2>
-        {log.length ? <button type="button" className={chip} onClick={clear}>Clear</button> : null}
+        {log.length ? <button type="button" aria-label="Clear invite activity" className={chip} onClick={clear}>Clear</button> : null}
       </div>
       <p className="text-xs text-muted">Mirrored from Crew Link (read-only). Re-inviting an unlinked Stomper re-links them here.</p>
       {log.length === 0 ? <p className="pt-2 text-sm text-muted" data-testid="invite-empty">No invite activity yet.</p> : (
@@ -93,7 +108,7 @@ function CrewPanel() {
   const riderName = useStomp((s) => s.riderName);
   const riderCode = useStomp((s) => s.riderCode);
   const setScreen = useStomp((s) => s.setScreen);
-  const { unlinked, markUnlinked, resetUnlinks, privacy, setPrivacy, setError } = useWoz();
+  const { unlinked, markUnlinked, resetUnlinks, privacy, setPrivacy, setError } = useWoz(useShallow((s) => ({ unlinked: s.unlinked, markUnlinked: s.markUnlinked, resetUnlinks: s.resetUnlinks, privacy: s.privacy, setPrivacy: s.setPrivacy, setError: s.setError })));
   const [owner, setOwner] = useState<string | null>(null);
   const snap = useMemo(() => {
     const base = C.applyLocalUnlinks(C.snapshotFromGb({ riderCode, riderName, crew, nowIso: "1970-01-01T00:00:00.000Z" }), unlinked);
@@ -121,8 +136,8 @@ function CrewPanel() {
               <span>{C.displayName(snap, m.stomperId)} {m.role === "owner" ? <b>(owner)</b> : null}</span>
               {m.stomperId !== ownerId ? (
                 <span className="flex gap-1">
-                  <button type="button" className={chip} onClick={() => { setTyped(""); setUnl(C.beginUnlinkConfirm(C.createUnlinkState(), snap, C.GB_CREW_ID, m.stomperId)); }}>Unlink</button>
-                  <button type="button" className={chip} onClick={() => { setTyped(""); setXfer(C.beginOwnerTransferConfirm(C.createOwnerTransferState(), snap, C.GB_CREW_ID, ownerId, m.stomperId)); }}>Make owner</button>
+                  <button type="button" aria-label={`Unlink ${C.displayName(snap, m.stomperId)}`} className={chip} onClick={() => { setTyped(""); setUnl(C.beginUnlinkConfirm(C.createUnlinkState(), snap, C.GB_CREW_ID, m.stomperId)); }}>Unlink</button>
+                  <button type="button" aria-label={`Make ${C.displayName(snap, m.stomperId)} owner`} className={chip} onClick={() => { setTyped(""); setXfer(C.beginOwnerTransferConfirm(C.createOwnerTransferState(), snap, C.GB_CREW_ID, ownerId, m.stomperId)); }}>Make owner</button>
                 </span>
               ) : null}
             </li>
@@ -140,10 +155,10 @@ function CrewPanel() {
             <button type="button" className={primary} onClick={() => {
               if (unl.phase === "confirming") {
                 const r = C.confirmUnlink(unl, snap, typed); setUnl(r.state);
-                if (r.state.phase === "unlinked" && unl.stomperId) { markUnlinked(unl.stomperId); setError(null); } else setError(r.state.message);
+                if (r.state.phase === "unlinked" && unl.stomperId) { markUnlinked(unl.stomperId); gbInviteAdapter.local.onMemberUnlinked(C.GB_CREW_ID, unl.stomperId); setError(null); } else setError(r.state.message);
               } else {
                 const r = C.confirmOwnerTransfer(xfer, snap, typed); setXfer(r.state);
-                if (r.state.phase === "transferred") { setOwner(r.snapshot.crews[0]!.ownerId); setError(null); } else setError(r.state.message);
+                if (r.state.phase === "transferred") { gbInviteAdapter.local.onOwnerTransferred(C.GB_CREW_ID, ownerId, r.snapshot.crews[0]!.ownerId); setOwner(r.snapshot.crews[0]!.ownerId); setError(null); } else setError(r.state.message);
               }
             }}>Confirm</button>
             <button type="button" className={chip} onClick={() => { setUnl(C.cancelUnlink(unl)); setXfer(C.cancelOwnerTransfer(xfer)); setError(null); }}>Cancel</button>
@@ -219,7 +234,7 @@ function SessionPanel() {
           <button type="submit" className={primary}>Send</button>
         </form>
         {hint ? <p role="status" className="pt-1 text-sm text-pink" data-testid="session-hint">{hint}</p> : null}
-        <div className="flex flex-wrap gap-1 pt-2" aria-label="quick phrases">
+        <div className="flex flex-wrap gap-1 pt-2" role="group" aria-label="quick phrases">
           {QUICK.map((q) => <button key={q} type="button" data-testid="quick-phrase" className={chip} onClick={() => submit(q)}>{q}</button>)}
         </div>
         {router.pending ? (
@@ -389,5 +404,33 @@ function SmartIdPanel() {
         {view ? <p className="pt-1 text-sm" data-testid="scan-view">{view}</p> : null}
       </div>
     </div>
+  );
+}
+
+/** Local-only export / import / clear-all for Crew Tools data. GB data (incl. Invite crew) is never touched. */
+function DataPanel() {
+  const { exportData, importData, clearAllConfirmed, storageOk } = useWoz(useShallow((s) => ({ exportData: s.exportData, importData: s.importData, clearAllConfirmed: s.clearAllConfirmed, storageOk: s.storageOk })));
+  const [dump, setDump] = useState("");
+  const [paste, setPaste] = useState("");
+  const [word, setWord] = useState("");
+  const [msg, setMsg] = useState<string | null>(null);
+  return (
+    <details className="mx-4 mt-4 rounded-3xl bg-snow p-4 ring-1 ring-line" data-testid="woz-data">
+      <summary className={"cursor-pointer font-semibold " + focus}>This phone’s Crew Tools data</summary>
+      <p className="pt-1 text-xs text-muted">Export, import or clear — stays on this phone; nothing is uploaded. Your GB crew and Invite list are never changed here.</p>
+      {!storageOk ? <p className="pt-1 text-xs text-pink" data-testid="storage-warn">Saving is unavailable (private mode?) — changes last until you close the app.</p> : null}
+      <div className="flex flex-wrap gap-2 pt-2">
+        <button type="button" className={chip} aria-label="Export Crew Tools data" onClick={() => { setDump(exportData()); setMsg("Export ready — copy the text below."); }}>Export</button>
+      </div>
+      {dump ? <textarea aria-label="exported data" readOnly value={dump} rows={3} className="mt-2 w-full rounded-xl p-2 text-xs ring-1 ring-line" onFocus={(e) => e.currentTarget.select()} /> : null}
+      <textarea aria-label="import data" value={paste} onChange={(e) => setPaste(e.target.value)} rows={3} placeholder="Paste a Crew Tools export" className="mt-2 w-full rounded-xl p-2 text-xs ring-1 ring-line" />
+      <button type="button" className={chip + " mt-1"} aria-label="Import Crew Tools data" onClick={() => { const r = importData(paste); setMsg(r.ok ? `Imported ${r.imported} item${r.imported === 1 ? "" : "s"}${r.skipped.length ? ` (skipped ${r.skipped.length})` : ""}.` : null); if (r.ok) setPaste(""); }}>Import</button>
+      <label className="mt-3 block text-sm">Type {CLEAR_CONFIRM_WORD} to erase all Crew Tools data
+        <input aria-label="clear confirm word" value={word} onChange={(e) => setWord(e.target.value)} className="mt-1 h-10 w-full rounded-xl px-3 ring-1 ring-line" />
+      </label>
+      <button type="button" className={primary + " mt-2"} aria-label="Clear all Crew Tools data" disabled={word !== CLEAR_CONFIRM_WORD}
+        onClick={() => { if (clearAllConfirmed(word)) { setWord(""); setDump(""); setMsg("Crew Tools data cleared on this phone."); } }}>Clear all</button>
+      {msg ? <p role="status" className="pt-2 text-sm" data-testid="data-msg">{msg}</p> : null}
+    </details>
   );
 }

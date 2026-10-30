@@ -14,6 +14,7 @@ import type { RouterState } from "./session";
 import { appendLog, reconcileUnlinks, type InviteEvent } from "./invite-mirror";
 import type { GbCrewMate } from "./crew";
 import { RECOVERED_MSG, STORAGE_MSG } from "./copy";
+import { exportDump, importDump, IMPORT_MSG, CLEAR_CONFIRM_WORD, type ImportResult } from "./dump";
 import type { Screen } from "@/lib/stomp/store";
 import { ride as RR } from "./ride";
 
@@ -59,26 +60,46 @@ export interface WozState {
   onInviteEvents: (ev: InviteEvent[], crewNow: GbCrewMate[]) => void;
   clearInviteLog: () => void;
   hydrate: () => void;
+  /** True once hydrate() ran for the current backing (avoids duplicate re-renders). */
+  hydrated: boolean;
   resetAll: () => void;
+  exportData: () => string;
+  importData: (text: string) => ImportResult;
+  /** Wipes Woz data only when `word` equals CLEAR (case-sensitive). GB data untouched. */
+  clearAllConfirmed: (word: string) => boolean;
 }
 
 const KEYS = { tab: "ui.tab", invites: "crew.inviteLog", baseline: "crew.baseline", crew: "crew.unlinked", privacy: "crew.privacy", tags: "smartid.tags", creds: "smartid.creds" } as const;
 let backing: LocalJsonStore = createWozStore();
-export const setWozBacking = (s: LocalJsonStore) => { backing = s; };
+export const setWozBacking = (s: LocalJsonStore) => { backing = s; useWoz.setState({ hydrated: false }); };
 export const getWozBacking = () => backing;
 const now = () => new Date().toISOString();
+/** data-testid of the control that opened Crew Tools (for focus restore on Back). */
+let openerTestId: string | null = null;
+export const getOpenerTestId = () => openerTestId;
+/** After Back, move focus to the opener (or a Crew tools entry) so keyboard users don't land on <body>. */
+export function restoreFocusAfterBack(doc: Document | undefined = typeof document === "undefined" ? undefined : document): void {
+  if (!doc) return;
+  const pick = () => (openerTestId ? doc.querySelector<HTMLElement>(`[data-testid="${CSS.escape(openerTestId)}"]`) : null)
+    ?? doc.querySelector<HTMLElement>('[data-testid="chrome-crew-tools"], [data-testid^="woz-entry-"]')
+    ?? doc.querySelector<HTMLElement>("h1, main");
+  setTimeout(() => { const el = pick(); if (el) { if (!el.hasAttribute("tabindex") && !/^(BUTTON|A|INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) el.setAttribute("tabindex", "-1"); el.focus(); } }, 0);
+}
 
 const initial = () => ({
   tab: "crew" as WozTab, returnTo: null as Screen | null, unlinked: [] as string[], privacy: { ...DEFAULT_PRIVACY }, router: { pending: null } as RouterState,
   transcript: [] as WozState["transcript"], ride: R.newRideSession("ride-local", "Local park"), runs: [] as RunPlan[],
   media: M.emptyMedia(), campfireOpen: false, tags: [] as SmartIdTag[], creds: [] as ClaimCredential[], lastError: null as string | null,
-  inviteLog: [] as InviteEvent[], crewBaseline: undefined as GbCrewMate[] | undefined, storageOk: true,
+  inviteLog: [] as InviteEvent[], crewBaseline: undefined as GbCrewMate[] | undefined, storageOk: true, hydrated: false,
 });
 
 export const useWoz = create<WozState>()((set, get) => ({
   ...initial(),
   setTab: (tab) => { if (!isWozTab(tab)) return; backing.save(KEYS.tab, tab, now()); set({ tab }); },
-  openFrom: (tab, from) => { get().setTab(tab); set({ returnTo: from && from !== "woz" ? from : null }); },
+  openFrom: (tab, from) => {
+    get().setTab(tab);
+    const el = typeof document === "undefined" ? null : document.activeElement;
+    openerTestId = el && el !== document.body ? el.getAttribute("data-testid") : null; set({ returnTo: from && from !== "woz" ? from : null }); },
   setError: (lastError) => set({ lastError }),
   markUnlinked: (id) => { const unlinked = [...new Set([...get().unlinked, id])]; backing.save(KEYS.crew, unlinked, now()); set({ unlinked }); },
   resetUnlinks: () => { backing.remove(KEYS.crew); set({ unlinked: [] }); },
@@ -91,6 +112,7 @@ export const useWoz = create<WozState>()((set, get) => ({
   setCampfireOpen: (campfireOpen) => set({ campfireOpen }),
   setTags: (tags, creds) => { backing.save(KEYS.tags, tags, now()); if (creds) backing.save(KEYS.creds, creds, now()); set(creds ? { tags, creds } : { tags }); },
   onInviteEvents: (ev, crewNow) => {
+    if (!ev.length) return;
     const inviteLog = appendLog(get().inviteLog, ev);
     const unlinked = reconcileUnlinks(get().unlinked, ev);
     const crewBaseline = crewNow.map((m) => ({ code: m.code, name: m.name }));
@@ -131,6 +153,7 @@ export const useWoz = create<WozState>()((set, get) => ({
     const isMate = (x: unknown): x is GbCrewMate => !!x && typeof (x as GbCrewMate).code === "string" && typeof (x as GbCrewMate).name === "string";
     const isEv = (x: unknown): x is InviteEvent => isMate(x) && ((x as InviteEvent).kind === "accepted" || (x as InviteEvent).kind === "revoked");
     set({
+      hydrated: true,
       ...(isWozTab(tab) ? { tab } : {}),
       ...(recovered ? { lastError: RECOVERED_MSG } : {}),
       inviteLog: Array.isArray(invites) ? invites.filter(isEv) : [],
@@ -145,6 +168,20 @@ export const useWoz = create<WozState>()((set, get) => ({
     });
   },
   resetAll: () => { for (const k of backing.listKeys()) backing.remove(k); set(initial()); },
+  exportData: () => exportDump(backing, now()),
+  importData: (text) => {
+    const r = importDump(backing, text);
+    if (!r.ok) { set({ lastError: IMPORT_MSG[r.error] }); return r; }
+    const keep = { returnTo: get().returnTo };
+    set({ ...initial(), ...keep }); get().hydrate();
+    return r;
+  },
+  clearAllConfirmed: (word) => {
+    if (word !== CLEAR_CONFIRM_WORD) return false;
+    const keep = { returnTo: get().returnTo };
+    get().resetAll(); set({ ...keep, hydrated: true });
+    return true;
+  },
 }));
 
 export type { RiderProfile };

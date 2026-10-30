@@ -27,7 +27,7 @@ describe("Invite preservation", () => {
   it("greet.tsx sha256 unchanged", () => expect(createHash("sha256").update(readFileSync(`${process.cwd()}/src/components/stomp/greet.tsx`)).digest("hex")).toBe(GREET_SHA));
   it("Invite button routes to GB crew screen (CrewLink)", () => { openTab("crew"); fireEvent.click(screen.getByTestId("open-gb-invite")); expect(useStomp.getState().screen).toBe("crew"); });
   it("unlinking does not touch GB crew list", () => {
-    openTab("crew"); const row = screen.getAllByTestId("crew-row")[1]!; fireEvent.click(within(row).getByRole("button", { name: "Unlink" }));
+    openTab("crew"); const row = screen.getAllByTestId("crew-row")[1]!; fireEvent.click(within(row).getByRole("button", { name: /^Unlink / }));
     type("confirm phrase", "UNLINK"); click("Confirm"); expect(useStomp.getState().crew).toEqual(crew);
   });
 });
@@ -47,20 +47,20 @@ describe("crew panel", () => {
   it("lists rider + mates", () => { openTab("crew"); expect(screen.getAllByTestId("crew-row")).toHaveLength(3); });
   it("empty state when no crew", () => { useStomp.setState({ crew: [] }); openTab("crew"); expect(screen.getByTestId("crew-empty")).toBeTruthy(); });
   it("unlink with wrong phrase keeps member", () => {
-    openTab("crew"); fireEvent.click(within(screen.getAllByTestId("crew-row")[1]!).getByRole("button", { name: "Unlink" }));
+    openTab("crew"); fireEvent.click(within(screen.getAllByTestId("crew-row")[1]!).getByRole("button", { name: /^Unlink / }));
     type("confirm phrase", "unlink"); click("Confirm"); expect(screen.getAllByTestId("crew-row")).toHaveLength(3); expect(useWoz.getState().unlinked).toEqual([]);
   });
   it("unlink with UNLINK removes member", () => {
-    openTab("crew"); fireEvent.click(within(screen.getAllByTestId("crew-row")[1]!).getByRole("button", { name: "Unlink" }));
+    openTab("crew"); fireEvent.click(within(screen.getAllByTestId("crew-row")[1]!).getByRole("button", { name: /^Unlink / }));
     type("confirm phrase", "UNLINK"); click("Confirm"); expect(screen.getAllByTestId("crew-row")).toHaveLength(2); expect(useWoz.getState().unlinked).toHaveLength(1);
   });
   it("restore unlinked brings member back", () => {
     getWozBacking().save("crew.unlinked", ["stomper_AAA111"], "2026-10-29T00:00:00.000Z"); openTab("crew"); // hydrated on mount
     expect(screen.getAllByTestId("crew-row")).toHaveLength(2); click(/Restore unlinked/); expect(screen.getAllByTestId("crew-row")).toHaveLength(3);
   });
-  it("cancel closes confirm", () => { openTab("crew"); fireEvent.click(within(screen.getAllByTestId("crew-row")[1]!).getByRole("button", { name: "Unlink" })); click("Cancel"); expect(screen.queryByTestId("confirm-box")).toBeNull(); });
+  it("cancel closes confirm", () => { openTab("crew"); fireEvent.click(within(screen.getAllByTestId("crew-row")[1]!).getByRole("button", { name: /^Unlink / })); click("Cancel"); expect(screen.queryByTestId("confirm-box")).toBeNull(); });
   it("owner transfer with TRANSFER", () => {
-    openTab("crew"); fireEvent.click(within(screen.getAllByTestId("crew-row")[1]!).getByRole("button", { name: "Make owner" }));
+    openTab("crew"); fireEvent.click(within(screen.getAllByTestId("crew-row")[1]!).getByRole("button", { name: /^Make .* owner$/ }));
     type("confirm phrase", "TRANSFER"); click("Confirm"); expect(screen.getAllByTestId("crew-row")[1]!.textContent).toContain("(owner)");
   });
   it("privacy defaults to only me", () => { openTab("crew"); expect((screen.getByLabelText("profile visibility") as HTMLSelectElement).value).toBe("only_me"); });

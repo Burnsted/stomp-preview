@@ -6,3 +6,5 @@ export * as rideBridge from "./ride";
 export * as campfire from "./campfire";
 export * as smartIdBridge from "./smartid";
 export * as persistence from "./persistence";
+export * as dump from "./dump";
+export * as inviteAdapter from "./invite-adapter";
