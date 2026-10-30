@@ -52,13 +52,14 @@ const BY_RESORT: Record<string, Omit<MountainPlaylist, "resortId">> = {
     blurb: "Demo playlist saved for Vail.",
     durationSec: 130,
     beats: marks(
+      // Concept B labeled column sample marks (Orient → Village).
       [0, "Orient", "section"],
-      [16, "Pulse", "beat"],
-      [34, "Straight air", "trick"],
-      [58, "Blue Sky", "section"],
-      [74, "Snap", "beat"],
-      [96, "180", "trick"],
-      [118, "Village", "section"],
+      [14, "Pulse", "beat"],
+      [24, "Straight air", "trick"],
+      [48, "Blue Sky", "section"],
+      [68, "Snap", "beat"],
+      [92, "180", "trick"],
+      [114, "Village", "section"],
     ),
   },
   keystone: {
