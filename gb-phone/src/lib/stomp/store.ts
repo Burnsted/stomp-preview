@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { containsCoordinates } from "@/lib/stomp/woz-bridge/more-copy";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { findTrick, isLanded, type TrickStatus } from "@/lib/stomp/goals";
 import type { Band } from "@/lib/stomp/library";
@@ -243,7 +244,8 @@ export const useStomp = create<State>()(
         })),
       addStash: (name, note) => {
         const trimmed = name.trim();
-        if (!trimmed) return;
+        // Woz batch6 privacy: stash pins are text only — never persist coordinates.
+        if (!trimmed || containsCoordinates(trimmed) || containsCoordinates(note)) return;
         set((state) => ({
           stashes: [
             { id: `stash-${Date.now()}`, name: trimmed, note: note.trim(), at: Date.now() },

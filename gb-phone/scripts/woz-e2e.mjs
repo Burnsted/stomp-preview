@@ -99,5 +99,30 @@ await step("Smart ID revoke confirm", async () => {
   await p.getByTestId("revoke-start").click(); await p.getByRole("button", { name: "Yes, revoke" }).click(); await p.getByTestId("revoked-banner").waitFor();
 });
 await p.screenshot({ path: "test-results/e2e-b5-smartid.png" });
+// batch6: floating Crew tools from greet across tabs + Back to greet; Stash polish (coords guard, remove confirm Esc/Yes)
+await step("greet pill → Session tab → Back to greet", async () => {
+  await p.evaluate(() => { const st = JSON.parse(localStorage.getItem("stomp-line")); st.state.screen = "greet"; localStorage.setItem("stomp-line", JSON.stringify(st)); });
+  await p.reload(); await p.waitForTimeout(900); await p.getByTestId("greet-crew-tools").click(); await p.getByTestId("woz-lab").waitFor();
+  await p.getByRole("tab", { name: "Session" }).click(); await p.getByTestId("woz-back").click(); await p.getByTestId("greet-crew-tools").waitFor();
+  const sc = await p.evaluate(() => JSON.parse(localStorage.getItem("stomp-line")).state.screen); if (sc !== "greet") throw new Error(sc);
+});
+await step("greet pill keyboard + Esc-safe confirm in Crew tools", async () => {
+  await p.getByTestId("greet-crew-tools").focus(); await p.keyboard.press("Enter"); await p.getByTestId("woz-lab").waitFor();
+  await p.getByRole("tab", { name: "Session" }).click(); await p.getByLabel("session command").fill("whats next"); await p.getByRole("button", { name: "Send" }).click();
+  await p.getByTestId("transcript-clear").click(); await p.keyboard.press("Escape"); if (await p.getByTestId("transcript-clear-confirm").count()) throw new Error("esc did not cancel");
+  await p.getByTestId("woz-back").click(); await p.getByTestId("greet-crew-tools").waitFor();
+});
+await step("Stash: coords rejected, remove asks, Esc keeps, Yes removes", async () => {
+  await p.evaluate(() => { const st = JSON.parse(localStorage.getItem("stomp-line")); st.state.screen = "stash"; st.state.stashes = []; localStorage.setItem("stomp-line", JSON.stringify(st)); });
+  await p.reload(); await p.waitForTimeout(900); await p.getByTestId("stash-empty").waitFor();
+  if (!(await p.getByRole("button", { name: "Drop the pin" }).isDisabled())) throw new Error("submit enabled while empty");
+  await p.getByLabel("Stash name").fill("44.2706, -71.3033"); await p.getByRole("button", { name: "Drop the pin" }).click(); await p.getByTestId("stash-error").waitFor();
+  await p.getByLabel("Stash name").fill("North trees"); await p.getByRole("button", { name: "Drop the pin" }).click();
+  await p.getByRole("button", { name: "Remove North trees" }).click(); await p.getByTestId("stash-remove-confirm").waitFor(); await p.keyboard.press("Escape");
+  if (await p.getByTestId("stash-remove-confirm").count()) throw new Error("esc did not cancel");
+  await p.getByRole("button", { name: "Remove North trees" }).click(); await p.getByRole("button", { name: "Yes, remove" }).click(); await p.getByTestId("stash-empty").waitFor();
+  const saved = await p.evaluate(() => localStorage.getItem("stomp-line")); if (/-71\.3033/.test(saved)) throw new Error("coords persisted");
+});
+await p.screenshot({ path: "test-results/e2e-b6-stash.png" });
 console.log(log.join("\n")); console.log("pageerrors", errs); if (log.some((l) => l.startsWith("FAIL")) || errs.length) process.exitCode = 1;
 await b.close();

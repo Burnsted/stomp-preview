@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { BackBar } from "@/components/stomp/chrome";
+import { ConfirmBar } from "@/components/stomp/confirm-bar";
+import { AIRTIME_EMPTY, LINE_EMPTY, MUSIC_EMPTY, MUSIC_PLAY_FAIL, MUSIC_SAVE_FAIL, PLAYLIST_EMPTY, STASH_EMPTY, STASH_PRIVACY_NOTE, checkStash } from "@/lib/stomp/woz-bridge/more-copy";
 import { listTracks, removeTrack, saveTrack, trackUrl, type TrackMeta } from "@/lib/stomp/music";
 import { sessionById, suggestedSession } from "@/lib/stomp/sessions";
 import {
@@ -19,6 +21,7 @@ export function AirLog() {
   return (
     <div className="px-1 pb-10">
       <BackBar title="Airtime" />
+      {landings.length === 0 ? <p data-testid="airtime-empty" className="px-5 pt-4 text-pretty text-muted">{AIRTIME_EMPTY}</p> : null}
       <ul className="mt-4 flex flex-col gap-3 px-4">
         {landings.map((landing) => (
           <li key={landing.id} className="rounded-3xl bg-snow p-4 ring-1 ring-line">
@@ -50,6 +53,7 @@ export function Guide() {
       <p className="px-5 pt-2 text-pretty text-muted">
         North trees, read before you drop. The board rides the pack. You just listen.
       </p>
+      {(CUES as readonly unknown[]).length === 0 ? <p data-testid="line-empty" className="px-5 pt-4 text-muted">{LINE_EMPTY}</p> : null}
       <ol className="mt-4 flex flex-col gap-3 px-4">
         {CUES.map((cue, index) => (
           <li
@@ -85,16 +89,25 @@ export function StashPins() {
   const setScreen = useStomp((state) => state.setScreen);
   const [name, setName] = useState("");
   const [note, setNote] = useState("");
+  const [error, setError] = useState("");
+  const [confirmId, setConfirmId] = useState<string | null>(null);
   const [now] = useState(() => Date.now());
 
   return (
     <div className="px-1 pb-10">
       <BackBar title="Stash" />
+      <p data-testid="stash-privacy" className="px-5 pt-2 text-xs text-muted">{STASH_PRIVACY_NOTE}</p>
       <form
         className="mx-4 mt-4 flex flex-col gap-3 rounded-3xl bg-snow p-4 ring-1 ring-line"
         onSubmit={(event) => {
           event.preventDefault();
-          addStash(name, note);
+          const check = checkStash(name, note);
+          if (!check.ok) {
+            setError(check.error);
+            return;
+          }
+          addStash(check.name, check.note);
+          setError("");
           setName("");
           setNote("");
         }}
@@ -103,7 +116,11 @@ export function StashPins() {
           Name
           <input
             value={name}
-            onChange={(event) => setName(event.target.value)}
+            aria-label="Stash name"
+            onChange={(event) => {
+              setName(event.target.value);
+              setError("");
+            }}
             placeholder="North trees"
             className="mt-1 h-12 w-full rounded-2xl bg-paper px-4 text-ink outline-none ring-1 ring-line"
           />
@@ -112,18 +129,33 @@ export function StashPins() {
           How to find it
           <input
             value={note}
-            onChange={(event) => setNote(event.target.value)}
+            aria-label="How to find it"
+            onChange={(event) => {
+              setNote(event.target.value);
+              setError("");
+            }}
             placeholder="Left of the cat-track, past the hit"
             className="mt-1 h-12 w-full rounded-2xl bg-paper px-4 text-ink outline-none ring-1 ring-line"
           />
         </label>
-        <button type="submit" className="h-12 rounded-full bg-teal font-semibold text-ink">
+        <button
+          type="submit"
+          disabled={!name.trim()}
+          title={name.trim() ? undefined : "Name the spot first"}
+          className="h-12 rounded-full bg-teal font-semibold text-ink disabled:opacity-40"
+        >
           Drop the pin
         </button>
+        {error ? (
+          <p role="alert" data-testid="stash-error" className="text-sm font-semibold text-pink">
+            {error}
+          </p>
+        ) : null}
       </form>
+      {stashes.length === 0 ? <p data-testid="stash-empty" className="px-5 pt-4 text-pretty text-muted">{STASH_EMPTY}</p> : null}
       <ul className="mt-4 flex flex-col gap-3 px-4">
         {stashes.map((stash) => (
-          <li key={stash.id} className="flex items-center gap-3 rounded-3xl bg-snow p-4 ring-1 ring-line">
+          <li key={stash.id} className="flex flex-wrap items-center gap-3 rounded-3xl bg-snow p-4 ring-1 ring-line">
             <button type="button" onClick={() => setScreen("map")} className="min-w-0 flex-1 text-left">
               <p className="font-semibold">{stash.name}</p>
               {stash.note ? <p className="truncate text-sm text-muted">{stash.note}</p> : null}
@@ -132,11 +164,26 @@ export function StashPins() {
             <button
               type="button"
               aria-label={`Remove ${stash.name}`}
-              onClick={() => removeStash(stash.id)}
+              onClick={() => setConfirmId(stash.id)}
               className="flex size-11 items-center justify-center text-muted"
             >
               <Trash2 className="size-5" />
             </button>
+            {confirmId === stash.id ? (
+              <ConfirmBar
+                testId="stash-remove-confirm"
+                label={`Confirm remove ${stash.name}`}
+                message={`Remove “${stash.name}”? This only deletes the pin on this phone.`}
+                yesLabel="Yes, remove"
+                keepLabel="Keep pin"
+                onYes={() => {
+                  removeStash(stash.id);
+                  setConfirmId(null);
+                }}
+                onKeep={() => setConfirmId(null)}
+                className="w-full"
+              />
+            ) : null}
           </li>
         ))}
       </ul>
@@ -177,9 +224,13 @@ function MusicDeck() {
     const files = [...list];
     const rejected = files.filter((file) => !file.type.startsWith("audio/"));
     const accepted = files.filter((file) => file.type.startsWith("audio/"));
-    for (const file of accepted) await saveTrack(file);
-    await refresh();
-    setNote(rejected.length > 0 ? "Skipped anything that wasn’t a song." : "");
+    try {
+      for (const file of accepted) await saveTrack(file);
+      await refresh();
+      setNote(rejected.length > 0 ? "Skipped anything that wasn’t a song." : "");
+    } catch {
+      setNote(MUSIC_SAVE_FAIL);
+    }
     if (fileRef.current) fileRef.current.value = "";
   }
 
@@ -189,15 +240,24 @@ function MusicDeck() {
       setPlaying(null);
       return;
     }
-    const url = await trackUrl(id);
-    if (!url) return;
+    const url = await trackUrl(id).catch(() => null);
+    if (!url) {
+      setNote(MUSIC_PLAY_FAIL);
+      return;
+    }
     if (urlRef.current) URL.revokeObjectURL(urlRef.current);
     urlRef.current = url;
     if (!audioRef.current) audioRef.current = new Audio();
     audioRef.current.src = url;
     audioRef.current.onended = () => setPlaying(null);
-    await audioRef.current.play();
-    setPlaying(id);
+    try {
+      await audioRef.current.play();
+      setPlaying(id);
+      setNote("");
+    } catch {
+      setPlaying(null);
+      setNote(MUSIC_PLAY_FAIL);
+    }
   }
 
   async function remove(id: string) {
@@ -228,6 +288,7 @@ function MusicDeck() {
       </button>
       <p className="mt-2 text-sm text-pretty text-muted">Songs stay on this phone. Tap one to ride to it.</p>
       {note ? <p className="mt-2 text-sm font-semibold text-teal">{note}</p> : null}
+      {tracks.length === 0 && !note ? <p data-testid="music-empty" className="mt-2 text-sm text-muted">{MUSIC_EMPTY}</p> : null}
       {tracks.length > 0 ? (
         <ul className="mt-3 flex flex-col gap-2">
           {tracks.map((track) => (
@@ -287,6 +348,7 @@ export function Playlist() {
       </div>
       <MusicDeck />
       <p className="px-5 pt-5 text-pretty text-muted">Air, callouts, and clips from this line, newest first.</p>
+      {rows.length === 0 ? <p data-testid="playlist-empty" className="px-5 pt-3 text-pretty text-muted">{PLAYLIST_EMPTY}</p> : null}
       <ul className="mt-4 flex flex-col gap-3 px-4">
         {rows.map((row) => (
           <li key={row.id} className="flex items-center gap-3 rounded-3xl bg-snow p-3 ring-1 ring-line">

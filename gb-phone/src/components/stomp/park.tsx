@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PARK_LOCKED, TRICKS_EMPTY } from "@/lib/stomp/woz-bridge/more-copy";
 import { BackBar } from "@/components/stomp/chrome";
 import { BandToggle, TrickPrompt } from "@/components/stomp/library";
 import { bandProgress, canStomp, cycleStatus, nextGoal, statusLabel } from "@/lib/stomp/goals";
@@ -52,6 +53,7 @@ export function Goals() {
           {BAND_LABEL[band]} · {progress.done} landed of {progress.total}
         </p>
       </div>
+      {tricks.length === 0 ? <p data-testid="tricks-empty" className="px-5 pt-3 text-muted">{TRICKS_EMPTY}</p> : null}
       <ul className="mt-3 flex flex-col gap-2 px-4">
         {tricks.map((trick) => {
           const status = trickStatus[trick.id];
@@ -134,6 +136,7 @@ export function TerrainPark() {
               >
                 {done ? "Landed" : "Mark landed"}
               </button>
+              {done ? <p className="mt-2 text-xs text-muted" data-testid="park-locked">{PARK_LOCKED}</p> : null}
             </li>
           );
         })}

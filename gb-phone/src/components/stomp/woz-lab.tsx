@@ -6,6 +6,7 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { HomeButton } from "@/components/stomp/chrome";
+import { ConfirmBar } from "@/components/stomp/confirm-bar";
 import { useStomp } from "@/lib/stomp/store";
 import { SESSIONS } from "@/lib/stomp/sessions";
 import { useWoz, WOZ_TABS, restoreFocusAfterBack } from "@/lib/stomp/woz-bridge/woz-store";
@@ -157,7 +158,7 @@ function CrewPanel() {
       <InviteActivity />
 
       {unl.phase === "confirming" || xfer.phase === "confirming" ? (
-        <div className="rounded-3xl bg-snow p-4 ring-1 ring-line" data-testid="confirm-box">
+        <div className="rounded-3xl bg-snow p-4 ring-1 ring-line" data-testid="confirm-box" onKeyDown={(e) => { if (e.key === "Escape") { e.preventDefault(); setUnl(C.cancelUnlink(unl)); setXfer(C.cancelOwnerTransfer(xfer)); setTyped(""); setError(null); } }}>
           <p className="text-sm">{unl.phase === "confirming" ? unl.message : xfer.message}</p>
           <input aria-label="confirm phrase" value={typed} onChange={(e) => setTyped(e.target.value)} className="mt-2 h-10 w-full rounded-xl px-3 ring-1 ring-line" />
           <div className="flex gap-2 pt-2">
@@ -170,7 +171,8 @@ function CrewPanel() {
                 if (r.state.phase === "transferred") { gbInviteAdapter.local.onOwnerTransferred(C.GB_CREW_ID, ownerId, r.snapshot.crews[0]!.ownerId); setOwner(r.snapshot.crews[0]!.ownerId); setError(null); } else setError(r.state.message);
               }
             }}>Confirm</button>
-            <button type="button" className={chip} onClick={() => { setUnl(C.cancelUnlink(unl)); setXfer(C.cancelOwnerTransfer(xfer)); setError(null); }}>Cancel</button>
+            <button type="button" className={chip} onClick={() => { setUnl(C.cancelUnlink(unl)); setXfer(C.cancelOwnerTransfer(xfer)); setTyped(""); setError(null); }}>Cancel</button>
+            <span className="self-center text-xs text-muted">Esc cancels</span>
           </div>
         </div>
       ) : null}
@@ -260,11 +262,9 @@ function SessionPanel() {
           {transcript.map((l, i) => <li key={i}><b>{l.by === "you" ? "You" : "Session"}:</b> {l.text}</li>)}
         </ul>
         {transcript.length ? (confirmClear ? (
-          <div className="flex flex-wrap items-center gap-2 pt-2 text-sm" data-testid="transcript-clear-confirm" role="group" aria-label="Confirm clear transcript">
-            <span>Clear {transcript.length} line{transcript.length === 1 ? "" : "s"}? Your ride and tricks stay.</span>
-            <button type="button" className={primary} onClick={() => { clearTranscript(); setConfirmClear(false); }}>Yes, clear</button>
-            <button type="button" className={chip} onClick={() => setConfirmClear(false)}>Keep</button>
-          </div>
+          <ConfirmBar className="pt-2" testId="transcript-clear-confirm" label="Confirm clear transcript"
+            message={`Clear ${transcript.length} line${transcript.length === 1 ? "" : "s"}? Your ride and tricks stay.`}
+            yesLabel="Yes, clear" keepLabel="Keep" onYes={() => { clearTranscript(); setConfirmClear(false); }} onKeep={() => setConfirmClear(false)} />
         ) : <button type="button" data-testid="transcript-clear" aria-label="Clear transcript" className={chip + " mt-2"} onClick={() => setConfirmClear(true)}>Clear transcript</button>) : null}
       </div>
       <p className="px-1 text-sm" data-testid="ride-phase">Ride: {ride.phase} · tricks {ride.tricks.length}</p>
@@ -424,13 +424,9 @@ function SmartIdPanel() {
               {tag.state === "revoked" ? <button type="button" className={chip} onClick={() => { setTags([], []); setView(null); }}>Remove tag</button> : null}
             </div>
             {confirmRevoke && tag.state !== "revoked" ? (
-              <div className="mt-2 rounded-2xl bg-snow p-2 text-sm ring-1 ring-pink" role="group" aria-label="Confirm revoke" data-testid="revoke-confirm">
-                <p>{REVOKE_CONFIRM}</p>
-                <span className="mt-1 inline-flex gap-1">
-                  <button type="button" className={primary} onClick={() => { updTag(S.revokeTag(tag, me, nowIso())); setConfirmRevoke(false); }}>Yes, revoke</button>
-                  <button type="button" className={chip} onClick={() => setConfirmRevoke(false)}>Keep tag</button>
-                </span>
-              </div>
+              <ConfirmBar className="mt-2 rounded-2xl bg-snow p-2 ring-1 ring-pink" testId="revoke-confirm" label="Confirm revoke"
+                message={REVOKE_CONFIRM} yesLabel="Yes, revoke" keepLabel="Keep tag"
+                onYes={() => { updTag(S.revokeTag(tag, me, nowIso())); setConfirmRevoke(false); }} onKeep={() => setConfirmRevoke(false)} />
             ) : null}
           </div>
         )}
@@ -463,7 +459,7 @@ function DataPanel() {
       <textarea aria-label="import data" value={paste} onChange={(e) => setPaste(e.target.value)} rows={3} placeholder="Paste a Crew Tools export" className="mt-2 w-full rounded-xl p-2 text-xs ring-1 ring-line" />
       <button type="button" className={chip + " mt-1"} aria-label="Import Crew Tools data" onClick={() => { const r = importData(paste); setMsg(r.ok ? `Imported ${r.imported} item${r.imported === 1 ? "" : "s"}${r.skipped.length ? ` (skipped ${r.skipped.length})` : ""}.` : null); if (r.ok) setPaste(""); }}>Import</button>
       <label className="mt-3 block text-sm">Type {CLEAR_CONFIRM_WORD} to erase all Crew Tools data
-        <input aria-label="clear confirm word" value={word} onChange={(e) => setWord(e.target.value)} className="mt-1 h-10 w-full rounded-xl px-3 ring-1 ring-line" />
+        <input aria-label="clear confirm word" value={word} onKeyDown={(e) => { if (e.key === "Escape") { e.preventDefault(); setWord(""); } }} onChange={(e) => setWord(e.target.value)} className="mt-1 h-10 w-full rounded-xl px-3 ring-1 ring-line" />
       </label>
       <button type="button" className={primary + " mt-2"} aria-label="Clear all Crew Tools data" disabled={word !== CLEAR_CONFIRM_WORD}
         onClick={() => { if (clearAllConfirmed(word)) { setWord(""); setDump(""); setMsg("Crew Tools data cleared on this phone."); } }}>Clear all</button>
