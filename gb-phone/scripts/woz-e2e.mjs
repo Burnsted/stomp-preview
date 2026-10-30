@@ -21,5 +21,13 @@ await step("smart id", async () => { await p.getByRole("tab", { name: "Smart ID"
 await p.screenshot({ path: "test-results/e2e-smartid.png" });
 await step("invite link goes to GB CrewLink", async () => { await p.getByRole("tab", { name: "Crew" }).click(); await p.getByTestId("open-gb-invite").click(); await p.waitForTimeout(300); if (await p.getByTestId("woz-lab").count()) throw new Error("still on woz"); });
 await p.screenshot({ path: "test-results/e2e-invite.png" });
+await step("GB Invite accept mirrors into Crew Tools", async () => {
+  await p.getByLabel("Crew code").fill("CCC333"); await p.getByRole("button", { name: "Link", exact: true }).click();
+  await p.evaluate(() => { const s = JSON.parse(localStorage.getItem("stomp-line")); s.state.screen = "stompers"; localStorage.setItem("stomp-line", JSON.stringify(s)); });
+  await p.reload(); await p.waitForTimeout(1200); await p.getByTestId("woz-entry-crew").click(); await p.getByTestId("invite-activity").waitFor();
+  const t = await p.getByTestId("invite-activity").textContent(); if (!t.includes("Joined · Rider (CCC333)")) throw new Error(t);
+  const n = await p.getByTestId("crew-row").count(); if (n !== 3) throw new Error("rows " + n);
+});
+await p.screenshot({ path: "test-results/e2e-invite-mirror.png" });
 console.log(log.join("\n")); console.log("pageerrors", errs); if (log.some((l) => l.startsWith("FAIL")) || errs.length) process.exitCode = 1;
 await b.close();

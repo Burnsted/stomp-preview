@@ -1,10 +1,12 @@
 import { Chip, HomeButton, Wordmark } from "@/components/stomp/chrome";
 import { GoalStrip } from "@/components/stomp/park";
 import { PHOTOS, useStomp } from "@/lib/stomp/store";
+import { useWoz } from "@/lib/stomp/woz-bridge/woz-store";
 
 export function Home() {
   const setScreen = useStomp((state) => state.setScreen);
   const startRun = useStomp((state) => state.startRun);
+  const setWozTab = useWoz((state) => state.setTab);
 
   return (
     <div>
@@ -73,6 +75,9 @@ export function Home() {
           </Chip>
           <Chip tone="snow" onClick={() => setScreen("stash")}>
             Stash pins
+          </Chip>
+          <Chip tone="snow" onClick={() => { setWozTab("crew"); setScreen("woz"); }}>
+            Crew tools
           </Chip>
         </div>
         <button

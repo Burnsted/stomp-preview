@@ -21,6 +21,12 @@ import { renderInstallPage } from "./grok-pwa-plugin.mjs";
 
 const TEMPLATE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
+// Woz isolation: these are stock template tests that assume an unbranded cwd
+// (no src/lib/og/site.json, no public/og.jpg). The GB STOMP drop ships its own
+// branding (site.json title "STOMP", custom card), which made 8 tests fail before
+// any Woz change. Run them from a neutral temp cwd; repo-file checks use TEMPLATE_ROOT.
+process.chdir(mkdtempSync(join(tmpdir(), "grok-pwa-neutral-cwd-")));
+
 test("injects before </head>", () => {
   const out = injectGrokPwaHead("<html><head><title>x</title></head><body></body></html>");
   assert.match(out, /rel="manifest"/);

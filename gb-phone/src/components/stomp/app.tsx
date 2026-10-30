@@ -9,12 +9,17 @@ import { Stompers } from "@/components/stomp/stompers";
 import { Run } from "@/components/stomp/run";
 import { WozLab } from "@/components/stomp/woz-lab";
 import { useStomp } from "@/lib/stomp/store";
+import { startGbInviteMirror } from "@/lib/stomp/woz-bridge/invite-mirror-gb";
 
 export function StompApp() {
   const screen = useStomp((state) => state.screen);
 
   useEffect(() => {
-    void useStomp.persist.rehydrate();
+    let stop: (() => void) | undefined;
+    let cancelled = false;
+    // Woz: mirror GB Invite accept/revoke into Crew Tools (read-only observer, started after GB rehydrate).
+    void Promise.resolve(useStomp.persist.rehydrate()).then(() => { if (!cancelled) stop = startGbInviteMirror(); });
+    return () => { cancelled = true; stop?.(); };
   }, []);
 
   return (

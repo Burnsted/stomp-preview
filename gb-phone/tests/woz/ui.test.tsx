@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { StompApp } from "@/components/stomp/app";
@@ -120,4 +120,26 @@ describe("smart id panel", () => {
   it("activate before claim errors", () => { openTab("smartid"); click("Create demo tag"); click("Activate"); expect(screen.getByRole("alert").textContent).toMatch(/not_owner/); });
   it("scan bad payload → unknown_tag", () => { openTab("smartid"); type("scan payload", "https://x"); click("Simulate scan"); expect(screen.getByTestId("scan-view").textContent).toBe("unknown_tag"); });
   it("Write NFC rejects (stub)", async () => { openTab("smartid"); click("Create demo tag"); click("Write NFC"); expect(await screen.findByRole("alert")).toBeTruthy(); });
+});
+
+describe("Invite mirror (UI)", () => {
+  const settle = () => new Promise((r) => setTimeout(r, 20));
+  it("home chip opens crew tools", async () => { render(<StompApp />); await new Promise((r) => setTimeout(r, 20)); act(() => useStomp.setState({ screen: "home" })); click("Crew tools"); expect(useStomp.getState().screen).toBe("woz"); expect(useWoz.getState().tab).toBe("crew"); });
+  it("GB accept/revoke shows in Invite activity and re-accept re-links", async () => {
+    openTab("crew"); await settle();
+    expect(screen.getByTestId("invite-empty")).toBeTruthy();
+    useWoz.getState().markUnlinked("stomper_AAA111");
+    useStomp.setState({ crew: [crew[1]!] }); await settle();
+    useStomp.setState({ crew: [crew[1]!, crew[0]!, { code: "CCC333", name: "Mo" }] }); await settle();
+    const ev = screen.getAllByTestId("invite-event").map((e) => e.textContent);
+    expect(ev).toContain("Left · Ria (AAA111)");
+    expect(ev).toContain("Joined · Mo (CCC333)");
+    expect(useWoz.getState().unlinked).not.toContain("stomper_AAA111");
+    expect(screen.getAllByTestId("crew-row")).toHaveLength(4);
+  });
+  it("storage error is shown and dismissible", () => {
+    openTab("crew"); act(() => useWoz.getState().setError("Couldn’t save on this phone")); 
+    expect(screen.getByRole("alert").textContent).toContain("Couldn’t save");
+    fireEvent.click(screen.getByLabelText("dismiss error")); expect(screen.queryByRole("alert")).toBeNull();
+  });
 });

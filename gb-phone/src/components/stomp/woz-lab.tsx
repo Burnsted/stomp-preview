@@ -28,6 +28,7 @@ export function WozLab() {
   const setTab = useWoz((s) => s.setTab);
   const hydrate = useWoz((s) => s.hydrate);
   const lastError = useWoz((s) => s.lastError);
+  const setError = useWoz((s) => s.setError);
   useEffect(() => { hydrate(); }, [hydrate]);
   return (
     <div className="px-1 pb-10" data-testid="woz-lab">
@@ -43,7 +44,12 @@ export function WozLab() {
             className={btn + "shrink-0 " + (tab === t.id ? "bg-ink text-snow" : "bg-snow ring-1 ring-line")}>{t.label}</button>
         ))}
       </div>
-      {lastError ? <p role="alert" className="px-5 pt-2 text-sm text-pink">{lastError}</p> : null}
+      {lastError ? (
+        <div role="alert" className="mx-4 mt-2 flex items-center justify-between gap-2 rounded-2xl bg-snow px-3 py-2 text-sm text-pink ring-1 ring-line">
+          <span>{lastError}</span>
+          <button type="button" className={chip} onClick={() => setError(null)} aria-label="dismiss error">Dismiss</button>
+        </div>
+      ) : null}
       <section className="space-y-3 px-4 pt-4">
         {tab === "crew" ? <CrewPanel /> : null}
         {tab === "session" ? <SessionPanel /> : null}
@@ -51,6 +57,27 @@ export function WozLab() {
         {tab === "campfire" ? <CampfirePanel /> : null}
         {tab === "smartid" ? <SmartIdPanel /> : null}
       </section>
+    </div>
+  );
+}
+
+function InviteActivity() {
+  const log = useWoz((s) => s.inviteLog);
+  const clear = useWoz((s) => s.clearInviteLog);
+  return (
+    <div className="rounded-3xl bg-snow p-4 ring-1 ring-line" data-testid="invite-activity">
+      <div className="flex items-center justify-between">
+        <h2 className="font-semibold">Invite activity</h2>
+        {log.length ? <button type="button" className={chip} onClick={clear}>Clear</button> : null}
+      </div>
+      <p className="text-xs text-muted">Mirrored from Crew Link (read-only). Re-inviting an unlinked Stomper re-links them here.</p>
+      {log.length === 0 ? <p className="pt-2 text-sm text-muted" data-testid="invite-empty">No invite activity yet.</p> : (
+        <ul className="pt-2 text-sm">
+          {[...log].reverse().slice(0, 10).map((e, i) => (
+            <li key={e.atIso + e.code + i} data-testid="invite-event">{e.kind === "accepted" ? "Joined" : "Left"} · {e.name} ({e.code})</li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -97,6 +124,7 @@ function CrewPanel() {
         </ul>
         {unlinked.length ? <button type="button" className={chip} onClick={resetUnlinks}>Restore unlinked ({unlinked.length})</button> : null}
       </div>
+      <InviteActivity />
 
       {unl.phase === "confirming" || xfer.phase === "confirming" ? (
         <div className="rounded-3xl bg-snow p-4 ring-1 ring-line" data-testid="confirm-box">

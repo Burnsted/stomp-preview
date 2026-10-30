@@ -1,0 +1,42 @@
+diff --git a/.github/workflows/pr-verify.yml b/.github/workflows/pr-verify.yml
+index 75f9c8d..75d8e86 100644
+--- a/.github/workflows/pr-verify.yml
++++ b/.github/workflows/pr-verify.yml
+@@ -8,6 +8,7 @@ on:
+       - "batch1/**"
+       - ".github/workflows/pr-verify.yml"
+       - "docs/batch-1/**"
++      - "gb-phone/**"
+ 
+ jobs:
+   batch1-verify:
+@@ -26,3 +27,29 @@ jobs:
+       - run: npm ci
+       - run: npm run typecheck
+       - run: npm test
++
++  gb-phone-woz-verify:
++    # Woz-owned paths in the GB phone app: typecheck, Woz vitest, GB stock node tests, full build.
++    # No secrets; db:migrate self-skips without DATABASE_URL (PGLite fallback). No deploy.
++    name: gb-phone typecheck + woz tests + build
++    runs-on: ubuntu-latest
++    defaults:
++      run:
++        working-directory: gb-phone
++    steps:
++      - uses: actions/checkout@v4
++      - uses: actions/setup-node@v4
++        with:
++          node-version: "22"
++          cache: npm
++          cache-dependency-path: |
++            gb-phone/package-lock.json
++            batch1/package-lock.json
++      - run: npm ci
++        working-directory: batch1
++      - run: npm ci
++      - run: npm run typecheck
++      - run: npm run typecheck:woz
++      - run: npm run test:woz
++      - run: npm test
++      - run: npm run build
