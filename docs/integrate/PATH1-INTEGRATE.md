@@ -25,3 +25,9 @@
 
 ## Batch 5 (2026-10-30) — polish
 Session empty/clear-confirm/Esc-cancel/undo detail; Ride banners + phase-gated controls + empty copy (no GPS); Smart ID safer claim + revoke confirm, consistent `DEMO_LABEL` badges (no NFC writes); Crew tools pill over greet rendered from app.tsx (greet.tsx unchanged). woz 458, batch1 319, e2e 21/21. Details: `docs/batch-5/BATCH5-POLISH.md`.
+
+## Batch 6 (2026-10-30)
+More-screen empty states/guards, coordinate-free stash pins, profile privacy/reset hygiene, shared ConfirmBar. woz 524, batch1 319, e2e 24/24. Details: `docs/batch-6/BATCH6-MORE-PRIVACY-CONFIRM.md`.
+
+## Batch 7 (2026-10-30) — crew list, session, one error surface
+Crew rows keyboard-navigable with self/owner guards + plain confirm copy; ~30 more Session aliases, transcript scroll + input refocus (wake off); single `ErrorBanner` across tabs (cleared on tab switch, `plainError`); reduced-motion + focus-visible touches. woz 614, batch1 319, e2e 28/28. Details: `docs/batch-7/BATCH7-CREW-SESSION-ERRORS.md`.

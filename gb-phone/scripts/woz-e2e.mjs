@@ -124,5 +124,32 @@ await step("Stash: coords rejected, remove asks, Esc keeps, Yes removes", async 
   const saved = await p.evaluate(() => localStorage.getItem("stomp-line")); if (/-71\.3033/.test(saved)) throw new Error("coords persisted");
 });
 await p.screenshot({ path: "test-results/e2e-b6-stash.png" });
+// Batch 7
+await step("b7 crew rows keyboard + plain confirm", async () => {
+  await p.evaluate(() => localStorage.setItem("stomp-line", JSON.stringify({ version: 0, state: { screen: "stompers", riderName: "Ted", riderCode: "ME0001", crew: [{ code: "AAA111", name: "Ria" }, { code: "BBB222", name: "Jax" }] } })));
+  await p.reload(); await p.waitForTimeout(1200); await p.getByTestId("woz-entry-crew").click(); await p.getByRole("tab", { name: "Crew" }).click();
+  const rows = p.getByTestId("crew-row"); if (await rows.count() < 2) { await p.getByRole("button", { name: /Restore unlinked/ }).click(); }
+  await rows.first().focus(); await p.keyboard.press("ArrowDown");
+  const lab = await p.evaluate(() => document.activeElement?.getAttribute("aria-label")); if (!/member/.test(lab ?? "")) throw new Error("focus " + lab);
+  await p.keyboard.press("Delete"); const copy = await p.getByTestId("confirm-copy").textContent(); if (!/Type UNLINK/.test(copy) || /Local-only/.test(copy)) throw new Error(copy);
+  const fid = await p.evaluate(() => document.activeElement?.getAttribute("aria-label")); if (fid !== "confirm phrase") throw new Error("focus " + fid);
+  await p.keyboard.type("nope"); await p.getByRole("button", { name: "Confirm" }).click(); await p.getByTestId("woz-error").filter({ hasText: "doesn't match" }).waitFor();
+  await p.keyboard.press("Escape"); if (await p.getByTestId("confirm-box").count()) throw new Error("esc");
+});
+await step("b7 session aliases + focus + scroll", async () => {
+  await p.getByRole("tab", { name: "Session" }).click();
+  for (const t of ["start session", "sent it", "wiped out", "scratch that", "okay", "whats after this", "landed", "stuck it", "wrap it up", "okay"]) { await p.getByLabel("session command").fill(t); await p.keyboard.press("Enter"); }
+  const f = await p.evaluate(() => document.activeElement?.getAttribute("aria-label")); if (f !== "session command") throw new Error("focus " + f);
+  const ok = await p.getByTestId("transcript").evaluate((el) => el.scrollHeight <= el.clientHeight || el.scrollTop + el.clientHeight >= el.scrollHeight - 2); if (!ok) throw new Error("not scrolled to newest");
+  const ph = await p.getByTestId("ride-phase").textContent(); if (!/ended/.test(ph)) throw new Error(ph);
+});
+await step("b7 error clears on tab switch", async () => {
+  await p.getByRole("tab", { name: "Ride" }).click(); await p.getByRole("button", { name: "Create" }).click(); await p.getByTestId("woz-error").waitFor();
+  await p.getByRole("tab", { name: "Smart ID" }).click(); if (await p.getByTestId("woz-error").count()) throw new Error("error leaked across tabs");
+});
+await step("b7 reduced motion honoured", async () => {
+  await p.emulateMedia({ reducedMotion: "reduce" }); const d = await p.evaluate(() => getComputedStyle(document.body).transitionDuration); if (!/0\.00001s|1e-05s|0s/.test(d)) throw new Error(d); await p.emulateMedia({ reducedMotion: null });
+});
+await p.screenshot({ path: "test-results/e2e-b7.png" });
 console.log(log.join("\n")); console.log("pageerrors", errs); if (log.some((l) => l.startsWith("FAIL")) || errs.length) process.exitCode = 1;
 await b.close();

@@ -48,6 +48,14 @@ export const PHRASE_ALIASES: Readonly<Record<string, string>> = Object.freeze({
   "whos on hill": "crew status", "whos on the hill": "crew status", "where is my crew": "crew status", "wheres my crew": "crew status", "wheres the crew": "crew status",
   "what next": "whats next", "next": "next hit", "next feature": "next hit",
   "commands": "help", "what can i say": "help",
+  // Batch 7: more natural phrases (only used when batch1 doesn't already understand the text).
+  "landed": "stomped it", "stuck it": "stomped it", "sent it": "stomped it", "clean": "stomped it", "got it": "stomped it",
+  "bailed it": "washed out", "wiped out": "washed out", "ate it": "washed out", "slammed": "washed out", "fell": "washed out",
+  "scratch that": "undo that", "take that back": "undo that", "remove last": "undo that",
+  "ok": "yes", "okay": "yes", "sure": "yes", "go ahead": "yes", "yes please": "yes",
+  "no thanks": "cancel", "forget it": "cancel", "dont": "cancel",
+  "where am i at": "whats next", "whats after this": "whats next",
+  "wrap it up": "end session", "heading in": "end session",
 });
 export const MAX_UTTERANCE = 120;
 const norm = (t: string) => t.toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();

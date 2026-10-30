@@ -35,10 +35,18 @@ const SMART_ID: Record<string, string> = {
   revoked: "This tag was revoked — create a new demo tag.",
   not_owner: "Only the tag's owner can do that. Claim it first.",
 };
-export type CopyArea = "ride" | "campfire" | "smartid";
+const CREW: Record<string, string> = {
+  not_found: "That Stomper isn't in your crew anymore.",
+  bad_phrase: "That doesn't match — type the word shown exactly, or press Esc to keep things as they are.",
+  self: "You can't unlink yourself here — that's done from your own phone.",
+  owner: "The crew owner can't be unlinked. Make someone else owner first.",
+  already_owner: "They're already the owner.",
+  no_crew: "No crew linked yet — use Invite (Crew Link) first.",
+};
+export type CopyArea = "ride" | "campfire" | "smartid" | "crew";
 export function friendlyError(area: CopyArea, code: string, op?: "start" | "pause" | "resume" | "end"): string {
   if (area === "ride" && code === "invalid_transition" && op) return RIDE_TRANSITION[op]!;
-  const t = area === "ride" ? RIDE : area === "campfire" ? CAMPFIRE : SMART_ID;
+  const t = area === "ride" ? RIDE : area === "campfire" ? CAMPFIRE : area === "crew" ? CREW : SMART_ID;
   return t[code] ?? "Something went wrong — nothing was sent anywhere.";
 }
 export const NFC_WRITE_MSG = "NFC writing isn't available in this demo — nothing was written to a tag.";
@@ -60,6 +68,7 @@ export function scanLabel(v: { result: string; displayName?: string }): string {
 /** Batch 5: consistent demo badge labels + empty/banner copy across Crew Tools panels. */
 export const DEMO_LABEL = {
   lab: "Demo · local only",
+  crew: "Demo · this phone only",
   session: "Demo · text only",
   ride: "Demo · saved on this phone",
   campfire: "Demo · crew-only",
@@ -77,3 +86,29 @@ export const REVOKE_CONFIRM = "Revoke this tag? Anyone scanning it will see “r
 export const CLAIM_EMPTY = "Enter the claim code first.";
 export const CLAIM_HINT = "Claim codes look like CLAIM-0001. Nothing is written to the physical tag.";
 export function normalizeClaimCode(raw: string): string { return raw.trim().toUpperCase().replace(/\s+/g, ""); }
+
+/** Batch 7: Crew list copy + one plain-language error pattern for every Crew Tools tab. */
+export const CREW_EMPTY = "Just you so far. Tap Invite (Crew Link) to link a Stomper standing next to you — nothing is sent anywhere.";
+export const CREW_ROW_HINT = "Arrow keys move between Stompers. Unlink and Make owner each ask you to confirm.";
+export const CREW_SELF_NOTE = "This is you — you can't unlink or demote yourself here.";
+export const GENERIC_ERROR = "Something went wrong — nothing was sent anywhere.";
+/** Normalize any thrown/raw message into one short, plain sentence (no codes, no stack). */
+export function plainError(raw: unknown): string {
+  const s = typeof raw === "string" ? raw : raw instanceof Error ? raw.message : "";
+  const t = s.trim();
+  if (!t || /^[a-z_]+$/.test(t) || /error:|exception|undefined|null|\bat\s+\S+\s*\(/i.test(t) || t.length > 200) return GENERIC_ERROR;
+  return /[.!?…]$/.test(t) ? t : t + ".";
+}
+export function crewConfirmCopy(kind: "unlink" | "owner", name: string, phrase: string): string {
+  return kind === "unlink"
+    ? `Unlink ${name}? They leave your crew on this phone only — re-invite any time. Type ${phrase} to confirm.`
+    : `Make ${name} the crew owner? You'll become a regular member. Type ${phrase} to confirm.`;
+}
+/** Map batch1 crew state messages (technical) to plain copy. */
+export function crewStateError(msg: string | null | undefined): string {
+  const m = msg ?? "";
+  if (/exactly to confirm/i.test(m)) return friendlyError("crew", "bad_phrase");
+  if (/not an active member|non-owner member|not an active owner/i.test(m)) return friendlyError("crew", "not_found");
+  if (/only the current crew owner/i.test(m)) return "Only the crew owner can hand over ownership.";
+  return GENERIC_ERROR;
+}
