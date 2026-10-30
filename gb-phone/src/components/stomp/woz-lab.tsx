@@ -13,6 +13,8 @@ import { routeTyped, SESSION_BRIDGE_FLAGS, helpText, type GbAction } from "@/lib
 import { ride as R, runFromGbSession, type FeatureKind } from "@/lib/stomp/woz-bridge/ride";
 import { media as M, mediaFromGbClips, CAMPFIRE_GUARDS } from "@/lib/stomp/woz-bridge/campfire";
 import { smartId as S, nfc, SMART_ID_FLAGS, demoTag } from "@/lib/stomp/woz-bridge/smartid";
+import { friendlyError, scanLabel, NFC_WRITE_MSG, UPLOAD_OFF_MSG } from "@/lib/stomp/woz-bridge/copy";
+import { MAX_UTTERANCE } from "@/lib/stomp/woz-bridge/session";
 
 const nowIso = () => new Date().toISOString();
 const btn = "h-10 rounded-full px-4 text-sm font-semibold ";
@@ -29,15 +31,19 @@ export function WozLab() {
   const hydrate = useWoz((s) => s.hydrate);
   const lastError = useWoz((s) => s.lastError);
   const setError = useWoz((s) => s.setError);
+  const returnTo = useWoz((s) => s.returnTo);
+  const setScreen = useStomp((s) => s.setScreen);
   useEffect(() => { hydrate(); }, [hydrate]);
   return (
     <div className="px-1 pb-10" data-testid="woz-lab">
       <header className="flex items-center gap-3 px-4 pt-5">
-        <HomeButton />
+        {returnTo ? (
+          <button type="button" data-testid="woz-back" onClick={() => setScreen(returnTo)} className="flex h-11 items-center rounded-full bg-snow px-3 text-sm font-semibold text-ink ring-1 ring-line">‹ Back</button>
+        ) : <HomeButton />}
         <h1 className="font-display text-3xl tracking-wide">CREW TOOLS</h1>
         <DemoBadge />
       </header>
-      <p className="px-5 pt-2 text-sm text-muted">Everything here stays on this phone. No cloud, NFC, location or background voice.</p>
+      <p className="px-5 pt-2 text-sm text-muted">Demo tools — everything stays on this phone. No cloud, NFC, GPS or background listening.</p>
       <div className="mt-3 flex gap-2 overflow-x-auto px-4" role="tablist">
         {WOZ_TABS.map((t) => (
           <button key={t.id} role="tab" aria-selected={tab === t.id} type="button" onClick={() => setTab(t.id)}
@@ -164,6 +170,7 @@ function CrewPanel() {
   );
 }
 
+const QUICK = ["start session", "landed it", "bailed", "undo", "save this spot", "whats next", "light the campfire", "im done"];
 function SessionPanel() {
   const { router, setRouter, transcript, say, ride, setRide, campfireOpen, setCampfireOpen } = useWoz();
   const startRun = useStomp((s) => s.startRun);
@@ -171,31 +178,35 @@ function SessionPanel() {
   const addStash = useStomp((s) => s.addStash);
   const setScreen = useStomp((s) => s.setScreen);
   const [text, setText] = useState("");
+  const [hint, setHint] = useState<string | null>(null);
   const apply = (a: GbAction | null): string | null => {
     if (!a) return null;
     const t = nowIso();
-    const step = (r: ReturnType<typeof R.startRide>) => { if (r.ok) { setRide(r.value); return null; } return `Can't do that now (${r.error}).`; };
+    const step = (r: ReturnType<typeof R.startRide>, op?: "start" | "pause" | "resume" | "end") => { if (r.ok) { setRide(r.value); return null; } return friendlyError("ride", r.error, op); };
     switch (a.kind) {
-      case "startRun": { const m = step(R.startRide(ride.phase === "ended" ? R.newRideSession(`ride-${Date.now()}`, ride.parkLabel, ride.run) : ride, t)); if (!m) { startRun(); setScreen("woz"); } return m; }
-      case "endRun": { const m = step(R.endRide(ride, t)); if (!m) { endRun(); setScreen("woz"); } return m; }
-      case "pauseRide": return step(R.pauseRide(ride, t));
-      case "resumeRide": return step(R.resumeRide(ride, t));
-      case "logTrick": return step(R.logTrick(ride, { trick: "Trick", outcome: a.outcome, nowIso: t, advanceHit: true }));
-      case "undoTrick": return step(R.undoLastTrick(ride));
+      case "startRun": { const m = step(R.startRide(ride.phase === "ended" ? R.newRideSession(`ride-${Date.now()}`, ride.parkLabel, ride.run) : ride, t), "start"); if (!m) { startRun(); setScreen("woz"); return "Ride started. Say “stomped it” after each trick."; } return m; }
+      case "endRun": { const m = step(R.endRide(ride, t), "end"); if (!m) { endRun(); setScreen("woz"); return "Ride ended. Nice session."; } return m; }
+      case "pauseRide": return step(R.pauseRide(ride, t), "pause") ?? "Paused.";
+      case "resumeRide": return step(R.resumeRide(ride, t), "resume") ?? "Back at it.";
+      case "logTrick": return step(R.logTrick(ride, { trick: "Trick", outcome: a.outcome, nowIso: t, advanceHit: true })) ?? (a.outcome === "stomped" ? "Stomped — logged." : "Washed out — logged.");
+      case "undoTrick": return step(R.undoLastTrick(ride)) ?? "Last trick removed.";
       case "nextHit": { const h = ride.run ? R.nextHit(ride.run, ride.completedHits) : null; return h ? `Next: ${h.label}` : "No planned hit."; }
-      case "markStash": { const m = step(R.markStash(ride, { id: `st-${Date.now()}`, label: "Stash", zoneLabel: ride.parkLabel, nowIso: t })); if (!m) addStash("Voice stash", "Saved by typed Session command"); return m; }
+      case "markStash": { const m = step(R.markStash(ride, { id: `st-${Date.now()}`, label: `Stash ${ride.stashes.length + 1}`, zoneLabel: ride.parkLabel, nowIso: t })); if (!m) { addStash("Voice stash", "Saved by typed Session command"); return "Stash saved (park label only, no GPS)."; } return m; }
       case "listStashes": return ride.stashes.length ? ride.stashes.map((s) => s.label).join(", ") : "No stashes yet.";
       case "screen": setScreen(a.screen); return null;
       case "campfire": if (a.op === "open") setCampfireOpen(true); else if (a.op === "close") setCampfireOpen(false); return a.op === "react" ? (campfireOpen ? "🔥 sent (local)." : "Campfire is closed.") : null;
       case "say": return a.text;
     }
   };
-  const submit = () => {
-    if (!text.trim()) return;
-    say("you", text);
-    const r = routeTyped(router, text);
+  const submit = (raw = text) => {
+    if (!raw.trim()) { setHint("Type a command — try “stomped it”."); return; }
+    setHint(null);
+    say("you", raw.slice(0, MAX_UTTERANCE));
+    const r = routeTyped(router, raw);
     setRouter(r.state);
-    say("session", apply(r.action) ?? r.reply);
+    let reply: string;
+    try { reply = apply(r.action) ?? r.reply; } catch { reply = "Session hit a snag — nothing changed."; }
+    say("session", reply);
     setText("");
   };
   return (
@@ -204,10 +215,18 @@ function SessionPanel() {
         <div className="flex items-center justify-between"><h2 className="font-semibold">Type to Session</h2><DemoBadge label="Text only" /></div>
         <p className="text-xs text-muted" data-testid="wake-status">Wake word: {SESSION_BRIDGE_FLAGS.wakeListening ? "on" : "off"} · Background listening: off · Headsets: not connected</p>
         <form className="flex gap-2 pt-2" onSubmit={(e) => { e.preventDefault(); submit(); }}>
-          <input aria-label="session command" value={text} onChange={(e) => setText(e.target.value)} placeholder="stomped it" className="h-10 flex-1 rounded-xl px-3 ring-1 ring-line" />
+          <input aria-label="session command" maxLength={MAX_UTTERANCE} value={text} onChange={(e) => setText(e.target.value)} placeholder="stomped it" className="h-10 flex-1 rounded-xl px-3 ring-1 ring-line" />
           <button type="submit" className={primary}>Send</button>
         </form>
-        {router.pending ? <p className="pt-1 text-sm" data-testid="pending">Waiting for yes / cancel: {router.pending.summary}</p> : null}
+        {hint ? <p role="status" className="pt-1 text-sm text-pink" data-testid="session-hint">{hint}</p> : null}
+        <div className="flex flex-wrap gap-1 pt-2" aria-label="quick phrases">
+          {QUICK.map((q) => <button key={q} type="button" data-testid="quick-phrase" className={chip} onClick={() => submit(q)}>{q}</button>)}
+        </div>
+        {router.pending ? (
+          <div className="pt-1 text-sm" data-testid="pending">Confirm: {router.pending.summary}?
+            <span className="ml-2 inline-flex gap-1"><button type="button" className={chip} onClick={() => submit("yes")}>Yes</button><button type="button" className={chip} onClick={() => submit("cancel")}>Cancel</button></span>
+          </div>
+        ) : null}
         <ul className="pt-2 text-sm" data-testid="transcript">
           {transcript.map((l, i) => <li key={i}><b>{l.by === "you" ? "You" : "Session"}:</b> {l.text}</li>)}
         </ul>
@@ -227,14 +246,17 @@ function RidePanel() {
   const [sel, setSel] = useState<string | null>(null);
   const current = runs.find((r) => r.id === sel) ?? null;
   const t = nowIso;
-  const upd = (r: ReturnType<typeof R.addHit>) => { if (r.ok) { setRuns(runs.map((x) => (x.id === r.value.id ? r.value : x))); setError(null); } else setError(`Run: ${r.error}`); };
-  const rs = (r: ReturnType<typeof R.startRide>) => { if (r.ok) { setRide(r.value); setError(null); } else setError(`Ride: ${r.error}`); };
+  const [note, setNote] = useState<string | null>(null);
+  const upd = (r: ReturnType<typeof R.addHit>) => { if (r.ok) { setRuns(runs.map((x) => (x.id === r.value.id ? r.value : x))); setError(null); } else setError(friendlyError("ride", r.error)); };
+  const rs = (r: ReturnType<typeof R.startRide>, op?: "start" | "pause" | "resume" | "end", ok?: string) => { if (r.ok) { setRide(r.value); setError(null); setNote(ok ?? null); } else { setError(friendlyError("ride", r.error, op)); setNote(null); } };
+  const live = ride.phase === "active" || ride.phase === "paused";
   const sum = R.rideSummary(ride);
   return (
     <div className="space-y-3">
       <div className="rounded-3xl bg-snow p-4 ring-1 ring-line" data-testid="run-builder">
-        <h2 className="font-semibold">Run Builder</h2>
-        <form className="flex gap-2 pt-2" onSubmit={(e) => { e.preventDefault(); const r = R.createRun(`run-${Date.now()}`, name); if (!r.ok) return setError(`Run: ${r.error}`); setRuns([...runs, r.value]); setSel(r.value.id); setName(""); setError(null); }}>
+        <div className="flex items-center justify-between"><h2 className="font-semibold">Run Builder</h2><DemoBadge label="Demo · saved on this phone" /></div>
+        {runs.length === 0 ? <p className="pt-1 text-sm text-muted" data-testid="runs-empty">No runs yet. Name one or start from a session below.</p> : null}
+        <form className="flex gap-2 pt-2" onSubmit={(e) => { e.preventDefault(); const r = R.createRun(`run-${Date.now()}`, name); if (!r.ok) return setError(friendlyError("ride", r.error)); setRuns([...runs, r.value]); setSel(r.value.id); setName(""); setError(null); }}>
           <input aria-label="run name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Run name" className="h-10 flex-1 rounded-xl px-3 ring-1 ring-line" />
           <button type="submit" className={primary}>Create</button>
         </form>
@@ -244,18 +266,20 @@ function RidePanel() {
         </div>
         {current ? (
           <div className="pt-2" data-testid="run-editor">
+            {current.hits.length === 0 ? <p className="text-sm text-muted" data-testid="hits-empty">No hits yet — add one below.</p> : null}
             <ol className="text-sm">{current.hits.map((h, i) => (
               <li key={h.id} className="flex items-center justify-between">{i + 1}. {h.label} ({h.feature})
                 <span className="flex gap-1">
                   <button type="button" aria-label={`up ${h.label}`} className={chip} disabled={i === 0} onClick={() => upd(R.moveHit(current, i, i - 1))}>↑</button>
                   <button type="button" aria-label={`remove ${h.label}`} className={chip} onClick={() => upd(R.removeHit(current, h.id))}>✕</button>
                 </span></li>))}</ol>
-            <form className="flex gap-1 pt-2" onSubmit={(e) => { e.preventDefault(); if (!label.trim()) return setError("Run: empty hit label"); upd(R.addHit(current, { id: `hit-${Date.now()}-${current.hits.length}`, feature, label: label.trim() })); setLabel(""); }}>
+            <form className="flex gap-1 pt-2" onSubmit={(e) => { e.preventDefault(); if (!label.trim()) return setError("Name the hit first (e.g. “Down box”)."); upd(R.addHit(current, { id: `hit-${Date.now()}-${current.hits.length}`, feature, label: label.trim() })); setLabel(""); }}>
               <select aria-label="feature" value={feature} onChange={(e) => setFeature(e.target.value as FeatureKind)}>{FEATURES.map((f) => <option key={f}>{f}</option>)}</select>
               <input aria-label="hit label" value={label} onChange={(e) => setLabel(e.target.value)} className="h-10 flex-1 rounded-xl px-3 ring-1 ring-line" />
               <button type="submit" className={chip}>Add hit</button>
             </form>
-            <button type="button" className={primary + " mt-2"} disabled={ride.phase === "active" || ride.phase === "paused"} onClick={() => setRide(R.newRideSession(`ride-${Date.now()}`, ride.parkLabel, current))}>Use for ride</button>
+            <button type="button" data-testid="use-for-ride" className={primary + " mt-2"} disabled={live || current.hits.length === 0} onClick={() => { setRide(R.newRideSession(`ride-${Date.now()}`, ride.parkLabel, current)); setNote(`“${current.name}” is ready — press Start.`); }}>Use for ride</button>
+            {live ? <p className="pt-1 text-xs text-muted">End the current ride to switch runs.</p> : current.hits.length === 0 ? <p className="pt-1 text-xs text-muted">Add at least one hit to ride this run.</p> : null}
           </div>
         ) : null}
       </div>
@@ -263,15 +287,16 @@ function RidePanel() {
         <h2 className="font-semibold">Ride · {ride.phase}{ride.run ? ` · ${ride.run.name}` : ""}</h2>
         <p className="text-sm" data-testid="ride-summary">Stomped {sum.stomped} · Washed {sum.washedOut} · Stashes {ride.stashes.length}</p>
         <div className="flex flex-wrap gap-1 pt-2">
-          <button type="button" className={chip} onClick={() => rs(R.startRide(ride.phase === "ended" ? R.newRideSession(`ride-${Date.now()}`, ride.parkLabel, ride.run) : ride, t()))}>Start</button>
-          <button type="button" className={chip} onClick={() => rs(R.pauseRide(ride, t()))}>Pause</button>
-          <button type="button" className={chip} onClick={() => rs(R.resumeRide(ride, t()))}>Resume</button>
-          <button type="button" className={chip} onClick={() => rs(R.endRide(ride, t()))}>End</button>
+          <button type="button" className={chip} onClick={() => rs(R.startRide(ride.phase === "ended" ? R.newRideSession(`ride-${Date.now()}`, ride.parkLabel, ride.run) : ride, t()), "start", "Ride started.")} disabled={live}>Start</button>
+          <button type="button" className={chip} onClick={() => rs(R.pauseRide(ride, t()), "pause", "Paused.")}>Pause</button>
+          <button type="button" className={chip} onClick={() => rs(R.resumeRide(ride, t()), "resume", "Back at it.")}>Resume</button>
+          <button type="button" className={chip} onClick={() => rs(R.endRide(ride, t()), "end", "Ride ended.")}>End</button>
           <button type="button" className={chip} onClick={() => rs(R.logTrick(ride, { trick: "Trick", outcome: "stomped", nowIso: t(), advanceHit: true }))}>Stomped</button>
           <button type="button" className={chip} onClick={() => rs(R.logTrick(ride, { trick: "Trick", outcome: "washed_out", nowIso: t() }))}>Washed</button>
           <button type="button" className={chip} onClick={() => rs(R.undoLastTrick(ride))}>Undo</button>
-          <button type="button" className={chip} onClick={() => rs(R.markStash(ride, { id: `st-${Date.now()}`, label: `Stash ${ride.stashes.length + 1}`, zoneLabel: ride.parkLabel, nowIso: t() }))}>Mark stash</button>
+          <button type="button" className={chip} onClick={() => rs(R.markStash(ride, { id: `st-${Date.now()}`, label: `Stash ${ride.stashes.length + 1}`, zoneLabel: ride.parkLabel, nowIso: t() }), undefined, "Stash saved — park label only.")}>Mark stash</button>
         </div>
+        {note ? <p role="status" className="pt-1 text-sm" data-testid="ride-note">{note}</p> : null}
         {ride.run ? <p className="pt-1 text-sm">Next hit: {R.nextHit(ride.run, ride.completedHits)?.label ?? "done"}</p> : null}
         <p className="pt-1 text-xs text-muted">Stash pins save a park label only — no GPS.</p>
       </div>
@@ -286,17 +311,17 @@ function CampfirePanel() {
   const me = C.sid(riderCode || "me");
   const [text, setText] = useState("");
   const visible = M.visibleClips(media, me, [C.GB_CREW_ID]);
-  const r = (x: ReturnType<typeof M.react>) => { if (x.ok) { setMedia(x.value); setError(null); } else setError(`Campfire: ${x.error}`); };
+  const r = (x: ReturnType<typeof M.react>) => { if (x.ok) { setMedia(x.value); setError(null); } else setError(friendlyError("campfire", x.error)); };
   return (
     <div className="space-y-3">
       <div className="rounded-3xl bg-snow p-4 ring-1 ring-line" data-testid="campfire">
-        <div className="flex items-center justify-between"><h2 className="font-semibold">Campfire {campfireOpen ? "· open" : "· closed"}</h2><DemoBadge label="Crew-private demo" /></div>
-        <p className="text-xs text-muted">Upload: {CAMPFIRE_GUARDS.upload ? "on" : "off"} · Live share: off · Visibility: crew only</p>
+        <div className="flex items-center justify-between"><h2 className="font-semibold">Campfire {campfireOpen ? "· open" : "· closed"}</h2><DemoBadge label="Demo · crew-only" /></div>
+        <p className="text-xs text-muted" data-testid="campfire-guards">{CAMPFIRE_GUARDS.upload ? "Upload on" : UPLOAD_OFF_MSG} Live share: off. Only your crew sees clips you share; new clips start as “Only me”.</p>
         <div className="flex gap-2 pt-2">
           <button type="button" className={primary} onClick={() => setCampfireOpen(!campfireOpen)}>{campfireOpen ? "Close" : "Open"} Campfire</button>
-          <button type="button" className={chip} onClick={() => setMedia(mediaFromGbClips(clips, me, C.GB_CREW_ID))}>Load my clips ({clips.length})</button>
+          <button type="button" className={chip} disabled={clips.length === 0} onClick={() => setMedia(mediaFromGbClips(clips, me, C.GB_CREW_ID))}>Load my clips ({clips.length})</button>
         </div>
-        {visible.length === 0 ? <p className="pt-2 text-sm text-muted" data-testid="campfire-empty">No clips yet.</p> : null}
+        {visible.length === 0 ? <p className="pt-2 text-sm text-muted" data-testid="campfire-empty">No clips yet. Film a hit on a run, then tap “Load my clips”.</p> : null}
         <ul className="pt-2 text-sm">
           {media.clips.map((c) => (
             <li key={c.id} className="py-1" data-testid="clip-row">
@@ -310,8 +335,8 @@ function CampfirePanel() {
           ))}
         </ul>
         {media.clips[0] ? (
-          <form className="flex gap-2 pt-2" onSubmit={(e) => { e.preventDefault(); r(M.comment(media, { id: `cm-${Date.now()}`, clipId: media.clips[0]!.id, by: me, text, atIso: nowIso() })); setText(""); }}>
-            <input aria-label="comment" value={text} onChange={(e) => setText(e.target.value)} className="h-10 flex-1 rounded-xl px-3 ring-1 ring-line" />
+          <form className="flex gap-2 pt-2" onSubmit={(e) => { e.preventDefault(); if (!campfireOpen) return setError("Open Campfire to comment."); r(M.comment(media, { id: `cm-${Date.now()}`, clipId: media.clips[0]!.id, by: me, text, atIso: nowIso() })); setText(""); }}>
+            <input aria-label="comment" maxLength={280} placeholder={campfireOpen ? "Say something to the crew" : "Open Campfire to comment"} value={text} onChange={(e) => setText(e.target.value)} className="h-10 flex-1 rounded-xl px-3 ring-1 ring-line" />
             <button type="submit" className={chip}>Comment</button>
           </form>
         ) : null}
@@ -330,11 +355,11 @@ function SmartIdPanel() {
   const [scan, setScan] = useState("");
   const [view, setView] = useState<string | null>(null);
   const tag = tags[0];
-  const updTag = (r: ReturnType<typeof S.activateTag>) => { if (r.ok) { setTags([r.value, ...tags.slice(1)]); setError(null); } else setError(`Smart ID: ${r.error}`); };
+  const updTag = (r: ReturnType<typeof S.activateTag>) => { if (r.ok) { setTags([r.value, ...tags.slice(1)]); setError(null); } else setError(friendlyError("smartid", r.error)); };
   return (
     <div className="space-y-3">
       <div className="rounded-3xl bg-snow p-4 ring-1 ring-line" data-testid="smartid">
-        <div className="flex items-center justify-between"><h2 className="font-semibold">Smart ID</h2><DemoBadge label="Demo · NFC not available" /></div>
+        <div className="flex items-center justify-between"><h2 className="font-semibold">Smart ID</h2><DemoBadge label="Demo · no NFC" /></div>
         <p className="text-xs text-muted">NFC: {nfc.supported ? "on" : "not supported"} · Camera scan: {SMART_ID_FLAGS.camera ? "on" : "off"} · Network: off</p>
         {!tag ? (
           <button type="button" className={primary + " mt-2"} onClick={() => { const r = demoTag("demo-tag-01", "CLAIM-0001", nowIso()); if (r.ok) setTags([r.value.tag], [r.value.credential]); }}>Create demo tag</button>
@@ -343,7 +368,7 @@ function SmartIdPanel() {
             <p data-testid="tag-state">Tag {tag.publicSlug}: {tag.state}</p>
             <p className="text-xs">QR payload: {S.buildQrPayload(tag).ok ? `${S.QR_PREFIX}${tag.publicSlug}` : "invalid"}</p>
             {tag.state === "unclaimed" ? (
-              <form className="flex gap-2 pt-2" onSubmit={(e) => { e.preventDefault(); const r = S.claimTag(tag, creds[0]!, { code, stomperId: me }); if (r.ok) { setTags([r.value.tag], [r.value.credential]); setError(null); } else setError(`Smart ID: ${r.error}`); }}>
+              <form className="flex gap-2 pt-2" onSubmit={(e) => { e.preventDefault(); const cred = creds.find((c) => c.tagId === tag.tagId); if (!code.trim()) return setError("Enter the claim code first."); if (!cred) return setError(friendlyError("smartid", "not_found")); const r = S.claimTag(tag, cred, { code: code.trim(), stomperId: me }); if (r.ok) { setTags([r.value.tag], [r.value.credential]); setError(null); setCode(""); } else setError(friendlyError("smartid", r.error)); }}>
                 <input aria-label="claim code" value={code} onChange={(e) => setCode(e.target.value)} className="h-10 flex-1 rounded-xl px-3 ring-1 ring-line" />
                 <button type="submit" className={chip}>Claim</button>
               </form>
@@ -352,11 +377,12 @@ function SmartIdPanel() {
               <button type="button" className={chip} onClick={() => updTag(S.activateTag(tag, me, nowIso()))}>Activate</button>
               <button type="button" className={chip} onClick={() => updTag(S.suspendTag(tag, me))}>Suspend</button>
               <button type="button" className={chip} onClick={() => updTag(S.revokeTag(tag, me, nowIso()))}>Revoke</button>
-              <button type="button" className={chip} onClick={() => { void nfc.write("x").catch((e: Error) => setError(e.message)); }}>Write NFC</button>
+              <button type="button" className={chip} onClick={() => { void nfc.write("x").then(() => setError(NFC_WRITE_MSG), () => setError(NFC_WRITE_MSG)); }}>Write NFC (unavailable)</button>
+              {tag.state === "revoked" ? <button type="button" className={chip} onClick={() => setTags([], [])}>Remove tag</button> : null}
             </div>
           </div>
         )}
-        <form className="flex gap-2 pt-3" onSubmit={(e) => { e.preventDefault(); const v = S.simulateScan(scan, tags, { [me]: { displayName: riderName || "Rider", showCrewOnScan: false } }); setView(v.result === "rider" ? `Rider: ${v.displayName}` : v.result); }}>
+        <form className="flex gap-2 pt-3" onSubmit={(e) => { e.preventDefault(); const v = S.simulateScan(scan, tags, { [me]: { displayName: riderName || "Rider", showCrewOnScan: false } }); setView(scanLabel(v)); }}>
           <input aria-label="scan payload" value={scan} onChange={(e) => setScan(e.target.value)} placeholder="stomp://id/…" className="h-10 flex-1 rounded-xl px-3 ring-1 ring-line" />
           <button type="submit" className={chip}>Simulate scan</button>
         </form>

@@ -29,5 +29,19 @@ await step("GB Invite accept mirrors into Crew Tools", async () => {
   const n = await p.getByTestId("crew-row").count(); if (n !== 3) throw new Error("rows " + n);
 });
 await p.screenshot({ path: "test-results/e2e-invite-mirror.png" });
+// batch3: chrome nav back stack, natural phrases, ride double-start guard, tab persistence
+await step("chrome Crew tools from Airtime + Back", async () => {
+  await p.evaluate(() => { const s = JSON.parse(localStorage.getItem("stomp-line")); s.state.screen = "log"; localStorage.setItem("stomp-line", JSON.stringify(s)); });
+  await p.reload(); await p.waitForTimeout(1200); await p.getByTestId("chrome-crew-tools").click(); await p.getByTestId("woz-lab").waitFor();
+  await p.getByTestId("woz-back").click(); await p.waitForTimeout(200); if (await p.getByTestId("woz-lab").count()) throw new Error("back failed"); await p.getByTestId("chrome-crew-tools").waitFor();
+});
+await step("natural phrase quick chips", async () => {
+  await p.getByTestId("chrome-crew-tools").click(); await p.getByRole("tab", { name: "Session" }).click();
+  await p.getByRole("button", { name: "save this spot" }).click(); const t = await p.getByTestId("transcript").textContent(); if (!/no GPS|Start \(or resume\)/.test(t)) throw new Error(t);
+});
+await p.screenshot({ path: "test-results/e2e-session-quick.png" });
+await step("ride double-start guarded", async () => { await p.getByRole("tab", { name: "Ride" }).click(); const live = await p.getByRole("button", { name: "Start" }).isDisabled(); if (!live) { await p.getByRole("button", { name: "Start" }).click(); } if (!(await p.getByRole("button", { name: "Start" }).isDisabled())) throw new Error("start not disabled while live"); });
+await step("tab persists after reload", async () => { await p.reload(); await p.waitForTimeout(1200); await p.getByTestId("woz-lab").waitFor(); await p.getByTestId("run-builder").waitFor(); });
+await p.screenshot({ path: "test-results/e2e-ride.png" });
 console.log(log.join("\n")); console.log("pageerrors", errs); if (log.some((l) => l.startsWith("FAIL")) || errs.length) process.exitCode = 1;
 await b.close();

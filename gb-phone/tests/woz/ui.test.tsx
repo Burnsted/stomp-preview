@@ -73,7 +73,7 @@ describe("session panel", () => {
   it("shows wake off", () => { openTab("session"); expect(screen.getByTestId("wake-status").textContent).toMatch(/Wake word: off/); });
   it("start session starts ride and GB run", () => { openTab("session"); send("start session"); expect(useWoz.getState().ride.phase).toBe("active"); expect(useStomp.getState().running).toBe(true); expect(useStomp.getState().screen).toBe("woz"); });
   it("stomped it logs trick", () => { openTab("session"); send("start session"); send("stomped it"); expect(useWoz.getState().ride.tricks).toHaveLength(1); });
-  it("logging before start explains error", () => { openTab("session"); send("stomped it"); expect(screen.getByTestId("transcript").textContent).toMatch(/Can't do that now/); });
+  it("logging before start explains error", () => { openTab("session"); send("stomped it"); expect(screen.getByTestId("transcript").textContent).toMatch(/Start \(or resume\) the ride first/); });
   it("end session asks for confirmation", () => { openTab("session"); send("start session"); send("end session"); expect(screen.getByTestId("pending")).toBeTruthy(); send("yes"); expect(useWoz.getState().ride.phase).toBe("ended"); });
   it("mark stash adds GB stash", () => { openTab("session"); send("start session"); send("mark stash"); expect(useStomp.getState().stashes).toHaveLength(1); expect(useWoz.getState().ride.stashes).toHaveLength(1); });
   it("unknown phrase replies", () => { openTab("session"); send("make me a sandwich"); expect(screen.getByTestId("transcript").textContent).toMatch(/help/); });
@@ -89,11 +89,11 @@ describe("ride panel", () => {
     fireEvent.click(screen.getByRole("button", { name: "up Rail" }));
     expect(useWoz.getState().runs[0]!.hits.map((h) => h.label)).toEqual(["Rail", "Kicker"]);
   });
-  it("empty run name shows error", () => { openTab("ride"); click("Create"); expect(screen.getByRole("alert").textContent).toMatch(/empty_name/); });
+  it("empty run name shows error", () => { openTab("ride"); click("Create"); expect(screen.getByRole("alert").textContent).toMatch(/Give it a name first/); });
   it("empty hit label shows error", () => { openTab("ride"); type("run name", "L"); click("Create"); click("Add hit"); expect(screen.getByRole("alert")).toBeTruthy(); });
   it("from GB session template", () => { openTab("ride"); fireEvent.click(screen.getAllByRole("button", { name: /^From/ })[0]!); expect(useWoz.getState().runs[0]!.hits.length).toBeGreaterThan(0); });
   it("ride lifecycle buttons", () => { openTab("ride"); click("Start"); click("Stomped"); click("Washed"); click("Mark stash"); expect(screen.getByTestId("ride-summary").textContent).toBe("Stomped 1 · Washed 1 · Stashes 1"); });
-  it("pause before start errors", () => { openTab("ride"); click("Pause"); expect(screen.getByRole("alert").textContent).toMatch(/invalid_transition/); });
+  it("pause before start errors", () => { openTab("ride"); click("Pause"); expect(screen.getByRole("alert").textContent).toMatch(/Only a running ride can be paused/); });
   it("remove hit", () => { openTab("ride"); type("run name", "L"); click("Create"); type("hit label", "Box"); click("Add hit"); fireEvent.click(screen.getByRole("button", { name: "remove Box" })); expect(useWoz.getState().runs[0]!.hits).toHaveLength(0); });
   it("use for ride attaches run", () => { openTab("ride"); type("run name", "L"); click("Create"); type("hit label", "Box"); click("Add hit"); click("Use for ride"); expect(useWoz.getState().ride.run?.name).toBe("L"); });
 });
@@ -105,7 +105,7 @@ describe("campfire panel", () => {
   it("react disabled while closed", () => { openTab("campfire"); click(/Load my clips/); expect((screen.getByRole("button", { name: "🔥" }) as HTMLButtonElement).disabled).toBe(true); });
   it("open + react", () => { openTab("campfire"); click(/Load my clips/); click("Open Campfire"); click("🔥"); expect(useWoz.getState().media.reactions).toHaveLength(1); });
   it("share to crew toggles", () => { openTab("campfire"); click(/Load my clips/); click("Share to crew"); expect(useWoz.getState().media.clips[0]!.share).toBe("crew"); });
-  it("comment", () => { openTab("campfire"); click(/Load my clips/); type("comment", "send it"); click("Comment"); expect(screen.getByTestId("comment-count").textContent).toBe("1 comments"); });
+  it("comment", () => { openTab("campfire"); click("Open Campfire"); click(/Load my clips/); type("comment", "send it"); click("Comment"); expect(screen.getByTestId("comment-count").textContent).toBe("1 comments"); });
   it("empty comment rejected with error", () => { openTab("campfire"); click(/Load my clips/); click("Comment"); expect(screen.getByRole("alert")).toBeTruthy(); });
 });
 
@@ -116,10 +116,10 @@ describe("smart id panel", () => {
     expect(screen.getByTestId("tag-state").textContent).toMatch(/active/);
     type("scan payload", "stomp://id/demo-tag-01"); click("Simulate scan"); expect(screen.getByTestId("scan-view").textContent).toBe("Rider: Ted");
   });
-  it("bad claim code errors", () => { openTab("smartid"); click("Create demo tag"); type("claim code", "WRONG"); click("Claim"); expect(screen.getByRole("alert").textContent).toMatch(/bad_code/); });
-  it("activate before claim errors", () => { openTab("smartid"); click("Create demo tag"); click("Activate"); expect(screen.getByRole("alert").textContent).toMatch(/not_owner/); });
-  it("scan bad payload → unknown_tag", () => { openTab("smartid"); type("scan payload", "https://x"); click("Simulate scan"); expect(screen.getByTestId("scan-view").textContent).toBe("unknown_tag"); });
-  it("Write NFC rejects (stub)", async () => { openTab("smartid"); click("Create demo tag"); click("Write NFC"); expect(await screen.findByRole("alert")).toBeTruthy(); });
+  it("bad claim code errors", () => { openTab("smartid"); click("Create demo tag"); type("claim code", "WRONG"); click("Claim"); expect(screen.getByRole("alert").textContent).toMatch(/claim code doesn't match/); });
+  it("activate before claim errors", () => { openTab("smartid"); click("Create demo tag"); click("Activate"); expect(screen.getByRole("alert").textContent).toMatch(/Only the tag's owner/); });
+  it("scan bad payload → unknown_tag", () => { openTab("smartid"); type("scan payload", "https://x"); click("Simulate scan"); expect(screen.getByTestId("scan-view").textContent).toMatch(/Unknown tag/); });
+  it("Write NFC rejects (stub)", async () => { openTab("smartid"); click("Create demo tag"); click(/Write NFC/); expect((await screen.findByRole("alert")).textContent).toMatch(/nothing was written/); });
 });
 
 describe("Invite mirror (UI)", () => {

@@ -1,5 +1,6 @@
 import { ChevronLeft } from "lucide-react";
 import { useStomp } from "@/lib/stomp/store";
+import { useWoz } from "@/lib/stomp/woz-bridge/woz-store";
 
 export function BoltBadge({ className = "size-14" }: { className?: string }) {
   return (
@@ -121,6 +122,7 @@ export function BackBar({ title }: { title: string }) {
         Home
       </button>
       <h1 className="font-display text-4xl tracking-wide">{title}</h1>
+      <CrewToolsLink className="ml-auto" />
     </header>
   );
 }
@@ -144,5 +146,21 @@ export function Pin({
         {label}
       </span>
     </div>
+  );
+}
+
+/** Consistent chrome entry to Woz Crew Tools; remembers where it was opened from for Back. */
+export function CrewToolsLink({ className = "" }: { className?: string }) {
+  const setScreen = useStomp((state) => state.setScreen);
+  const openFrom = useWoz((state) => state.openFrom);
+  return (
+    <button
+      type="button"
+      data-testid="chrome-crew-tools"
+      onClick={() => { openFrom(useWoz.getState().tab, useStomp.getState().screen); setScreen("woz"); }}
+      className={"flex h-11 items-center rounded-full bg-snow px-3 text-xs font-semibold text-ink ring-1 ring-line " + className}
+    >
+      Crew tools
+    </button>
   );
 }

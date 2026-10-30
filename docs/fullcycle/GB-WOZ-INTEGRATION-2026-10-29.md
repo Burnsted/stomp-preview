@@ -16,6 +16,11 @@ Branch `woz/integrate-gb-2026-10-29` · Draft PR #5 · DRAFT ONLY — no merge, 
 | Today session (`session.tsx`) | Voice router text path (`session/voice-router`) | "Type to Session (text demo)" |
 | Run (`run.tsx`) | Ride / Run Builder / stash / JSON (`ride/ride`, `core/json-store`) | "Run Builder · ride log · stash" |
 
+| Any More screen (`BackBar`) | Crew Tools (last-used tab) | "Crew tools" chrome link (`data-testid=chrome-crew-tools`) |
+| Home (`home.tsx`) | Crew tab | "Crew tools" chip |
+
+Back stack: entries call `useWoz.openFrom(tab, currentScreen)`; Crew Tools shows **‹ Back** to that screen (Home button when opened cold / after reload). Active tab persists (`stomp-woz:ui.tab`).
+
 ## Invite
 `greet.tsx` is untouched (sha256 `0811babf…96fc2` before and after). The Crew tab's "Invite (Crew Link)" button routes to GB's existing `crew` screen (`CrewLink` from greet.tsx). `createGbInviteUnlinkAdapter` reads GB's crew list read-only; unlinks are a local overlay (`stomp-woz:crew.unlinked`) and never rewrite GB crew.
 
@@ -27,3 +32,6 @@ Wake listening off, no background wake, no headset integrations (text path only)
 - `cd gb-phone && npm run typecheck && npm run typecheck:woz && npm run test:woz`
 - `cd gb-phone && npm run build:dev` or `node scripts/with-app-env.mjs vite build` (full `npm run build` also runs db:migrate)
 - Browser smoke: `npm run preview` then `CHROME_PATH=… node scripts/woz-e2e.mjs`
+
+## Batch 3 status (parent 9bd0410)
+Nav back stack + chrome entry, ~60 natural Session phrases (alias layer over batch1 router; confirmations preserved), Ride edge cases (empty builder, double-start guard, corrupt-stash recovery), Campfire/Smart ID copy (`woz-bridge/copy.ts`), cross-tab persistence + privacy regression tests. Counts: woz vitest 347, batch1 319, GB npm test green, e2e 13/13. Details: `docs/integrate/PATH1-INTEGRATE.md` § Batch 3.

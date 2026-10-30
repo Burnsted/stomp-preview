@@ -6,7 +6,7 @@ import { useWoz } from "@/lib/stomp/woz-bridge/woz-store";
 export function Home() {
   const setScreen = useStomp((state) => state.setScreen);
   const startRun = useStomp((state) => state.startRun);
-  const setWozTab = useWoz((state) => state.setTab);
+  const openWoz = useWoz((state) => state.openFrom);
 
   return (
     <div>
@@ -76,7 +76,7 @@ export function Home() {
           <Chip tone="snow" onClick={() => setScreen("stash")}>
             Stash pins
           </Chip>
-          <Chip tone="snow" onClick={() => { setWozTab("crew"); setScreen("woz"); }}>
+          <Chip tone="snow" onClick={() => { openWoz("crew", "home"); setScreen("woz"); }}>
             Crew tools
           </Chip>
         </div>
