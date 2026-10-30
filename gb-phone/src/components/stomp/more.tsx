@@ -390,74 +390,75 @@ export function Playlist() {
     }
   }
 
+  const airSec = landings[0]?.seconds ?? 0;
+
   return (
     <div className="px-1 pb-10">
       <BackBar title="Playlist" />
-      <div className="flex gap-2 px-2 pt-3">
-        <div className="min-w-0 flex-1 px-2">
-          <p className="text-xs font-bold tracking-widest text-pink">
-            {mountain ? "MOUNTAIN PLAYLIST" : template.mood}
-          </p>
-          <p className="font-display text-3xl tracking-wide leading-none">
-            {mountain ? mountain.title : template.name}
-          </p>
-          <p className="mt-1 text-pretty text-sm text-muted">
-            {mountain
-              ? `${mountain.blurb} Beat strip (right) syncs demo song timing to mountain sections + tricks.`
-              : `For ${template.name}. Your uploads play here. Pick a mountain for a beat-synced run.`}
-          </p>
-          {mountain ? (
-            <ul data-testid="playlist-beat-legend" className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
-              <li className="rounded-full bg-teal/35 px-2.5 py-1 text-ink">Section</li>
-              <li className="rounded-full bg-pink/25 px-2.5 py-1 text-pink">Beat</li>
-              <li className="rounded-full bg-lime px-2.5 py-1 text-ink">Trick</li>
-            </ul>
-          ) : null}
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <a
-              href={search}
-              target="_blank"
-              rel="noreferrer"
-              className="flex h-12 items-center justify-center rounded-full bg-ink font-semibold text-snow"
-            >
-              Open in Spotify
-            </a>
-            <button
-              type="button"
-              data-testid="playlist-share"
-              onClick={() => void sharePlaylist()}
-              className="flex h-12 items-center justify-center gap-2 rounded-full bg-snow font-semibold ring-1 ring-line"
-            >
-              <Share2 className="size-4" aria-hidden="true" />
-              Share
-            </button>
-          </div>
-          {shareNote ? <p className="mt-2 text-sm font-semibold text-teal">{shareNote}</p> : null}
-          <MusicDeck />
-          <p className="pt-5 text-pretty text-muted">Air, callouts, and clips from this line, newest first.</p>
-          {rows.length === 0 ? <p data-testid="playlist-empty" className="pt-3 text-pretty text-muted">{PLAYLIST_EMPTY}</p> : null}
-          <ul className="mt-4 flex flex-col gap-3">
-            {rows.map((row) => (
-              <li key={row.id} className="flex items-center gap-3 rounded-3xl bg-snow p-3 ring-1 ring-line">
-                {row.image ? (
-                  <img src={row.image} alt="" className="size-16 rounded-2xl object-cover" />
-                ) : (
-                  <span className="flex size-16 items-center justify-center rounded-2xl bg-ink font-display text-lg text-lime">
-                    STOMP
-                  </span>
-                )}
-                <div className="min-w-0">
-                  <p className="truncate font-semibold">{row.title}</p>
-                  <p className="truncate text-sm text-muted">{row.detail}</p>
-                  <p className="text-sm text-muted">{formatAgo(row.at, now)}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
+      <div className="px-4 pt-3">
+        <p className="text-xs font-bold tracking-widest text-pink">
+          {mountain ? "MOUNTAIN PLAYLIST" : template.mood}
+        </p>
+        <p className="font-display text-3xl tracking-wide leading-none">
+          {mountain ? mountain.title : template.name}
+        </p>
+        <p className="mt-1 text-pretty text-sm text-muted">
+          {mountain
+            ? `${mountain.blurb} Ride Replay waveform syncs demo song timing to mountain sections + tricks.`
+            : `For ${template.name}. Your uploads play here. Pick a mountain for a beat-synced run.`}
+        </p>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <a
+            href={search}
+            target="_blank"
+            rel="noreferrer"
+            className="flex h-12 items-center justify-center rounded-full bg-ink font-semibold text-snow"
+          >
+            Open in Spotify
+          </a>
+          <button
+            type="button"
+            data-testid="playlist-share"
+            onClick={() => void sharePlaylist()}
+            className="flex h-12 items-center justify-center gap-2 rounded-full bg-snow font-semibold ring-1 ring-line"
+          >
+            <Share2 className="size-4" aria-hidden="true" />
+            Share
+          </button>
         </div>
-        {mountain ? (
-          <BeatStrip playlist={mountain} density="full" className="sticky top-4 self-start h-[min(32rem,70dvh)]" />
+        {shareNote ? <p className="mt-2 text-sm font-semibold text-teal">{shareNote}</p> : null}
+      </div>
+      {mountain ? (
+        <div className="mt-4 px-3">
+          <BeatStrip playlist={mountain} density="full" airSec={airSec} />
+        </div>
+      ) : null}
+      <div className="px-2">
+        <MusicDeck />
+        <p className="px-3 pt-5 text-pretty text-muted">Air, callouts, and clips from this line, newest first.</p>
+        {rows.length === 0 ? (
+          <p data-testid="playlist-empty" className="px-3 pt-3 text-pretty text-muted">
+            {PLAYLIST_EMPTY}
+          </p>
         ) : null}
+        <ul className="mt-4 flex flex-col gap-3 px-2">
+          {rows.map((row) => (
+            <li key={row.id} className="flex items-center gap-3 rounded-3xl bg-snow p-3 ring-1 ring-line">
+              {row.image ? (
+                <img src={row.image} alt="" className="size-16 rounded-2xl object-cover" />
+              ) : (
+                <span className="flex size-16 items-center justify-center rounded-2xl bg-ink font-display text-lg text-lime">
+                  STOMP
+                </span>
+              )}
+              <div className="min-w-0">
+                <p className="truncate font-semibold">{row.title}</p>
+                <p className="truncate text-sm text-muted">{row.detail}</p>
+                <p className="text-sm text-muted">{formatAgo(row.at, now)}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );

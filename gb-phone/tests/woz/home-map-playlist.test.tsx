@@ -178,7 +178,7 @@ describe("Greet home UX smoke", () => {
     expect(screen.getByTestId("home-plans-list")).toBeTruthy();
   });
 
-  it("picking a resort surfaces mountain playlist link + Concept B labeled beat column on map", () => {
+  it("picking a resort surfaces mountain playlist link + Ride Replay waveform on map", () => {
     render(<StompApp />);
     fireEvent.click(screen.getByTestId("home-map-state-co"));
     fireEvent.click(screen.getByRole("button", { name: "Show resorts" }));
@@ -186,16 +186,20 @@ describe("Greet home UX smoke", () => {
     expect(screen.getByTestId("home-map-mountain-playlist").textContent).toMatch(/Beaver Creek lap mix/);
     expect(screen.getByTestId("home-playlist-title").textContent).toMatch(/Beaver Creek lap mix/);
     const strip = screen.getByTestId("beat-strip");
-    expect(strip.getAttribute("data-concept")).toBe("b-labeled-column");
-    expect(strip.textContent).toMatch(/BEAT/);
-    expect(strip.textContent).toMatch(/DEMO/);
-    expect(strip.textContent).toMatch(/Lift load|Kick|50-50|Village/);
+    expect(strip.getAttribute("data-concept")).toBe("ride-replay-waveform");
+    expect(strip.textContent).toMatch(/RIDE REPLAY|Demo [Rr]un/);
+    expect(strip.textContent).toMatch(/Airbalance/);
+    expect(strip.textContent).toMatch(/Beat-Markers/);
+    expect(strip.textContent).toMatch(/Photo Ops/);
+    expect(strip.textContent).toMatch(/Auto-Ducking/);
+    expect(strip.textContent).toMatch(/Flat Zones/);
     expect(screen.getByTestId("beat-strip-playhead")).toBeTruthy();
     expect(screen.getByTestId("beat-strip-time")).toBeTruthy();
+    expect(screen.getByTestId("beat-strip-controls")).toBeTruthy();
     expect(screen.queryByTestId("home-mountain-tracks")).toBeNull();
   });
 
-  it("mountain playlist opens Playlist with Concept B labeled beat column + legend", () => {
+  it("mountain playlist opens Playlist with horizontal Ride Replay waveform + controls", () => {
     render(<StompApp />);
     fireEvent.click(screen.getByTestId("home-map-state-co"));
     fireEvent.click(screen.getByRole("button", { name: "Show resorts" }));
@@ -203,11 +207,11 @@ describe("Greet home UX smoke", () => {
     fireEvent.click(screen.getByTestId("home-map-mountain-playlist"));
     expect(useStomp.getState().screen).toBe("playlist");
     const strip = screen.getByTestId("beat-strip");
-    expect(strip.getAttribute("data-concept")).toBe("b-labeled-column");
-    expect(strip.textContent).toMatch(/Orient/);
-    expect(strip.textContent).toMatch(/Straight air/);
-    expect(strip.textContent).toMatch(/Village/);
-    expect(screen.getByTestId("playlist-beat-legend").textContent).toMatch(/Section.*Beat.*Trick/);
+    expect(strip.getAttribute("data-concept")).toBe("ride-replay-waveform");
+    expect(strip.textContent).toMatch(/Rhythm-Synced Audio Feed/);
+    expect(screen.getByTestId("beat-ctrl-markers")).toBeTruthy();
+    expect(screen.getByTestId("beat-ctrl-photo")).toBeTruthy();
+    expect(screen.queryByTestId("playlist-beat-legend")).toBeNull();
     expect(screen.queryByTestId("playlist-mountain-songs")).toBeNull();
   });
 });
@@ -232,7 +236,7 @@ describe("mountain playlist beat data", () => {
     expect(pl.beats.find((b) => b.kind === "trick")!.label).toMatch(/50-50|Backside/);
   });
 
-  it("Vail Concept B labels match Owner sample column", () => {
+  it("Vail demo marks stay chronological for Ride Replay ticks", () => {
     const pl = mountainPlaylistFor("vail")!;
     expect(pl.beats.map((b) => b.label)).toEqual([
       "Orient",
