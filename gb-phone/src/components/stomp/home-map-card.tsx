@@ -22,7 +22,7 @@ function TrailPreview({ name }: { name: string }) {
   return (
     <div
       data-testid="home-trail-preview"
-      className="relative mt-0 h-36 overflow-hidden rounded-2xl bg-ink"
+      className="relative mt-0 h-full min-h-[18rem] overflow-hidden rounded-2xl bg-ink"
       aria-label={`${name} trail map preview`}
     >
       <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 70" aria-hidden="true">
@@ -227,12 +227,14 @@ export function HomeMapCard() {
 
       {level === "trail" && resort ? (
         <div data-testid="home-map-trail">
-          <div className="mt-3">
-            <TrailPreview name={resort.name} />
+          <div className="mt-3 flex items-stretch gap-2">
+            <div className="min-w-0 flex-1">
+              <TrailPreview name={resort.name} />
+            </div>
+            {mountainPlaylist ? (
+              <BeatStrip playlist={mountainPlaylist} density="trail" className="min-h-[18rem] self-stretch" />
+            ) : null}
           </div>
-          {mountainPlaylist ? (
-            <BeatStrip playlist={mountainPlaylist} density="trail" className="mt-3" />
-          ) : null}
           {mountainPlaylist ? (
             <button
               type="button"
@@ -244,7 +246,7 @@ export function HomeMapCard() {
               <span className="min-w-0">
                 <span className="block text-xs font-bold tracking-widest opacity-90">MOUNTAIN PLAYLIST</span>
                 <span className="block truncate font-semibold">{mountainPlaylist.title}</span>
-                <span className="block truncate text-xs opacity-90">{mountainPlaylist.mood} · ride replay sync</span>
+                <span className="block truncate text-xs opacity-90">{mountainPlaylist.mood} · beat strip sync</span>
               </span>
             </button>
           ) : null}
