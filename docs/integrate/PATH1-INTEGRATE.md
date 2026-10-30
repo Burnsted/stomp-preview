@@ -22,3 +22,6 @@
 - **Persistence/privacy**: active tab persisted (`stomp-woz:ui.tab`, validated); Smart ID tags/creds validated on hydrate; old media shapes back-filled. Tests confirm transcript and Campfire-open are **not** persisted, `publicProfile` forced false, no coordinates in any stored value, resetAll leaves GB crew intact.
 - **Tests**: woz vitest 239 → **347** (new `tests/woz/batch3.test.tsx`, 108 cases); batch1 **319**; GB `npm test` green; e2e **13/13** (4 new steps).
 - **CI**: workflow patch still staged only (token lacks `workflow` scope) — not a code blocker.
+
+## Batch 5 (2026-10-30) — polish
+Session empty/clear-confirm/Esc-cancel/undo detail; Ride banners + phase-gated controls + empty copy (no GPS); Smart ID safer claim + revoke confirm, consistent `DEMO_LABEL` badges (no NFC writes); Crew tools pill over greet rendered from app.tsx (greet.tsx unchanged). woz 458, batch1 319, e2e 21/21. Details: `docs/batch-5/BATCH5-POLISH.md`.

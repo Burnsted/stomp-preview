@@ -82,6 +82,15 @@ export function Home() {
         </div>
         <button
           type="button"
+          data-testid="home-crew-tools-card"
+          onClick={() => { openWoz("crew", "home"); setScreen("woz"); }}
+          className="mt-4 w-full rounded-3xl bg-snow p-3 text-left text-sm ring-1 ring-line"
+        >
+          <span className="font-semibold">Crew tools</span>
+          <span className="block text-xs text-muted">Unlink · Session text · Run Builder · Campfire · Smart ID — demo, stays on this phone</span>
+        </button>
+        <button
+          type="button"
           onClick={() => setScreen("playlist")}
           className="mt-3 w-full text-center text-sm font-medium text-muted"
         >

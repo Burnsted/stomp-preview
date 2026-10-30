@@ -56,3 +56,24 @@ export function scanLabel(v: { result: string; displayName?: string }): string {
     default: return `Scan result: ${v.result}`;
   }
 }
+
+/** Batch 5: consistent demo badge labels + empty/banner copy across Crew Tools panels. */
+export const DEMO_LABEL = {
+  lab: "Demo · local only",
+  session: "Demo · text only",
+  ride: "Demo · saved on this phone",
+  campfire: "Demo · crew-only",
+  smartid: "Demo · no NFC",
+} as const;
+export const SESSION_EMPTY = "Nothing said yet — type a command or tap a phrase below. Wake word and background listening stay off.";
+export const RUNS_EMPTY = "No runs yet. Name one above, or start from one of your GB sessions — runs stay on this phone.";
+export const HITS_EMPTY = "No hits yet — add one below (e.g. “Down box”).";
+export function rideBanner(phase: string, runName?: string, nextHit?: string | null): string | null {
+  if (phase === "active") return `Ride in progress${runName ? ` · ${runName}` : ""}${nextHit ? ` · next: ${nextHit}` : ""} — no GPS, park label only.`;
+  if (phase === "paused") return `Ride paused${runName ? ` · ${runName}` : ""} — Resume to keep logging, or End to wrap up.`;
+  return null;
+}
+export const REVOKE_CONFIRM = "Revoke this tag? Anyone scanning it will see “revoked”. This can’t be undone — you’d create a new demo tag.";
+export const CLAIM_EMPTY = "Enter the claim code first.";
+export const CLAIM_HINT = "Claim codes look like CLAIM-0001. Nothing is written to the physical tag.";
+export function normalizeClaimCode(raw: string): string { return raw.trim().toUpperCase().replace(/\s+/g, ""); }

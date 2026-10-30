@@ -52,6 +52,8 @@ export interface WozState {
   setPrivacy: (p: RiderPrivacySettings) => void;
   setRouter: (r: RouterState) => void;
   say: (by: "you" | "session", text: string) => void;
+  /** Clears the on-screen Session transcript only (ride/tricks untouched). */
+  clearTranscript: () => void;
   setRide: (s: RideSession) => void;
   setRuns: (r: RunPlan[]) => void;
   setMedia: (m: MediaState) => void;
@@ -106,6 +108,7 @@ export const useWoz = create<WozState>()((set, get) => ({
   setPrivacy: (privacy) => { const p = { ...privacy, publicProfile: false as const }; backing.save(KEYS.privacy, p, now()); set({ privacy: p }); },
   setRouter: (router) => set({ router }),
   say: (by, text) => set({ transcript: [...get().transcript, { by, text }].slice(-30) }),
+  clearTranscript: () => set({ transcript: [] }),
   setRide: (ride) => { saveRide(backing, ride, now()); set({ ride }); },
   setRuns: (runs) => { saveRuns(backing, runs, now()); set({ runs }); },
   setMedia: (media) => { backing.save(MEDIA_KEY, media, now()); set({ media }); },

@@ -16,7 +16,7 @@ import { routeTyped, SESSION_BRIDGE_FLAGS, helpText, type GbAction } from "@/lib
 import { ride as R, runFromGbSession, type FeatureKind } from "@/lib/stomp/woz-bridge/ride";
 import { media as M, mediaFromGbClips, CAMPFIRE_GUARDS } from "@/lib/stomp/woz-bridge/campfire";
 import { smartId as S, nfc, SMART_ID_FLAGS, demoTag } from "@/lib/stomp/woz-bridge/smartid";
-import { friendlyError, scanLabel, NFC_WRITE_MSG, UPLOAD_OFF_MSG } from "@/lib/stomp/woz-bridge/copy";
+import { friendlyError, scanLabel, NFC_WRITE_MSG, UPLOAD_OFF_MSG, DEMO_LABEL, SESSION_EMPTY, RUNS_EMPTY, HITS_EMPTY, rideBanner, REVOKE_CONFIRM, CLAIM_EMPTY, CLAIM_HINT, normalizeClaimCode } from "@/lib/stomp/woz-bridge/copy";
 import { MAX_UTTERANCE } from "@/lib/stomp/woz-bridge/session";
 
 const nowIso = () => new Date().toISOString();
@@ -25,7 +25,7 @@ const focus = "focus-visible:outline focus-visible:outline-2 focus-visible:outli
 const chip = btn + focus + "bg-snow ring-1 ring-line disabled:opacity-40";
 const primary = btn + focus + "bg-ink text-snow disabled:opacity-40";
 
-export function DemoBadge({ label = "Demo · local only" }: { label?: string }) {
+export function DemoBadge({ label = DEMO_LABEL.lab }: { label?: string }) {
   return <span data-testid="demo-badge" className="rounded-full bg-lime px-2 py-0.5 text-xs font-bold">{label}</span>;
 }
 
@@ -80,6 +80,15 @@ export function WozLab() {
       <DataPanel />
     </div>
   );
+}
+
+/** Live-ride banner shared by Session and Ride panels (no GPS). */
+function RideBanner() {
+  const ride = useWoz((s) => s.ride);
+  const next = ride.run ? R.nextHit(ride.run, ride.completedHits)?.label ?? null : null;
+  const text = rideBanner(ride.phase, ride.run?.name, next);
+  if (!text) return null;
+  return <div role="status" data-testid="ride-banner" data-phase={ride.phase} className={"rounded-2xl px-3 py-2 text-sm font-semibold ring-1 ring-line " + (ride.phase === "active" ? "bg-lime" : "bg-snow")}>{text}</div>;
 }
 
 function InviteActivity() {
@@ -187,7 +196,8 @@ function CrewPanel() {
 
 const QUICK = ["start session", "landed it", "bailed", "undo", "save this spot", "whats next", "light the campfire", "im done"];
 function SessionPanel() {
-  const { router, setRouter, transcript, say, ride, setRide, campfireOpen, setCampfireOpen } = useWoz();
+  const { router, setRouter, transcript, say, clearTranscript, ride, setRide, campfireOpen, setCampfireOpen } = useWoz();
+  const [confirmClear, setConfirmClear] = useState(false);
   const startRun = useStomp((s) => s.startRun);
   const endRun = useStomp((s) => s.endRun);
   const addStash = useStomp((s) => s.addStash);
@@ -204,7 +214,7 @@ function SessionPanel() {
       case "pauseRide": return step(R.pauseRide(ride, t), "pause") ?? "Paused.";
       case "resumeRide": return step(R.resumeRide(ride, t), "resume") ?? "Back at it.";
       case "logTrick": return step(R.logTrick(ride, { trick: "Trick", outcome: a.outcome, nowIso: t, advanceHit: true })) ?? (a.outcome === "stomped" ? "Stomped — logged." : "Washed out — logged.");
-      case "undoTrick": return step(R.undoLastTrick(ride)) ?? "Last trick removed.";
+      case "undoTrick": { const last = ride.tricks[ride.tricks.length - 1]; return step(R.undoLastTrick(ride)) ?? (last ? `Undid last trick (${last.outcome === "stomped" ? "stomped" : "washed out"}). ${ride.tricks.length - 1} left.` : "Last trick removed."); }
       case "nextHit": { const h = ride.run ? R.nextHit(ride.run, ride.completedHits) : null; return h ? `Next: ${h.label}` : "No planned hit."; }
       case "markStash": { const m = step(R.markStash(ride, { id: `st-${Date.now()}`, label: `Stash ${ride.stashes.length + 1}`, zoneLabel: ride.parkLabel, nowIso: t })); if (!m) { addStash("Voice stash", "Saved by typed Session command"); return "Stash saved (park label only, no GPS)."; } return m; }
       case "listStashes": return ride.stashes.length ? ride.stashes.map((s) => s.label).join(", ") : "No stashes yet.";
@@ -226,11 +236,12 @@ function SessionPanel() {
   };
   return (
     <div className="space-y-3">
+      <RideBanner />
       <div className="rounded-3xl bg-snow p-4 ring-1 ring-line">
-        <div className="flex items-center justify-between"><h2 className="font-semibold">Type to Session</h2><DemoBadge label="Text only" /></div>
+        <div className="flex items-center justify-between"><h2 className="font-semibold">Type to Session</h2><DemoBadge label={DEMO_LABEL.session} /></div>
         <p className="text-xs text-muted" data-testid="wake-status">Wake word: {SESSION_BRIDGE_FLAGS.wakeListening ? "on" : "off"} · Background listening: off · Headsets: not connected</p>
         <form className="flex gap-2 pt-2" onSubmit={(e) => { e.preventDefault(); submit(); }}>
-          <input aria-label="session command" maxLength={MAX_UTTERANCE} value={text} onChange={(e) => setText(e.target.value)} placeholder="stomped it" className="h-10 flex-1 rounded-xl px-3 ring-1 ring-line" />
+          <input aria-label="session command" maxLength={MAX_UTTERANCE} value={text} onKeyDown={(e) => { if (e.key === "Escape" && router.pending) { e.preventDefault(); submit("cancel"); } }} onChange={(e) => setText(e.target.value)} placeholder="stomped it" className="h-10 flex-1 rounded-xl px-3 ring-1 ring-line" />
           <button type="submit" className={primary}>Send</button>
         </form>
         {hint ? <p role="status" className="pt-1 text-sm text-pink" data-testid="session-hint">{hint}</p> : null}
@@ -238,13 +249,23 @@ function SessionPanel() {
           {QUICK.map((q) => <button key={q} type="button" data-testid="quick-phrase" className={chip} onClick={() => submit(q)}>{q}</button>)}
         </div>
         {router.pending ? (
-          <div className="pt-1 text-sm" data-testid="pending">Confirm: {router.pending.summary}?
-            <span className="ml-2 inline-flex gap-1"><button type="button" className={chip} onClick={() => submit("yes")}>Yes</button><button type="button" className={chip} onClick={() => submit("cancel")}>Cancel</button></span>
+          <div className="mt-2 rounded-2xl bg-lime/40 p-2 text-sm ring-1 ring-line" data-testid="pending" role="group" aria-label="Confirm command">
+            <p>Confirm: <b>{router.pending.summary}</b>?</p>
+            <p className="text-xs text-muted">Say or type “yes” to go ahead, “cancel” (or press Esc) to drop it. Nothing happens until you confirm.</p>
+            <span className="mt-1 inline-flex gap-1"><button type="button" className={primary} onClick={() => submit("yes")}>Yes</button><button type="button" className={chip} onClick={() => submit("cancel")}>Cancel</button></span>
           </div>
         ) : null}
-        <ul className="pt-2 text-sm" data-testid="transcript">
+        {transcript.length === 0 ? <p className="pt-2 text-sm text-muted" data-testid="transcript-empty">{SESSION_EMPTY}</p> : null}
+        <ul className="pt-2 text-sm" data-testid="transcript" aria-live="polite">
           {transcript.map((l, i) => <li key={i}><b>{l.by === "you" ? "You" : "Session"}:</b> {l.text}</li>)}
         </ul>
+        {transcript.length ? (confirmClear ? (
+          <div className="flex flex-wrap items-center gap-2 pt-2 text-sm" data-testid="transcript-clear-confirm" role="group" aria-label="Confirm clear transcript">
+            <span>Clear {transcript.length} line{transcript.length === 1 ? "" : "s"}? Your ride and tricks stay.</span>
+            <button type="button" className={primary} onClick={() => { clearTranscript(); setConfirmClear(false); }}>Yes, clear</button>
+            <button type="button" className={chip} onClick={() => setConfirmClear(false)}>Keep</button>
+          </div>
+        ) : <button type="button" data-testid="transcript-clear" aria-label="Clear transcript" className={chip + " mt-2"} onClick={() => setConfirmClear(true)}>Clear transcript</button>) : null}
       </div>
       <p className="px-1 text-sm" data-testid="ride-phase">Ride: {ride.phase} · tricks {ride.tricks.length}</p>
       <details className="px-1 text-xs text-muted"><summary>Commands</summary><ul>{helpText().map((h) => <li key={h}>{h}</li>)}</ul></details>
@@ -268,9 +289,10 @@ function RidePanel() {
   const sum = R.rideSummary(ride);
   return (
     <div className="space-y-3">
+      <RideBanner />
       <div className="rounded-3xl bg-snow p-4 ring-1 ring-line" data-testid="run-builder">
-        <div className="flex items-center justify-between"><h2 className="font-semibold">Run Builder</h2><DemoBadge label="Demo · saved on this phone" /></div>
-        {runs.length === 0 ? <p className="pt-1 text-sm text-muted" data-testid="runs-empty">No runs yet. Name one or start from a session below.</p> : null}
+        <div className="flex items-center justify-between"><h2 className="font-semibold">Run Builder</h2><DemoBadge label={DEMO_LABEL.ride} /></div>
+        {runs.length === 0 ? <p className="pt-1 text-sm text-muted" data-testid="runs-empty">{RUNS_EMPTY}</p> : null}
         <form className="flex gap-2 pt-2" onSubmit={(e) => { e.preventDefault(); const r = R.createRun(`run-${Date.now()}`, name); if (!r.ok) return setError(friendlyError("ride", r.error)); setRuns([...runs, r.value]); setSel(r.value.id); setName(""); setError(null); }}>
           <input aria-label="run name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Run name" className="h-10 flex-1 rounded-xl px-3 ring-1 ring-line" />
           <button type="submit" className={primary}>Create</button>
@@ -281,7 +303,7 @@ function RidePanel() {
         </div>
         {current ? (
           <div className="pt-2" data-testid="run-editor">
-            {current.hits.length === 0 ? <p className="text-sm text-muted" data-testid="hits-empty">No hits yet — add one below.</p> : null}
+            {current.hits.length === 0 ? <p className="text-sm text-muted" data-testid="hits-empty">{HITS_EMPTY}</p> : null}
             <ol className="text-sm">{current.hits.map((h, i) => (
               <li key={h.id} className="flex items-center justify-between">{i + 1}. {h.label} ({h.feature})
                 <span className="flex gap-1">
@@ -303,15 +325,16 @@ function RidePanel() {
         <p className="text-sm" data-testid="ride-summary">Stomped {sum.stomped} · Washed {sum.washedOut} · Stashes {ride.stashes.length}</p>
         <div className="flex flex-wrap gap-1 pt-2">
           <button type="button" className={chip} onClick={() => rs(R.startRide(ride.phase === "ended" ? R.newRideSession(`ride-${Date.now()}`, ride.parkLabel, ride.run) : ride, t()), "start", "Ride started.")} disabled={live}>Start</button>
-          <button type="button" className={chip} onClick={() => rs(R.pauseRide(ride, t()), "pause", "Paused.")}>Pause</button>
-          <button type="button" className={chip} onClick={() => rs(R.resumeRide(ride, t()), "resume", "Back at it.")}>Resume</button>
-          <button type="button" className={chip} onClick={() => rs(R.endRide(ride, t()), "end", "Ride ended.")}>End</button>
+          <button type="button" className={chip} disabled={ride.phase !== "active"} onClick={() => rs(R.pauseRide(ride, t()), "pause", "Paused.")}>Pause</button>
+          <button type="button" className={chip} disabled={ride.phase !== "paused"} onClick={() => rs(R.resumeRide(ride, t()), "resume", "Back at it.")}>Resume</button>
+          <button type="button" className={chip} disabled={!live} onClick={() => rs(R.endRide(ride, t()), "end", `Ride ended — stomped ${sum.stomped}, washed ${sum.washedOut}.`)}>End</button>
           <button type="button" className={chip} onClick={() => rs(R.logTrick(ride, { trick: "Trick", outcome: "stomped", nowIso: t(), advanceHit: true }))}>Stomped</button>
           <button type="button" className={chip} onClick={() => rs(R.logTrick(ride, { trick: "Trick", outcome: "washed_out", nowIso: t() }))}>Washed</button>
-          <button type="button" className={chip} onClick={() => rs(R.undoLastTrick(ride))}>Undo</button>
+          <button type="button" className={chip} disabled={ride.tricks.length === 0} title={ride.tricks.length ? `Undo last trick (${ride.tricks.length} logged)` : "Nothing to undo yet"} onClick={() => rs(R.undoLastTrick(ride), undefined, "Last trick removed.")}>Undo</button>
           <button type="button" className={chip} onClick={() => rs(R.markStash(ride, { id: `st-${Date.now()}`, label: `Stash ${ride.stashes.length + 1}`, zoneLabel: ride.parkLabel, nowIso: t() }), undefined, "Stash saved — park label only.")}>Mark stash</button>
         </div>
         {note ? <p role="status" className="pt-1 text-sm" data-testid="ride-note">{note}</p> : null}
+        {ride.phase === "idle" || ride.phase === "ended" ? <p className="pt-1 text-xs text-muted" data-testid="ride-idle">{ride.phase === "ended" ? "Ride ended. Press Start for a fresh ride on the same run." : ride.run ? "Ready — press Start when you drop in." : "Press Start for a free ride, or pick a run above and tap “Use for ride”."}</p> : null}
         {ride.run ? <p className="pt-1 text-sm">Next hit: {R.nextHit(ride.run, ride.completedHits)?.label ?? "done"}</p> : null}
         <p className="pt-1 text-xs text-muted">Stash pins save a park label only — no GPS.</p>
       </div>
@@ -330,7 +353,7 @@ function CampfirePanel() {
   return (
     <div className="space-y-3">
       <div className="rounded-3xl bg-snow p-4 ring-1 ring-line" data-testid="campfire">
-        <div className="flex items-center justify-between"><h2 className="font-semibold">Campfire {campfireOpen ? "· open" : "· closed"}</h2><DemoBadge label="Demo · crew-only" /></div>
+        <div className="flex items-center justify-between"><h2 className="font-semibold">Campfire {campfireOpen ? "· open" : "· closed"}</h2><DemoBadge label={DEMO_LABEL.campfire} /></div>
         <p className="text-xs text-muted" data-testid="campfire-guards">{CAMPFIRE_GUARDS.upload ? "Upload on" : UPLOAD_OFF_MSG} Live share: off. Only your crew sees clips you share; new clips start as “Only me”.</p>
         <div className="flex gap-2 pt-2">
           <button type="button" className={primary} onClick={() => setCampfireOpen(!campfireOpen)}>{campfireOpen ? "Close" : "Open"} Campfire</button>
@@ -369,12 +392,13 @@ function SmartIdPanel() {
   const [code, setCode] = useState("");
   const [scan, setScan] = useState("");
   const [view, setView] = useState<string | null>(null);
+  const [confirmRevoke, setConfirmRevoke] = useState(false);
   const tag = tags[0];
   const updTag = (r: ReturnType<typeof S.activateTag>) => { if (r.ok) { setTags([r.value, ...tags.slice(1)]); setError(null); } else setError(friendlyError("smartid", r.error)); };
   return (
     <div className="space-y-3">
       <div className="rounded-3xl bg-snow p-4 ring-1 ring-line" data-testid="smartid">
-        <div className="flex items-center justify-between"><h2 className="font-semibold">Smart ID</h2><DemoBadge label="Demo · no NFC" /></div>
+        <div className="flex items-center justify-between"><h2 className="font-semibold">Smart ID</h2><DemoBadge label={DEMO_LABEL.smartid} /></div>
         <p className="text-xs text-muted">NFC: {nfc.supported ? "on" : "not supported"} · Camera scan: {SMART_ID_FLAGS.camera ? "on" : "off"} · Network: off</p>
         {!tag ? (
           <button type="button" className={primary + " mt-2"} onClick={() => { const r = demoTag("demo-tag-01", "CLAIM-0001", nowIso()); if (r.ok) setTags([r.value.tag], [r.value.credential]); }}>Create demo tag</button>
@@ -383,18 +407,31 @@ function SmartIdPanel() {
             <p data-testid="tag-state">Tag {tag.publicSlug}: {tag.state}</p>
             <p className="text-xs">QR payload: {S.buildQrPayload(tag).ok ? `${S.QR_PREFIX}${tag.publicSlug}` : "invalid"}</p>
             {tag.state === "unclaimed" ? (
-              <form className="flex gap-2 pt-2" onSubmit={(e) => { e.preventDefault(); const cred = creds.find((c) => c.tagId === tag.tagId); if (!code.trim()) return setError("Enter the claim code first."); if (!cred) return setError(friendlyError("smartid", "not_found")); const r = S.claimTag(tag, cred, { code: code.trim(), stomperId: me }); if (r.ok) { setTags([r.value.tag], [r.value.credential]); setError(null); setCode(""); } else setError(friendlyError("smartid", r.error)); }}>
+              <form className="flex gap-2 pt-2" onSubmit={(e) => { e.preventDefault(); const cred = creds.find((c) => c.tagId === tag.tagId); const c = normalizeClaimCode(code); if (!c) return setError(CLAIM_EMPTY); if (!cred) return setError(friendlyError("smartid", "not_found")); const r = S.claimTag(tag, cred, { code: c, stomperId: me }); if (r.ok) { setTags([r.value.tag], [r.value.credential]); setError(null); setCode(""); } else setError(friendlyError("smartid", r.error)); }}>
                 <input aria-label="claim code" value={code} onChange={(e) => setCode(e.target.value)} className="h-10 flex-1 rounded-xl px-3 ring-1 ring-line" />
-                <button type="submit" className={chip}>Claim</button>
+                <button type="submit" className={chip} disabled={!normalizeClaimCode(code)}>Claim</button>
               </form>
             ) : null}
+            {tag.state === "unclaimed" ? <p className="pt-1 text-xs text-muted" data-testid="claim-hint">{CLAIM_HINT}</p> : null}
+            {tag.state === "revoked" ? <p role="status" className="pt-1 text-sm text-pink" data-testid="revoked-banner">Revoked — scans show “revoked”. Remove it and create a new demo tag to start over.</p> : null}
             <div className="flex flex-wrap gap-1 pt-2">
-              <button type="button" className={chip} onClick={() => updTag(S.activateTag(tag, me, nowIso()))}>Activate</button>
-              <button type="button" className={chip} onClick={() => updTag(S.suspendTag(tag, me))}>Suspend</button>
-              <button type="button" className={chip} onClick={() => updTag(S.revokeTag(tag, me, nowIso()))}>Revoke</button>
+              {tag.state !== "revoked" ? <>
+                <button type="button" className={chip} onClick={() => updTag(S.activateTag(tag, me, nowIso()))}>Activate</button>
+                <button type="button" className={chip} onClick={() => updTag(S.suspendTag(tag, me))}>Suspend</button>
+                <button type="button" className={chip} data-testid="revoke-start" onClick={() => setConfirmRevoke(true)}>Revoke</button>
+              </> : null}
               <button type="button" className={chip} onClick={() => { void nfc.write("x").then(() => setError(NFC_WRITE_MSG), () => setError(NFC_WRITE_MSG)); }}>Write NFC (unavailable)</button>
-              {tag.state === "revoked" ? <button type="button" className={chip} onClick={() => setTags([], [])}>Remove tag</button> : null}
+              {tag.state === "revoked" ? <button type="button" className={chip} onClick={() => { setTags([], []); setView(null); }}>Remove tag</button> : null}
             </div>
+            {confirmRevoke && tag.state !== "revoked" ? (
+              <div className="mt-2 rounded-2xl bg-snow p-2 text-sm ring-1 ring-pink" role="group" aria-label="Confirm revoke" data-testid="revoke-confirm">
+                <p>{REVOKE_CONFIRM}</p>
+                <span className="mt-1 inline-flex gap-1">
+                  <button type="button" className={primary} onClick={() => { updTag(S.revokeTag(tag, me, nowIso())); setConfirmRevoke(false); }}>Yes, revoke</button>
+                  <button type="button" className={chip} onClick={() => setConfirmRevoke(false)}>Keep tag</button>
+                </span>
+              </div>
+            ) : null}
           </div>
         )}
         <form className="flex gap-2 pt-3" onSubmit={(e) => { e.preventDefault(); const v = S.simulateScan(scan, tags, { [me]: { displayName: riderName || "Rider", showCrewOnScan: false } }); setView(scanLabel(v)); }}>

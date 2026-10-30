@@ -93,7 +93,7 @@ describe("ride panel", () => {
   it("empty hit label shows error", () => { openTab("ride"); type("run name", "L"); click("Create"); click("Add hit"); expect(screen.getByRole("alert")).toBeTruthy(); });
   it("from GB session template", () => { openTab("ride"); fireEvent.click(screen.getAllByRole("button", { name: /^From/ })[0]!); expect(useWoz.getState().runs[0]!.hits.length).toBeGreaterThan(0); });
   it("ride lifecycle buttons", () => { openTab("ride"); click("Start"); click("Stomped"); click("Washed"); click("Mark stash"); expect(screen.getByTestId("ride-summary").textContent).toBe("Stomped 1 · Washed 1 · Stashes 1"); });
-  it("pause before start errors", () => { openTab("ride"); click("Pause"); expect(screen.getByRole("alert").textContent).toMatch(/Only a running ride can be paused/); });
+  it("pause before start is disabled (batch5)", () => { openTab("ride"); expect((screen.getByRole("button", { name: "Pause" }) as HTMLButtonElement).disabled).toBe(true); });
   it("remove hit", () => { openTab("ride"); type("run name", "L"); click("Create"); type("hit label", "Box"); click("Add hit"); fireEvent.click(screen.getByRole("button", { name: "remove Box" })); expect(useWoz.getState().runs[0]!.hits).toHaveLength(0); });
   it("use for ride attaches run", () => { openTab("ride"); type("run name", "L"); click("Create"); type("hit label", "Box"); click("Add hit"); click("Use for ride"); expect(useWoz.getState().ride.run?.name).toBe("L"); });
 });

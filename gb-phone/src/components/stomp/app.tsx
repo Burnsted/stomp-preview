@@ -8,6 +8,7 @@ import { TodaySession } from "@/components/stomp/session";
 import { Stompers } from "@/components/stomp/stompers";
 import { Run } from "@/components/stomp/run";
 import { WozLab } from "@/components/stomp/woz-lab";
+import { GreetCrewToolsHint } from "@/components/stomp/woz-entry";
 import { useStomp } from "@/lib/stomp/store";
 import { startGbInviteMirror } from "@/lib/stomp/woz-bridge/invite-mirror-gb";
 
@@ -27,6 +28,7 @@ export function StompApp() {
       <div className="mx-auto min-h-dvh w-full max-w-md md:py-6">
         <div className="relative min-h-dvh overflow-hidden bg-transparent md:min-h-[calc(100dvh-3rem)] md:rounded-4xl md:shadow-2xl md:ring-1 md:ring-line">
           {screen === "greet" ? <Greet /> : null}
+          {screen === "greet" ? <GreetCrewToolsHint /> : null}
           {screen === "crew" ? <CrewLink /> : null}
           {screen === "home" ? <Home /> : null}
           {screen === "run" ? <Run /> : null}

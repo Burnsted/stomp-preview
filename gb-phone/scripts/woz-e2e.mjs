@@ -68,5 +68,36 @@ await step("GB round trip Home→Run→Park→Session→Stompers→More→Crew T
   }
   await p.getByTestId("chrome-crew-tools").click(); await p.getByTestId("woz-lab").waitFor(); await p.getByTestId("woz-back").click(); await p.getByTestId("chrome-crew-tools").waitFor();
 });
+// batch5: Home card, Session clear confirm, ride banner + gated controls, Smart ID revoke confirm
+await step("Greet landing Crew tools pill → Back", async () => {
+  await p.evaluate(() => { const st = JSON.parse(localStorage.getItem("stomp-line")); st.state.screen = "greet"; localStorage.setItem("stomp-line", JSON.stringify(st)); });
+  await p.reload(); await p.waitForTimeout(900); await p.getByTestId("greet-crew-tools").click(); await p.getByTestId("woz-lab").waitFor();
+  await p.getByTestId("woz-back").click(); await p.getByTestId("greet-crew-tools").waitFor();
+});
+await step("Session clear transcript asks first", async () => {
+  await p.getByTestId("greet-crew-tools").click(); await p.getByRole("tab", { name: "Session" }).click();
+  await p.getByLabel("session command").fill("whats next"); await p.getByRole("button", { name: "Send" }).click();
+  await p.getByTestId("transcript-clear").click(); await p.getByTestId("transcript-clear-confirm").waitFor();
+  await p.getByRole("button", { name: "Yes, clear" }).click(); await p.getByTestId("transcript-empty").waitFor();
+});
+await p.screenshot({ path: "test-results/e2e-b5-session.png" });
+await step("Ride banner + gated controls", async () => {
+  await p.getByRole("tab", { name: "Ride" }).click();
+  if (await p.getByRole("button", { name: "End" }).isEnabled()) await p.getByRole("button", { name: "End" }).click();
+  if (!(await p.getByRole("button", { name: "Pause" }).isDisabled())) throw new Error("pause enabled while idle");
+  await p.getByRole("button", { name: "Start" }).click(); const t = await p.getByTestId("ride-banner").textContent(); if (!/Ride in progress/.test(t)) throw new Error(t);
+  await p.getByRole("button", { name: "Pause" }).click(); await p.getByTestId("ride-banner").filter({ hasText: "Ride paused" }).waitFor();
+  await p.getByRole("button", { name: "End" }).click(); if (await p.getByTestId("ride-banner").count()) throw new Error("banner after end");
+});
+await p.screenshot({ path: "test-results/e2e-b5-ride.png" });
+await step("Smart ID revoke confirm", async () => {
+  await p.getByRole("tab", { name: "Smart ID" }).click();
+  if (await p.getByRole("button", { name: "Remove tag" }).count()) await p.getByRole("button", { name: "Remove tag" }).click();
+  if (await p.getByRole("button", { name: "Create demo tag" }).count()) await p.getByRole("button", { name: "Create demo tag" }).click();
+  await p.getByTestId("revoke-start").click(); await p.getByRole("button", { name: "Keep tag" }).click();
+  if (await p.getByTestId("revoked-banner").count()) throw new Error("revoked without confirm");
+  await p.getByTestId("revoke-start").click(); await p.getByRole("button", { name: "Yes, revoke" }).click(); await p.getByTestId("revoked-banner").waitFor();
+});
+await p.screenshot({ path: "test-results/e2e-b5-smartid.png" });
 console.log(log.join("\n")); console.log("pageerrors", errs); if (log.some((l) => l.startsWith("FAIL")) || errs.length) process.exitCode = 1;
 await b.close();
