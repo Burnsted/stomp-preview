@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>STOMP Batch 1 — Crew Unlink (local preview)</title>
+    <link rel="stylesheet" href="./unlink.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <p class="eyebrow">Woz Batch 2 · local-only preview · not Grok Build</p>
+      <h1>Crew Unlink</h1>
+      <p class="lede">
+        Confirmation flow against fictional fixtures. Does not touch Pages
+        <code>main.dart.js</code>. Crew Invite remains GB-owned
+        (<code>src/components/stomp/greet.tsx</code> — absent from tip
+        <code>702cf32</code>). Owner transfer is local-only before owner Unlink.
+      </p>
+
+      <nav class="nav">
+        <span aria-current="page">Crew Unlink</span>
+        <a href="./session-settings.html">SESSION Settings</a>
+      </nav>
+
+      <section class="panel" aria-labelledby="crew-heading">
+        <h2 id="crew-heading">Demo Ridge Crew</h2>
+        <ul id="member-list" class="members"></ul>
+      </section>
+
+      <section class="panel" id="confirm-panel" hidden>
+        <h2 id="confirm-title">Confirm</h2>
+        <p id="confirm-message"></p>
+        <label>
+          Type <strong id="confirm-phrase">UNLINK</strong> to confirm
+          <input id="confirm-input" type="text" autocomplete="off" />
+        </label>
+        <div class="actions">
+          <button type="button" id="btn-confirm" class="danger">Confirm</button>
+          <button type="button" id="btn-cancel" class="ghost">Cancel</button>
+        </div>
+      </section>
+
+      <p id="status" class="status" role="status"></p>
+      <p class="invite-stub" id="invite-stub"></p>
+    </main>
+    <script type="module" src="./unlink-ui.ts"></script>
+  </body>
+</html>

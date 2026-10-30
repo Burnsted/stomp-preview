@@ -1,0 +1,12 @@
+# Batch 3 test evidence
+node: v24.22.1
+npm: 11.21.1
+cwd: batch1/
+branch: woz/batch3-dev-2026-10-29 (parent 820d73d324060ab9d2599cb98efa83169ef99ade)
+Commands: npm ci && npm run typecheck && npm test
+typecheck: pass (tsc --noEmit)
+Test Files  9 passed (9)
+Tests       44 passed (44)
+New suites: command-parser (12), park-session (2), batch3-interactions (5)
+Prior suites unchanged and green: unlink, owner-transfer, stompers, session-registry, session-settings, campfire-identity
+date_utc: 2026-10-30T02:20:57Z
