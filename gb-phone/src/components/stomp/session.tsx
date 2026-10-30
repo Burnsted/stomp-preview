@@ -1,4 +1,5 @@
 import { HomeButton } from "@/components/stomp/chrome";
+import { WozEntry } from "@/components/stomp/woz-entry";
 import { cycleStatus, statusLabel } from "@/lib/stomp/goals";
 import { BAND_LABEL, tricksFor } from "@/lib/stomp/library";
 import { sessionById, suggestedSession } from "@/lib/stomp/sessions";
@@ -126,6 +127,7 @@ export function TodaySession() {
         >
           Film a clip
         </button>
+        <WozEntry tab="session" label="Type to Session (text demo)" className="mt-2" />
         <button
           type="button"
           onClick={startRun}

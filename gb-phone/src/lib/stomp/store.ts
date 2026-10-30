@@ -3,7 +3,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { findTrick, isLanded, type TrickStatus } from "@/lib/stomp/goals";
 import type { Band } from "@/lib/stomp/library";
 
-export type Screen = "greet" | "home" | "run" | "map" | "log" | "guide" | "stash" | "playlist" | "goals" | "park" | "crew" | "session" | "stompers";
+export type Screen = "greet" | "home" | "run" | "map" | "log" | "guide" | "stash" | "playlist" | "goals" | "park" | "crew" | "session" | "stompers" | "woz";
 
 export type Landing = {
   id: string;

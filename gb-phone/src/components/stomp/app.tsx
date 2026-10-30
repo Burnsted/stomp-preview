@@ -7,6 +7,7 @@ import { Goals, TerrainPark } from "@/components/stomp/park";
 import { TodaySession } from "@/components/stomp/session";
 import { Stompers } from "@/components/stomp/stompers";
 import { Run } from "@/components/stomp/run";
+import { WozLab } from "@/components/stomp/woz-lab";
 import { useStomp } from "@/lib/stomp/store";
 
 export function StompApp() {
@@ -33,6 +34,7 @@ export function StompApp() {
           {screen === "park" ? <TerrainPark /> : null}
           {screen === "session" ? <TodaySession /> : null}
           {screen === "stompers" ? <Stompers /> : null}
+          {screen === "woz" ? <WozLab /> : null}
         </div>
       </div>
     </div>

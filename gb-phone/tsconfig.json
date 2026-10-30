@@ -25,6 +25,9 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@woz/*": [
+        "../batch1/src/*"
       ]
     },
     "allowImportingTsExtensions": true

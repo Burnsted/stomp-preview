@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { WozEntry } from "@/components/stomp/woz-entry";
 import { HomeButton } from "@/components/stomp/chrome";
 import { useStomp } from "@/lib/stomp/store";
 
@@ -95,6 +96,9 @@ export function Stompers() {
           >
             Link a crew
           </button>
+          <WozEntry tab="crew" label="Crew tools · unlink, owner, privacy" className="mt-2" />
+          <WozEntry tab="campfire" label="Campfire · crew-private demo" className="mt-2" />
+          <WozEntry tab="smartid" label="Smart ID · demo (no NFC)" className="mt-2" />
           <p className="mt-4 text-sm text-muted">
             {clips.length} clips · {landings.length} landings on this phone. That’s the crew dump until you share it in person.
           </p>

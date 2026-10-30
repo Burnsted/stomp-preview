@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { WozEntry } from "@/components/stomp/woz-entry";
 import { HomeButton, LivePill, Pin } from "@/components/stomp/chrome";
 import { SessionMic, useSessionRouter } from "@/components/stomp/session-mic";
 import { holdListen } from "@/lib/stomp/audio-route";
@@ -219,6 +220,7 @@ export function Run() {
           End run
         </button>
       </div>
+      <WozEntry tab="ride" label="Run Builder · ride log · stash" />
     </div>
   );
 }
