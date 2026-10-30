@@ -1,0 +1,146 @@
+### STOMPERS — The Social Side of STOMP
+
+I think STOMPERS is the right name for the community. It's memorable, it fits the brand, and it gives riders an identity beyond simply being users of an app.
+
+I'd build an entire social experience around it, without turning STOMP into another Instagram.
+
+The idea:
+
+STOMP is the app. STOMPERS are the people. Your CREW is who you ride with.
+
+And I agree with the lifestyle direction. Snowboarding culture isn't just about the runs. It's the chairlift conversations, the friends you meet, the parking-lot hangouts, the mountain bars, and the stories around the fire afterward.
+
+We can bring that personality into the app without making it feel forced.
+
+### 1\. STOMPERS Nearby
+
+![Two couples outside lodge holding snow boards, smiling, low angle view](https://images.openai.com/static-rsc-4/56SMYSjhBZ8eGdTZon4kg22yr74i5qUfXdxxvX0NudATsTLbVCi8WnXDngKqsF4TWYArjyT3UqSFbJFnXAx3GsG079Y6m7yoO4DHlbA8Vhl32sF5SDc4HDLBbH5De7ZcTj5ivvMAKylZtukP-OX58dmwYagSt9Yxqmqvv5s22iv2knNpQKilAWeESzIwt9g6?purpose=fullsize)
+
+Visual inspiration for a resort-based STOMPERS social feed.
+
+I'd create a dedicated STOMPERS discovery feature with three views.
+
+### Find Your Stompers
+
+MountainCrewsHangouts
+
+Mammoth Mountain · Example community
+
+Park Rats
+
+5 Stompers · Main Park laps
+
+Open crew
+
+Chill Laps
+
+3 Stompers · Easy runs and photos
+
+Join request
+
+Weekend Crew
+
+8 Stompers · Riding this weekend
+
+Planning
+
+Interactive product mockup. Crews, counts, and activities are fictional examples.
+
+The important distinction is that people could discover other Stompers at a resort without exposing their precise GPS coordinates.
+
+I'd make location visibility work like this: friends can optionally share live location, while unfamiliar riders see only an approximate resort area or a voluntarily posted meetup spot. Discovery should be off by default, with block/report controls and stricter protections for minors.
+
+### 2\. The STOMPERS social feed
+
+Instead of an endless social feed, I'd organize posts around actual mountain experiences.
+
+| Feed section    | What riders see                                       |
+| --------------- | ----------------------------------------------------- |
+| My Crew         | Friends' clips, photos, trips, and plans              |
+| On My Mountain  | Public posts and sessions at the current resort       |
+| Stompers Nearby | Opt-in riders and crews available to meet             |
+| Après STOMP     | Post-ride gatherings, group photos, and evening plans |
+
+I particularly like the idea of a Crew Dump: everyone uploads their photos and videos into one shared album after a riding day. STOMP automatically organizes the content by session and creates a recap.
+
+That would be a great reason to open the app later that night.
+
+### 3\. The STOMP personality — little Easter eggs
+
+I like your suggestion about subtle cultural references. The key is making them feel like something a friend would say, not something a marketing department thinks snowboarders say.
+
+I'd create a collection of rotating phrases throughout the app.
+
+### STOMP Vibes
+
+Copy concepts
+
+END OF THE RIDING DAY
+
+### Last chair. First round.
+
+Get the crew together and drop today's clips.
+
+1 of 7
+
+Next vibe
+
+I'd use cannabis-adjacent slang sparingly, as cultural humor rather than explicit prompts to consume. That keeps the app authentic without making substance use its identity, especially because younger riders will use STOMP too.
+
+For adults, a playful après atmosphere can include phrases like "Last chair, first round" or "Things are getting lit." For younger accounts, the app should use general social and mountain-culture language.
+
+### 4\. A new feature: The STOMP Campfire
+
+![Bars in Whistler - The Mallard - Fairmont Chateau Whistler](https://images.openai.com/static-rsc-4/pfcvyNRBcOEVEWFZ9ZYQRbZ7glzqq_OErRy-0CaVCYur_tR0UD5y4axnXmjOvytKzgP2azkdxc_6s7pjphxNna8_W39aNfL_BBxOhz1I9-KlJ-4ltYTIeXa8zmKkyI6FZUq_J-gw6C_34j1okB2bqrDkP4q0Vbeq0K6YC1SKU6e4XWe12Jdju_uVV8uXhBKg?purpose=fullsize)
+
+I would seriously consider naming the post-ride social experience Campfire.
+
+At the end of a session, STOMP could offer:
+
+* Drop the day's footage: Share clips and photos with the crew.
+
+* Keep the crew together: Suggest a public lodge, fireside gathering, or other meeting spot.
+
+* Make tomorrow's plans: Set a time and place to meet for the first lift.
+
+* Relive the day: Generate a shared recap with the day's best moments and music.
+
+Campfire could also be a private digital gathering space for a crew that has already left the mountain. It wouldn't need everyone to physically meet up.
+
+This gives STOMP a natural daily cycle:
+
+Meet
+
+Ride
+
+Capture
+
+Campfire
+
+### 5\. How I'd organize this for Grok
+
+I would introduce these as one connected social module rather than five separate features.
+
+Module name: STOMPERS Social Network
+
+| Phase | Build                                                         |
+| ----- | ------------------------------------------------------------- |
+| 1     | Stomper profiles, friend connections, crews, privacy settings |
+| 2     | Resort-based discovery, crew invitations, session sharing     |
+| 3     | Shared albums, Crew Dump, social feed                         |
+| 4     | Campfire gatherings, public meetups, group plans              |
+| 5     | NFC Crew Pass integration, achievements, community events     |
+
+The underlying architecture should support private groups, public opt-in discovery, account-level safety settings, and session-based media sharing from the beginning.
+
+### One idea I especially want to preserve
+
+STOMPERS shouldn't just be people who snowboard. It should be a way to find your people wherever you ride.
+
+Someone traveling alone to Breckenridge could open STOMP, find an open crew riding the park, join a few laps, exchange clips, and potentially make friends for future trips.
+
+That's a compelling reason for the social platform to exist independently of trick tracking.
+
+I would make STOMPERS Nearby, Crew Sessions, Crew Dump, and Campfire the four signature social features. Together, they give the app a recognizable personality and a much stronger reason for people to return.
+
+And importantly, the social experience should feel optional and relaxed. Nobody should have to participate in challenges, track tricks, or publish their location just to hang out with other Stompers.

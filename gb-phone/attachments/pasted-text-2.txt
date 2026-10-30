@@ -1,0 +1,62 @@
+STOMP — Lightweight Architecture & Smart Sticker Requirements
+
+Primary direction
+
+Keep STOMP a fun-first, crew-centered ski and snowboard application. Prioritize speed, simplicity, reliability, privacy, and low battery consumption.
+
+Do not introduce AI coaching or mandatory hardware.
+
+Architecture requirements
+
+1. Use secure managed cloud services for profiles, crews, sessions, media, and account data.
+2. Minimize persistent on-device storage while retaining the essential offline capabilities needed at mountain resorts.
+3. Implement a reliable upload queue with retry, duplicate prevention, and confirmation before temporary media can be removed.
+4. Avoid unnecessary background GPS, Bluetooth scanning, polling, or large automatic downloads.
+5. Keep services modular so storage, mapping, and notification providers can be changed without rebuilding the entire app.
+6. Use managed authentication, least-privilege permissions, encrypted transport, secure token storage, and server-enforced authorization.
+7. Preserve existing working functionality. Review the current implementation before selecting new infrastructure.
+
+STOMPERS Social
+
+Support rider profiles, private crews, opt-in resort discovery, shared sessions, crew albums, and post-ride Campfire gatherings.
+
+Location sharing must be off by default. Provide expiring live-sharing permissions, user blocking/reporting, and appropriate protections for minors.
+
+STOMP Smart Stickers
+
+Prioritize NFC and QR-enabled weatherproof stickers for helmets, snowboards, and phone cases.
+
+Support:
+
+- Rider profile links
+- Crew invitation links
+- Session sharing
+- Secure sticker registration and reassignment
+- Lost-sticker revocation
+- QR fallback when NFC is unavailable
+
+Stickers must contain opaque identifiers or revocable URLs, never private user data or authentication credentials.
+
+Physical achievement patches are optional merchandise, not a core integration priority.
+
+Mountain reliability
+
+Provide offline access to active sessions, previously downloaded maps, trick logs, and pending actions. Queue changes for synchronization.
+
+Never delete the only copy of an unsynchronized photo or video.
+
+Make network status and synchronization state understandable without intrusive notifications.
+
+Interface
+
+Introduce a Quick Drop experience for large, glove-friendly actions: log a trick, mark a location, save a clip, and access the crew.
+
+Keep the app fast and visually energetic while avoiding unnecessary screens and configuration steps.
+
+Implementation instructions
+
+First audit the current codebase and identify what already exists, what is stubbed, and what is missing.
+
+Return a phased implementation plan, service dependencies, security considerations, offline testing criteria, and estimated complexity.
+
+Do not replace working infrastructure or deploy major architectural changes without approval.
