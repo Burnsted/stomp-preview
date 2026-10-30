@@ -408,9 +408,9 @@ export function Playlist() {
           </p>
           {mountain ? (
             <ul data-testid="playlist-beat-legend" className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
-              <li className="rounded-full bg-teal/30 px-2 py-1">Section</li>
-              <li className="rounded-full bg-pink/20 px-2 py-1 text-pink">Beat</li>
-              <li className="rounded-full bg-lime px-2 py-1 text-ink">Trick</li>
+              <li className="rounded-full bg-teal/35 px-2.5 py-1 text-ink">Section</li>
+              <li className="rounded-full bg-pink/25 px-2.5 py-1 text-pink">Beat</li>
+              <li className="rounded-full bg-lime px-2.5 py-1 text-ink">Trick</li>
             </ul>
           ) : null}
           <div className="mt-3 grid grid-cols-2 gap-2">
@@ -455,7 +455,9 @@ export function Playlist() {
             ))}
           </ul>
         </div>
-        {mountain ? <BeatStrip playlist={mountain} className="sticky top-4 self-start h-[28rem]" /> : null}
+        {mountain ? (
+          <BeatStrip playlist={mountain} density="full" className="sticky top-4 self-start h-[min(32rem,70dvh)]" />
+        ) : null}
       </div>
     </div>
   );

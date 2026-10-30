@@ -178,27 +178,36 @@ describe("Greet home UX smoke", () => {
     expect(screen.getByTestId("home-plans-list")).toBeTruthy();
   });
 
-  it("picking a resort surfaces mountain playlist link + beat strip on map", () => {
+  it("picking a resort surfaces mountain playlist link + Concept B labeled beat column on map", () => {
     render(<StompApp />);
     fireEvent.click(screen.getByTestId("home-map-state-co"));
     fireEvent.click(screen.getByRole("button", { name: "Show resorts" }));
     fireEvent.click(screen.getByTestId("home-map-resort-beaver-creek"));
     expect(screen.getByTestId("home-map-mountain-playlist").textContent).toMatch(/Beaver Creek lap mix/);
     expect(screen.getByTestId("home-playlist-title").textContent).toMatch(/Beaver Creek lap mix/);
-    expect(screen.getByTestId("beat-strip")).toBeTruthy();
+    const strip = screen.getByTestId("beat-strip");
+    expect(strip.getAttribute("data-concept")).toBe("b-labeled-column");
+    expect(strip.textContent).toMatch(/BEAT/);
+    expect(strip.textContent).toMatch(/DEMO/);
+    expect(strip.textContent).toMatch(/Lift load|Kick|50-50|Village/);
     expect(screen.getByTestId("beat-strip-playhead")).toBeTruthy();
+    expect(screen.getByTestId("beat-strip-time")).toBeTruthy();
     expect(screen.queryByTestId("home-mountain-tracks")).toBeNull();
   });
 
-  it("mountain playlist opens Playlist with right-side beat strip", () => {
+  it("mountain playlist opens Playlist with Concept B labeled beat column + legend", () => {
     render(<StompApp />);
-    fireEvent.click(screen.getByTestId("home-map-state-ut"));
+    fireEvent.click(screen.getByTestId("home-map-state-co"));
     fireEvent.click(screen.getByRole("button", { name: "Show resorts" }));
-    fireEvent.click(screen.getByTestId("home-map-resort-park-city"));
+    fireEvent.click(screen.getByTestId("home-map-resort-vail"));
     fireEvent.click(screen.getByTestId("home-map-mountain-playlist"));
     expect(useStomp.getState().screen).toBe("playlist");
-    expect(screen.getByTestId("beat-strip")).toBeTruthy();
-    expect(screen.getByTestId("playlist-beat-legend")).toBeTruthy();
+    const strip = screen.getByTestId("beat-strip");
+    expect(strip.getAttribute("data-concept")).toBe("b-labeled-column");
+    expect(strip.textContent).toMatch(/Orient/);
+    expect(strip.textContent).toMatch(/Straight air/);
+    expect(strip.textContent).toMatch(/Village/);
+    expect(screen.getByTestId("playlist-beat-legend").textContent).toMatch(/Section.*Beat.*Trick/);
     expect(screen.queryByTestId("playlist-mountain-songs")).toBeNull();
   });
 });
@@ -221,5 +230,19 @@ describe("mountain playlist beat data", () => {
     const pl = mountainPlaylistFor("beaver-creek")!;
     expect(pl.title).toMatch(/Beaver Creek/);
     expect(pl.beats.find((b) => b.kind === "trick")!.label).toMatch(/50-50|Backside/);
+  });
+
+  it("Vail Concept B labels match Owner sample column", () => {
+    const pl = mountainPlaylistFor("vail")!;
+    expect(pl.beats.map((b) => b.label)).toEqual([
+      "Orient",
+      "Pulse",
+      "Straight air",
+      "Blue Sky",
+      "Snap",
+      "180",
+      "Village",
+    ]);
+    expect(pl.beats.find((b) => b.label === "Straight air")!.atSec).toBe(24);
   });
 });
