@@ -1,13 +1,15 @@
 /**
  * First-class home playlist block — open / adjust / upload / share (demo stubs OK).
+ * When a resort is set, surfaces that mountain’s saved playlist link (no song list).
  * Does not touch CrewLink Invite.
  */
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ListMusic, Share2, SlidersHorizontal, Upload } from "lucide-react";
 import { saveTrack } from "@/lib/stomp/music";
 import { sessionById, suggestedSession } from "@/lib/stomp/sessions";
 import { useStomp } from "@/lib/stomp/store";
 import { resortById, useHomeMountain } from "@/lib/stomp/home-mountain";
+import { mountainPlaylistFor } from "@/lib/stomp/mountain-playlists";
 
 const ACTIONS = [
   { id: "open", label: "Open", icon: ListMusic, testId: "home-playlist-open" },
@@ -24,14 +26,26 @@ export function HomePlaylistBlock() {
   const crew = useStomp((s) => s.crew);
   const activeSession = useStomp((s) => s.activeSession);
   const resortId = useHomeMountain((s) => s.resortId);
+  const hydrate = useHomeMountain((s) => s.hydrate);
   const resort = resortById(resortId);
+  const mountain = mountainPlaylistFor(resortId);
   const template = sessionById(activeSession) ?? suggestedSession(band, crew.length);
   const fileRef = useRef<HTMLInputElement>(null);
   const [note, setNote] = useState("");
 
+  useEffect(() => {
+    hydrate();
+  }, [hydrate]);
+
+  const headline = mountain?.title ?? template.mood;
+  const detail = mountain
+    ? `${mountain.mood} · saved for ${resort?.name ?? "this mountain"}`
+    : `For ${template.name}. Pick a mountain to load its playlist.`;
+
   async function shareDemo() {
-    const mountain = resort?.name ?? "the mountain";
-    const text = `Today’s STOMP playlist · ${template.mood} · ${mountain}. Demo share — nothing left this phone until you send it.`;
+    const text = mountain
+      ? `STOMP · ${mountain.title} (${resort?.name}). ${mountain.blurb}`
+      : `Today’s STOMP playlist · ${template.mood}. Demo share — nothing left this phone until you send it.`;
     try {
       if (navigator.share) {
         await navigator.share({ title: "STOMP playlist", text });
@@ -84,12 +98,15 @@ export function HomePlaylistBlock() {
       aria-label="Playlist"
     >
       <div className="flex items-start justify-between gap-2">
-        <div>
-          <p className="text-xs font-bold tracking-widest text-pink">PLAYLIST</p>
-          <p className="font-display text-3xl tracking-wide leading-none">{template.mood}</p>
-          <p className="mt-1 text-sm text-muted text-pretty">
-            For {template.name}
-            {resort ? ` · ${resort.name}` : ""}. Stays on this phone.
+        <div className="min-w-0">
+          <p className="text-xs font-bold tracking-widest text-pink">
+            {mountain ? "MOUNTAIN PLAYLIST" : "PLAYLIST"}
+          </p>
+          <p data-testid="home-playlist-title" className="font-display text-3xl tracking-wide leading-none">
+            {headline}
+          </p>
+          <p data-testid="home-playlist-detail" className="mt-1 text-sm text-muted text-pretty">
+            {detail}
           </p>
         </div>
         <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-pink text-snow">

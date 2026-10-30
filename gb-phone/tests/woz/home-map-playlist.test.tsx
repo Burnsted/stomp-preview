@@ -12,8 +12,10 @@ import {
   setHomeMountainBacking,
   useHomeMountain,
   DEMO_RESORTS,
+  DEMO_STATES,
 } from "@/lib/stomp/home-mountain";
 import { moveTrack, orderedIds, saveTrackOrder, setMusicOrderBacking, loadTrackOrder } from "@/lib/stomp/music-order";
+import { allMountainPlaylists, mountainPlaylistFor } from "@/lib/stomp/mountain-playlists";
 import { CREWLINK_SHA, INVITE_FN_SHA, crewLinkSha, inviteFnSha } from "./greet-invite-sha";
 
 beforeEach(() => {
@@ -63,8 +65,32 @@ describe("home mountain store", () => {
     expect(useHomeMountain.getState().resortId).toBe("vail");
   });
 
-  it("demo resorts include CO trio", () => {
-    expect(DEMO_RESORTS.map((r) => r.name).sort()).toEqual(["Beaver Creek", "Keystone", "Vail"]);
+  it("four US regions are first-class", () => {
+    expect(DEMO_STATES.map((s) => s.code)).toEqual(["CO", "UT", "CA", "VT"]);
+    expect(DEMO_STATES).toHaveLength(4);
+  });
+
+  it("each region has demo resorts", () => {
+    for (const s of DEMO_STATES) {
+      expect(DEMO_RESORTS.filter((r) => r.stateId === s.id).length).toBeGreaterThanOrEqual(2);
+    }
+    expect(DEMO_RESORTS.map((r) => r.name)).toEqual(
+      expect.arrayContaining(["Beaver Creek", "Park City", "Mammoth", "Stowe"]),
+    );
+  });
+
+  it("UT drill-down persists Park City", () => {
+    act(() => {
+      useHomeMountain.getState().goState("ut");
+      useHomeMountain.getState().selectResort("park-city");
+    });
+    act(() => useHomeMountain.setState({ level: "us", stateId: null, resortId: null }));
+    act(() => useHomeMountain.getState().hydrate());
+    expect(useHomeMountain.getState()).toMatchObject({
+      resortId: "park-city",
+      stateId: "ut",
+      level: "trail",
+    });
   });
 });
 
@@ -95,15 +121,36 @@ describe("Greet home UX smoke", () => {
     expect(screen.queryByRole("button", { name: "Stash" })).toBeNull();
   });
 
-  it("map crumb drill-down to trail + chip", () => {
+  it("map crumb drill-down to trail + location inside card", () => {
     render(<StompApp />);
+    expect(screen.getByTestId("home-location").textContent).toMatch(/US/);
+    expect(screen.queryByRole("button", { name: /^Location$/i })).toBeNull();
     fireEvent.click(screen.getByTestId("home-map-state-co"));
     fireEvent.click(screen.getByRole("button", { name: "Show resorts" }));
     fireEvent.click(screen.getByTestId("home-map-resort-beaver-creek"));
     expect(screen.getByTestId("home-trail-preview")).toBeTruthy();
-    expect(screen.getByTestId("home-mountain-chip").textContent).toMatch(/Beaver Creek/);
+    expect(screen.getByTestId("home-location").textContent).toMatch(/Beaver Creek/);
+    expect(screen.getByTestId("home-mountain-chip").textContent).toMatch(/Riding Beaver Creek/);
+    expect(screen.getByTestId("home-location-detail").textContent).toMatch(/Beaver Creek · CO/);
     fireEvent.click(screen.getByTestId("home-map-full"));
     expect(useStomp.getState().screen).toBe("map");
+  });
+
+  it("no standalone Location control outside the map card", () => {
+    render(<StompApp />);
+    const card = screen.getByTestId("home-map-card");
+    expect(card.textContent).toMatch(/LOCATION/);
+    expect(screen.queryByTestId("home-tool-location")).toBeNull();
+    expect(screen.queryByRole("button", { name: /^Maps$/i })).toBeNull();
+  });
+
+  it("US level shows all four region tiles", () => {
+    render(<StompApp />);
+    const us = screen.getByTestId("home-map-us");
+    expect(us.querySelectorAll("button")).toHaveLength(4);
+    for (const code of ["CO", "UT", "CA", "VT"]) {
+      expect(screen.getByTestId(`home-map-state-${code.toLowerCase()}`).textContent).toMatch(code);
+    }
   });
 
   it("playlist block open + adjust route to playlist", () => {
@@ -129,5 +176,50 @@ describe("Greet home UX smoke", () => {
     expect(screen.queryByTestId("home-plans-list")).toBeNull();
     fireEvent.click(screen.getByTestId("home-plans-toggle"));
     expect(screen.getByTestId("home-plans-list")).toBeTruthy();
+  });
+
+  it("picking a resort surfaces mountain playlist link + beat strip on map", () => {
+    render(<StompApp />);
+    fireEvent.click(screen.getByTestId("home-map-state-co"));
+    fireEvent.click(screen.getByRole("button", { name: "Show resorts" }));
+    fireEvent.click(screen.getByTestId("home-map-resort-beaver-creek"));
+    expect(screen.getByTestId("home-map-mountain-playlist").textContent).toMatch(/Beaver Creek lap mix/);
+    expect(screen.getByTestId("home-playlist-title").textContent).toMatch(/Beaver Creek lap mix/);
+    expect(screen.getByTestId("beat-strip")).toBeTruthy();
+    expect(screen.getByTestId("beat-strip-playhead")).toBeTruthy();
+    expect(screen.queryByTestId("home-mountain-tracks")).toBeNull();
+  });
+
+  it("mountain playlist opens Playlist with right-side beat strip", () => {
+    render(<StompApp />);
+    fireEvent.click(screen.getByTestId("home-map-state-ut"));
+    fireEvent.click(screen.getByRole("button", { name: "Show resorts" }));
+    fireEvent.click(screen.getByTestId("home-map-resort-park-city"));
+    fireEvent.click(screen.getByTestId("home-map-mountain-playlist"));
+    expect(useStomp.getState().screen).toBe("playlist");
+    expect(screen.getByTestId("beat-strip")).toBeTruthy();
+    expect(screen.getByTestId("playlist-beat-legend")).toBeTruthy();
+    expect(screen.queryByTestId("playlist-mountain-songs")).toBeNull();
+  });
+});
+
+describe("mountain playlist beat data", () => {
+  it("every demo resort has a playlist with chronological beats", () => {
+    const all = allMountainPlaylists();
+    expect(all.length).toBe(DEMO_RESORTS.length);
+    for (const pl of all) {
+      expect(pl.beats.length).toBeGreaterThanOrEqual(3);
+      expect(pl.durationSec).toBeGreaterThan(0);
+      const times = pl.beats.map((b) => b.atSec);
+      expect(times).toEqual([...times].sort((a, b) => a - b));
+      expect(pl.beats.some((b) => b.kind === "trick")).toBe(true);
+      expect(pl.beats.some((b) => b.kind === "section")).toBe(true);
+    }
+  });
+
+  it("beaver creek has trick + section marks", () => {
+    const pl = mountainPlaylistFor("beaver-creek")!;
+    expect(pl.title).toMatch(/Beaver Creek/);
+    expect(pl.beats.find((b) => b.kind === "trick")!.label).toMatch(/50-50|Backside/);
   });
 });

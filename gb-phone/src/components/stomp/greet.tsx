@@ -145,8 +145,8 @@ export function Greet() {
         {note ? <p className="mt-2 text-sm font-semibold text-teal">{note}</p> : null}
       </section>
 
-      {/* Zone 2 — Mountain (Concept B) */}
-      <section data-testid="home-zone-mountain" className="mt-5 px-5" aria-label="Mountain">
+      {/* Zone 2 — Location + map (Concept B; location is inside the card, not a side pill) */}
+      <section data-testid="home-zone-mountain" className="mt-5 px-5" aria-label="Location and map">
         <HomeMapCard />
       </section>
 
