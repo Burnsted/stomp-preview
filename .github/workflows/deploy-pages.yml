@@ -2,9 +2,9 @@
 # Live URL: https://burnsted.github.io/stomp-preview/
 #
 # Durable path: actions/deploy-pages (GitHub Actions as Pages source).
-# Legacy fallback: also sync the static site onto main root so the existing
-# "Deploy from branch: main /" Pages setting keeps serving the Vite app
-# without wiping gb-phone/ source history (keep_files + [skip ci]).
+# Legacy fallback: git-sync static site onto main root so "Deploy from
+# branch: main /" keeps serving the Vite app without wiping gb-phone/ history.
+# (peaceiris cannot publish main→main; we rsync + commit instead.)
 name: deploy-pages
 
 on:
@@ -84,17 +84,34 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/download-artifact@v4
         with:
           name: site-pages-legacy
           path: site-pages
-      - name: Publish static files to main root without wiping history
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./site-pages
-          publish_branch: main
-          keep_files: true
-          force_orphan: false
-          enable_jekyll: false
-          commit_message: "deploy(pages): gb-phone Vite static site [skip ci]"
+      - name: Copy Vite site into repo root (keep gb-phone / docs / history)
+        run: |
+          set -euo pipefail
+          # Replace only published site paths; never touch gb-phone/, docs/, batch1/, flutter-holding/.
+          rm -rf assets __grok stomp
+          cp -a site-pages/index.html site-pages/404.html site-pages/.nojekyll ./
+          cp -a site-pages/favicon.svg site-pages/og.jpg ./
+          cp -a site-pages/assets site-pages/__grok site-pages/stomp ./
+          rm -rf site-pages
+          test -f index.html
+          grep -q '/stomp-preview/assets/' index.html
+          ! grep -qi flutter_bootstrap index.html
+      - name: Commit and push root site if changed
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- \
+            index.html 404.html .nojekyll favicon.svg og.jpg \
+            assets __grok stomp
+          if git diff --cached --quiet; then
+            echo "No root site changes to publish."
+            exit 0
+          fi
+          git commit -m "deploy(pages): gb-phone Vite static site [skip ci]"
+          git push origin HEAD:main

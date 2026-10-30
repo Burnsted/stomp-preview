@@ -27,7 +27,9 @@ Default `npm run build` is unchanged (Vercel/Nitro SSR for the GB platform).
 ## Deploy workflow
 
 1. **Actions Pages** (`actions/upload-pages-artifact` + `actions/deploy-pages`) — durable target. The job best-effort flips `build_type=workflow` if the token allows.
-2. **Legacy main root sync** (`peaceiris/actions-gh-pages`, `keep_files: true`, commit `[skip ci]`) — updates root static files so the existing “Deploy from a branch: main /” setting still serves the Vite app **without** deleting `gb-phone/` history.
+2. **Legacy main root sync** — rsync of `site-pages/` into repo root + bot commit `[skip ci]` (only `index.html` / `404.html` / `assets/` / `stomp/` / `__grok/` / …). Does **not** use peaceiris main→main (prohibited). Leaves `gb-phone/`, `docs/`, `batch1/`, `flutter-holding/` alone.
+
+Current Pages setting remains **legacy** `main` `/` unless Settings → Pages is switched to **GitHub Actions**.
 
 Demo constraints unchanged: no live auth / NFC / GPS / wake; demo labels stay; no Invite UX inventing.
 
