@@ -1,0 +1,29 @@
+# Batch 1 + Batch 2 test evidence
+
+## Environment
+node: v22.23.4
+npm: 10.9.9
+cwd: batch1/
+branch: woz/batch1-dev-2026-10-29
+baseline tip: 702cf32a2a6284177bdc2697766d5a34fceca39e
+
+## Batch 1 (prior)
+Commands:
+  npm run typecheck
+  npm test
+Result: Test Files 3 passed (3) · Tests 15 passed (15)
+
+## Batch 2 (2026-10-29)
+Commands:
+  cd batch1
+  npm run typecheck
+  npm test
+
+Result:
+  typecheck: pass (tsc --noEmit)
+  Test Files  6 passed (6)
+  Tests       25 passed (25)
+  Suites: unlink, owner-transfer, stompers, session-registry,
+          session-settings, campfire-identity
+
+date_utc: 2026-10-29T22:41:27Z

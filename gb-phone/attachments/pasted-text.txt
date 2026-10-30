@@ -1,0 +1,165 @@
+Worked for 56s
+
+### STOMP — App redesign and functionality review
+
+After reviewing your five screenshots, I think STOMP has the foundation of a genuinely interesting ski and snowboard app. The color palette is distinctive, the trick library is useful, and the combination of park mapping, crew interaction, music, and progression gives it more potential than a conventional trick tracker.
+
+But I would make a significant change to its direction:
+
+STOMP should feel less like an app that records what you did and more like a riding companion that helps you decide what to do next.
+
+That means three priorities:
+
+* Give STOMP a much more memorable visual identity, particularly its main logo and home screen.
+
+* Replace the oversized Demo Day experience with personalized, ready-to-ride sessions.
+
+* Make the features work together: choose a run, pick tricks, coordinate your crew, play music, record clips, and track progression.
+
+### 1\. The STOMP logo needs more personality
+
+The existing wordmark is too plain for an action-sports brand. It looks like a heading rather than something riders would want on a helmet sticker, hoodie, or snowboard.
+
+I'd keep the name STOMP. It's short, aggressive, memorable, and directly related to landing a trick.
+
+What I'd change is the treatment: a custom heavy wordmark, tighter spacing, slightly angled letters, and a distinctive graphic element that suggests impact or a board landing.
+
+The current lime, turquoise, pink, and midnight navy palette is worth keeping. It's one of the strongest parts of the design.
+
+The visual above shows the direction I'd take: a more aggressive STOMP identity, a useful home screen, and a clear progression from planning a session to riding and reviewing it.
+
+### 2\. What competing apps are doing well
+
+I looked at two established products that STOMP can learn from.
+
+| App    | What it does well                                                           | What STOMP should take from it                                        |
+| ------ | --------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Slopes | GPS recording, resort maps, friend locations, performance statistics        | Reliable background tracking and simple crew coordination             |
+| Carv   | Personalized coaching, skill pathways, audio feedback, progress measurement | A guided progression system that recommends the next achievable skill |
+
+Slopes already offers interactive maps at more than 2,000 resorts and automatic run detection. Competing directly on generic GPS tracking would be difficult.
+
+Carv is especially interesting because it offers different coaching modes: silent tracking, chairlift feedback, and real-time instruction. STOMP could adapt that approach to freestyle skiing and snowboarding, using video review rather than requiring specialized sensors.
+
+The opportunity: Make STOMP the freestyle-focused app that connects park sessions, trick progression, filming, friends, and music.
+
+### 3\. Replace Demo Day with "Today's Session"
+
+I agree that the giant Demo Day button should go. It makes the app feel like a prototype.
+
+Instead, STOMP should automatically suggest a session based on skill level, terrain preference, and previous tricks.
+
+YOUR NEXT SESSION
+
+### Park Progression
+
+Intermediate · Approx. 45 minutes
+
+Suggested
+
+![Winterurlaub - Skigebiet Carezza, Karersee - Dolomiten](https://images.openai.com/static-rsc-4/mV9q2hRWaTXxk5nLm0VfG4dEudQLt1NkSxzseGaqlSAl8-7ypw7UuPRFM0hFUloGFDorBGK8oYMcSU5KEP6yoG6HrudEs9kKCOvHkowvuetMfnARlUDIV9fPUO3aUxD_Ted3hcuNzDOzdpAaS3gObi8chuuTx9FM9IzfQ1xjdMctSf6gE9UDB2cdAQ2pjwu1?purpose=fullsize)
+
+01
+
+Warm up
+
+2 easy laps · Ollies and controlled landings
+
+02
+
+Build confidence
+
+Straight air → 180 → Frontside 180
+
+03
+
+Main park line
+
+Choose 2 familiar features and film a run
+
+04
+
+Finish strong
+
+Repeat a comfortable trick and log your progress
+
+Park Session playlist
+
+Open in music app
+
+This is an illustrative template, not a live resort-specific route. Riders should always choose features appropriate to their ability and current conditions.
+
+I would include five starter session types: First Park Day, Progression Session, Rail Day, Kicker Day, and Crew Film Session. Users could customize and save their own templates.
+
+### 4\. Functionality improvements I'd prioritize
+
+Smart Trick Progression
+
+Instead of only marking a trick "Stomp," let riders mark it as Want to learn, Practicing, Landed, or Consistent. Suggest appropriate prerequisites and show short instructional clips. Don't automatically claim a trick was landed based only on GPS.
+
+Crew Sessions
+
+Create a private group session, share planned park lines, assign who films whom, and collect everyone's clips afterward. Include explicit opt-in for location sharing.
+
+Clip-to-Trick Linking
+
+Let riders attach video to a trick attempt, replay in slow motion, compare attempts, and save their best landing. Eventually, add AI-assisted body-position analysis, with uncertainty clearly shown.
+
+Music That Fits the Session
+
+Recommend playlists by riding mood: warm-up, flow, high-energy park, or relaxed laps. Start with links to music apps. Spotify restricts certain playback, voice-control, and synchronization uses, so true rhythm-synced functionality needs a separate licensing and technical review.
+
+Verified Park Maps
+
+Replace the illustrative Mammoth lines with actual park features when verified data is available. Clearly label unverified community pins, outdated features, and closed terrain. Allow offline downloads.
+
+### 5\. Fix the progress screen
+
+Your current progress screen has good visual energy, but the numbers aren't sufficiently clear.
+
+For example, "Remaining: 21%" doesn't explain what is remaining, and "0 stomped" conflicts with the sense of progress displayed elsewhere.
+
+I'd redesign it around three things: tricks learned, consistency, and personal goals.
+
+### Your Progress
+
+Example data
+
+### 12
+
+Tricks landed
+
+### 4
+
+Working on
+
+### 3
+
+Session goals
+
+Progress toward today's goals
+
+2 of 3 goals completed · Example
+
+That gives riders something they can understand immediately and feel motivated to improve.
+
+### 6\. Build order I'd give Grok
+
+| Priority | Improvement                                   | Why                                               |
+| -------- | --------------------------------------------- | ------------------------------------------------- |
+| P0       | New STOMP wordmark and home screen            | Immediate visual improvement                      |
+| P0       | Replace Demo Day with Today's Session         | Core user experience                              |
+| P0       | Persistent trick progress and saved templates | Makes the app useful between visits               |
+| P1       | Crew sessions and shared filming              | Differentiates STOMP                              |
+| P1       | Playlist recommendations                      | Adds atmosphere without complex audio integration |
+| P1       | Verified maps and offline operation           | Important for real mountain use                   |
+| P2       | AI video analysis and adaptive coaching       | Higher-value long-term feature                    |
+| P2       | Advanced rhythm/audio synchronization         | Requires technical and licensing validation       |
+
+One additional rule: no distracting voice prompts during an approach, jump, or landing. Coaching and detailed notifications should default to stationary or chairlift moments.
+
+My recommendation is to keep the energetic brand styling but make the actual riding interface simpler and easier to read with gloves, bright sunlight, and limited connectivity.
+
+And I would retain Demo Day as an optional sample session under templates, rather than making it a primary home-screen action.
+
+The key product decision is this: STOMP should own the experience of getting better at freestyle riding with your crew, not attempt to become another general-purpose ski tracker. That is the direction I'd send to Grok for the next development phase.

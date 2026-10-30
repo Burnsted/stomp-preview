@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #eef3ea;
+  --color-snow: #ffffff;
+  --color-ink: #141821;
+  --color-muted: #6e7684;
+  --color-line: #e2e6ea;
+  --color-lime: #d6f25a;
+  --color-pink: #ff3b78;
+  --color-teal: #2ad4c2;
+  --color-orange: #ff7a3c;
+  --color-sky: #3b82f6;
+  --color-violet: #8b7cff;
+  --font-sans: "Outfit", system-ui, sans-serif;
+  --font-display: "Anton", system-ui, sans-serif;
+  --radius-card: 1.5rem;
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  html {
+    color-scheme: light;
+    background: var(--color-paper);
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background:
+      linear-gradient(165deg, #d6f25a 0 36%, transparent 36.2%),
+      linear-gradient(165deg, transparent 36%, #b7f3ea 36.2% 70%, transparent 70.2%),
+      linear-gradient(165deg, transparent 78%, #ffd6e6 78%),
+      #f6f7f4;
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+}
+
+@keyframes stomp-dash {
+  to {
+    stroke-dashoffset: -48;
+  }
+}
+
+.trail-dash {
+  stroke-dasharray: 7 9;
+  animation: stomp-dash 1.6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trail-dash {
+    animation: none;
+  }
+}
+
+/* Batch 7: honour reduced motion app-wide (cheap, no design change). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
