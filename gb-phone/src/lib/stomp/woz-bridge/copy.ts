@@ -143,3 +143,31 @@ export function lastExportHint(iso: string | null, nowMs = Date.now()): string {
   const mins = Math.max(0, Math.round((nowMs - t) / 60000));
   return mins < 1 ? "Last export: just now." : mins < 60 ? `Last export: ${mins} min ago.` : mins < 1440 ? `Last export: ${Math.round(mins / 60)} h ago.` : `Last export: ${Math.round(mins / 1440)} d ago.`;
 }
+
+// Batch 9: Smart ID lifecycle copy (one voice for claim / activate / suspend / revoke) + Invite empty copy.
+export type SmartIdStateName = "unclaimed" | "claimed" | "active" | "suspended" | "revoked";
+export const SMARTID_EMPTY = "No demo tag yet. Create one to try claim → activate → scan. Demo · no NFC — nothing is written to a real tag.";
+export const SMARTID_STATE: Record<SmartIdStateName, string> = {
+  unclaimed: "Unclaimed — enter its claim code to make it yours.",
+  claimed: "Claimed by you — Activate it so scans show your name.",
+  active: "Active — scans show your rider name.",
+  suspended: "Suspended — scans show “not active”. Activate to turn it back on.",
+  revoked: "Revoked — scans show “revoked”. Remove it and create a new demo tag to start over.",
+};
+export function smartIdStateLabel(state: string): string { return (SMARTID_STATE as Record<string, string>)[state] ?? "Unknown tag state."; }
+export const SMARTID_DONE = {
+  created: "Demo tag created — claim code CLAIM-0001.",
+  claimed: "Tag claimed — it's yours on this phone.",
+  activated: "Tag active — scans now show your rider name.",
+  suspended: "Tag suspended — scans show “not active” until you Activate it.",
+  revoked: "Tag revoked — scans show “revoked”.",
+  removed: "Demo tag removed from this phone.",
+} as const;
+export const SUSPEND_CONFIRM = "Suspend this tag? Scans show “not active” until you Activate it again.";
+export const REVOKED_BANNER = SMARTID_STATE.revoked;
+/** Which lifecycle buttons a tag offers right now (mirrors batch1 SMART_ID_TRANSITIONS; Activate on an unclaimed tag explains “claim first”; never offers a no-op like Activate-on-active). */
+export function smartIdActions(state: string): { activate: boolean; suspend: boolean; revoke: boolean; remove: boolean } {
+  return { activate: state === "unclaimed" || state === "claimed" || state === "suspended", suspend: state === "active", revoke: state !== "revoked", remove: state === "revoked" };
+}
+export const INVITE_EMPTY = "No invite activity yet. When a Stomper joins through Invite (Crew Link) it appears here. Pending invites stay in Crew Link — none are shown or faked here.";
+export const RIDE_PAUSED_START = "Ride's paused — say “resume” to keep going, or “I'm done” to end it.";

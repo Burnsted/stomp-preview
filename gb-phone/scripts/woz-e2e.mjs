@@ -8,7 +8,7 @@ const consoleErrs = []; p.on("console", (m) => { if (m.type() === "error") conso
 await p.goto(`${process.env.WOZ_E2E_URL ?? "http://127.0.0.1:8081/"}`);
 await p.evaluate(() => localStorage.setItem("stomp-line", JSON.stringify({ version: 0, state: { screen: "stompers", riderName: "Ted", riderCode: "ME0001", crew: [{ code: "AAA111", name: "Ria" }, { code: "BBB222", name: "Jax" }] } })));
 await p.reload(); await p.waitForTimeout(1500);
-const log = [];
+const log = []; p.setDefaultTimeout(8000);
 const step = async (name, fn) => { try { await fn(); log.push("PASS " + name); } catch (e) { log.push("FAIL " + name + " " + e.message.split("\n")[0]); } };
 await step("stompers entry", () => p.getByTestId("woz-entry-crew").click());
 await step("crew rows", async () => { await p.getByTestId("woz-lab").waitFor(); const n = await p.getByTestId("crew-row").count(); if (n !== 3) throw new Error("rows " + n); });
@@ -187,5 +187,38 @@ await step("b8 full path greet → Crew tools → each tab → Back, no console 
   if (consoleErrs.length) throw new Error("console: " + consoleErrs.join(" | "));
 });
 await p.screenshot({ path: "test-results/e2e-b8.png" });
+// batch9: Smart ID lifecycle (empty → claim → activate → suspend confirm Esc/Yes → reactivate → revoke → remove), Session/Ride/Campfire isolation, Invite empty copy
+await step("b9 smart id lifecycle + suspend confirm", async () => {
+  await p.getByTestId("greet-crew-tools").click(); await p.getByTestId("woz-lab").waitFor(); await p.getByRole("tab", { name: "Smart ID" }).click();
+  if (await p.getByRole("button", { name: "Remove tag" }).count()) await p.getByRole("button", { name: "Remove tag" }).click();
+  if (!(await p.getByTestId("smartid-empty").count())) { await p.getByTestId("revoke-start").click(); await p.getByRole("button", { name: "Yes, revoke" }).click(); await p.getByRole("button", { name: "Remove tag" }).click(); }
+  await p.getByTestId("smartid-empty").waitFor();
+  await p.getByRole("button", { name: "Create demo tag" }).click(); await p.getByLabel("claim code").fill(" claim-0001 "); await p.getByRole("button", { name: "Claim" }).click();
+  await p.getByRole("button", { name: "Activate" }).click(); if (await p.getByRole("button", { name: "Activate" }).count()) throw new Error("activate shown on active");
+  await p.getByTestId("suspend-start").click(); const f = await p.evaluate(() => document.activeElement?.textContent); if (f !== "Keep active") throw new Error("focus " + f);
+  await p.keyboard.press("Escape"); if ((await p.getByTestId("tag-state").getAttribute("data-state")) !== "active") throw new Error("esc suspended");
+  await p.getByTestId("suspend-start").click(); await p.getByRole("button", { name: "Yes, suspend" }).click();
+  if ((await p.getByTestId("tag-state").getAttribute("data-state")) !== "suspended") throw new Error("not suspended");
+  await p.getByLabel("scan payload").fill("stomp://id/demo-tag-01"); await p.getByRole("button", { name: "Simulate scan" }).click(); const v = await p.getByTestId("scan-view").textContent(); if (!/isn’t active/.test(v)) throw new Error(v);
+  await p.getByRole("button", { name: "Activate" }).click(); await p.getByTestId("revoke-start").click(); await p.getByRole("button", { name: "Yes, revoke" }).click();
+  await p.getByTestId("revoked-banner").waitFor(); await p.getByRole("button", { name: "Remove tag" }).click(); await p.getByTestId("smartid-empty").waitFor();
+});
+await step("b9 campfire state never leaks into ride", async () => {
+  await p.getByRole("tab", { name: "Ride" }).click(); if (!(await p.getByRole("button", { name: "Start" }).isDisabled())) await p.getByRole("button", { name: "Start" }).click(); else { /* already live */ }
+  await p.getByRole("tab", { name: "Campfire" }).click(); const t = await p.getByTestId("campfire-toggle").textContent(); if (/Open/.test(t)) await p.getByTestId("campfire-toggle").click();
+  await p.getByTestId("campfire-toggle").click(); await p.getByRole("button", { name: "Yes, close" }).click();
+  await p.getByRole("tab", { name: "Ride" }).click(); await p.getByTestId("ride-banner").waitFor(); if (!(await p.getByRole("button", { name: "Start" }).isDisabled())) throw new Error("start enabled while live");
+  await p.getByRole("button", { name: "Pause" }).click(); await p.getByRole("tab", { name: "Session" }).click(); await p.getByLabel("session command").fill("start session"); await p.getByRole("button", { name: "Send" }).click();
+  const tr = await p.getByTestId("transcript").textContent(); if (!/Ride's paused/.test(tr)) throw new Error("no paused guard");
+  if ((await p.getByTestId("ride-banner").getAttribute("data-phase")) !== "paused") throw new Error("ride restarted");
+  await p.getByRole("tab", { name: "Ride" }).click(); await p.getByRole("button", { name: "End" }).click();
+});
+await step("b9 invite empty copy, no fake invites", async () => {
+  await p.evaluate(() => localStorage.removeItem("stomp-woz-invite-log")); await p.getByRole("tab", { name: "Crew" }).click();
+  if (await p.getByTestId("invite-event").count()) { if (await p.getByRole("button", { name: "Clear invite activity" }).count()) await p.getByRole("button", { name: "Clear invite activity" }).click(); }
+  const t = await p.getByTestId("invite-empty").textContent(); if (!/none are shown or faked/.test(t)) throw new Error(t);
+  if (await p.getByText(/Demo invite/i).count()) throw new Error("fake invite rendered");
+});
+await p.screenshot({ path: "test-results/e2e-b9.png" });
 console.log(log.join("\n")); console.log("pageerrors", errs); if (log.some((l) => l.startsWith("FAIL")) || errs.length) process.exitCode = 1;
 await b.close();

@@ -17,7 +17,7 @@ import { routeTyped, SESSION_BRIDGE_FLAGS, helpText, type GbAction } from "@/lib
 import { ride as R, runFromGbSession, type FeatureKind } from "@/lib/stomp/woz-bridge/ride";
 import { media as M, mediaFromGbClips, CAMPFIRE_GUARDS } from "@/lib/stomp/woz-bridge/campfire";
 import { smartId as S, nfc, SMART_ID_FLAGS, demoTag } from "@/lib/stomp/woz-bridge/smartid";
-import { friendlyError, scanLabel, NFC_WRITE_MSG, UPLOAD_OFF_MSG, DEMO_LABEL, SESSION_EMPTY, RUNS_EMPTY, HITS_EMPTY, rideBanner, REVOKE_CONFIRM, CLAIM_EMPTY, CLAIM_HINT, normalizeClaimCode, CREW_EMPTY, CREW_ROW_HINT, CREW_SELF_NOTE, crewConfirmCopy, crewStateError, plainError, CAMPFIRE_DEMO_BANNER, CAMPFIRE_CLOSE_CONFIRM, CAMPFIRE_CLOSED_COMMENT, COMMENT_EMPTY, mentionError, rideEndSummary, DATA_INTRO, DATA_EXPORT_READY, DATA_IMPORT_EMPTY, DATA_CLEAR_LABEL, DATA_CLEARED, lastExportHint } from "@/lib/stomp/woz-bridge/copy";
+import { friendlyError, scanLabel, NFC_WRITE_MSG, UPLOAD_OFF_MSG, DEMO_LABEL, SESSION_EMPTY, RUNS_EMPTY, HITS_EMPTY, rideBanner, REVOKE_CONFIRM, CLAIM_EMPTY, CLAIM_HINT, normalizeClaimCode, CREW_EMPTY, CREW_ROW_HINT, CREW_SELF_NOTE, crewConfirmCopy, crewStateError, plainError, CAMPFIRE_DEMO_BANNER, CAMPFIRE_CLOSE_CONFIRM, CAMPFIRE_CLOSED_COMMENT, COMMENT_EMPTY, mentionError, rideEndSummary, DATA_INTRO, DATA_EXPORT_READY, DATA_IMPORT_EMPTY, DATA_CLEAR_LABEL, DATA_CLEARED, lastExportHint, SMARTID_EMPTY, SMARTID_DONE, SUSPEND_CONFIRM, REVOKED_BANNER, smartIdStateLabel, smartIdActions, INVITE_EMPTY, RIDE_PAUSED_START } from "@/lib/stomp/woz-bridge/copy";
 import { MAX_UTTERANCE } from "@/lib/stomp/woz-bridge/session";
 
 const nowIso = () => new Date().toISOString();
@@ -115,7 +115,7 @@ function InviteActivity() {
         {log.length ? <button type="button" aria-label="Clear invite activity" className={chip} onClick={clear}>Clear</button> : null}
       </div>
       <p className="text-xs text-muted">Mirrored from Crew Link (read-only). Re-inviting an unlinked Stomper re-links them here.</p>
-      {log.length === 0 ? <p className="pt-2 text-sm text-muted" data-testid="invite-empty">No invite activity yet.</p> : (
+      {log.length === 0 ? <p className="pt-2 text-sm text-muted" data-testid="invite-empty">{INVITE_EMPTY}</p> : (
         <ul className="pt-2 text-sm">
           {[...log].reverse().slice(0, 10).map((e, i) => (
             <li key={e.atIso + e.code + i} data-testid="invite-event">{e.kind === "accepted" ? "Joined" : "Left"} · {e.name} ({e.code})</li>
@@ -253,7 +253,7 @@ function SessionPanel() {
     const t = nowIso();
     const step = (r: ReturnType<typeof R.startRide>, op?: "start" | "pause" | "resume" | "end") => { if (r.ok) { setRide(r.value); return null; } return friendlyError("ride", r.error, op); };
     switch (a.kind) {
-      case "startRun": { const m = step(R.startRide(ride.phase === "ended" ? R.newRideSession(`ride-${Date.now()}`, ride.parkLabel, ride.run) : ride, t), "start"); if (!m) { startRun(); setScreen("woz"); return "Ride started. Say “stomped it” after each trick."; } return m; }
+      case "startRun": { if (ride.phase === "paused") return RIDE_PAUSED_START; const m = step(R.startRide(ride.phase === "ended" ? R.newRideSession(`ride-${Date.now()}`, ride.parkLabel, ride.run) : ride, t), "start"); if (!m) { startRun(); setScreen("woz"); return "Ride started. Say “stomped it” after each trick."; } return m; }
       case "endRun": { const m = step(R.endRide(ride, t), "end"); if (!m) { endRun(); setScreen("woz"); return "Ride ended. Nice session."; } return m; }
       case "pauseRide": return step(R.pauseRide(ride, t), "pause") ?? "Paused.";
       case "resumeRide": return step(R.resumeRide(ride, t), "resume") ?? "Back at it.";
@@ -403,6 +403,8 @@ function CampfirePanel() {
   const [text, setText] = useState("");
   const [confirmClose, setConfirmClose] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
+  /** Batch 9: if Campfire is closed elsewhere (e.g. a Session command), drop any stale close prompt. */
+  useEffect(() => { if (!campfireOpen && confirmClose) setConfirmClose(false); }, [campfireOpen, confirmClose]);
   const visible = M.visibleClips(media, me, [C.GB_CREW_ID]);
   const r = (x: ReturnType<typeof M.react>) => { if (x.ok) { setMedia(x.value); setError(null); return true; } setError(friendlyError("campfire", x.error)); return false; };
   const refocusToggle = () => queueMicrotask(() => toggleRef.current?.focus({ preventScroll: true }));
@@ -465,45 +467,52 @@ function SmartIdPanel() {
   const [code, setCode] = useState("");
   const [scan, setScan] = useState("");
   const [view, setView] = useState<string | null>(null);
-  const [confirmRevoke, setConfirmRevoke] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  /** Batch 9: destructive steps (Suspend, Revoke) share one ConfirmBar; only one can be pending. */
+  const [confirm, setConfirm] = useState<null | "suspend" | "revoke">(null);
   const tag = tags[0];
-  const updTag = (r: ReturnType<typeof S.activateTag>) => { if (r.ok) { setTags([r.value, ...tags.slice(1)]); setError(null); } else setError(friendlyError("smartid", r.error)); };
+  const acts = smartIdActions(tag?.state ?? "");
+  const updTag = (r: ReturnType<typeof S.activateTag>, done: string) => { if (r.ok) { setTags([r.value, ...tags.slice(1)]); setError(null); setNote(done); } else { setError(friendlyError("smartid", r.error)); setNote(null); } };
   return (
     <div className="space-y-3">
       <div className="rounded-3xl bg-snow p-4 ring-1 ring-line" data-testid="smartid">
         <div className="flex items-center justify-between"><h2 className="font-semibold">Smart ID</h2><DemoBadge label={DEMO_LABEL.smartid} /></div>
-        <p className="text-xs text-muted">NFC: {nfc.supported ? "on" : "not supported"} · Camera scan: {SMART_ID_FLAGS.camera ? "on" : "off"} · Network: off</p>
+        <p className="text-xs text-muted" data-testid="smartid-flags">NFC: {nfc.supported ? "on" : "not supported"} · Camera scan: {SMART_ID_FLAGS.camera ? "on" : "off"} · Network: off</p>
         {!tag ? (
-          <button type="button" className={primary + " mt-2"} onClick={() => { const r = demoTag("demo-tag-01", "CLAIM-0001", nowIso()); if (r.ok) setTags([r.value.tag], [r.value.credential]); }}>Create demo tag</button>
+          <>
+            <p className="pt-2 text-sm text-muted" data-testid="smartid-empty">{SMARTID_EMPTY}</p>
+            <button type="button" className={primary + " mt-2"} onClick={() => { const r = demoTag("demo-tag-01", "CLAIM-0001", nowIso()); if (r.ok) { setTags([r.value.tag], [r.value.credential]); setNote(SMARTID_DONE.created); setError(null); } }}>Create demo tag</button>
+          </>
         ) : (
           <div className="pt-2 text-sm">
-            <p data-testid="tag-state">Tag {tag.publicSlug}: {tag.state}</p>
+            <p data-testid="tag-state" data-state={tag.state}>Tag {tag.publicSlug}: {tag.state}</p>
+            <p className="text-xs text-muted" data-testid="tag-state-help">{smartIdStateLabel(tag.state)}</p>
             <p className="text-xs">QR payload: {S.buildQrPayload(tag).ok ? `${S.QR_PREFIX}${tag.publicSlug}` : "invalid"}</p>
             {tag.state === "unclaimed" ? (
-              <form className="flex gap-2 pt-2" onSubmit={(e) => { e.preventDefault(); const cred = creds.find((c) => c.tagId === tag.tagId); const c = normalizeClaimCode(code); if (!c) return setError(CLAIM_EMPTY); if (!cred) return setError(friendlyError("smartid", "not_found")); const r = S.claimTag(tag, cred, { code: c, stomperId: me }); if (r.ok) { setTags([r.value.tag], [r.value.credential]); setError(null); setCode(""); } else setError(friendlyError("smartid", r.error)); }}>
-                <input aria-label="claim code" value={code} onChange={(e) => setCode(e.target.value)} className="h-10 flex-1 rounded-xl px-3 ring-1 ring-line" />
-                <button type="submit" className={chip} disabled={!normalizeClaimCode(code)}>Claim</button>
+              <form className="flex gap-2 pt-2" onSubmit={(e) => { e.preventDefault(); const cred = creds.find((c) => c.tagId === tag.tagId); const c = normalizeClaimCode(code); if (!c) return setError(CLAIM_EMPTY); if (!cred) return setError(friendlyError("smartid", "not_found")); const r = S.claimTag(tag, cred, { code: c, stomperId: me }); if (r.ok) { setTags([r.value.tag], [r.value.credential]); setError(null); setCode(""); setNote(SMARTID_DONE.claimed); } else { setError(friendlyError("smartid", r.error)); setNote(null); } }}>
+                <input aria-label="claim code" aria-describedby="claim-hint" autoCapitalize="characters" autoComplete="off" value={code} onChange={(e) => setCode(e.target.value)} placeholder="CLAIM-0001" className="h-10 flex-1 rounded-xl px-3 ring-1 ring-line" />
+                <button type="submit" data-testid="claim-submit" className={chip} disabled={!normalizeClaimCode(code)}>Claim</button>
               </form>
             ) : null}
-            {tag.state === "unclaimed" ? <p className="pt-1 text-xs text-muted" data-testid="claim-hint">{CLAIM_HINT}</p> : null}
-            {tag.state === "revoked" ? <p role="status" className="pt-1 text-sm text-pink" data-testid="revoked-banner">Revoked — scans show “revoked”. Remove it and create a new demo tag to start over.</p> : null}
-            <div className="flex flex-wrap gap-1 pt-2">
-              {tag.state !== "revoked" ? <>
-                <button type="button" className={chip} onClick={() => updTag(S.activateTag(tag, me, nowIso()))}>Activate</button>
-                <button type="button" className={chip} onClick={() => updTag(S.suspendTag(tag, me))}>Suspend</button>
-                <button type="button" className={chip} data-testid="revoke-start" onClick={() => setConfirmRevoke(true)}>Revoke</button>
-              </> : null}
-              <button type="button" className={chip} onClick={() => { void nfc.write("x").then(() => setError(NFC_WRITE_MSG), () => setError(NFC_WRITE_MSG)); }}>Write NFC (unavailable)</button>
-              {tag.state === "revoked" ? <button type="button" className={chip} onClick={() => { setTags([], []); setView(null); }}>Remove tag</button> : null}
-            </div>
-            {confirmRevoke && tag.state !== "revoked" ? (
-              <ConfirmBar className="mt-2 rounded-2xl bg-snow p-2 ring-1 ring-pink" testId="revoke-confirm" label="Confirm revoke"
-                message={REVOKE_CONFIRM} yesLabel="Yes, revoke" keepLabel="Keep tag"
-                onYes={() => { updTag(S.revokeTag(tag, me, nowIso())); setConfirmRevoke(false); }} onKeep={() => setConfirmRevoke(false)} />
-            ) : null}
+            {tag.state === "unclaimed" ? <p id="claim-hint" className="pt-1 text-xs text-muted" data-testid="claim-hint">{CLAIM_HINT}</p> : null}
+            {tag.state === "revoked" ? <p role="status" className="pt-1 text-sm text-pink" data-testid="revoked-banner">{REVOKED_BANNER}</p> : null}
+            {confirm && tag.state !== "revoked" && (confirm === "revoke" || acts.suspend) ? (
+              <ConfirmBar className="mt-2 rounded-2xl bg-snow p-2 ring-1 ring-pink" testId={confirm === "revoke" ? "revoke-confirm" : "suspend-confirm"} label={confirm === "revoke" ? "Confirm revoke" : "Confirm suspend"}
+                message={confirm === "revoke" ? REVOKE_CONFIRM : SUSPEND_CONFIRM} yesLabel={confirm === "revoke" ? "Yes, revoke" : "Yes, suspend"} keepLabel={confirm === "revoke" ? "Keep tag" : "Keep active"}
+                onYes={() => { if (confirm === "revoke") updTag(S.revokeTag(tag, me, nowIso()), SMARTID_DONE.revoked); else updTag(S.suspendTag(tag, me), SMARTID_DONE.suspended); setConfirm(null); }} onKeep={() => setConfirm(null)} />
+            ) : (
+              <div className="flex flex-wrap gap-1 pt-2" data-testid="smartid-actions">
+                {acts.activate ? <button type="button" className={chip} onClick={() => updTag(S.activateTag(tag, me, nowIso()), SMARTID_DONE.activated)}>Activate</button> : null}
+                {acts.suspend ? <button type="button" className={chip} data-testid="suspend-start" onClick={() => { setError(null); setConfirm("suspend"); }}>Suspend</button> : null}
+                {acts.revoke ? <button type="button" className={chip} data-testid="revoke-start" onClick={() => { setError(null); setConfirm("revoke"); }}>Revoke</button> : null}
+                <button type="button" className={chip} onClick={() => { setNote(null); void nfc.write("x").then(() => setError(NFC_WRITE_MSG), () => setError(NFC_WRITE_MSG)); }}>Write NFC (unavailable)</button>
+                {acts.remove ? <button type="button" className={chip} onClick={() => { setTags([], []); setView(null); setNote(SMARTID_DONE.removed); setError(null); }}>Remove tag</button> : null}
+              </div>
+            )}
           </div>
         )}
-        <form className="flex gap-2 pt-3" onSubmit={(e) => { e.preventDefault(); const v = S.simulateScan(scan, tags, { [me]: { displayName: riderName || "Rider", showCrewOnScan: false } }); setView(scanLabel(v)); }}>
+        {note ? <p role="status" className="pt-1 text-sm" data-testid="smartid-note">{note}</p> : null}
+        <form className="flex gap-2 pt-3" onSubmit={(e) => { e.preventDefault(); if (!scan.trim()) { setView("Paste a QR payload first — they start with stomp://id/."); return; } const v = S.simulateScan(scan.trim(), tags, { [me]: { displayName: riderName || "Rider", showCrewOnScan: false } }); setView(scanLabel(v)); }}>
           <input aria-label="scan payload" value={scan} onChange={(e) => setScan(e.target.value)} placeholder="stomp://id/…" className="h-10 flex-1 rounded-xl px-3 ring-1 ring-line" />
           <button type="submit" className={chip}>Simulate scan</button>
         </form>

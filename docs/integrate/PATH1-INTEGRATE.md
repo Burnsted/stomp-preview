@@ -34,3 +34,6 @@ Crew rows keyboard-navigable with self/owner guards + plain confirm copy; ~30 mo
 
 ## Batch 8 (2026-10-30) — Campfire, Ride timeline, Data panel
 Campfire close via ConfirmBar, demo banner, closed/empty comment states, plain @mention errors, no uploads; Ride hit list readability, end-of-ride stomped/washed summary, pause/resume/end focus return; Data panel microcopy + last-export hint, storage banner as alert; full greet→Crew tools→all tabs→Back smoke with no console errors. woz 666, batch1 319, e2e 32/32. Details: `docs/batch-8/BATCH8-CAMPFIRE-RIDE-DATA.md`.
+
+## Batch 9 (2026-10-30) — Smart ID lifecycle, isolation, Invite empty copy
+Smart ID state/step copy, state-gated buttons, Suspend via ConfirmBar (like Revoke), empty tag/scan copy; Campfire state isolated from Ride + paused-start guard in Session; Invite stays read-only with clearer empty copy (no fake invites). woz 723, batch1 319, e2e 35/35. Details: `docs/batch-9/BATCH9-SMARTID-ISOLATION-INVITE.md`.
