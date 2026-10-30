@@ -112,3 +112,34 @@ export function crewStateError(msg: string | null | undefined): string {
   if (/only the current crew owner/i.test(m)) return "Only the crew owner can hand over ownership.";
   return GENERIC_ERROR;
 }
+
+// Batch 8: Campfire, Ride and Data microcopy.
+export const CAMPFIRE_DEMO_BANNER = "Demo Campfire — crew-only, on this phone. Nothing is uploaded or shared live.";
+export const CAMPFIRE_CLOSE_CONFIRM = "Close Campfire? Clips stay; 🔥 and comments pause until you open it again.";
+export const CAMPFIRE_CLOSED_COMMENT = "Open Campfire to comment.";
+export const COMMENT_EMPTY = "Type something first.";
+/** Plain error when a comment @mentions someone not in the crew, else null. Names match case-insensitively. */
+export function mentionError(text: string, crewNames: readonly string[]): string | null {
+  const known = new Set(crewNames.map((n) => n.trim().toLowerCase()).filter(Boolean));
+  const bad = [...text.matchAll(/@([A-Za-z][\w-]{0,23})/g)].map((m) => m[1]!).filter((n) => !known.has(n.toLowerCase()));
+  if (!bad.length) return null;
+  const uniq = [...new Set(bad)];
+  return uniq.length === 1 ? `@${uniq[0]} isn't in your crew — mentions only reach linked Stompers.` : `${uniq.map((n) => "@" + n).join(", ")} aren't in your crew — mentions only reach linked Stompers.`;
+}
+export function rideEndSummary(stomped: number, washed: number, stashes: number): string {
+  const total = stomped + washed;
+  if (total === 0) return `Ride ended — no tricks logged${stashes ? `, ${stashes} stash${stashes === 1 ? "" : "es"} saved` : ""}.`;
+  const pct = Math.round((stomped / total) * 100);
+  return `Ride ended — stomped ${stomped}, washed ${washed} (${pct}% landed)${stashes ? `, ${stashes} stash${stashes === 1 ? "" : "es"}` : ""}.`;
+}
+export const DATA_INTRO = "Back up, restore or erase Crew Tools data. It stays on this phone — nothing is uploaded. Your GB crew and Invite list are never changed here.";
+export const DATA_EXPORT_READY = "Export ready — copy the text below and keep it somewhere safe.";
+export const DATA_IMPORT_EMPTY = "Paste an export first.";
+export const DATA_CLEAR_LABEL = "Type CLEAR to erase Crew Tools data on this phone (GB crew stays)";
+export const DATA_CLEARED = "Crew Tools data cleared on this phone. Your GB crew is unchanged.";
+export function lastExportHint(iso: string | null, nowMs = Date.now()): string {
+  if (!iso) return "Not exported yet.";
+  const t = Date.parse(iso); if (Number.isNaN(t)) return "Not exported yet.";
+  const mins = Math.max(0, Math.round((nowMs - t) / 60000));
+  return mins < 1 ? "Last export: just now." : mins < 60 ? `Last export: ${mins} min ago.` : mins < 1440 ? `Last export: ${Math.round(mins / 60)} h ago.` : `Last export: ${Math.round(mins / 1440)} d ago.`;
+}

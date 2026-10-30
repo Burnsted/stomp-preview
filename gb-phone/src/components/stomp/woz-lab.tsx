@@ -17,7 +17,7 @@ import { routeTyped, SESSION_BRIDGE_FLAGS, helpText, type GbAction } from "@/lib
 import { ride as R, runFromGbSession, type FeatureKind } from "@/lib/stomp/woz-bridge/ride";
 import { media as M, mediaFromGbClips, CAMPFIRE_GUARDS } from "@/lib/stomp/woz-bridge/campfire";
 import { smartId as S, nfc, SMART_ID_FLAGS, demoTag } from "@/lib/stomp/woz-bridge/smartid";
-import { friendlyError, scanLabel, NFC_WRITE_MSG, UPLOAD_OFF_MSG, DEMO_LABEL, SESSION_EMPTY, RUNS_EMPTY, HITS_EMPTY, rideBanner, REVOKE_CONFIRM, CLAIM_EMPTY, CLAIM_HINT, normalizeClaimCode, CREW_EMPTY, CREW_ROW_HINT, CREW_SELF_NOTE, crewConfirmCopy, crewStateError, plainError } from "@/lib/stomp/woz-bridge/copy";
+import { friendlyError, scanLabel, NFC_WRITE_MSG, UPLOAD_OFF_MSG, DEMO_LABEL, SESSION_EMPTY, RUNS_EMPTY, HITS_EMPTY, rideBanner, REVOKE_CONFIRM, CLAIM_EMPTY, CLAIM_HINT, normalizeClaimCode, CREW_EMPTY, CREW_ROW_HINT, CREW_SELF_NOTE, crewConfirmCopy, crewStateError, plainError, CAMPFIRE_DEMO_BANNER, CAMPFIRE_CLOSE_CONFIRM, CAMPFIRE_CLOSED_COMMENT, COMMENT_EMPTY, mentionError, rideEndSummary, DATA_INTRO, DATA_EXPORT_READY, DATA_IMPORT_EMPTY, DATA_CLEAR_LABEL, DATA_CLEARED, lastExportHint } from "@/lib/stomp/woz-bridge/copy";
 import { MAX_UTTERANCE } from "@/lib/stomp/woz-bridge/session";
 
 const nowIso = () => new Date().toISOString();
@@ -330,6 +330,12 @@ function RidePanel() {
   const rs = (r: ReturnType<typeof R.startRide>, op?: "start" | "pause" | "resume" | "end", ok?: string) => { if (r.ok) { setRide(r.value); setError(null); setNote(ok ?? null); } else { setError(friendlyError("ride", r.error, op)); setNote(null); } };
   const live = ride.phase === "active" || ride.phase === "paused";
   const sum = R.rideSummary(ride);
+  const pauseRef = useRef<HTMLButtonElement>(null);
+  const resumeRef = useRef<HTMLButtonElement>(null);
+  const startRef = useRef<HTMLButtonElement>(null);
+  const [endSummary, setEndSummary] = useState<string | null>(null);
+  /** Batch 8: Pause hands focus to Resume and back, End hands it to Start — focus never drops to <body>. */
+  const focusAfter = (op: "pause" | "resume" | "end") => queueMicrotask(() => { (op === "pause" ? resumeRef : op === "resume" ? pauseRef : startRef).current?.focus({ preventScroll: true }); });
   return (
     <div className="space-y-3">
       <RideBanner />
@@ -347,8 +353,9 @@ function RidePanel() {
         {current ? (
           <div className="pt-2" data-testid="run-editor">
             {current.hits.length === 0 ? <p className="text-sm text-muted" data-testid="hits-empty">{HITS_EMPTY}</p> : null}
-            <ol className="text-sm">{current.hits.map((h, i) => (
-              <li key={h.id} className="flex items-center justify-between">{i + 1}. {h.label} ({h.feature})
+            <ol className="divide-y divide-line text-sm" aria-label={`Hits in ${current.name}`} data-testid="hit-list">{current.hits.map((h, i) => (
+              <li key={h.id} data-testid="hit-row" aria-label={`Hit ${i + 1} of ${current.hits.length}: ${h.label}, ${h.feature}`} className="flex items-center justify-between gap-2 py-1">
+                <span className="min-w-0"><span className="inline-block w-6 font-semibold tabular-nums">{i + 1}.</span><span className="font-medium">{h.label}</span> <span className="text-xs text-muted">{h.feature}</span></span>
                 <span className="flex gap-1">
                   <button type="button" aria-label={`up ${h.label}`} className={chip} disabled={i === 0} onClick={() => upd(R.moveHit(current, i, i - 1))}>↑</button>
                   <button type="button" aria-label={`remove ${h.label}`} className={chip} onClick={() => upd(R.removeHit(current, h.id))}>✕</button>
@@ -367,16 +374,17 @@ function RidePanel() {
         <h2 className="font-semibold">Ride · {ride.phase}{ride.run ? ` · ${ride.run.name}` : ""}</h2>
         <p className="text-sm" data-testid="ride-summary">Stomped {sum.stomped} · Washed {sum.washedOut} · Stashes {ride.stashes.length}</p>
         <div className="flex flex-wrap gap-1 pt-2">
-          <button type="button" className={chip} onClick={() => rs(R.startRide(ride.phase === "ended" ? R.newRideSession(`ride-${Date.now()}`, ride.parkLabel, ride.run) : ride, t()), "start", "Ride started.")} disabled={live}>Start</button>
-          <button type="button" className={chip} disabled={ride.phase !== "active"} onClick={() => rs(R.pauseRide(ride, t()), "pause", "Paused.")}>Pause</button>
-          <button type="button" className={chip} disabled={ride.phase !== "paused"} onClick={() => rs(R.resumeRide(ride, t()), "resume", "Back at it.")}>Resume</button>
-          <button type="button" className={chip} disabled={!live} onClick={() => rs(R.endRide(ride, t()), "end", `Ride ended — stomped ${sum.stomped}, washed ${sum.washedOut}.`)}>End</button>
+          <button type="button" ref={startRef} className={chip} onClick={() => { setEndSummary(null); rs(R.startRide(ride.phase === "ended" ? R.newRideSession(`ride-${Date.now()}`, ride.parkLabel, ride.run) : ride, t()), "start", "Ride started."); }} disabled={live}>Start</button>
+          <button type="button" ref={pauseRef} className={chip} disabled={ride.phase !== "active"} onClick={() => { rs(R.pauseRide(ride, t()), "pause", "Paused."); focusAfter("pause"); }}>Pause</button>
+          <button type="button" ref={resumeRef} className={chip} disabled={ride.phase !== "paused"} onClick={() => { rs(R.resumeRide(ride, t()), "resume", "Back at it."); focusAfter("resume"); }}>Resume</button>
+          <button type="button" className={chip} disabled={!live} onClick={() => { const msg = rideEndSummary(sum.stomped, sum.washedOut, ride.stashes.length); const r = R.endRide(ride, t()); rs(r, "end", msg); if (r.ok) { setEndSummary(msg); focusAfter("end"); } }}>End</button>
           <button type="button" className={chip} onClick={() => rs(R.logTrick(ride, { trick: "Trick", outcome: "stomped", nowIso: t(), advanceHit: true }))}>Stomped</button>
           <button type="button" className={chip} onClick={() => rs(R.logTrick(ride, { trick: "Trick", outcome: "washed_out", nowIso: t() }))}>Washed</button>
           <button type="button" className={chip} disabled={ride.tricks.length === 0} title={ride.tricks.length ? `Undo last trick (${ride.tricks.length} logged)` : "Nothing to undo yet"} onClick={() => rs(R.undoLastTrick(ride), undefined, "Last trick removed.")}>Undo</button>
           <button type="button" className={chip} onClick={() => rs(R.markStash(ride, { id: `st-${Date.now()}`, label: `Stash ${ride.stashes.length + 1}`, zoneLabel: ride.parkLabel, nowIso: t() }), undefined, "Stash saved — park label only.")}>Mark stash</button>
         </div>
         {note ? <p role="status" className="pt-1 text-sm" data-testid="ride-note">{note}</p> : null}
+        {endSummary && ride.phase === "ended" ? <p className="mt-2 rounded-2xl bg-lime/40 px-3 py-2 text-sm font-semibold ring-1 ring-line" data-testid="ride-end-summary">{endSummary}</p> : null}
         {ride.phase === "idle" || ride.phase === "ended" ? <p className="pt-1 text-xs text-muted" data-testid="ride-idle">{ride.phase === "ended" ? "Ride ended. Press Start for a fresh ride on the same run." : ride.run ? "Ready — press Start when you drop in." : "Press Start for a free ride, or pick a run above and tap “Use for ride”."}</p> : null}
         {ride.run ? <p className="pt-1 text-sm">Next hit: {R.nextHit(ride.run, ride.completedHits)?.label ?? "done"}</p> : null}
         <p className="pt-1 text-xs text-muted">Stash pins save a park label only — no GPS.</p>
@@ -388,20 +396,33 @@ function RidePanel() {
 function CampfirePanel() {
   const clips = useStomp((s) => s.clips);
   const riderCode = useStomp((s) => s.riderCode);
+  const riderName = useStomp((s) => s.riderName);
+  const crew = useStomp((s) => s.crew);
   const { media, setMedia, campfireOpen, setCampfireOpen, setError } = useWoz();
   const me = C.sid(riderCode || "me");
   const [text, setText] = useState("");
+  const [confirmClose, setConfirmClose] = useState(false);
+  const toggleRef = useRef<HTMLButtonElement>(null);
   const visible = M.visibleClips(media, me, [C.GB_CREW_ID]);
-  const r = (x: ReturnType<typeof M.react>) => { if (x.ok) { setMedia(x.value); setError(null); } else setError(friendlyError("campfire", x.error)); };
+  const r = (x: ReturnType<typeof M.react>) => { if (x.ok) { setMedia(x.value); setError(null); return true; } setError(friendlyError("campfire", x.error)); return false; };
+  const refocusToggle = () => queueMicrotask(() => toggleRef.current?.focus({ preventScroll: true }));
+  const crewNames = [riderName, ...crew.map((c) => c.name)].filter(Boolean) as string[];
+  const canComment = campfireOpen && text.trim().length > 0;
   return (
     <div className="space-y-3">
       <div className="rounded-3xl bg-snow p-4 ring-1 ring-line" data-testid="campfire">
         <div className="flex items-center justify-between"><h2 className="font-semibold">Campfire {campfireOpen ? "· open" : "· closed"}</h2><DemoBadge label={DEMO_LABEL.campfire} /></div>
-        <p className="text-xs text-muted" data-testid="campfire-guards">{CAMPFIRE_GUARDS.upload ? "Upload on" : UPLOAD_OFF_MSG} Live share: off. Only your crew sees clips you share; new clips start as “Only me”.</p>
-        <div className="flex gap-2 pt-2">
-          <button type="button" className={primary} onClick={() => setCampfireOpen(!campfireOpen)}>{campfireOpen ? "Close" : "Open"} Campfire</button>
-          <button type="button" className={chip} disabled={clips.length === 0} onClick={() => setMedia(mediaFromGbClips(clips, me, C.GB_CREW_ID))}>Load my clips ({clips.length})</button>
-        </div>
+        <p role="note" className="mt-1 rounded-2xl bg-lime/40 px-3 py-1 text-xs font-semibold" data-testid="campfire-demo-banner">{CAMPFIRE_DEMO_BANNER}</p>
+        <p className="pt-1 text-xs text-muted" data-testid="campfire-guards">{CAMPFIRE_GUARDS.upload ? "Upload on" : UPLOAD_OFF_MSG} Live share: off. Only your crew sees clips you share; new clips start as “Only me”.</p>
+        {confirmClose ? (
+          <ConfirmBar className="pt-2" testId="campfire-close-confirm" label="Confirm close Campfire" message={CAMPFIRE_CLOSE_CONFIRM}
+            yesLabel="Yes, close" keepLabel="Keep open" onYes={() => { setCampfireOpen(false); setConfirmClose(false); setError(null); refocusToggle(); }} onKeep={() => { setConfirmClose(false); refocusToggle(); }} />
+        ) : (
+          <div className="flex gap-2 pt-2">
+            <button type="button" ref={toggleRef} data-testid="campfire-toggle" className={primary} onClick={() => { if (campfireOpen) setConfirmClose(true); else { setCampfireOpen(true); setError(null); } }}>{campfireOpen ? "Close" : "Open"} Campfire</button>
+            <button type="button" className={chip} disabled={clips.length === 0} title={clips.length ? undefined : "No clips on this phone yet"} onClick={() => setMedia(mediaFromGbClips(clips, me, C.GB_CREW_ID))}>Load my clips ({clips.length})</button>
+          </div>
+        )}
         {visible.length === 0 ? <p className="pt-2 text-sm text-muted" data-testid="campfire-empty">No clips yet. Film a hit on a run, then tap “Load my clips”.</p> : null}
         <ul className="pt-2 text-sm">
           {media.clips.map((c) => (
@@ -409,19 +430,28 @@ function CampfirePanel() {
               {c.trick ?? c.id} · {c.share === "only_me" ? "Only me" : "Crew"} · 🔥 {media.reactions.filter((x) => x.clipId === c.id).length}
               <span className="flex flex-wrap gap-1">
                 <button type="button" className={chip} onClick={() => r(M.setShare(media, c.id, me, c.share === "crew" ? "only_me" : "crew"))}>{c.share === "crew" ? "Make private" : "Share to crew"}</button>
-                <button type="button" className={chip} disabled={!campfireOpen} onClick={() => r(M.react(media, { clipId: c.id, by: me, emoji: "fire" }))}>🔥</button>
-                <button type="button" className={chip} onClick={() => r(M.toggleFavorite(media, c.id))}>{c.favorite ? "★" : "☆"}</button>
+                <button type="button" className={chip} disabled={!campfireOpen} title={campfireOpen ? undefined : CAMPFIRE_CLOSED_COMMENT} onClick={() => r(M.react(media, { clipId: c.id, by: me, emoji: "fire" }))}>🔥</button>
+                <button type="button" className={chip} aria-label={c.favorite ? "Unfavorite" : "Favorite"} onClick={() => r(M.toggleFavorite(media, c.id))}>{c.favorite ? "★" : "☆"}</button>
               </span>
             </li>
           ))}
         </ul>
         {media.clips[0] ? (
-          <form className="flex gap-2 pt-2" onSubmit={(e) => { e.preventDefault(); if (!campfireOpen) return setError("Open Campfire to comment."); r(M.comment(media, { id: `cm-${Date.now()}`, clipId: media.clips[0]!.id, by: me, text, atIso: nowIso() })); setText(""); }}>
-            <input aria-label="comment" maxLength={280} placeholder={campfireOpen ? "Say something to the crew" : "Open Campfire to comment"} value={text} onChange={(e) => setText(e.target.value)} className="h-10 flex-1 rounded-xl px-3 ring-1 ring-line" />
-            <button type="submit" className={chip}>Comment</button>
+          <form className="pt-2" onSubmit={(e) => {
+            e.preventDefault();
+            if (!campfireOpen) return setError(CAMPFIRE_CLOSED_COMMENT);
+            if (!text.trim()) return setError(COMMENT_EMPTY);
+            const bad = mentionError(text, crewNames); if (bad) return setError(bad);
+            if (r(M.comment(media, { id: `cm-${Date.now()}`, clipId: media.clips[0]!.id, by: me, text, atIso: nowIso() }))) setText("");
+          }}>
+            <div className="flex gap-2">
+              <input aria-label="comment" aria-describedby="comment-help" maxLength={280} readOnly={!campfireOpen} aria-disabled={!campfireOpen || undefined} placeholder={campfireOpen ? "Say something to the crew (@Name to mention)" : CAMPFIRE_CLOSED_COMMENT} value={text} onChange={(e) => setText(e.target.value)} className="h-10 flex-1 rounded-xl px-3 ring-1 ring-line aria-disabled:opacity-60" />
+              <button type="submit" data-testid="comment-submit" aria-disabled={!canComment || undefined} className={chip + (canComment ? "" : " opacity-40")}>Comment</button>
+            </div>
+            <p id="comment-help" className="pt-1 text-xs text-muted" data-testid="comment-help">{campfireOpen ? `${text.length}/280 · mention linked Stompers with @Name` : CAMPFIRE_CLOSED_COMMENT}</p>
           </form>
         ) : null}
-        <p className="pt-1 text-xs" data-testid="comment-count">{media.comments.length} comments</p>
+        <p className="pt-1 text-xs" data-testid="comment-count">{media.comments.length === 0 ? "No comments yet" : `${media.comments.length} comment${media.comments.length === 1 ? "" : "s"}`}</p>
       </div>
     </div>
   );
@@ -484,28 +514,33 @@ function SmartIdPanel() {
 }
 
 /** Local-only export / import / clear-all for Crew Tools data. GB data (incl. Invite crew) is never touched. */
+const LAST_EXPORT_KEY = "stomp-woz-last-export";
+const readLastExport = () => { try { return localStorage.getItem(LAST_EXPORT_KEY); } catch { return null; } };
 function DataPanel() {
   const { exportData, importData, clearAllConfirmed, storageOk } = useWoz(useShallow((s) => ({ exportData: s.exportData, importData: s.importData, clearAllConfirmed: s.clearAllConfirmed, storageOk: s.storageOk })));
   const [dump, setDump] = useState("");
   const [paste, setPaste] = useState("");
   const [word, setWord] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
+  const [lastExport, setLastExport] = useState<string | null>(() => readLastExport());
   return (
     <details className="mx-4 mt-4 rounded-3xl bg-snow p-4 ring-1 ring-line" data-testid="woz-data">
       <summary className={"cursor-pointer font-semibold " + focus}>This phone’s Crew Tools data</summary>
-      <p className="pt-1 text-xs text-muted">Export, import or clear — stays on this phone; nothing is uploaded. Your GB crew and Invite list are never changed here.</p>
-      {!storageOk ? <p className="pt-1 text-xs text-pink" data-testid="storage-warn">Saving is unavailable (private mode?) — changes last until you close the app.</p> : null}
-      <div className="flex flex-wrap gap-2 pt-2">
-        <button type="button" className={chip} aria-label="Export Crew Tools data" onClick={() => { setDump(exportData()); setMsg("Export ready — copy the text below."); }}>Export</button>
+      <p className="pt-1 text-xs text-muted">{DATA_INTRO}</p>
+      {!storageOk ? <p role="alert" className="pt-1 text-xs text-pink" data-testid="storage-warn">Saving is unavailable (private mode?) — changes last until you close the app. Export first if you want to keep them.</p> : null}
+      <div className="flex flex-wrap items-center gap-2 pt-2">
+        <button type="button" className={chip} aria-label="Export Crew Tools data" onClick={() => { setDump(exportData()); setMsg(DATA_EXPORT_READY); const iso = nowIso(); setLastExport(iso); try { localStorage.setItem(LAST_EXPORT_KEY, iso); } catch { /* storage blocked: hint stays in memory */ } }}>Export</button>
+        <span className="text-xs text-muted" data-testid="last-export">{lastExportHint(lastExport)}</span>
       </div>
       {dump ? <textarea aria-label="exported data" readOnly value={dump} rows={3} className="mt-2 w-full rounded-xl p-2 text-xs ring-1 ring-line" onFocus={(e) => e.currentTarget.select()} /> : null}
-      <textarea aria-label="import data" value={paste} onChange={(e) => setPaste(e.target.value)} rows={3} placeholder="Paste a Crew Tools export" className="mt-2 w-full rounded-xl p-2 text-xs ring-1 ring-line" />
-      <button type="button" className={chip + " mt-1"} aria-label="Import Crew Tools data" onClick={() => { const r = importData(paste); setMsg(r.ok ? `Imported ${r.imported} item${r.imported === 1 ? "" : "s"}${r.skipped.length ? ` (skipped ${r.skipped.length})` : ""}.` : null); if (r.ok) setPaste(""); }}>Import</button>
-      <label className="mt-3 block text-sm">Type {CLEAR_CONFIRM_WORD} to erase all Crew Tools data
-        <input aria-label="clear confirm word" value={word} onKeyDown={(e) => { if (e.key === "Escape") { e.preventDefault(); setWord(""); } }} onChange={(e) => setWord(e.target.value)} className="mt-1 h-10 w-full rounded-xl px-3 ring-1 ring-line" />
+      <textarea aria-label="import data" value={paste} onChange={(e) => setPaste(e.target.value)} rows={3} placeholder="Paste a Crew Tools export to restore it (replaces Crew Tools data)" className="mt-2 w-full rounded-xl p-2 text-xs ring-1 ring-line" />
+      <button type="button" className={chip + " mt-1"} aria-label="Import Crew Tools data" onClick={() => { if (!paste.trim()) { setMsg(DATA_IMPORT_EMPTY); return; } const r = importData(paste); setMsg(r.ok ? `Imported ${r.imported} item${r.imported === 1 ? "" : "s"}${r.skipped.length ? ` (skipped ${r.skipped.length} unknown)` : ""} — Crew Tools restored.` : null); if (r.ok) setPaste(""); }}>Import</button>
+      <label className="mt-3 block text-sm">{DATA_CLEAR_LABEL.replace("CLEAR", CLEAR_CONFIRM_WORD)}
+        <input aria-label="clear confirm word" autoComplete="off" autoCapitalize="characters" value={word} onKeyDown={(e) => { if (e.key === "Escape") { e.preventDefault(); setWord(""); } }} onChange={(e) => setWord(e.target.value)} className="mt-1 h-10 w-full rounded-xl px-3 ring-1 ring-line" />
       </label>
       <button type="button" className={primary + " mt-2"} aria-label="Clear all Crew Tools data" disabled={word !== CLEAR_CONFIRM_WORD}
-        onClick={() => { if (clearAllConfirmed(word)) { setWord(""); setDump(""); setMsg("Crew Tools data cleared on this phone."); } }}>Clear all</button>
+        onClick={() => { if (clearAllConfirmed(word)) { setWord(""); setDump(""); setMsg(DATA_CLEARED); } }}>Clear all</button>
+      {word && word !== CLEAR_CONFIRM_WORD ? <p className="pt-1 text-xs text-muted" data-testid="clear-hint">Type {CLEAR_CONFIRM_WORD} exactly (capitals). Esc empties the box.</p> : null}
       {msg ? <p role="status" className="pt-2 text-sm" data-testid="data-msg">{msg}</p> : null}
     </details>
   );

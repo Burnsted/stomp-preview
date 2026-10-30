@@ -31,3 +31,6 @@ More-screen empty states/guards, coordinate-free stash pins, profile privacy/res
 
 ## Batch 7 (2026-10-30) — crew list, session, one error surface
 Crew rows keyboard-navigable with self/owner guards + plain confirm copy; ~30 more Session aliases, transcript scroll + input refocus (wake off); single `ErrorBanner` across tabs (cleared on tab switch, `plainError`); reduced-motion + focus-visible touches. woz 614, batch1 319, e2e 28/28. Details: `docs/batch-7/BATCH7-CREW-SESSION-ERRORS.md`.
+
+## Batch 8 (2026-10-30) — Campfire, Ride timeline, Data panel
+Campfire close via ConfirmBar, demo banner, closed/empty comment states, plain @mention errors, no uploads; Ride hit list readability, end-of-ride stomped/washed summary, pause/resume/end focus return; Data panel microcopy + last-export hint, storage banner as alert; full greet→Crew tools→all tabs→Back smoke with no console errors. woz 666, batch1 319, e2e 32/32. Details: `docs/batch-8/BATCH8-CAMPFIRE-RIDE-DATA.md`.

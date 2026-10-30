@@ -105,7 +105,7 @@ describe("campfire panel", () => {
   it("react disabled while closed", () => { openTab("campfire"); click(/Load my clips/); expect((screen.getByRole("button", { name: "🔥" }) as HTMLButtonElement).disabled).toBe(true); });
   it("open + react", () => { openTab("campfire"); click(/Load my clips/); click("Open Campfire"); click("🔥"); expect(useWoz.getState().media.reactions).toHaveLength(1); });
   it("share to crew toggles", () => { openTab("campfire"); click(/Load my clips/); click("Share to crew"); expect(useWoz.getState().media.clips[0]!.share).toBe("crew"); });
-  it("comment", () => { openTab("campfire"); click("Open Campfire"); click(/Load my clips/); type("comment", "send it"); click("Comment"); expect(screen.getByTestId("comment-count").textContent).toBe("1 comments"); });
+  it("comment", () => { openTab("campfire"); click("Open Campfire"); click(/Load my clips/); type("comment", "send it"); click("Comment"); expect(screen.getByTestId("comment-count").textContent).toBe("1 comment"); });
   it("empty comment rejected with error", () => { openTab("campfire"); click(/Load my clips/); click("Comment"); expect(screen.getByRole("alert")).toBeTruthy(); });
 });
 

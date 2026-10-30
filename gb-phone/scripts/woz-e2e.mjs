@@ -4,6 +4,7 @@ import { chromium } from "playwright";
 const b = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined });
 const p = await b.newPage({ viewport: { width: 390, height: 844 } });
 const errs = []; p.on("pageerror", (e) => errs.push(e.message));
+const consoleErrs = []; p.on("console", (m) => { if (m.type() === "error") consoleErrs.push(m.text()); });
 await p.goto(`${process.env.WOZ_E2E_URL ?? "http://127.0.0.1:8081/"}`);
 await p.evaluate(() => localStorage.setItem("stomp-line", JSON.stringify({ version: 0, state: { screen: "stompers", riderName: "Ted", riderCode: "ME0001", crew: [{ code: "AAA111", name: "Ria" }, { code: "BBB222", name: "Jax" }] } })));
 await p.reload(); await p.waitForTimeout(1500);
@@ -151,5 +152,40 @@ await step("b7 reduced motion honoured", async () => {
   await p.emulateMedia({ reducedMotion: "reduce" }); const d = await p.evaluate(() => getComputedStyle(document.body).transitionDuration); if (!/0\.00001s|1e-05s|0s/.test(d)) throw new Error(d); await p.emulateMedia({ reducedMotion: null });
 });
 await p.screenshot({ path: "test-results/e2e-b7.png" });
+// batch8: Campfire close confirm + mention error, ride end summary + focus, data last-export hint, full greet path
+await step("b8 campfire close confirm + mention error", async () => {
+  await p.evaluate(() => { const s = JSON.parse(localStorage.getItem("stomp-line")); s.state.clips = [{ id: "c1", title: "Boardslide", place: "Park", seconds: 3, image: "", at: 1 }]; localStorage.setItem("stomp-line", JSON.stringify(s)); });
+  await p.reload(); await p.waitForTimeout(1000); if (!(await p.getByTestId("woz-lab").count())) { await p.getByTestId("chrome-crew-tools").click(); }
+  await p.getByRole("tab", { name: "Campfire" }).click(); await p.getByTestId("campfire-demo-banner").waitFor();
+  const t = p.getByTestId("campfire-toggle"); if ((await t.textContent()).includes("Open")) await t.click();
+  await p.getByRole("button", { name: /Load my clips/ }).click();
+  await p.getByLabel("comment").fill("@Zed look"); await p.getByRole("button", { name: "Comment" }).click(); await p.getByTestId("woz-error").filter({ hasText: "isn't in your crew" }).waitFor();
+  await p.getByTestId("campfire-toggle").click(); await p.getByTestId("campfire-close-confirm").waitFor(); await p.keyboard.press("Escape");
+  if (!(await p.getByTestId("campfire-toggle").textContent()).includes("Close")) throw new Error("esc closed");
+  await p.getByTestId("campfire-toggle").click(); await p.getByRole("button", { name: "Yes, close" }).click();
+  const f = await p.evaluate(() => document.activeElement?.getAttribute("data-testid")); if (f !== "campfire-toggle") throw new Error("focus " + f);
+});
+await step("b8 ride pause/resume focus + end summary", async () => {
+  await p.getByRole("tab", { name: "Ride" }).click(); const start = p.getByRole("button", { name: "Start", exact: true });
+  if (await start.isDisabled()) await p.getByRole("button", { name: "End", exact: true }).click();
+  await start.click(); await p.getByRole("button", { name: "Pause" }).click(); await p.waitForTimeout(50);
+  let f = await p.evaluate(() => document.activeElement?.textContent); if (f !== "Resume") throw new Error("pause focus " + f);
+  await p.keyboard.press("Enter"); await p.waitForTimeout(50); f = await p.evaluate(() => document.activeElement?.textContent); if (f !== "Pause") throw new Error("resume focus " + f);
+  await p.getByRole("button", { name: "Stomped" }).click(); await p.getByRole("button", { name: "End", exact: true }).click();
+  const s = await p.getByTestId("ride-end-summary").textContent(); if (!/stomped 1, washed 0 \(100% landed\)/.test(s)) throw new Error(s);
+});
+await step("b8 data last-export hint", async () => {
+  await p.getByTestId("woz-data").locator("summary").click(); await p.getByRole("button", { name: "Export Crew Tools data" }).click();
+  const h = await p.getByTestId("last-export").textContent(); if (h !== "Last export: just now.") throw new Error(h);
+});
+await step("b8 full path greet → Crew tools → each tab → Back, no console errors", async () => {
+  consoleErrs.length = 0;
+  await p.evaluate(() => { const st = JSON.parse(localStorage.getItem("stomp-line")); st.state.screen = "greet"; localStorage.setItem("stomp-line", JSON.stringify(st)); });
+  await p.reload(); await p.waitForTimeout(900); await p.getByTestId("greet-crew-tools").click(); await p.getByTestId("woz-lab").waitFor();
+  for (const n of ["Crew", "Session", "Ride", "Campfire", "Smart ID"]) { await p.getByRole("tab", { name: n }).click(); await p.getByRole("tab", { name: n, selected: true }).waitFor(); if ((await p.getByTestId("woz-panel").innerText()).length < 10) throw new Error("empty " + n); }
+  await p.getByTestId("woz-back").click(); await p.getByTestId("greet-crew-tools").waitFor();
+  if (consoleErrs.length) throw new Error("console: " + consoleErrs.join(" | "));
+});
+await p.screenshot({ path: "test-results/e2e-b8.png" });
 console.log(log.join("\n")); console.log("pageerrors", errs); if (log.some((l) => l.startsWith("FAIL")) || errs.length) process.exitCode = 1;
 await b.close();
