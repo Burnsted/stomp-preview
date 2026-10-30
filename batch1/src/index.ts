@@ -24,3 +24,12 @@ export * from "./stompers/crew-session.js";
 export * from "./campfire/interactions.js";
 export * from "./identity/interactions.js";
 export * from "./crew/invite-unlink-adapter.js";
+// Full-cycle 2026-10-29 (namespaced to avoid name clashes with Batch 1–3)
+export * as core from "./core/result.js";
+export * as jsonStore from "./core/json-store.js";
+export * as riderProfiles from "./stompers/profile-privacy.js";
+export * as crewStore from "./stompers/crew-store.js";
+export * as voice from "./session/voice-router.js";
+export * as ride from "./ride/ride.js";
+export * as media from "./media/crew-dump.js";
+export * as smartId from "./smartid/smart-id.js";
