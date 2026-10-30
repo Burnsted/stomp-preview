@@ -93,12 +93,15 @@ jobs:
         run: |
           set -euo pipefail
           # Replace only published site paths; never touch gb-phone/, docs/, batch1/, flutter-holding/.
+          # Note: upload-artifact may omit empty dotfiles like .nojekyll — recreate it.
           rm -rf assets __grok stomp
-          cp -a site-pages/index.html site-pages/404.html site-pages/.nojekyll ./
+          cp -a site-pages/index.html site-pages/404.html ./
           cp -a site-pages/favicon.svg site-pages/og.jpg ./
           cp -a site-pages/assets site-pages/__grok site-pages/stomp ./
+          : > .nojekyll
           rm -rf site-pages
           test -f index.html
+          test -f .nojekyll
           grep -q '/stomp-preview/assets/' index.html
           ! grep -qi flutter_bootstrap index.html
       - name: Commit and push root site if changed
