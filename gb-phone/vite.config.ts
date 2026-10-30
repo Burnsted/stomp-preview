@@ -145,7 +145,14 @@ function authPopupPlugin(): Plugin {
 // `0.0.0.0:8080` is the live-preview contract — don't change host/port.
 // The dev server starts once `src/router.tsx` and `src/routes/` exist — see
 // AGENTS.md § "First scaffold".
+//
+// GitHub Pages (`GITHUB_PAGES=1`): base `/stomp-preview/` + SPA shell so the
+// static artifact can be served without Nitro serverless (see build:pages).
+const githubPages = process.env.GITHUB_PAGES === "1";
+const pagesBase = process.env.GITHUB_PAGES_BASE || "/stomp-preview/";
+
 export default defineConfig(({ command, isPreview }) => ({
+  base: githubPages ? pagesBase : "/",
   server: {
     host: "0.0.0.0",
     port: 8080,
@@ -166,7 +173,20 @@ export default defineConfig(({ command, isPreview }) => ({
     // PWA head + ?install=1 tutorial page; runs before Start/Nitro.
     grokPwaPlugin(),
     tailwindcss(),
-    tanstackStart(),
+    tanstackStart(
+      githubPages
+        ? {
+            spa: {
+              enabled: true,
+              prerender: {
+                outputPath: "index.html",
+                crawlLinks: true,
+              },
+            },
+            prerender: { failOnError: false },
+          }
+        : undefined,
+    ),
     ...(command === "build" || isPreview
       ? [
           nitro({

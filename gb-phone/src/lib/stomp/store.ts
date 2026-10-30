@@ -3,6 +3,7 @@ import { containsCoordinates } from "@/lib/stomp/woz-bridge/more-copy";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { findTrick, isLanded, type TrickStatus } from "@/lib/stomp/goals";
 import type { Band } from "@/lib/stomp/library";
+import { publicUrl } from "@/lib/public-url";
 
 export type Screen = "greet" | "home" | "run" | "map" | "log" | "guide" | "stash" | "playlist" | "goals" | "park" | "crew" | "session" | "stompers" | "woz";
 
@@ -62,11 +63,11 @@ export const CALLOUT_CHIPS = [
 ] as const;
 
 export const PHOTOS = {
-  hero: "/stomp/hero.jpg",
-  hud: "/stomp/hud.jpg",
-  line: "/stomp/line.jpg",
-  crew: "/stomp/crew.jpg",
-  air: "/stomp/air.jpg",
+  hero: publicUrl("/stomp/hero.jpg"),
+  hud: publicUrl("/stomp/hud.jpg"),
+  line: publicUrl("/stomp/line.jpg"),
+  crew: publicUrl("/stomp/crew.jpg"),
+  air: publicUrl("/stomp/air.jpg"),
 } as const;
 
 export type Studied = {

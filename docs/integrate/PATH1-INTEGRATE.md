@@ -37,3 +37,6 @@ Campfire close via ConfirmBar, demo banner, closed/empty comment states, plain @
 
 ## Batch 9 (2026-10-30) — Smart ID lifecycle, isolation, Invite empty copy
 Smart ID state/step copy, state-gated buttons, Suspend via ConfirmBar (like Revoke), empty tag/scan copy; Campfire state isolated from Ride + paused-start guard in Session; Invite stays read-only with clearer empty copy (no fake invites). woz 723, batch1 319, e2e 35/35. Details: `docs/batch-9/BATCH9-SMARTID-ISOLATION-INVITE.md`.
+
+## Pages deploy (2026-10-30) — Ted authorized
+Live https://burnsted.github.io/stomp-preview/ → Vite gb-phone (base `/stomp-preview/`). Flutter tip moved to `flutter-holding/`. Workflow: `.github/workflows/deploy-pages.yml`. greet.tsx untouched (`0811babf…996fc2`). Details: `docs/integrate/GITHUB-PAGES-DEPLOY.md`.

@@ -1,0 +1,100 @@
+# Build gb-phone (Vite SPA) and publish to GitHub Pages.
+# Live URL: https://burnsted.github.io/stomp-preview/
+#
+# Durable path: actions/deploy-pages (GitHub Actions as Pages source).
+# Legacy fallback: also sync the static site onto main root so the existing
+# "Deploy from branch: main /" Pages setting keeps serving the Vite app
+# without wiping gb-phone/ source history (keep_files + [skip ci]).
+name: deploy-pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "gb-phone/**"
+      - ".github/workflows/deploy-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build gb-phone pages
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gb-phone
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: gb-phone/package-lock.json
+      - run: npm ci
+      - name: Verify locked Invite/greet.tsx
+        run: |
+          expected=0811babf8c7139a86738e2bd677db8544f09672b83a8fad345075f8bfb996fc2
+          actual=$(sha256sum src/components/stomp/greet.tsx | awk '{print $1}')
+          echo "greet.tsx sha256=$actual"
+          test "$actual" = "$expected"
+      - run: npm run build:pages
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site-pages
+      - name: Upload legacy-root sync bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-pages-legacy
+          path: site-pages
+
+  deploy-github-pages:
+    name: deploy (Actions Pages)
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Prefer Actions as Pages source
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api --method PUT "repos/${{ github.repository }}/pages" \
+            -f build_type=workflow || true
+      - id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+
+  deploy-legacy-main-root:
+    name: sync site onto main root (legacy Pages)
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/download-artifact@v4
+        with:
+          name: site-pages-legacy
+          path: site-pages
+      - name: Publish static files to main root without wiping history
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site-pages
+          publish_branch: main
+          keep_files: true
+          force_orphan: false
+          enable_jekyll: false
+          commit_message: "deploy(pages): gb-phone Vite static site [skip ci]"
