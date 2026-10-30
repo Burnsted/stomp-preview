@@ -60,42 +60,41 @@ export function Home() {
         >
           Start a run
         </button>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Chip tone="pink" onClick={() => setScreen("park")}>
-            Terrain park
-          </Chip>
-          <Chip tone="teal" onClick={() => setScreen("goals")}>
-            Trick library
-          </Chip>
-          <Chip tone="snow" onClick={() => setScreen("log")}>
-            Airtime log
-          </Chip>
-          <Chip tone="snow" onClick={() => setScreen("guide")}>
-            Tour guide
-          </Chip>
-          <Chip tone="snow" onClick={() => setScreen("stash")}>
-            Stash pins
-          </Chip>
-          <Chip tone="snow" onClick={() => { openWoz("crew", "home"); setScreen("woz"); }}>
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setScreen("park")}
+            className="rounded-3xl bg-pink px-4 py-4 text-left font-semibold text-snow"
+          >
+            Park
+            <span className="mt-1 block text-xs font-medium text-snow/80">Laps & features</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setScreen("goals")}
+            className="rounded-3xl bg-teal px-4 py-4 text-left font-semibold text-ink"
+          >
+            Tricks
+            <span className="mt-1 block text-xs font-medium text-ink/70">Library & status</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setScreen("playlist")}
+            className="rounded-3xl bg-snow px-4 py-4 text-left font-semibold ring-1 ring-line"
+          >
+            Playlist
+            <span className="mt-1 block text-xs font-medium text-muted">Open · upload · share</span>
+          </button>
+          <button
+            type="button"
+            data-testid="home-crew-tools-card"
+            onClick={() => { openWoz("crew", "home"); setScreen("woz"); }}
+            className="rounded-3xl bg-snow px-4 py-4 text-left font-semibold ring-1 ring-line"
+          >
             Crew tools
-          </Chip>
+            <span className="mt-1 block text-xs font-medium text-muted">Demo — stays on this phone</span>
+          </button>
         </div>
-        <button
-          type="button"
-          data-testid="home-crew-tools-card"
-          onClick={() => { openWoz("crew", "home"); setScreen("woz"); }}
-          className="mt-4 w-full rounded-3xl bg-snow p-3 text-left text-sm ring-1 ring-line"
-        >
-          <span className="font-semibold">Crew tools</span>
-          <span className="block text-xs text-muted">Unlink · Session text · Run Builder · Campfire · Smart ID — demo, stays on this phone</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setScreen("playlist")}
-          className="mt-3 w-full text-center text-sm font-medium text-muted"
-        >
-          or open today’s playlist
-        </button>
       </section>
     </div>
   );

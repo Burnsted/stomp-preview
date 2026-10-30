@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Share2, Trash2 } from "lucide-react";
 import { BackBar } from "@/components/stomp/chrome";
 import { ConfirmBar } from "@/components/stomp/confirm-bar";
 import { AIRTIME_EMPTY, LINE_EMPTY, MUSIC_EMPTY, MUSIC_PLAY_FAIL, MUSIC_SAVE_FAIL, PLAYLIST_EMPTY, STASH_EMPTY, STASH_PRIVACY_NOTE, checkStash } from "@/lib/stomp/woz-bridge/more-copy";
 import { listTracks, removeTrack, saveTrack, trackUrl, type TrackMeta } from "@/lib/stomp/music";
+import { loadTrackOrder, moveTrack, orderedIds, saveTrackOrder } from "@/lib/stomp/music-order";
+import { BeatStrip } from "@/components/stomp/beat-strip";
+import { mountainPlaylistFor } from "@/lib/stomp/mountain-playlists";
+import { useHomeMountain } from "@/lib/stomp/home-mountain";
 import { sessionById, suggestedSession } from "@/lib/stomp/sessions";
 import {
   CUES,
@@ -196,6 +200,7 @@ function MusicDeck() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const urlRef = useRef<string | null>(null);
   const [tracks, setTracks] = useState<TrackMeta[]>([]);
+  const [order, setOrder] = useState<string[]>([]);
   const [playing, setPlaying] = useState<string | null>(null);
   const [note, setNote] = useState("");
 
@@ -203,7 +208,9 @@ function MusicDeck() {
     let cancel = false;
     listTracks()
       .then((rows) => {
-        if (!cancel) setTracks(rows);
+        if (cancel) return;
+        setTracks(rows);
+        setOrder(orderedIds(rows.map((r) => r.id), loadTrackOrder()));
       })
       .catch(() => {
         if (!cancel) setNote("Music couldn’t open on this device.");
@@ -216,7 +223,17 @@ function MusicDeck() {
   }, []);
 
   async function refresh() {
-    setTracks(await listTracks());
+    const rows = await listTracks();
+    setTracks(rows);
+    const next = orderedIds(rows.map((r) => r.id), loadTrackOrder());
+    setOrder(next);
+    saveTrackOrder(next);
+  }
+
+  function reorder(id: string, dir: -1 | 1) {
+    const next = moveTrack(order, id, dir);
+    setOrder(next);
+    saveTrackOrder(next);
   }
 
   async function onFiles(list: FileList | null) {
@@ -269,8 +286,11 @@ function MusicDeck() {
     await refresh();
   }
 
+  const byId = new Map(tracks.map((t) => [t.id, t]));
+  const ordered = order.map((id) => byId.get(id)).filter((t): t is TrackMeta => !!t);
+
   return (
-    <div className="px-4 pt-3">
+    <div className="px-4 pt-3" data-testid="music-deck">
       <input
         ref={fileRef}
         type="file"
@@ -286,13 +306,21 @@ function MusicDeck() {
       >
         Upload tracks
       </button>
-      <p className="mt-2 text-sm text-pretty text-muted">Songs stay on this phone. Tap one to ride to it.</p>
+      <p className="mt-2 text-sm text-pretty text-muted">Songs stay on this phone. Use arrows to adjust order.</p>
       {note ? <p className="mt-2 text-sm font-semibold text-teal">{note}</p> : null}
       {tracks.length === 0 && !note ? <p data-testid="music-empty" className="mt-2 text-sm text-muted">{MUSIC_EMPTY}</p> : null}
-      {tracks.length > 0 ? (
+      {ordered.length > 0 ? (
         <ul className="mt-3 flex flex-col gap-2">
-          {tracks.map((track) => (
-            <li key={track.id} className="flex items-center gap-2 rounded-2xl bg-snow p-2 ring-1 ring-line">
+          {ordered.map((track) => (
+            <li key={track.id} className="flex items-center gap-1 rounded-2xl bg-snow p-2 ring-1 ring-line">
+              <div className="flex flex-col">
+                <button type="button" aria-label={`Move ${track.name} up`} data-testid={`track-up-${track.id}`} onClick={() => reorder(track.id, -1)} className="flex size-8 items-center justify-center text-muted">
+                  <ChevronUp className="size-4" />
+                </button>
+                <button type="button" aria-label={`Move ${track.name} down`} data-testid={`track-down-${track.id}`} onClick={() => reorder(track.id, 1)} className="flex size-8 items-center justify-center text-muted">
+                  <ChevronDown className="size-4" />
+                </button>
+              </div>
               <button
                 type="button"
                 onClick={() => void play(track.id)}
@@ -324,49 +352,111 @@ export function Playlist() {
   const band = useStomp((state) => state.band);
   const crew = useStomp((state) => state.crew);
   const activeSession = useStomp((state) => state.activeSession);
+  const resortId = useHomeMountain((state) => state.resortId);
+  const hydrateMountain = useHomeMountain((state) => state.hydrate);
   const template = sessionById(activeSession) ?? suggestedSession(band, crew.length);
+  const mountain = mountainPlaylistFor(resortId);
   const rows = playlistRows({ landings, callouts, clips });
   const [now] = useState(() => Date.now());
-  const search = `https://open.spotify.com/search/${encodeURIComponent(template.search)}`;
+  const [shareNote, setShareNote] = useState("");
+  const searchQuery = mountain?.search ?? template.search;
+  const search = `https://open.spotify.com/search/${encodeURIComponent(searchQuery)}`;
+
+  useEffect(() => {
+    hydrateMountain();
+  }, [hydrateMountain]);
+
+  async function sharePlaylist() {
+    const text = mountain
+      ? `STOMP · ${mountain.title}. ${mountain.blurb} Demo share — stays on this phone until you send it.`
+      : `STOMP playlist · ${template.mood} · ${template.name}. Demo share — stays on this phone until you send it.`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "STOMP playlist", text });
+        setShareNote("Share sheet opened.");
+        return;
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        setShareNote("Share canceled.");
+        return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      setShareNote("Playlist blurb copied.");
+    } catch {
+      setShareNote("Share stub ready.");
+    }
+  }
 
   return (
     <div className="px-1 pb-10">
       <BackBar title="Playlist" />
-      <div className="px-4 pt-3">
-        <p className="text-xs font-bold tracking-widest text-pink">{template.mood}</p>
-        <p className="mt-1 text-pretty text-sm text-muted">
-          For {template.name}. Your uploads play here. Spotify just opens a search — STOMP doesn’t sync the beat.
-        </p>
-        <a
-          href={search}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-3 flex h-12 items-center justify-center rounded-full bg-ink font-semibold text-snow"
-        >
-          Open in Spotify
-        </a>
+      <div className="flex gap-2 px-2 pt-3">
+        <div className="min-w-0 flex-1 px-2">
+          <p className="text-xs font-bold tracking-widest text-pink">
+            {mountain ? "MOUNTAIN PLAYLIST" : template.mood}
+          </p>
+          <p className="font-display text-3xl tracking-wide leading-none">
+            {mountain ? mountain.title : template.name}
+          </p>
+          <p className="mt-1 text-pretty text-sm text-muted">
+            {mountain
+              ? `${mountain.blurb} Beat strip (right) syncs demo song timing to mountain sections + tricks.`
+              : `For ${template.name}. Your uploads play here. Pick a mountain for a beat-synced run.`}
+          </p>
+          {mountain ? (
+            <ul data-testid="playlist-beat-legend" className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
+              <li className="rounded-full bg-teal/30 px-2 py-1">Section</li>
+              <li className="rounded-full bg-pink/20 px-2 py-1 text-pink">Beat</li>
+              <li className="rounded-full bg-lime px-2 py-1 text-ink">Trick</li>
+            </ul>
+          ) : null}
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <a
+              href={search}
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-12 items-center justify-center rounded-full bg-ink font-semibold text-snow"
+            >
+              Open in Spotify
+            </a>
+            <button
+              type="button"
+              data-testid="playlist-share"
+              onClick={() => void sharePlaylist()}
+              className="flex h-12 items-center justify-center gap-2 rounded-full bg-snow font-semibold ring-1 ring-line"
+            >
+              <Share2 className="size-4" aria-hidden="true" />
+              Share
+            </button>
+          </div>
+          {shareNote ? <p className="mt-2 text-sm font-semibold text-teal">{shareNote}</p> : null}
+          <MusicDeck />
+          <p className="pt-5 text-pretty text-muted">Air, callouts, and clips from this line, newest first.</p>
+          {rows.length === 0 ? <p data-testid="playlist-empty" className="pt-3 text-pretty text-muted">{PLAYLIST_EMPTY}</p> : null}
+          <ul className="mt-4 flex flex-col gap-3">
+            {rows.map((row) => (
+              <li key={row.id} className="flex items-center gap-3 rounded-3xl bg-snow p-3 ring-1 ring-line">
+                {row.image ? (
+                  <img src={row.image} alt="" className="size-16 rounded-2xl object-cover" />
+                ) : (
+                  <span className="flex size-16 items-center justify-center rounded-2xl bg-ink font-display text-lg text-lime">
+                    STOMP
+                  </span>
+                )}
+                <div className="min-w-0">
+                  <p className="truncate font-semibold">{row.title}</p>
+                  <p className="truncate text-sm text-muted">{row.detail}</p>
+                  <p className="text-sm text-muted">{formatAgo(row.at, now)}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+        {mountain ? <BeatStrip playlist={mountain} className="sticky top-4 self-start h-[28rem]" /> : null}
       </div>
-      <MusicDeck />
-      <p className="px-5 pt-5 text-pretty text-muted">Air, callouts, and clips from this line, newest first.</p>
-      {rows.length === 0 ? <p data-testid="playlist-empty" className="px-5 pt-3 text-pretty text-muted">{PLAYLIST_EMPTY}</p> : null}
-      <ul className="mt-4 flex flex-col gap-3 px-4">
-        {rows.map((row) => (
-          <li key={row.id} className="flex items-center gap-3 rounded-3xl bg-snow p-3 ring-1 ring-line">
-            {row.image ? (
-              <img src={row.image} alt="" className="size-16 rounded-2xl object-cover" />
-            ) : (
-              <span className="flex size-16 items-center justify-center rounded-2xl bg-ink font-display text-lg text-lime">
-                STOMP
-              </span>
-            )}
-            <div className="min-w-0">
-              <p className="truncate font-semibold">{row.title}</p>
-              <p className="truncate text-sm text-muted">{row.detail}</p>
-              <p className="text-sm text-muted">{formatAgo(row.at, now)}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }

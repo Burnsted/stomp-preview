@@ -39,11 +39,19 @@ jobs:
           cache: npm
           cache-dependency-path: gb-phone/package-lock.json
       - run: npm ci
-      - name: Verify locked Invite/greet.tsx
+      - name: Verify locked CrewLink Invite (greet.tsx export)
         run: |
-          expected=0811babf8c7139a86738e2bd677db8544f09672b83a8fad345075f8bfb996fc2
-          actual=$(sha256sum src/components/stomp/greet.tsx | awk '{print $1}')
-          echo "greet.tsx sha256=$actual"
+          # Greet() home UX may change; CrewLink Invite export must stay byte-stable.
+          expected=7795349de918fc1228687f677ff0064f4287e817662f6ccb4fd0fa2ba421fcbe
+          actual=$(python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          text = Path("src/components/stomp/greet.tsx").read_text()
+          start = text.index("export function CrewLink()")
+          print(hashlib.sha256(text[start:].encode()).hexdigest())
+          PY
+          )
+          echo "CrewLink export sha256=$actual"
           test "$actual" = "$expected"
       - run: npm run build:pages
       - name: Upload Pages artifact

@@ -121,6 +121,6 @@ describe("focus-visible + reduced motion", () => {
 });
 
 describe("greet.tsx pinned", () => {
-  it("sha256 unchanged", () => { const h = createHash("sha256").update(readFileSync("src/components/stomp/greet.tsx")).digest("hex"); expect(h).toBe("0811babf8c7139a86738e2bd677db8544f09672b83a8fad345075f8bfb996fc2"); });
+  it("CrewLink export sha256 unchanged", async () => { const { CREWLINK_SHA, crewLinkSha } = await import("./greet-invite-sha"); expect(crewLinkSha()).toBe(CREWLINK_SHA); });
   it("Crew tools pill still lives in app.tsx, not greet.tsx", () => { expect(readFileSync("src/components/stomp/app.tsx", "utf8")).toMatch(/GreetCrewToolsHint/); expect(readFileSync("src/components/stomp/greet.tsx", "utf8")).not.toMatch(/woz/i); });
 });

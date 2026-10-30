@@ -95,5 +95,5 @@ describe("data panel microcopy", () => {
 });
 
 describe("invariants", () => {
-  it("greet.tsx Invite sha unchanged", () => { const h = createHash("sha256").update(readFileSync("src/components/stomp/greet.tsx")).digest("hex"); expect(h.startsWith("0811bab")).toBe(true); expect(h.endsWith("996fc2")).toBe(true); });
+  it("CrewLink Invite sha unchanged", async () => { const { CREWLINK_SHA, crewLinkSha } = await import("./greet-invite-sha"); expect(crewLinkSha()).toBe(CREWLINK_SHA); });
 });

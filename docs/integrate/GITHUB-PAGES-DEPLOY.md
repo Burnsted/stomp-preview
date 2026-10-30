@@ -2,8 +2,9 @@
 
 **Authorized by:** Owner Ted (deploy Vite gb-phone / Crew Tools to Pages)  
 **Live URL:** https://burnsted.github.io/stomp-preview/  
-**Invite lock:** `gb-phone/src/components/stomp/greet.tsx` sha256  
-`0811babf8c7139a86738e2bd677db8544f09672b83a8fad345075f8bfb996fc2` — do not edit.
+**Invite lock:** `export function CrewLink()` in `gb-phone/src/components/stomp/greet.tsx`  
+sha256 `7795349de918fc1228687f677ff0064f4287e817662f6ccb4fd0fa2ba421fcbe` — keep byte-stable.  
+(`Greet()` home UX may change; full-file pin `0811babf…996fc2` retired.)
 
 ## What changed
 

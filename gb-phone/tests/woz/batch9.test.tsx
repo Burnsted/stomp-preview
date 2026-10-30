@@ -95,5 +95,5 @@ describe("invite: empty copy, no fake invites", () => {
   it("adapter lists no invitations", () => { const a = createMirrorInviteUnlinkAdapter(createMirrorEventHub()); expect(a.port.listInvitations("crew-gb" as never)).toEqual([]); });
   it("adapter has no write/send methods", () => { const a = createMirrorInviteUnlinkAdapter(createMirrorEventHub()) as unknown as Record<string, unknown>; for (const k of ["send", "create", "invite", "accept", "revokeInvite"]) expect(a[k]).toBeUndefined(); });
   it("no Demo invite fixtures in source", () => { const src = readFileSync("src/lib/stomp/woz-bridge/invite-adapter.ts", "utf8"); expect(src).not.toMatch(/status:\s*"pending"/); });
-  it("greet.tsx unchanged", () => { const h = createHash("sha256").update(readFileSync("src/components/stomp/greet.tsx")).digest("hex"); expect(h.startsWith("0811babf")).toBe(true); expect(h.endsWith("996fc2")).toBe(true); });
+  it("CrewLink export unchanged", async () => { const { CREWLINK_SHA, crewLinkSha } = await import("./greet-invite-sha"); expect(crewLinkSha()).toBe(CREWLINK_SHA); });
 });

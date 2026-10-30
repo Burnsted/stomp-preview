@@ -55,13 +55,15 @@ describe("chrome / nav back stack", () => {
     fireEvent.click(screen.getByTestId("woz-back")); expect(useStomp.getState().screen).toBe("run");
   });
   it("home chip opens crew tab with back to home", async () => {
-    render(<StompApp />); await act(async () => { await Promise.resolve(); }); act(() => useStomp.setState({ screen: "home" })); click("Crew tools");
+    render(<StompApp />); await act(async () => { await Promise.resolve(); }); act(() => useStomp.setState({ screen: "home" }));
+    fireEvent.click(screen.getByTestId("home-crew-tools-card"));
     expect(useWoz.getState().tab).toBe("crew"); expect(useWoz.getState().returnTo).toBe("home");
   });
-  it("greet More links (Airtime/Guide/Stash) reach Crew tools via chrome", async () => {
+  it("greet compact tools reach Crew tools via chrome (no pill soup)", async () => {
     useStomp.setState({ screen: "greet" }); render(<StompApp />); await act(async () => { await Promise.resolve(); });
-    click("Airtime"); fireEvent.click(screen.getByTestId("chrome-crew-tools")); expect(useStomp.getState().screen).toBe("woz");
-    fireEvent.click(screen.getByTestId("woz-back")); expect(useStomp.getState().screen).toBe("log");
+    fireEvent.click(screen.getByTestId("home-tool-park"));
+    fireEvent.click(screen.getByTestId("chrome-crew-tools")); expect(useStomp.getState().screen).toBe("woz");
+    fireEvent.click(screen.getByTestId("woz-back")); expect(useStomp.getState().screen).toBe("park");
   });
   it("chrome link keeps last-used tab", () => {
     useWoz.getState().setTab("ride"); useStomp.setState({ screen: "log" }); render(<StompApp />);
