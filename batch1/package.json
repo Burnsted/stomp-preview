@@ -2,7 +2,7 @@
   "name": "stomp-batch1-local",
   "version": "0.1.0",
   "private": true,
-  "description": "Woz Batch 1 isolated local package — not Grok Build source. Draft PR only.",
+  "description": "Woz Batch 1 isolated local package \u2014 not Grok Build source. Draft PR only.",
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -10,7 +10,8 @@
     "test:watch": "vitest",
     "build": "tsc --noEmit && vite build",
     "preview:unlink": "vite --open /unlink.html",
-    "preview:session": "vite --open /session-settings.html"
+    "preview:session": "vite --open /session-settings.html",
+    "preview:campfire": "vite --open /campfire.html"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",

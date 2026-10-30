@@ -14,6 +14,7 @@ export default defineConfig({
       input: {
         unlink: resolve(rootDir, "preview/unlink.html"),
         sessionSettings: resolve(rootDir, "preview/session-settings.html"),
+        campfire: resolve(rootDir, "preview/campfire.html"),
       },
     },
   },
