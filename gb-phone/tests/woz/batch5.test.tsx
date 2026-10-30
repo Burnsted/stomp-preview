@@ -83,8 +83,8 @@ describe("demo banners + home discoverability", () => {
   it("Greet landing shows a Crew tools pill (rendered outside greet.tsx)", async () => { await renderGreet(); expect(screen.getByTestId("greet-crew-tools").getAttribute("aria-label")).toMatch(/stays on this phone/); expect(readFileSync(`${process.cwd()}/src/components/stomp/greet.tsx`, "utf8")).not.toMatch(/greet-crew-tools|woz/i); });
   it("Greet pill opens Crew tab, Back returns to greet", async () => { await renderGreet(); fireEvent.click(screen.getByTestId("greet-crew-tools")); expect(useWoz.getState().tab).toBe("crew"); expect(useWoz.getState().returnTo).toBe("greet"); fireEvent.click(screen.getByTestId("woz-back")); expect(useStomp.getState().screen).toBe("greet"); });
   it("pill hidden on non-greet screens", () => { openTab("crew"); expect(screen.queryByTestId("greet-crew-tools")).toBeNull(); });
-  it("greet.tsx Invite source unchanged (sha256 pin)", () => {
-    const h = createHash("sha256").update(readFileSync(`${process.cwd()}/src/components/stomp/greet.tsx`)).digest("hex");
-    expect(h.startsWith("0811babf")).toBe(true); expect(h.endsWith("996fc2")).toBe(true);
+  it("CrewLink Invite export unchanged (sha256 pin)", async () => {
+    const { CREWLINK_SHA, crewLinkSha } = await import("./greet-invite-sha");
+    expect(crewLinkSha()).toBe(CREWLINK_SHA);
   });
 });

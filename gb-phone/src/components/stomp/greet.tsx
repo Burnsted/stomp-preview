@@ -1,22 +1,14 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import QRCode from "qrcode";
+import { Flag, Layers, Users } from "lucide-react";
 import { BoltBadge, HomeButton } from "@/components/stomp/chrome";
+import { HomeMapCard } from "@/components/stomp/home-map-card";
+import { HomePlaylistBlock } from "@/components/stomp/home-playlist-block";
 import { SessionMic } from "@/components/stomp/session-mic";
 import { countProgress } from "@/lib/stomp/goals";
 import { BAND_LABEL } from "@/lib/stomp/library";
 import { SESSIONS, sessionById, suggestedSession } from "@/lib/stomp/sessions";
-import { PHOTOS, crewPayload, formatAir, parseCrew, useStomp, type Screen } from "@/lib/stomp/store";
-
-const LINKS: { screen: Screen; label: string }[] = [
-  { screen: "home", label: "The line" },
-  { screen: "park", label: "Park" },
-  { screen: "goals", label: "Tricks" },
-  { screen: "map", label: "Clips" },
-  { screen: "playlist", label: "Music" },
-  { screen: "log", label: "Airtime" },
-  { screen: "guide", label: "Guide" },
-  { screen: "stash", label: "Stash" },
-];
+import { PHOTOS, crewPayload, parseCrew, useStomp } from "@/lib/stomp/store";
 
 function shrinkSelfie(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -45,10 +37,10 @@ function shrinkSelfie(file: File): Promise<string> {
   });
 }
 
+/** Home (first page). Concept B map + playlist zones; CrewLink below stays Invite-locked. */
 export function Greet() {
   const setScreen = useStomp((state) => state.setScreen);
   const startRun = useStomp((state) => state.startRun);
-  const landings = useStomp((state) => state.landings);
   const selfie = useStomp((state) => state.selfie);
   const setSelfie = useStomp((state) => state.setSelfie);
   const riderName = useStomp((state) => state.riderName);
@@ -60,6 +52,7 @@ export function Greet() {
   const chooseSession = useStomp((state) => state.chooseSession);
   const fileRef = useRef<HTMLInputElement>(null);
   const [note, setNote] = useState("");
+  const [showPlans, setShowPlans] = useState(false);
   const template = sessionById(activeSession) ?? suggestedSession(band, crew.length);
   const counts = countProgress(trickStatus);
   const goalsDone = template.steps.filter((step) => sessionDone.includes(step.id)).length;
@@ -79,80 +72,58 @@ export function Greet() {
   }
 
   return (
-    <div className="relative overflow-hidden pb-10">
-      <div className="flex items-start justify-between px-5 pt-5">
-        <span className="rounded-full border-2 border-ink px-3 py-1.5 text-[11px] font-bold tracking-widest">
-          TRAIL · HIT · CLIP
-        </span>
-        <BoltBadge />
-      </div>
-      <div className="relative px-5 pt-2">
-        <button type="button" onClick={() => fileRef.current?.click()} className="ml-auto block w-28 rotate-3">
-          <img
-            src={selfie || PHOTOS.crew}
-            alt={selfie ? `${riderName} selfie` : "Crew selfie on the ridge"}
-            className="aspect-square w-full rounded-2xl object-cover ring-4 ring-snow"
-          />
-          <span className="mt-1 block text-center text-[10px] font-bold tracking-widest">
-            {selfie ? riderName : "Crew selfie"}
+    <div className="relative overflow-hidden pb-16">
+      {/* Zone 1 — Ride */}
+      <section data-testid="home-zone-ride" className="px-5 pt-5" aria-label="Ride">
+        <div className="flex items-start justify-between">
+          <span className="rounded-full border-2 border-ink px-3 py-1.5 text-[11px] font-bold tracking-widest">
+            TRAIL · HIT · CLIP
           </span>
-        </button>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          capture="user"
-          className="sr-only"
-          onChange={(event) => void onSelfie(event.target.files?.[0])}
-        />
-      </div>
-      <div className="px-5">
-        <h1 className="font-display text-7xl leading-none tracking-tight">STOMP</h1>
-        <div className="mt-2 flex items-start justify-between gap-3">
-          <p className="max-w-48 text-lg font-medium text-pretty">Hands-free caddy. Lap the park. Log the hit.</p>
-          <button
-            type="button"
-            onClick={() => setScreen("map")}
-            className="flex size-16 shrink-0 rotate-6 items-center justify-center rounded-2xl border-2 border-ink bg-pink text-center font-display text-lg leading-none text-snow"
-          >
-            HIT
-            <br />
-            clip
-          </button>
+          <BoltBadge />
         </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button type="button" onClick={() => setScreen("log")} className="h-10 rounded-full bg-pink px-4 text-sm font-semibold text-snow">
-            {landings[0] ? `${formatAir(landings[0].seconds)}s of air` : "Log air"}
+        <div className="mt-3 flex items-end justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h1 className="font-display text-7xl leading-none tracking-tight">STOMP</h1>
+            <p className="mt-2 max-w-52 text-lg font-medium text-pretty">Hands-free caddy. Lap the park. Log the hit.</p>
+          </div>
+          <button type="button" onClick={() => fileRef.current?.click()} className="w-24 shrink-0 rotate-3">
+            <img
+              src={selfie || PHOTOS.crew}
+              alt={selfie ? `${riderName} selfie` : "Crew selfie on the ridge"}
+              className="aspect-square w-full rounded-2xl object-cover ring-4 ring-snow"
+            />
+            <span className="mt-1 block text-center text-[10px] font-bold tracking-widest">
+              {selfie ? riderName : "Crew selfie"}
+            </span>
           </button>
-          <button type="button" onClick={() => setScreen("park")} className="h-10 rounded-full bg-teal px-4 text-sm font-semibold">
-            Park laps
-          </button>
-          <button type="button" onClick={() => setScreen("map")} className="h-10 rounded-full bg-snow px-4 text-sm font-semibold ring-1 ring-line">
-            Maps
-          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            capture="user"
+            className="sr-only"
+            onChange={(event) => void onSelfie(event.target.files?.[0])}
+          />
         </div>
         <button
           type="button"
+          onClick={startRun}
+          className="mt-4 h-16 w-full rounded-full bg-ink font-display text-3xl tracking-wide text-snow"
+        >
+          Drop in
+        </button>
+        <button
+          type="button"
           onClick={() => chooseSession(template.id)}
-          className="mt-4 h-16 w-full rounded-full bg-pink font-display text-3xl tracking-wide text-snow"
+          className="mt-2 h-12 w-full rounded-full bg-pink font-semibold text-snow"
         >
           {template.name}
         </button>
         <p className="mt-2 text-center text-sm text-muted">
-          {BAND_LABEL[band]} · about {template.minutes} min · no GPS
+          {BAND_LABEL[band]} · ~{template.minutes} min · no GPS
           {template.sample ? " · Sample" : ""}
         </p>
-        <button
-          type="button"
-          onClick={startRun}
-          className="mt-3 h-16 w-full rounded-full bg-ink font-display text-3xl tracking-wide text-snow"
-        >
-          Drop in
-        </button>
-        <div className="mt-3">
-          <SessionMic />
-        </div>
-        <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+        <div className="mt-3 grid grid-cols-3 gap-2 text-center">
           <div>
             <p className="font-display text-3xl leading-none text-pink">{counts.landed}</p>
             <p className="text-xs font-semibold text-muted">Landed</p>
@@ -168,52 +139,78 @@ export function Greet() {
             <p className="text-xs font-semibold text-muted">Goals</p>
           </div>
         </div>
-        <button type="button" onClick={() => setScreen("stompers")} className="mt-5 w-full text-center text-lg font-semibold">
-          STOMPERS
-        </button>
-        <div className="mt-1 flex justify-between text-sm text-muted">
-          <button type="button" onClick={() => chooseSession(template.id)}>
-            the plan
-          </button>
-          <button type="button" onClick={() => setScreen("park")}>
-            or hit the park
-          </button>
-          <button type="button" onClick={() => setScreen("playlist")}>
-            today’s playlist
-          </button>
+        <div className="mt-3">
+          <SessionMic />
         </div>
         {note ? <p className="mt-2 text-sm font-semibold text-teal">{note}</p> : null}
-        <p className="mt-6 text-xs font-bold tracking-widest text-muted">Templates</p>
-        <ul className="mt-2 flex flex-col gap-2">
-          {SESSIONS.map((session) => (
-            <li key={session.id}>
-              <button
-                type="button"
-                onClick={() => chooseSession(session.id)}
-                className="flex w-full items-center justify-between rounded-2xl bg-snow px-4 py-3 text-left ring-1 ring-line"
-              >
-                <span className="font-semibold">{session.name}</span>
-                {session.sample ? <span className="text-xs font-bold tracking-widest text-pink">Sample</span> : null}
-              </button>
-            </li>
-          ))}
-        </ul>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button type="button" onClick={() => setScreen("crew")} className="h-10 rounded-full bg-snow px-4 text-sm font-semibold ring-1 ring-line">
-            {crew.length > 0 ? `Crew · ${crew.length}` : "Link crew"}
+      </section>
+
+      {/* Zone 2 — Mountain (Concept B) */}
+      <section data-testid="home-zone-mountain" className="mt-5 px-5" aria-label="Mountain">
+        <HomeMapCard />
+      </section>
+
+      {/* Zone 3 — Playlist */}
+      <section data-testid="home-zone-playlist" className="mt-4 px-5" aria-label="Music">
+        <HomePlaylistBlock />
+      </section>
+
+      {/* Compact tools — icons, not pill soup */}
+      <section data-testid="home-zone-tools" className="mt-4 px-5 pb-4" aria-label="Tools">
+        <div className="grid grid-cols-3 gap-2">
+          <button
+            type="button"
+            data-testid="home-tool-crew"
+            onClick={() => setScreen("crew")}
+            className="flex flex-col items-center gap-1 rounded-3xl bg-snow px-2 py-4 ring-1 ring-line"
+          >
+            <Users className="size-5" aria-hidden="true" />
+            <span className="text-xs font-semibold">{crew.length > 0 ? `Crew · ${crew.length}` : "Crew"}</span>
           </button>
-          {LINKS.map((link) => (
-            <button
-              key={link.screen}
-              type="button"
-              onClick={() => setScreen(link.screen)}
-              className="h-10 rounded-full bg-snow px-4 text-sm font-semibold ring-1 ring-line"
-            >
-              {link.label}
-            </button>
-          ))}
+          <button
+            type="button"
+            data-testid="home-tool-park"
+            onClick={() => setScreen("park")}
+            className="flex flex-col items-center gap-1 rounded-3xl bg-teal/30 px-2 py-4 ring-1 ring-line"
+          >
+            <Flag className="size-5" aria-hidden="true" />
+            <span className="text-xs font-semibold">Park</span>
+          </button>
+          <button
+            type="button"
+            data-testid="home-tool-stompers"
+            onClick={() => setScreen("stompers")}
+            className="flex flex-col items-center gap-1 rounded-3xl bg-snow px-2 py-4 ring-1 ring-line"
+          >
+            <Layers className="size-5" aria-hidden="true" />
+            <span className="text-xs font-semibold">Stompers</span>
+          </button>
         </div>
-      </div>
+        <button
+          type="button"
+          data-testid="home-plans-toggle"
+          onClick={() => setShowPlans((v) => !v)}
+          className="mt-3 h-11 w-full rounded-2xl bg-paper text-sm font-semibold ring-1 ring-line"
+        >
+          {showPlans ? "Hide plans" : "Session plans"}
+        </button>
+        {showPlans ? (
+          <ul className="mt-2 flex flex-col gap-2" data-testid="home-plans-list">
+            {SESSIONS.map((session) => (
+              <li key={session.id}>
+                <button
+                  type="button"
+                  onClick={() => chooseSession(session.id)}
+                  className="flex w-full items-center justify-between rounded-2xl bg-snow px-4 py-3 text-left ring-1 ring-line"
+                >
+                  <span className="font-semibold">{session.name}</span>
+                  {session.sample ? <span className="text-xs font-bold tracking-widest text-pink">Sample</span> : null}
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </section>
     </div>
   );
 }

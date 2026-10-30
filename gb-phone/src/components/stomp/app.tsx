@@ -9,6 +9,7 @@ import { Stompers } from "@/components/stomp/stompers";
 import { Run } from "@/components/stomp/run";
 import { WozLab } from "@/components/stomp/woz-lab";
 import { GreetCrewToolsHint } from "@/components/stomp/woz-entry";
+import { PlaylistFab } from "@/components/stomp/playlist-chrome";
 import { useStomp } from "@/lib/stomp/store";
 import { startGbInviteMirror } from "@/lib/stomp/woz-bridge/invite-mirror-gb";
 
@@ -42,6 +43,7 @@ export function StompApp() {
           {screen === "session" ? <TodaySession /> : null}
           {screen === "stompers" ? <Stompers /> : null}
           {screen === "woz" ? <WozLab /> : null}
+          <PlaylistFab />
         </div>
       </div>
     </div>

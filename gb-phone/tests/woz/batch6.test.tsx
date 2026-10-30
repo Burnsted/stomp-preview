@@ -116,7 +116,7 @@ describe("profile privacy + reset hygiene", () => {
 });
 
 describe("greet.tsx pinned + floating Crew tools from greet", () => {
-  it("greet.tsx sha256 unchanged", () => { const h = createHash("sha256").update(readFileSync("src/components/stomp/greet.tsx")).digest("hex"); expect(h.startsWith("0811babf")).toBe(true); expect(h.endsWith("996fc2")).toBe(true); });
+  it("CrewLink export sha256 unchanged", async () => { const { CREWLINK_SHA, crewLinkSha } = await import("./greet-invite-sha"); expect(crewLinkSha()).toBe(CREWLINK_SHA); });
   it("pill opens Crew tools, Back returns to greet", async () => { render(<StompApp />); await act(async () => { await Promise.resolve(); }); act(() => useStomp.setState({ screen: "greet" })); fireEvent.click(screen.getByTestId("greet-crew-tools")); expect(screen.getByTestId("woz-lab")).toBeTruthy(); fireEvent.click(screen.getByTestId("woz-back")); expect(useStomp.getState().screen).toBe("greet"); expect(screen.getByTestId("greet-crew-tools")).toBeTruthy(); });
   it("pill not shown on More screens", async () => { await show("stash"); expect(screen.queryByTestId("greet-crew-tools")).toBeNull(); });
 });

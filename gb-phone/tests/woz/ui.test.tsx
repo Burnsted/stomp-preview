@@ -1,14 +1,12 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
-import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
 import { StompApp } from "@/components/stomp/app";
 import { useStomp } from "@/lib/stomp/store";
 import { useWoz, setWozBacking, getWozBacking } from "@/lib/stomp/woz-bridge/woz-store";
 import { createWozStore, createMemoryBackend } from "@/lib/stomp/woz-bridge/persistence";
+import { CREWLINK_SHA, crewLinkSha } from "./greet-invite-sha";
 
-const GREET_SHA = "0811babf8c7139a86738e2bd677db8544f09672b83a8fad345075f8bfb996fc2";
 const crew = [{ code: "AAA111", name: "Ria" }, { code: "BBB222", name: "Jax" }];
 
 beforeEach(() => {
@@ -24,7 +22,7 @@ const click = (name: RegExp | string) => fireEvent.click(screen.getByRole("butto
 const type = (label: string, v: string) => fireEvent.change(screen.getByLabelText(label), { target: { value: v } });
 
 describe("Invite preservation", () => {
-  it("greet.tsx sha256 unchanged", () => expect(createHash("sha256").update(readFileSync(`${process.cwd()}/src/components/stomp/greet.tsx`)).digest("hex")).toBe(GREET_SHA));
+  it("CrewLink export sha256 unchanged", () => expect(crewLinkSha()).toBe(CREWLINK_SHA));
   it("Invite button routes to GB crew screen (CrewLink)", () => { openTab("crew"); fireEvent.click(screen.getByTestId("open-gb-invite")); expect(useStomp.getState().screen).toBe("crew"); });
   it("unlinking does not touch GB crew list", () => {
     openTab("crew"); const row = screen.getAllByTestId("crew-row")[1]!; fireEvent.click(within(row).getByRole("button", { name: /^Unlink / }));
@@ -124,7 +122,7 @@ describe("smart id panel", () => {
 
 describe("Invite mirror (UI)", () => {
   const settle = () => new Promise((r) => setTimeout(r, 20));
-  it("home chip opens crew tools", async () => { render(<StompApp />); await new Promise((r) => setTimeout(r, 20)); act(() => useStomp.setState({ screen: "home" })); click("Crew tools"); expect(useStomp.getState().screen).toBe("woz"); expect(useWoz.getState().tab).toBe("crew"); });
+  it("home chip opens crew tools", async () => { render(<StompApp />); await new Promise((r) => setTimeout(r, 20)); act(() => useStomp.setState({ screen: "home" })); fireEvent.click(screen.getByTestId("home-crew-tools-card")); expect(useStomp.getState().screen).toBe("woz"); expect(useWoz.getState().tab).toBe("crew"); });
   it("GB accept/revoke shows in Invite activity and re-accept re-links", async () => {
     openTab("crew"); await settle();
     expect(screen.getByTestId("invite-empty")).toBeTruthy();

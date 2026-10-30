@@ -1,4 +1,5 @@
 import { ChevronLeft } from "lucide-react";
+import { PlaylistLink } from "@/components/stomp/playlist-chrome";
 import { useStomp } from "@/lib/stomp/store";
 import { useWoz } from "@/lib/stomp/woz-bridge/woz-store";
 
@@ -122,7 +123,10 @@ export function BackBar({ title }: { title: string }) {
         Home
       </button>
       <h1 className="font-display text-4xl tracking-wide">{title}</h1>
-      <CrewToolsLink className="ml-auto" />
+      <div className="ml-auto flex items-center gap-2">
+        <PlaylistLink />
+        <CrewToolsLink />
+      </div>
     </header>
   );
 }

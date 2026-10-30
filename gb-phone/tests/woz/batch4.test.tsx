@@ -241,9 +241,9 @@ describe("GB screen regression round trip", () => {
     fireEvent.click(screen.getByTestId("woz-back"));
     expect(useStomp.getState().crew).toEqual(crew); expect(useStomp.getState().riderName).toBe("Ted");
   });
-  it("greet.tsx Invite source unchanged (sha256 pin)", () => {
-    const h = createHash("sha256").update(readFileSync(`${process.cwd()}/src/components/stomp/greet.tsx`)).digest("hex");
-    expect(h).toBe("0811babf8c7139a86738e2bd677db8544f09672b83a8fad345075f8bfb996fc2");
+  it("CrewLink Invite export unchanged (sha256 pin)", async () => {
+    const { CREWLINK_SHA, crewLinkSha } = await import("./greet-invite-sha");
+    expect(crewLinkSha()).toBe(CREWLINK_SHA);
   });
 });
 

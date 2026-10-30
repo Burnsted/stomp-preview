@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Share2, Trash2 } from "lucide-react";
 import { BackBar } from "@/components/stomp/chrome";
 import { ConfirmBar } from "@/components/stomp/confirm-bar";
 import { AIRTIME_EMPTY, LINE_EMPTY, MUSIC_EMPTY, MUSIC_PLAY_FAIL, MUSIC_SAVE_FAIL, PLAYLIST_EMPTY, STASH_EMPTY, STASH_PRIVACY_NOTE, checkStash } from "@/lib/stomp/woz-bridge/more-copy";
 import { listTracks, removeTrack, saveTrack, trackUrl, type TrackMeta } from "@/lib/stomp/music";
+import { loadTrackOrder, moveTrack, orderedIds, saveTrackOrder } from "@/lib/stomp/music-order";
 import { sessionById, suggestedSession } from "@/lib/stomp/sessions";
 import {
   CUES,
@@ -196,6 +197,7 @@ function MusicDeck() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const urlRef = useRef<string | null>(null);
   const [tracks, setTracks] = useState<TrackMeta[]>([]);
+  const [order, setOrder] = useState<string[]>([]);
   const [playing, setPlaying] = useState<string | null>(null);
   const [note, setNote] = useState("");
 
@@ -203,7 +205,9 @@ function MusicDeck() {
     let cancel = false;
     listTracks()
       .then((rows) => {
-        if (!cancel) setTracks(rows);
+        if (cancel) return;
+        setTracks(rows);
+        setOrder(orderedIds(rows.map((r) => r.id), loadTrackOrder()));
       })
       .catch(() => {
         if (!cancel) setNote("Music couldn’t open on this device.");
@@ -216,7 +220,17 @@ function MusicDeck() {
   }, []);
 
   async function refresh() {
-    setTracks(await listTracks());
+    const rows = await listTracks();
+    setTracks(rows);
+    const next = orderedIds(rows.map((r) => r.id), loadTrackOrder());
+    setOrder(next);
+    saveTrackOrder(next);
+  }
+
+  function reorder(id: string, dir: -1 | 1) {
+    const next = moveTrack(order, id, dir);
+    setOrder(next);
+    saveTrackOrder(next);
   }
 
   async function onFiles(list: FileList | null) {
@@ -269,8 +283,11 @@ function MusicDeck() {
     await refresh();
   }
 
+  const byId = new Map(tracks.map((t) => [t.id, t]));
+  const ordered = order.map((id) => byId.get(id)).filter((t): t is TrackMeta => !!t);
+
   return (
-    <div className="px-4 pt-3">
+    <div className="px-4 pt-3" data-testid="music-deck">
       <input
         ref={fileRef}
         type="file"
@@ -286,13 +303,21 @@ function MusicDeck() {
       >
         Upload tracks
       </button>
-      <p className="mt-2 text-sm text-pretty text-muted">Songs stay on this phone. Tap one to ride to it.</p>
+      <p className="mt-2 text-sm text-pretty text-muted">Songs stay on this phone. Use arrows to adjust order.</p>
       {note ? <p className="mt-2 text-sm font-semibold text-teal">{note}</p> : null}
       {tracks.length === 0 && !note ? <p data-testid="music-empty" className="mt-2 text-sm text-muted">{MUSIC_EMPTY}</p> : null}
-      {tracks.length > 0 ? (
+      {ordered.length > 0 ? (
         <ul className="mt-3 flex flex-col gap-2">
-          {tracks.map((track) => (
-            <li key={track.id} className="flex items-center gap-2 rounded-2xl bg-snow p-2 ring-1 ring-line">
+          {ordered.map((track) => (
+            <li key={track.id} className="flex items-center gap-1 rounded-2xl bg-snow p-2 ring-1 ring-line">
+              <div className="flex flex-col">
+                <button type="button" aria-label={`Move ${track.name} up`} data-testid={`track-up-${track.id}`} onClick={() => reorder(track.id, -1)} className="flex size-8 items-center justify-center text-muted">
+                  <ChevronUp className="size-4" />
+                </button>
+                <button type="button" aria-label={`Move ${track.name} down`} data-testid={`track-down-${track.id}`} onClick={() => reorder(track.id, 1)} className="flex size-8 items-center justify-center text-muted">
+                  <ChevronDown className="size-4" />
+                </button>
+              </div>
               <button
                 type="button"
                 onClick={() => void play(track.id)}
@@ -327,7 +352,30 @@ export function Playlist() {
   const template = sessionById(activeSession) ?? suggestedSession(band, crew.length);
   const rows = playlistRows({ landings, callouts, clips });
   const [now] = useState(() => Date.now());
+  const [shareNote, setShareNote] = useState("");
   const search = `https://open.spotify.com/search/${encodeURIComponent(template.search)}`;
+
+  async function sharePlaylist() {
+    const text = `STOMP playlist · ${template.mood} · ${template.name}. Demo share — stays on this phone until you send it.`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "STOMP playlist", text });
+        setShareNote("Share sheet opened.");
+        return;
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        setShareNote("Share canceled.");
+        return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      setShareNote("Playlist blurb copied.");
+    } catch {
+      setShareNote("Share stub ready.");
+    }
+  }
 
   return (
     <div className="px-1 pb-10">
@@ -337,14 +385,26 @@ export function Playlist() {
         <p className="mt-1 text-pretty text-sm text-muted">
           For {template.name}. Your uploads play here. Spotify just opens a search — STOMP doesn’t sync the beat.
         </p>
-        <a
-          href={search}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-3 flex h-12 items-center justify-center rounded-full bg-ink font-semibold text-snow"
-        >
-          Open in Spotify
-        </a>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <a
+            href={search}
+            target="_blank"
+            rel="noreferrer"
+            className="flex h-12 items-center justify-center rounded-full bg-ink font-semibold text-snow"
+          >
+            Open in Spotify
+          </a>
+          <button
+            type="button"
+            data-testid="playlist-share"
+            onClick={() => void sharePlaylist()}
+            className="flex h-12 items-center justify-center gap-2 rounded-full bg-snow font-semibold ring-1 ring-line"
+          >
+            <Share2 className="size-4" aria-hidden="true" />
+            Share
+          </button>
+        </div>
+        {shareNote ? <p className="mt-2 text-sm font-semibold text-teal">{shareNote}</p> : null}
       </div>
       <MusicDeck />
       <p className="px-5 pt-5 text-pretty text-muted">Air, callouts, and clips from this line, newest first.</p>
