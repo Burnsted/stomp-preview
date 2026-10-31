@@ -80,7 +80,7 @@ export function PlaylistFab() {
         data-testid="playlist-fab-root"
         data-concept="playlist-fab-cluster-b"
       >
-        <div className="pointer-events-none absolute right-[3.5rem] bottom-[max(6.5rem,calc(env(safe-area-inset-bottom)+5.5rem))]">
+        <div className="pointer-events-none absolute right-[3.25rem] bottom-[max(7.75rem,calc(env(safe-area-inset-bottom)+6.75rem))]">
           {fabOpen ? (
             <button
               type="button"

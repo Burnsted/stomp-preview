@@ -72,19 +72,21 @@ export function Greet() {
   }
 
   return (
-    <div className="relative overflow-hidden pb-16">
-      {/* Zone 1 — Ride */}
+    <div className="relative overflow-hidden pb-28">
+      {/* Zone 1 — Ride (alpine mountain dashboard) */}
       <section data-testid="home-zone-ride" className="px-5 pt-5" aria-label="Ride">
         <div className="flex items-start justify-between">
-          <span className="rounded-full border-2 border-ink px-3 py-1.5 text-[11px] font-bold tracking-widest">
+          <span className="rounded-full border border-teal/50 bg-teal/10 px-3 py-1.5 text-[11px] font-bold tracking-widest text-teal">
             TRAIL · HIT · CLIP
           </span>
           <BoltBadge />
         </div>
         <div className="mt-3 flex items-end justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <h1 className="font-display text-7xl leading-none tracking-tight">STOMP</h1>
-            <p className="mt-2 max-w-52 text-lg font-medium text-pretty">Hands-free caddy. Lap the park. Log the hit.</p>
+            <h1 className="font-display text-7xl leading-none tracking-tight text-lime">STOMP</h1>
+            <p className="mt-2 max-w-52 text-lg font-medium text-pretty text-ink/90">
+              Welcome back, {riderName}. Hands-free caddy. Log the hit.
+            </p>
           </div>
           <button type="button" onClick={() => fileRef.current?.click()} className="w-24 shrink-0 rotate-3">
             <img
@@ -108,20 +110,20 @@ export function Greet() {
         <button
           type="button"
           onClick={startRun}
-          className="mt-4 h-16 w-full rounded-full bg-ink font-display text-3xl tracking-wide text-snow"
+          className="mt-4 h-16 w-full rounded-full bg-lime font-display text-3xl tracking-wide text-navy"
         >
           Drop in
         </button>
         <button
           type="button"
           onClick={() => chooseSession(template.id)}
-          className="mt-2 h-12 w-full rounded-full bg-pink font-semibold text-snow"
+          className="mt-2 h-12 w-full rounded-full bg-pink/90 font-semibold text-white"
         >
           {template.name}
         </button>
         <p className="mt-2 text-center text-sm text-muted">
           {BAND_LABEL[band]} · ~{template.minutes} min · no GPS
-          {template.sample ? " · Sample" : ""}
+          {template.sample ? " · optional suggested" : ""}
         </p>
         <div className="mt-3 grid grid-cols-3 gap-2 text-center">
           <div>

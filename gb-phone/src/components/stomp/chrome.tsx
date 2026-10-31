@@ -1,4 +1,5 @@
 import { ChevronLeft } from "lucide-react";
+import { HeySessionCompact } from "@/components/stomp/alpine-chrome";
 import { PlaylistLink } from "@/components/stomp/playlist-chrome";
 import { useStomp } from "@/lib/stomp/store";
 import { useWoz } from "@/lib/stomp/woz-bridge/woz-store";
@@ -38,7 +39,8 @@ export function Wordmark({
   tone?: "ink" | "snow";
   onClick?: () => void;
 }) {
-  const color = tone === "snow" ? "text-snow" : "text-ink";
+  /** Alpine: lime wordmark is the brand signal; tone still flips badge/context. */
+  const color = tone === "snow" ? "text-lime" : "text-lime";
   const mark = (
     <span className={"inline-flex items-center gap-2 " + color}>
       <span className="font-display text-6xl leading-none tracking-tight">STOMP</span>
@@ -111,6 +113,7 @@ export function HomeButton() {
 
 export function BackBar({ title }: { title: string }) {
   const setScreen = useStomp((state) => state.setScreen);
+  const screen = useStomp((state) => state.screen);
   return (
     <header className="flex items-center gap-2 px-4 pt-5">
       <button
@@ -124,6 +127,7 @@ export function BackBar({ title }: { title: string }) {
       </button>
       <h1 className="font-display text-4xl tracking-wide">{title}</h1>
       <div className="ml-auto flex items-center gap-2">
+        {screen !== "greet" && screen !== "home" ? <HeySessionCompact /> : null}
         <PlaylistLink />
         <CrewToolsLink />
       </div>

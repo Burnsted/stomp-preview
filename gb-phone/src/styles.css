@@ -1,17 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  --color-paper: #eef3ea;
-  --color-snow: #ffffff;
-  --color-ink: #141821;
-  --color-muted: #6e7684;
-  --color-line: #e2e6ea;
+  /* Alpine remap: paper=page, snow=glass card, ink=primary text on dark */
+  --color-paper: #070b14;
+  --color-snow: #152033;
+  --color-ink: #f4f6f8;
+  --color-muted: #8b95a8;
+  --color-line: rgba(255, 255, 255, 0.14);
   --color-lime: #d6f25a;
   --color-pink: #ff3b78;
   --color-teal: #2ad4c2;
   --color-orange: #ff7a3c;
-  --color-sky: #3b82f6;
+  --color-sky: #5ec8ff;
   --color-violet: #8b7cff;
+  --color-navy: #0b1220;
+  --color-midnight: #070b14;
+  --color-steel: #2a3448;
   --font-sans: "Outfit", system-ui, sans-serif;
   --font-display: "Anton", system-ui, sans-serif;
   --radius-card: 1.5rem;
@@ -24,18 +28,17 @@
   }
 
   html {
-    color-scheme: light;
-    background: var(--color-paper);
+    color-scheme: dark;
+    background: var(--color-midnight);
   }
 
   body {
     margin: 0;
     min-height: 100dvh;
     background:
-      linear-gradient(165deg, #d6f25a 0 36%, transparent 36.2%),
-      linear-gradient(165deg, transparent 36%, #b7f3ea 36.2% 70%, transparent 70.2%),
-      linear-gradient(165deg, transparent 78%, #ffd6e6 78%),
-      #f6f7f4;
+      radial-gradient(120% 80% at 50% -10%, rgba(42, 212, 194, 0.12), transparent 55%),
+      radial-gradient(90% 60% at 100% 0%, rgba(214, 242, 90, 0.06), transparent 45%),
+      linear-gradient(180deg, #0b1220 0%, #070b14 55%, #05080f 100%);
     color: var(--color-ink);
     font-family: var(--font-sans);
   }
@@ -44,6 +47,12 @@
   h2,
   h3 {
     text-wrap: balance;
+  }
+
+  input,
+  textarea,
+  select {
+    color-scheme: dark;
   }
 }
 
@@ -56,6 +65,77 @@
 .trail-dash {
   stroke-dasharray: 7 9;
   animation: stomp-dash 1.6s linear infinite;
+}
+
+/* Concept A ice-blue trail (batch 2) */
+.trail-ice {
+  stroke: #5ec8ff;
+  filter: drop-shadow(0 0 4px rgba(94, 200, 255, 0.85));
+}
+
+.trail-ice-fade {
+  stroke: url(#ice-fade);
+}
+
+@keyframes alpine-wave {
+  0%,
+  100% {
+    transform: scaleY(0.45);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.alpine-wave {
+  display: inline-flex;
+  gap: 2px;
+  height: 14px;
+  align-items: flex-end;
+}
+.alpine-wave::before,
+.alpine-wave::after,
+.alpine-wave {
+  content: "";
+}
+.alpine-wave::before,
+.alpine-wave::after {
+  width: 2px;
+  height: 100%;
+  border-radius: 1px;
+  background: #2ad4c2;
+  animation: alpine-wave 1s ease-in-out infinite;
+}
+.alpine-wave::after {
+  animation-delay: 0.2s;
+  height: 70%;
+}
+
+.alpine-glass {
+  background: linear-gradient(160deg, rgba(28, 38, 58, 0.78), rgba(12, 18, 32, 0.88));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+.hey-session-pill {
+  background: rgba(11, 18, 32, 0.85);
+  border: 1px solid rgba(94, 200, 255, 0.55);
+}
+
+.alpine-bottom-nav {
+  pointer-events: none;
+}
+
+.music-source-icon {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+/* Phone shell — alpine frame */
+.alpine-shell {
+  background: transparent;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -74,11 +154,13 @@
   }
 }
 
-/* Concept B+C — soft-glass playlist FAB + sheet */
+/* Concept B+C — soft-glass playlist FAB + sheet (SESSION Concept C pulse) */
 .playlist-soft-bar {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(238, 243, 250, 0.88));
-  box-shadow: 0 10px 28px rgba(20, 24, 33, 0.08);
+  background: linear-gradient(135deg, rgba(28, 38, 58, 0.9), rgba(14, 20, 34, 0.92));
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-snow);
 }
 
 .playlist-soft-glass {
@@ -95,32 +177,33 @@
 }
 
 .playlist-fab-core {
-  background: radial-gradient(circle at 35% 30%, #7eb6ff 0%, #3b82f6 55%, #2563eb 100%);
+  background: radial-gradient(circle at 35% 30%, #7ef0e0 0%, #2ad4c2 55%, #1aa897 100%);
   box-shadow:
-    0 0 0 1px rgba(59, 130, 246, 0.45),
-    0 0 22px rgba(59, 130, 246, 0.55),
+    0 0 0 1px rgba(42, 212, 194, 0.45),
+    0 0 22px rgba(42, 212, 194, 0.55),
     0 10px 24px rgba(20, 24, 33, 0.35);
 }
 
 .playlist-fab-core--open {
   box-shadow:
-    0 0 0 1px rgba(59, 130, 246, 0.65),
-    0 0 28px rgba(59, 130, 246, 0.75),
+    0 0 0 1px rgba(42, 212, 194, 0.65),
+    0 0 28px rgba(42, 212, 194, 0.75),
     0 10px 24px rgba(20, 24, 33, 0.35);
 }
 
+/* Concept C — pulsing ring around playlist FAB only (batch 1) */
 @keyframes playlist-fab-pulse {
   0%,
   100% {
     box-shadow:
-      0 0 0 1px rgba(59, 130, 246, 0.45),
-      0 0 18px rgba(59, 130, 246, 0.45),
+      0 0 0 1px rgba(42, 212, 194, 0.45),
+      0 0 18px rgba(42, 212, 194, 0.45),
       0 10px 24px rgba(20, 24, 33, 0.35);
   }
   50% {
     box-shadow:
-      0 0 0 1px rgba(59, 130, 246, 0.7),
-      0 0 30px rgba(59, 130, 246, 0.7),
+      0 0 0 1px rgba(42, 212, 194, 0.7),
+      0 0 30px rgba(42, 212, 194, 0.7),
       0 10px 24px rgba(20, 24, 33, 0.35);
   }
 }

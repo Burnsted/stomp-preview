@@ -39,10 +39,10 @@ export function Stompers() {
   const [hidden, setHidden] = useState<string[]>([]);
 
   return (
-    <div className="px-1 pb-10">
+    <div className="px-1 pb-28">
       <header className="flex items-center gap-3 px-4 pt-5">
         <HomeButton />
-        <h1 className="font-display text-4xl tracking-wide">STOMPERS</h1>
+        <h1 className="font-display text-4xl tracking-wide text-lime">STOMPERS</h1>
       </header>
       <p className="px-5 pt-2 text-pretty text-muted">
         STOMP is the app. Stompers are the people. Your crew is who you ride with.
