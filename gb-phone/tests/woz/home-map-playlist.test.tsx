@@ -16,6 +16,7 @@ import {
 } from "@/lib/stomp/home-mountain";
 import { moveTrack, orderedIds, saveTrackOrder, setMusicOrderBacking, loadTrackOrder } from "@/lib/stomp/music-order";
 import { allMountainPlaylists, mountainPlaylistFor } from "@/lib/stomp/mountain-playlists";
+import { usePlaylistActions } from "@/lib/stomp/playlist-actions";
 import { CREWLINK_SHA, INVITE_FN_SHA, crewLinkSha, inviteFnSha } from "./greet-invite-sha";
 
 beforeEach(() => {
@@ -25,6 +26,7 @@ beforeEach(() => {
   setHomeMountainBacking(store);
   setMusicOrderBacking(store);
   useHomeMountain.setState({ level: "us", stateId: null, resortId: null });
+  usePlaylistActions.setState({ fabOpen: false, sheetOpen: false, panel: "upload" });
   useStomp.setState({
     screen: "greet",
     crew: [{ code: "AAA111", name: "Ria" }],
@@ -153,21 +155,31 @@ describe("Greet home UX smoke", () => {
     }
   });
 
-  it("playlist block open + adjust route to playlist", () => {
+  it("playlist soft bar opens playlist; adjust opens Concept C sheet", () => {
     render(<StompApp />);
+    expect(screen.getByTestId("home-playlist-block").getAttribute("data-concept")).toBe("playlist-soft-bar");
+    expect(screen.queryByTestId("home-playlist-upload")).toBeNull();
     fireEvent.click(screen.getByTestId("home-playlist-open"));
     expect(useStomp.getState().screen).toBe("playlist");
     act(() => useStomp.setState({ screen: "greet" }));
     fireEvent.click(screen.getByTestId("home-playlist-adjust"));
-    expect(useStomp.getState().screen).toBe("playlist");
+    expect(usePlaylistActions.getState()).toMatchObject({ sheetOpen: true, panel: "adjust" });
+    expect(screen.getByTestId("playlist-sheet")).toBeTruthy();
+    expect(screen.getByTestId("playlist-sheet-adjust")).toBeTruthy();
   });
 
-  it("playlist fab is global", () => {
+  it("playlist FAB cluster is global and expands Upload/Adjust/Share", () => {
     act(() => useStomp.setState({ screen: "park" }));
     render(<StompApp />);
+    expect(screen.getByTestId("playlist-fab-root").getAttribute("data-concept")).toBe("playlist-fab-cluster-b");
     expect(screen.getByTestId("playlist-fab")).toBeTruthy();
     fireEvent.click(screen.getByTestId("playlist-fab"));
-    expect(useStomp.getState().screen).toBe("playlist");
+    expect(usePlaylistActions.getState().fabOpen).toBe(true);
+    expect(useStomp.getState().screen).toBe("park");
+    fireEvent.click(screen.getByTestId("playlist-fab-upload"));
+    expect(usePlaylistActions.getState()).toMatchObject({ sheetOpen: true, panel: "upload", fabOpen: false });
+    expect(screen.getByTestId("playlist-sheet").getAttribute("data-concept")).toBe("playlist-bottom-sheet-c");
+    act(() => useStomp.setState({ screen: "playlist" }));
     expect(screen.queryByTestId("playlist-fab")).toBeNull();
   });
 
