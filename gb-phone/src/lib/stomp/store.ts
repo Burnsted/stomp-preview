@@ -5,7 +5,23 @@ import { findTrick, isLanded, type TrickStatus } from "@/lib/stomp/goals";
 import type { Band } from "@/lib/stomp/library";
 import { publicUrl } from "@/lib/public-url";
 
-export type Screen = "greet" | "home" | "run" | "map" | "log" | "guide" | "stash" | "playlist" | "goals" | "park" | "crew" | "session" | "stompers" | "woz";
+export type Screen =
+  | "greet"
+  | "home"
+  | "run"
+  | "map"
+  | "log"
+  | "guide"
+  | "stash"
+  | "playlist"
+  | "favorites"
+  | "offline"
+  | "goals"
+  | "park"
+  | "crew"
+  | "session"
+  | "stompers"
+  | "woz";
 
 export type Landing = {
   id: string;

@@ -16,7 +16,7 @@ export const Route = createRootRoute({
         name: "description",
         content: "STOMP — the hands-free snowboard caddy and trick log. Ride the line, time the air, pin the clip.",
       },
-      { name: "theme-color", content: "#EEF3EA" },
+      { name: "theme-color", content: "#070B14" },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: publicUrl("/favicon.svg") },

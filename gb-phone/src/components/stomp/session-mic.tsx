@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type PointerEvent } from "react";
 import { holdListen, readAudioRoute, type AudioRoute } from "@/lib/stomp/audio-route";
+import { useMusicSources } from "@/lib/stomp/music-sources";
 import { routeSession, speakSession, type SessionAct, type SessionMode } from "@/lib/stomp/session-voice";
 import { useStomp } from "@/lib/stomp/store";
 
@@ -10,10 +11,12 @@ export function useSessionRouter() {
   const addCallout = useStomp((state) => state.addCallout);
   const meetup = useStomp((state) => state.meetup);
   const tomorrow = useStomp((state) => state.tomorrow);
+  const setActiveSource = useMusicSources((state) => state.setActive);
 
   function apply(raw: string, mode: SessionMode = "command", speak = true): SessionAct {
     const act = routeSession(raw, { meetup, tomorrow, mode });
     if (speak) speakSession(act.say);
+    if (act.musicSource) setActiveSource(act.musicSource);
     if (act.run === "start") startRun();
     else if (act.run === "end") endRun();
     else if (act.screen) setScreen(act.screen);
