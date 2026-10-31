@@ -191,12 +191,16 @@ describe("music sources D1b/D2b", () => {
     expect(useMusicSources.getState().hidden).toContain("soundcloud");
   });
 
-  it("icon buttons are icon-only (aria-label, no text child labels)", () => {
+  it("icons carry small plain name labels (no pill backfill)", () => {
     render(<StompApp />);
     fireEvent.click(screen.getByTestId("nav-music"));
     const spotify = screen.getByTestId("music-source-spotify");
     expect(spotify.getAttribute("aria-label")).toMatch(/Spotify/);
-    expect(spotify.textContent?.includes("Spotify")).toBe(false);
+    expect(screen.getByTestId("music-source-label-spotify").textContent).toBe("Spotify");
+    expect(screen.getByTestId("music-source-label-apple").textContent).toBe("Apple");
+    expect(screen.getByTestId("music-source-label-ytm").textContent).toBe("YouTube");
+    const label = screen.getByTestId("music-source-label-spotify");
+    expect(label.className).not.toMatch(/rounded-full|bg-/);
   });
 });
 

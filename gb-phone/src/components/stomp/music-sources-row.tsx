@@ -1,6 +1,7 @@
 /**
- * Open-in music sources — Ted lock D1b/D2b (batch 12).
- * Icon-only · first 5 at 2× + chevron expands TikTok/Pandora/Tidal/iHeart/Deezer.
+ * Open-in music sources — Ted lock D1b/D2b (batch 12) + Owner redline 2026-10-31:
+ * 2× icons with small plain name labels under each (no pill/chip backfill).
+ * First 5 + chevron expands TikTok/Pandora/Tidal/iHeart/Deezer.
  * Hide unused via collapsed prefs (Tesla borrow).
  */
 import { ChevronDown, ChevronUp } from "lucide-react";
@@ -13,6 +14,20 @@ import {
   type MusicSourceId,
 } from "@/lib/stomp/music-sources";
 import { GlassCard } from "@/components/stomp/alpine-chrome";
+
+/** Compact under-icon names — still readable platform names, not codes. */
+const SOURCE_LABEL: Record<MusicSourceId, string> = {
+  spotify: "Spotify",
+  apple: "Apple",
+  ytm: "YouTube",
+  amazon: "Amazon",
+  soundcloud: "SoundCloud",
+  tiktok: "TikTok",
+  pandora: "Pandora",
+  tidal: "Tidal",
+  iheart: "iHeart",
+  deezer: "Deezer",
+};
 
 function SourceGlyph({ source }: { source: MusicSource }) {
   const letter =
@@ -55,6 +70,7 @@ function SourceButton({
   onPick: (id: MusicSourceId) => void;
   active: boolean;
 }) {
+  const label = SOURCE_LABEL[source.id];
   return (
     <button
       type="button"
@@ -62,12 +78,23 @@ function SourceButton({
       aria-label={`${source.name}${source.mode === "external-demo" ? " (external demo)" : ""}`}
       title={source.name}
       onClick={() => onPick(source.id)}
-      className={
-        "music-source-icon size-14 overflow-hidden rounded-full ring-2 " +
-        (active ? "ring-teal scale-105" : "ring-transparent")
-      }
+      className="flex w-[4.25rem] flex-col items-center gap-1"
     >
-      <SourceGlyph source={source} />
+      <span
+        className={
+          "music-source-icon size-14 shrink-0 overflow-hidden rounded-full ring-2 " +
+          (active ? "ring-teal scale-105" : "ring-transparent")
+        }
+      >
+        <SourceGlyph source={source} />
+      </span>
+      {/* Plain small type only — no pill/capsule/chip backfill (Ted redline). */}
+      <span
+        data-testid={`music-source-label-${source.id}`}
+        className="max-w-full truncate text-center text-[9px] font-medium leading-tight text-ink/70"
+      >
+        {label}
+      </span>
     </button>
   );
 }
@@ -103,7 +130,7 @@ export function MusicSourcesRow({
       <div className="mb-2 flex items-end justify-between gap-2">
         <div>
           <h2 className="font-display text-4xl tracking-wide text-snow">Open in</h2>
-          <p className="text-xs text-snow/50">Icon-only · 5 + more · 2× icons</p>
+          <p className="text-xs text-snow/50">5 + more · 2× icons · small names</p>
         </div>
         <button
           type="button"
@@ -171,7 +198,7 @@ export function MusicSourcesRow({
       ) : null}
 
       <GlassCard testId="music-sources-card" className="!p-3">
-        <div className="flex flex-wrap items-center justify-center gap-3">
+        <div className="flex flex-wrap items-start justify-center gap-x-2 gap-y-3">
           {primary.map((source) => (
             <SourceButton key={source.id} source={source} onPick={pick} active={active === source.id} />
           ))}
@@ -182,16 +209,24 @@ export function MusicSourcesRow({
               aria-label={expanded ? "Collapse sources" : "More sources"}
               aria-expanded={expanded}
               onClick={toggleExpanded}
-              className="flex size-14 items-center justify-center rounded-full bg-navy ring-1 ring-snow/20 text-teal"
+              className="flex w-[4.25rem] flex-col items-center gap-1"
             >
-              {expanded ? <ChevronUp className="size-6" /> : <ChevronDown className="size-6" />}
+              <span className="flex size-14 items-center justify-center rounded-full bg-navy ring-1 ring-snow/20 text-teal">
+                {expanded ? <ChevronUp className="size-6" /> : <ChevronDown className="size-6" />}
+              </span>
+              <span className="text-[9px] font-medium leading-tight text-ink/50">
+                {expanded ? "Less" : "More"}
+              </span>
             </button>
           ) : null}
         </div>
         {expanded && extra.length > 0 ? (
           <>
             <div className="my-3 h-px bg-snow/10" />
-            <div className="flex flex-wrap items-center justify-center gap-3" data-testid="music-sources-expanded">
+            <div
+              className="flex flex-wrap items-start justify-center gap-x-2 gap-y-3"
+              data-testid="music-sources-expanded"
+            >
               {extra.map((source) => (
                 <SourceButton key={source.id} source={source} onPick={pick} active={active === source.id} />
               ))}
