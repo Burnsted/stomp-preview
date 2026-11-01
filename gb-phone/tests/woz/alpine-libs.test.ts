@@ -206,6 +206,7 @@ describe("session voice alpine", () => {
     ["stompers", "stompers"],
     ["playlist", "playlist"],
     ["stats", "goals"],
+    ["bag of tricks", "bag"],
     ["the plan", "session"],
   ] as const;
   for (const [phrase, screen] of screens) {
@@ -233,5 +234,7 @@ describe("primary tab contract", () => {
     for (const s of ["greet", "map", "playlist", "goals", "stompers", "favorites", "offline", "park", "crew", "session", "run", "stash", "log", "guide", "woz", "home"] as const) {
       expect(tabForScreen(s)).toBeTruthy();
     }
+    // Bag is a feature surface, not a primary tab highlight
+    expect(tabForScreen("bag")).toBeNull();
   });
 });

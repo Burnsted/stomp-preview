@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import QRCode from "qrcode";
-import { Flag, Layers, Users } from "lucide-react";
+import { ChevronRight, Flag, Layers, Sparkles, Users } from "lucide-react";
 import { BoltBadge, HomeButton } from "@/components/stomp/chrome";
 import { HomeMapCard } from "@/components/stomp/home-map-card";
 import { HomePlaylistBlock } from "@/components/stomp/home-playlist-block";
 import { SessionMic } from "@/components/stomp/session-mic";
+import { BAG_TAGLINE, PROGRESS_STATS, useBag } from "@/lib/stomp/bag";
 import { countProgress } from "@/lib/stomp/goals";
 import { BAND_LABEL } from "@/lib/stomp/library";
 import { SESSIONS, sessionById, suggestedSession } from "@/lib/stomp/sessions";
@@ -155,6 +156,45 @@ export function Greet() {
       {/* Zone 3 — Playlist */}
       <section data-testid="home-zone-playlist" className="mt-4 px-5" aria-label="Music">
         <HomePlaylistBlock />
+      </section>
+
+      {/* Bag of Tricks entry — home tile + journey strip (not a bottom tab) */}
+      <section data-testid="home-zone-bag" className="mt-4 px-5" aria-label="Bag of Tricks">
+        <button
+          type="button"
+          data-testid="home-tile-bag"
+          onClick={() => {
+            useBag.getState().openHub("my-bag");
+            setScreen("bag");
+          }}
+          className="flex w-full items-center gap-3 overflow-hidden rounded-3xl bg-gradient-to-r from-lime/25 via-teal/15 to-navy/40 px-4 py-4 text-left ring-1 ring-lime/40"
+        >
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-lime text-navy">
+            <Sparkles className="size-6" aria-hidden="true" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-display text-2xl tracking-wide text-ink">Bag of Tricks</span>
+            <span className="mt-0.5 block text-sm text-muted">{BAG_TAGLINE}</span>
+          </span>
+          <ChevronRight className="size-5 shrink-0 text-teal" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          data-testid="home-trick-journey"
+          onClick={() => {
+            useBag.getState().openView("journey");
+            setScreen("bag");
+          }}
+          className="mt-2 flex w-full items-center justify-between rounded-2xl bg-snow/10 px-4 py-3 text-left ring-1 ring-line"
+        >
+          <span>
+            <span className="block text-xs font-bold tracking-widest text-teal">MY TRICK JOURNEY</span>
+            <span className="mt-0.5 block text-sm font-semibold text-ink">
+              {PROGRESS_STATS.landed} landed • {PROGRESS_STATS.inProgress} in progress
+            </span>
+          </span>
+          <ChevronRight className="size-5 text-teal" aria-hidden="true" />
+        </button>
       </section>
 
       {/* Compact tools — icons, not pill soup */}

@@ -105,6 +105,7 @@ describe("five-tab primary nav", () => {
     expect(tabForScreen("park")).toBe("stats");
     expect(tabForScreen("stompers")).toBe("crew");
     expect(tabForScreen("crew")).toBe("crew");
+    expect(tabForScreen("bag")).toBeNull();
   });
 
   it("renders bottom nav on home", () => {

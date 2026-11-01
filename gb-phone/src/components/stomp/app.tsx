@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { BottomNav } from "@/components/stomp/alpine-chrome";
+import { BagOfTricks } from "@/components/stomp/bag-of-tricks";
 import { FavoritesScreen } from "@/components/stomp/favorites-screen";
 import { CrewLink, Greet } from "@/components/stomp/greet";
 import { Home } from "@/components/stomp/home";
@@ -56,6 +57,7 @@ export function StompApp() {
           {screen === "park" ? <TerrainPark /> : null}
           {screen === "session" ? <TodaySession /> : null}
           {screen === "stompers" ? <Stompers /> : null}
+          {screen === "bag" ? <BagOfTricks /> : null}
           {screen === "woz" ? <WozLab /> : null}
           {!hideChrome ? <MiniPlayerUi /> : null}
           <PlaylistFab />

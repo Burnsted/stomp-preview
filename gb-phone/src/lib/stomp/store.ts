@@ -21,6 +21,7 @@ export type Screen =
   | "crew"
   | "session"
   | "stompers"
+  | "bag"
   | "woz";
 
 export type Landing = {

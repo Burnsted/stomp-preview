@@ -89,6 +89,8 @@ export function routeSession(
   if (mention("playlist") || mention("music") || mention("song"))
     return { say: SESSION_CONFIRM.gotIt, screen: "playlist" };
   if (mention("map") || mention("clip") || mention("film")) return { say: SESSION_CONFIRM.gotIt, screen: "map" };
+  if (mention("bag of tricks") || mention("my bag") || /\bbag\b/.test(q))
+    return { say: SESSION_CONFIRM.gotIt, screen: "bag" };
   if (mention("stats") || mention("trick") || mention("library"))
     return { say: SESSION_CONFIRM.gotIt, screen: "goals" };
   if (mention("stash") || mention("pin")) return { say: SESSION_CONFIRM.gotIt, screen: "stash" };
