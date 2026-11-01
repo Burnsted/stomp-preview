@@ -97,9 +97,16 @@ describe("music order helpers", () => {
 });
 
 describe("Greet home UX — map HARD LOCK", () => {
-  it("renders three zones without pill soup of legacy LINKS", () => {
+  it("renders look-board home density + secondary map without pill soup", () => {
     render(<StompApp />);
+    expect(screen.getByTestId("home-look-board")).toBeTruthy();
     expect(screen.getByTestId("home-zone-ride")).toBeTruthy();
+    expect(screen.getByTestId("home-zone-features")).toBeTruthy();
+    expect(screen.getByTestId("home-zone-today")).toBeTruthy();
+    expect(screen.getByTestId("home-zone-lineups")).toBeTruthy();
+    expect(screen.getByTestId("home-zone-quick")).toBeTruthy();
+    expect(screen.getByTestId("home-tile-bag")).toBeTruthy();
+    expect(screen.getByTestId("home-today-lineup").textContent).toMatch(/Big Line Sesh/);
     expect(screen.getByTestId("home-zone-mountain")).toBeTruthy();
     expect(screen.getByTestId("home-zone-playlist")).toBeTruthy();
     expect(screen.getByTestId("home-map-card")).toBeTruthy();

@@ -1,15 +1,31 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import QRCode from "qrcode";
-import { ChevronRight, Flag, Layers, Sparkles, Users } from "lucide-react";
+import {
+  Camera,
+  ChevronRight,
+  Ghost,
+  Layers,
+  MapPin,
+  Mic,
+  Play,
+  Sparkles,
+  Users,
+} from "lucide-react";
 import { BoltBadge, HomeButton } from "@/components/stomp/chrome";
 import { HomeMapCard } from "@/components/stomp/home-map-card";
 import { HomePlaylistBlock } from "@/components/stomp/home-playlist-block";
 import { SessionMic } from "@/components/stomp/session-mic";
-import { BAG_TAGLINE, PROGRESS_STATS, useBag } from "@/lib/stomp/bag";
-import { countProgress } from "@/lib/stomp/goals";
-import { BAND_LABEL } from "@/lib/stomp/library";
-import { SESSIONS, sessionById, suggestedSession } from "@/lib/stomp/sessions";
+import { PROGRESS_STATS, useBag } from "@/lib/stomp/bag";
+import { SESSIONS } from "@/lib/stomp/sessions";
 import { PHOTOS, crewPayload, parseCrew, useStomp } from "@/lib/stomp/store";
+
+/** Look-board demo lineups (visual density) — not a full Lineups ship. */
+const DEMO_LINEUPS = [
+  { id: "big-line", name: "Big Line Sesh", place: "Revelstoke · 4 hits", feet: "1,842 ft", today: true, image: "line" as const },
+  { id: "park-lap", name: "Park Lap", place: "Main Park · 6 hits", feet: "980 ft", today: false, image: "hud" as const },
+  { id: "tree-run", name: "Tree Run Flow", place: "North Bowl · 5 hits", feet: "1,210 ft", today: false, image: "hero" as const },
+  { id: "groomer", name: "Groomer Cruise", place: "Upper Mtn · 3 hits", feet: "740 ft", today: false, image: "air" as const },
+] as const;
 
 function shrinkSelfie(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -38,25 +54,23 @@ function shrinkSelfie(file: File): Promise<string> {
   });
 }
 
-/** Home (first page). Concept B map + playlist zones; CrewLink below stays Invite-locked. */
+/**
+ * Home — look-target density (Ted 2026-10-31 ~10:59 PM ET).
+ * Hero + 4 feature tiles + Today's Lineup + My Lineups + quick actions.
+ * Map HARD LOCK: secondary single-mountain card only (no state pills).
+ * CrewLink below stays Invite-locked.
+ */
 export function Greet() {
   const setScreen = useStomp((state) => state.setScreen);
   const startRun = useStomp((state) => state.startRun);
   const selfie = useStomp((state) => state.selfie);
   const setSelfie = useStomp((state) => state.setSelfie);
   const riderName = useStomp((state) => state.riderName);
-  const crew = useStomp((state) => state.crew);
-  const band = useStomp((state) => state.band);
-  const trickStatus = useStomp((state) => state.trickStatus);
-  const activeSession = useStomp((state) => state.activeSession);
-  const sessionDone = useStomp((state) => state.sessionDone);
   const chooseSession = useStomp((state) => state.chooseSession);
   const fileRef = useRef<HTMLInputElement>(null);
   const [note, setNote] = useState("");
   const [showPlans, setShowPlans] = useState(false);
-  const template = sessionById(activeSession) ?? suggestedSession(band, crew.length);
-  const counts = countProgress(trickStatus);
-  const goalsDone = template.steps.filter((step) => sessionDone.includes(step.id)).length;
+  const today = DEMO_LINEUPS[0]!;
 
   async function onSelfie(file: File | undefined) {
     if (!file) return;
@@ -72,109 +86,229 @@ export function Greet() {
     }
   }
 
+  function openBag(tab: "my-bag" | "learn" | "challenges" = "my-bag") {
+    useBag.getState().openHub(tab);
+    setScreen("bag");
+  }
+
   return (
-    <div className="relative overflow-hidden pb-28">
-      {/* Zone 1 — Ride (alpine mountain dashboard) */}
-      <section data-testid="home-zone-ride" className="px-5 pt-5" aria-label="Ride">
-        <div className="flex items-start justify-end">
-          <BoltBadge />
-        </div>
-        <div className="mt-2 flex items-end justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <h1 className="font-display text-7xl leading-none tracking-tight text-lime">STOMP</h1>
-            <p className="mt-2 max-w-52 text-lg font-medium text-pretty text-ink/90">
-              Welcome back, {riderName}. Hands-free caddy. Log the hit.
+    <div className="relative overflow-hidden pb-28" data-testid="home-look-board">
+      {/* Cinematic hero — look board Lineups home language */}
+      <section data-testid="home-zone-ride" className="relative" aria-label="Lineups hero">
+        <div className="relative min-h-[16rem] overflow-hidden">
+          <img src={PHOTOS.hero} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-b from-navy/55 via-navy/35 to-navy" />
+          <div className="relative flex items-center justify-between px-5 pt-5">
+            <h1 className="font-display text-4xl leading-none tracking-tight text-lime">STOMP</h1>
+            <div className="flex items-center gap-2">
+              <BoltBadge />
+              <button type="button" onClick={() => fileRef.current?.click()} className="size-9 overflow-hidden rounded-full ring-2 ring-lime/60">
+                <img
+                  src={selfie || PHOTOS.crew}
+                  alt={selfie ? `${riderName} selfie` : "Rider"}
+                  className="size-full object-cover"
+                />
+              </button>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                capture="user"
+                className="sr-only"
+                onChange={(event) => void onSelfie(event.target.files?.[0])}
+              />
+            </div>
+          </div>
+          <div className="relative px-5 pb-6 pt-10">
+            <p className="flex items-center gap-2 font-display text-5xl tracking-wide text-ink">
+              <Layers className="size-8 text-lime" aria-hidden="true" />
+              Lineups
+            </p>
+            <p className="mt-2 max-w-xs text-sm text-ink/85">
+              Plan your runs · Build your lines · Capture the ride.
             </p>
           </div>
-          <button type="button" onClick={() => fileRef.current?.click()} className="w-24 shrink-0 rotate-3">
-            <img
-              src={selfie || PHOTOS.crew}
-              alt={selfie ? `${riderName} selfie` : "Crew selfie on the ridge"}
-              className="aspect-square w-full rounded-2xl object-cover ring-4 ring-snow"
-            />
-            <span className="mt-1 block text-center text-[10px] font-bold tracking-widest">
-              {selfie ? riderName : "Crew selfie"}
+        </div>
+        <div className="px-5 pt-2">
+          <SessionMic />
+          {note ? <p className="mt-2 text-sm font-semibold text-teal">{note}</p> : null}
+        </div>
+      </section>
+
+      {/* Four gradient feature tiles */}
+      <section data-testid="home-zone-features" className="mt-4 px-5" aria-label="Feature tiles">
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            data-testid="home-tool-park"
+            onClick={() => setScreen("park")}
+            className="relative overflow-hidden rounded-3xl p-[2px] text-left"
+            style={{ background: "linear-gradient(135deg,#f5e66e,#c9a227)" }}
+          >
+            <span className="flex min-h-[6.5rem] flex-col justify-between rounded-[1.35rem] bg-navy/90 p-3">
+              <Layers className="size-6 text-lime" aria-hidden="true" />
+              <span className="font-display text-2xl tracking-wide text-ink">Lineups</span>
             </span>
           </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            capture="user"
-            className="sr-only"
-            onChange={(event) => void onSelfie(event.target.files?.[0])}
-          />
+          <button
+            type="button"
+            data-testid="home-tile-bag"
+            onClick={() => openBag("my-bag")}
+            className="relative overflow-hidden rounded-3xl p-[2px] text-left"
+            style={{ background: "linear-gradient(135deg,#5ec8ff,#2ad4c2)" }}
+          >
+            <span className="flex min-h-[6.5rem] flex-col justify-between rounded-[1.35rem] bg-navy/90 p-3">
+              <Sparkles className="size-6 text-teal" aria-hidden="true" />
+              <span className="font-display text-2xl tracking-wide text-ink">Bag of Tricks</span>
+            </span>
+          </button>
+          <button
+            type="button"
+            data-testid="home-tool-stompers"
+            onClick={() => setScreen("stompers")}
+            className="relative overflow-hidden rounded-3xl p-[2px] text-left"
+            style={{ background: "linear-gradient(135deg,#c084fc,#f472b6)" }}
+          >
+            <span className="flex min-h-[6.5rem] flex-col justify-between rounded-[1.35rem] bg-navy/90 p-3">
+              <Users className="size-6 text-pink" aria-hidden="true" />
+              <span className="font-display text-2xl tracking-wide text-ink">Crew</span>
+            </span>
+          </button>
+          <button
+            type="button"
+            data-testid="home-tile-media"
+            onClick={() => setScreen("playlist")}
+            className="relative overflow-hidden rounded-3xl p-[2px] text-left"
+            style={{ background: "linear-gradient(135deg,#fb923c,#b45309)" }}
+          >
+            <span className="flex min-h-[6.5rem] flex-col justify-between rounded-[1.35rem] bg-navy/90 p-3">
+              <Play className="size-6 text-orange-300" aria-hidden="true" fill="currentColor" />
+              <span className="font-display text-2xl tracking-wide text-ink">Media</span>
+            </span>
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={startRun}
-          className="mt-4 h-16 w-full rounded-full bg-lime font-display text-3xl tracking-wide text-navy"
-        >
-          Drop in
-        </button>
-        <button
-          type="button"
-          onClick={() => chooseSession(template.id)}
-          className="mt-2 h-12 w-full rounded-full bg-pink/90 font-semibold text-white"
-        >
-          {template.name}
-        </button>
-        <p className="mt-2 text-center text-sm text-muted">
-          {BAND_LABEL[band]} · ~{template.minutes} min · no GPS
-          {template.sample ? " · optional suggested" : ""}
-        </p>
-        <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-          <div>
-            <p className="font-display text-3xl leading-none text-pink">{counts.landed}</p>
-            <p className="text-xs font-semibold text-muted">Landed</p>
-          </div>
-          <div>
-            <p className="font-display text-3xl leading-none">{counts.working}</p>
-            <p className="text-xs font-semibold text-muted">Working</p>
-          </div>
-          <div>
-            <p className="font-display text-3xl leading-none text-teal">
-              {goalsDone}/{template.steps.length}
-            </p>
-            <p className="text-xs font-semibold text-muted">Goals</p>
-          </div>
-        </div>
-        <div className="mt-3">
-          <SessionMic />
-        </div>
-        {note ? <p className="mt-2 text-sm font-semibold text-teal">{note}</p> : null}
       </section>
 
-      {/* Zone 2 — Location + map (Concept B; location is inside the card, not a side pill) */}
-      <section data-testid="home-zone-mountain" className="mt-5 px-5" aria-label="Location and map">
-        <HomeMapCard />
-      </section>
-
-      {/* Zone 3 — Playlist */}
-      <section data-testid="home-zone-playlist" className="mt-4 px-5" aria-label="Music">
-        <HomePlaylistBlock />
-      </section>
-
-      {/* Bag of Tricks entry — home tile + journey strip (not a bottom tab) */}
-      <section data-testid="home-zone-bag" className="mt-4 px-5" aria-label="Bag of Tricks">
+      {/* Today's Lineup photo card */}
+      <section data-testid="home-zone-today" className="mt-5 px-5" aria-label="Today's Lineup">
+        <p className="text-xs font-bold tracking-widest text-muted">TODAY&apos;S LINEUP</p>
         <button
           type="button"
-          data-testid="home-tile-bag"
-          onClick={() => {
-            useBag.getState().openHub("my-bag");
-            setScreen("bag");
-          }}
-          className="flex w-full items-center gap-3 overflow-hidden rounded-3xl bg-gradient-to-r from-lime/25 via-teal/15 to-navy/40 px-4 py-4 text-left ring-1 ring-lime/40"
+          data-testid="home-today-lineup"
+          onClick={() => setScreen("session")}
+          className="relative mt-2 flex w-full overflow-hidden rounded-3xl text-left ring-1 ring-line"
         >
-          <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-lime text-navy">
-            <Sparkles className="size-6" aria-hidden="true" />
+          <img src={PHOTOS[today.image]} alt="" className="h-28 w-28 shrink-0 object-cover" />
+          <span className="flex min-w-0 flex-1 flex-col justify-center bg-snow/5 px-4 py-3">
+            <span className="font-display text-2xl tracking-wide text-ink">{today.name}</span>
+            <span className="mt-0.5 text-sm text-muted">
+              {today.place} · {today.feet}
+            </span>
           </span>
-          <span className="min-w-0 flex-1">
-            <span className="block font-display text-2xl tracking-wide text-ink">Bag of Tricks</span>
-            <span className="mt-0.5 block text-sm text-muted">{BAG_TAGLINE}</span>
+          <span className="flex items-center pr-4">
+            <span className="flex size-11 items-center justify-center rounded-full bg-ink text-lime">
+              <Play className="size-5" fill="currentColor" aria-hidden="true" />
+            </span>
           </span>
-          <ChevronRight className="size-5 shrink-0 text-teal" aria-hidden="true" />
         </button>
+      </section>
+
+      {/* My Lineups list */}
+      <section data-testid="home-zone-lineups" className="mt-5 px-5" aria-label="My Lineups">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-bold tracking-widest text-muted">MY LINEUPS</p>
+          <button
+            type="button"
+            data-testid="home-lineups-all"
+            onClick={() => setScreen("park")}
+            className="text-sm font-semibold text-teal"
+          >
+            All ›
+          </button>
+        </div>
+        <ul className="mt-2 flex flex-col gap-2">
+          {DEMO_LINEUPS.map((row) => (
+            <li key={row.id}>
+              <button
+                type="button"
+                data-testid={`home-lineup-${row.id}`}
+                onClick={() => setScreen(row.today ? "session" : "park")}
+                className={
+                  "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left ring-1 " +
+                  (row.today ? "bg-lime/10 ring-lime/40" : "bg-snow/5 ring-line")
+                }
+              >
+                <img src={PHOTOS[row.image]} alt="" className="size-12 rounded-xl object-cover" />
+                <span className="min-w-0 flex-1">
+                  <span className="block font-semibold text-ink">{row.name}</span>
+                  <span className="block text-xs text-muted">{row.place}</span>
+                </span>
+                <ChevronRight className="size-4 text-muted" aria-hidden="true" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Quick actions — icons, not pill flood */}
+      <section data-testid="home-zone-quick" className="mt-5 px-5" aria-label="Quick actions">
+        <div className="grid grid-cols-4 gap-2">
+          <button
+            type="button"
+            data-testid="home-quick-preroll"
+            onClick={() => {
+              useBag.getState().openTrick("fs180", "log");
+              useBag.getState().startPreroll();
+              setScreen("bag");
+            }}
+            className="flex flex-col items-center gap-1.5 py-2"
+          >
+            <span className="flex size-12 items-center justify-center rounded-2xl bg-snow/10 ring-1 ring-line">
+              <Mic className="size-5 text-lime" aria-hidden="true" />
+            </span>
+            <span className="text-[11px] font-semibold text-ink">Pre-Roll</span>
+          </button>
+          <button
+            type="button"
+            data-testid="home-quick-record"
+            onClick={() => {
+              useBag.getState().openView("add");
+              setScreen("bag");
+            }}
+            className="flex flex-col items-center gap-1.5 py-2"
+          >
+            <span className="flex size-12 items-center justify-center rounded-2xl bg-snow/10 ring-1 ring-line">
+              <Camera className="size-5 text-teal" aria-hidden="true" />
+            </span>
+            <span className="text-[11px] font-semibold text-ink">Record</span>
+          </button>
+          <button
+            type="button"
+            data-testid="home-quick-map"
+            onClick={() => setScreen("map")}
+            className="flex flex-col items-center gap-1.5 py-2"
+          >
+            <span className="flex size-12 items-center justify-center rounded-2xl bg-snow/10 ring-1 ring-line">
+              <MapPin className="size-5 text-teal" aria-hidden="true" />
+            </span>
+            <span className="text-[11px] font-semibold text-ink">Map Run</span>
+          </button>
+          <button
+            type="button"
+            data-testid="home-quick-ghost"
+            onClick={startRun}
+            className="flex flex-col items-center gap-1.5 py-2"
+          >
+            <span className="flex size-12 items-center justify-center rounded-2xl bg-snow/10 ring-1 ring-line">
+              <Ghost className="size-5 text-ink/80" aria-hidden="true" />
+            </span>
+            <span className="text-[11px] font-semibold text-ink">Ghost Run</span>
+          </button>
+        </div>
+      </section>
+
+      {/* Trick journey strip + Crew invite entry */}
+      <section data-testid="home-zone-bag" className="mt-4 px-5" aria-label="Progress">
         <button
           type="button"
           data-testid="home-trick-journey"
@@ -182,54 +316,43 @@ export function Greet() {
             useBag.getState().openView("journey");
             setScreen("bag");
           }}
-          className="mt-2 flex w-full items-center justify-between rounded-2xl bg-snow/10 px-4 py-3 text-left ring-1 ring-line"
+          className="flex w-full items-center justify-between rounded-2xl bg-snow/10 px-4 py-3 text-left ring-1 ring-line"
         >
           <span>
             <span className="block text-xs font-bold tracking-widest text-teal">MY TRICK JOURNEY</span>
             <span className="mt-0.5 block text-sm font-semibold text-ink">
-              {PROGRESS_STATS.landed} landed • {PROGRESS_STATS.inProgress} in progress
+              {PROGRESS_STATS.landed} landed · {PROGRESS_STATS.inProgress} in progress
             </span>
           </span>
           <ChevronRight className="size-5 text-teal" aria-hidden="true" />
         </button>
+        <button
+          type="button"
+          data-testid="home-tool-crew"
+          onClick={() => setScreen("crew")}
+          className="mt-2 h-11 w-full rounded-2xl bg-snow/5 text-sm font-semibold text-ink ring-1 ring-line"
+        >
+          Crew invite
+        </button>
       </section>
 
-      {/* Compact tools — icons, not pill soup */}
-      <section data-testid="home-zone-tools" className="mt-4 px-5 pb-4" aria-label="Tools">
-        <div className="grid grid-cols-3 gap-2">
-          <button
-            type="button"
-            data-testid="home-tool-crew"
-            onClick={() => setScreen("crew")}
-            className="flex flex-col items-center gap-1 rounded-3xl bg-snow px-2 py-4 ring-1 ring-line"
-          >
-            <Users className="size-5" aria-hidden="true" />
-            <span className="text-xs font-semibold">{crew.length > 0 ? `Crew · ${crew.length}` : "Crew"}</span>
-          </button>
-          <button
-            type="button"
-            data-testid="home-tool-park"
-            onClick={() => setScreen("park")}
-            className="flex flex-col items-center gap-1 rounded-3xl bg-teal/30 px-2 py-4 ring-1 ring-line"
-          >
-            <Flag className="size-5" aria-hidden="true" />
-            <span className="text-xs font-semibold">Park</span>
-          </button>
-          <button
-            type="button"
-            data-testid="home-tool-stompers"
-            onClick={() => setScreen("stompers")}
-            className="flex flex-col items-center gap-1 rounded-3xl bg-snow px-2 py-4 ring-1 ring-line"
-          >
-            <Layers className="size-5" aria-hidden="true" />
-            <span className="text-xs font-semibold">Stompers</span>
-          </button>
-        </div>
+      {/* Secondary map — HARD LOCK single mountain, not the whole home */}
+      <section data-testid="home-zone-mountain" className="mt-5 px-5" aria-label="Location and map">
+        <HomeMapCard />
+      </section>
+
+      {/* Playlist soft bar */}
+      <section data-testid="home-zone-playlist" className="mt-4 px-5" aria-label="Music">
+        <HomePlaylistBlock />
+      </section>
+
+      {/* Session plans (collapsed) */}
+      <section data-testid="home-zone-tools" className="mt-4 px-5 pb-4" aria-label="Session plans">
         <button
           type="button"
           data-testid="home-plans-toggle"
           onClick={() => setShowPlans((v) => !v)}
-          className="mt-3 h-11 w-full rounded-2xl bg-paper text-sm font-semibold ring-1 ring-line"
+          className="h-11 w-full rounded-2xl bg-snow/5 text-sm font-semibold ring-1 ring-line"
         >
           {showPlans ? "Hide plans" : "Session plans"}
         </button>
@@ -240,7 +363,7 @@ export function Greet() {
                 <button
                   type="button"
                   onClick={() => chooseSession(session.id)}
-                  className="flex w-full items-center justify-between rounded-2xl bg-snow px-4 py-3 text-left ring-1 ring-line"
+                  className="flex w-full items-center justify-between rounded-2xl bg-snow/5 px-4 py-3 text-left ring-1 ring-line"
                 >
                   <span className="font-semibold">{session.name}</span>
                   {session.sample ? <span className="text-xs font-bold tracking-widest text-pink">Sample</span> : null}

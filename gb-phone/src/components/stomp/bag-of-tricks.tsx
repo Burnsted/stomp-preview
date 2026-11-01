@@ -39,6 +39,7 @@ import {
   filterMyBag,
   formatPreroll,
   trickByBagId,
+  trickStatusLabel,
   useBag,
   type BagFilter,
   type ChallengeTab,
@@ -308,10 +309,9 @@ function HubMyBag() {
               >
                 <img src={bagThumb(t.id)} alt="" className="aspect-square w-full rounded-xl object-cover" />
                 <p className="mt-1 truncate text-xs font-semibold text-ink">{t.name}</p>
-                <p className="truncate text-[10px] text-muted">
-                  {t.status === "landed"
-                    ? t.landedOn
-                    : `In Progress • ${t.progress ?? 0}%`}
+                <p className="flex items-center gap-1 truncate text-[10px] text-muted">
+                  {t.status === "landed" ? <Check className="size-3 shrink-0 text-lime" aria-hidden="true" /> : null}
+                  {trickStatusLabel(t)}
                 </p>
               </button>
             </li>
@@ -400,16 +400,12 @@ function MyBagList() {
               <img src={bagThumb(t.id)} alt="" className="size-12 rounded-xl object-cover" />
               <span className="min-w-0 flex-1">
                 <span className="block font-semibold text-ink">{t.name}</span>
-                <span className="block text-xs text-muted">
-                  {t.status === "landed"
-                    ? `Landed • ${t.landedOn}`
-                    : `In Progress • ${t.progress ?? 0}%`}
-                </span>
+                <span className="block text-xs text-muted">{trickStatusLabel(t)}</span>
               </span>
               {t.status === "landed" ? (
-                <Check className="size-5 text-lime" />
+                <Check className="size-5 text-lime" aria-label="Landed" />
               ) : (
-                <span className="text-xs font-bold text-amber-400">{t.progress}%</span>
+                <span className="text-[10px] font-semibold tracking-wide text-amber-400">IN PROGRESS</span>
               )}
             </button>
           </li>
@@ -846,7 +842,7 @@ function ReviewAttempt() {
               markLanded(trick.id);
               addToBag(trick.id, "landed");
             } else if (outcome === "working") {
-              markProgress(trick.id, 40);
+              markProgress(trick.id);
               addToBag(trick.id, "progress");
             } else {
               addToBag(trick.id, "progress");
@@ -1064,8 +1060,8 @@ function TrickProgress() {
       <div className="px-4">
         <div className="relative h-40 overflow-hidden rounded-3xl">
           <img src={bagThumb(trick.id)} alt="" className="h-full w-full object-cover" />
-          <span className="absolute bottom-2 left-2 rounded-full bg-amber-400 px-2.5 py-0.5 text-[10px] font-bold text-navy">
-            IN PROGRESS 70%
+          <span className="absolute bottom-2 left-2 text-[10px] font-bold tracking-[0.2em] text-amber-300 drop-shadow">
+            IN PROGRESS
           </span>
         </div>
         <p className="mt-3 font-display text-3xl tracking-wide text-ink">{trick.name}</p>

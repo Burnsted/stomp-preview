@@ -16,6 +16,7 @@ import {
   filterLearn,
   filterMyBag,
   formatPreroll,
+  trickStatusLabel,
   useBag,
   BEGINNER_LEARN,
 } from "@/lib/stomp/bag";
@@ -81,8 +82,14 @@ describe("Bag of Tricks — SCOPE locks", () => {
     ]);
     expect(MY_BAG_SEED[0]).toMatchObject({ status: "landed", landedOn: "Oct 28" });
     expect(MY_BAG_SEED[1]).toMatchObject({ status: "landed", landedOn: "Oct 31" });
-    expect(MY_BAG_SEED[2]).toMatchObject({ status: "progress", progress: 70 });
-    expect(MY_BAG_SEED[3]).toMatchObject({ status: "progress", progress: 40 });
+    expect(MY_BAG_SEED[2]).toMatchObject({ status: "progress" });
+    expect(MY_BAG_SEED[3]).toMatchObject({ status: "progress" });
+    // HARD LOCK — never per-trick percent fields
+    for (const t of MY_BAG_SEED) {
+      expect(Object.prototype.hasOwnProperty.call(t, "progress")).toBe(false);
+    }
+    expect(trickStatusLabel(MY_BAG_SEED[2]!)).toBe("In Progress");
+    expect(trickStatusLabel(MY_BAG_SEED[0]!)).toMatch(/Landed/);
     const c = bagCounts(MY_BAG_SEED);
     expect(c).toMatchObject({ all: 29, landed: 21, progress: 8 });
   });
@@ -194,7 +201,7 @@ describe("Bag of Tricks — Learn / Practice / Log flow", () => {
 });
 
 describe("Bag of Tricks — My Bag / Journey / Challenges / Add / Progress", () => {
-  it("My Bag list filters All|Landed|In Progress + Add Trick", () => {
+  it("My Bag list filters All|Landed|In Progress + Add Trick — no per-trick %", () => {
     openBag();
     fireEvent.click(screen.getByTestId("bag-recent-all"));
     const list = screen.getByTestId("bag-my-list");
@@ -202,7 +209,18 @@ describe("Bag of Tricks — My Bag / Journey / Challenges / Add / Progress", () 
     expect(within(list).getByTestId("bag-filter-landed").textContent).toMatch(/Landed \(21\)/);
     expect(within(list).getByTestId("bag-filter-progress").textContent).toMatch(/In Progress \(8\)/);
     expect(screen.getByTestId("bag-row-ollie")).toBeTruthy();
+    expect(screen.getByTestId("bag-row-box-slide").textContent).toMatch(/In Progress/);
+    expect(screen.getByTestId("bag-row-box-slide").textContent).not.toMatch(/%/);
+    expect(screen.getByTestId("bag-row-tail-grab").textContent).not.toMatch(/%/);
     expect(screen.getByTestId("bag-add-trick")).toBeTruthy();
+  });
+
+  it("Recent tricks show binary status only (bag-level % still OK on hub)", () => {
+    openBag();
+    const recent = screen.getByTestId("bag-recent");
+    expect(recent.textContent).toMatch(/In Progress|Landed|Oct/);
+    expect(recent.textContent).not.toMatch(/\d+%/);
+    expect(screen.getByTestId("bag-my-progress").textContent).toMatch(/64%/);
   });
 
   it("Challenges Crew|Weekly|Season + Create Callout", () => {

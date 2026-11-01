@@ -47,6 +47,7 @@ export type DetailTab = "learn" | "practice" | "log";
 export type PracticeSpeed = "slow" | "normal" | "loop";
 export type ReviewOutcome = "stomped" | "working" | "lineup";
 
+/** Per-trick status is binary — Landed | In Progress | Not started. NEVER a %. */
 export type BagTrickStatus = "landed" | "progress";
 
 export type BagTrick = {
@@ -57,10 +58,16 @@ export type BagTrick = {
   detail: string;
   filter: LearnFilter;
   status?: BagTrickStatus;
-  progress?: number;
   landedOn?: string;
   favorited?: boolean;
 };
+
+/** HARD LOCK Ted 2026-10-31 ~10:59 PM — no per-trick percent. */
+export function trickStatusLabel(t: Pick<BagTrick, "status" | "landedOn">): string {
+  if (t.status === "landed") return t.landedOn ? `Landed · ${t.landedOn}` : "Landed";
+  if (t.status === "progress") return "In Progress";
+  return "Not started";
+}
 
 /** Beginner Learn list — Board 4 copy. */
 export const BEGINNER_LEARN: BagTrick[] = [
@@ -118,11 +125,10 @@ export const BEGINNER_LEARN: BagTrick[] = [
     detail: "Sideways on the box. The first real jib.",
     filter: "boxes",
     status: "progress",
-    progress: 70,
   },
 ];
 
-/** Board 2 My Bag demo rows (SCOPE lock). */
+/** My Bag demo rows — Board 2 names/dates; per-trick % OVERRIDDEN (Ted binary lock). */
 export const MY_BAG_SEED: BagTrick[] = [
   {
     id: "ollie",
@@ -152,7 +158,6 @@ export const MY_BAG_SEED: BagTrick[] = [
     detail: "Sideways on the box. The first real jib.",
     filter: "boxes",
     status: "progress",
-    progress: 70,
   },
   {
     id: "tail-grab",
@@ -162,7 +167,6 @@ export const MY_BAG_SEED: BagTrick[] = [
     detail: "Grab the tail and hold it through the air.",
     filter: "jumps",
     status: "progress",
-    progress: 40,
   },
 ];
 
@@ -342,7 +346,7 @@ type BagState = {
   tickPreroll: () => void;
   stopPreroll: () => void;
   markLanded: (id: string) => void;
-  markProgress: (id: string, progress: number) => void;
+  markProgress: (id: string) => void;
   addToBag: (id: string, status: BagTrickStatus) => void;
   toggleFavorite: (id: string) => void;
   setProgressStep: (step: BagState["progressStep"]) => void;
@@ -417,16 +421,14 @@ export const useBag = create<BagState>()(
       markLanded: (id) =>
         set((s) => ({
           myBag: s.myBag.map((t) =>
-            t.id === id
-              ? { ...t, status: "landed" as const, landedOn: "Oct 31", progress: undefined }
-              : t,
+            t.id === id ? { ...t, status: "landed" as const, landedOn: "Oct 31" } : t,
           ),
           progressStep: "clip",
         })),
-      markProgress: (id, progress) =>
+      markProgress: (id) =>
         set((s) => ({
           myBag: s.myBag.map((t) =>
-            t.id === id ? { ...t, status: "progress" as const, progress } : t,
+            t.id === id ? { ...t, status: "progress" as const, landedOn: undefined } : t,
           ),
         })),
       addToBag: (id, status) => {
@@ -441,7 +443,6 @@ export const useBag = create<BagState>()(
                       ...t,
                       status,
                       landedOn: status === "landed" ? t.landedOn ?? "Oct 31" : undefined,
-                      progress: status === "progress" ? t.progress ?? 40 : undefined,
                     }
                   : t,
               ),
@@ -454,7 +455,6 @@ export const useBag = create<BagState>()(
                 ...base,
                 status,
                 landedOn: status === "landed" ? "Oct 31" : undefined,
-                progress: status === "progress" ? 40 : undefined,
               },
               ...s.myBag,
             ],
