@@ -76,13 +76,10 @@ export function Greet() {
     <div className="relative overflow-hidden pb-28">
       {/* Zone 1 — Ride (alpine mountain dashboard) */}
       <section data-testid="home-zone-ride" className="px-5 pt-5" aria-label="Ride">
-        <div className="flex items-start justify-between">
-          <span className="rounded-full border border-teal/50 bg-teal/10 px-3 py-1.5 text-[11px] font-bold tracking-widest text-teal">
-            TRAIL · HIT · CLIP
-          </span>
+        <div className="flex items-start justify-end">
           <BoltBadge />
         </div>
-        <div className="mt-3 flex items-end justify-between gap-3">
+        <div className="mt-2 flex items-end justify-between gap-3">
           <div className="min-w-0 flex-1">
             <h1 className="font-display text-7xl leading-none tracking-tight text-lime">STOMP</h1>
             <p className="mt-2 max-w-52 text-lg font-medium text-pretty text-ink/90">

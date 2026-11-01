@@ -48,7 +48,7 @@ beforeEach(() => {
   setWozBacking(store);
   setHomeMountainBacking(store);
   setMusicOrderBacking(store);
-  useHomeMountain.setState({ level: "us", stateId: null, resortId: null });
+  useHomeMountain.setState({ resortId: "vail" });
   usePlaylistActions.setState({ fabOpen: false, sheetOpen: false, panel: "upload" });
   useMusicSources.setState({
     hidden: [],
@@ -141,14 +141,15 @@ describe("five-tab primary nav", () => {
 });
 
 describe("ice-blue trail Concept A", () => {
-  it("home trail preview uses ice concept", () => {
-    act(() => {
-      useHomeMountain.getState().goState("co");
-      useHomeMountain.getState().selectResort("vail");
-    });
+  it("home trail preview uses ice concept on single mountain card", () => {
+    act(() => useHomeMountain.getState().selectResort("vail"));
     render(<StompApp />);
     const trail = screen.getByTestId("home-trail-preview");
     expect(trail.getAttribute("data-concept")).toBe("trail-ice-a");
+    expect(screen.getByTestId("home-map-card").getAttribute("data-map-mode")).toBe("single-mountain");
+    expect(screen.queryByTestId("home-map-state-co")).toBeNull();
+    expect(screen.queryByTestId("home-map-crumbs")).toBeNull();
+    expect(screen.queryByTestId("home-map-us")).toBeNull();
   });
 });
 

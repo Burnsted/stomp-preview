@@ -20,7 +20,7 @@ beforeEach(() => {
   setWozBacking(store);
   setHomeMountainBacking(store);
   setMusicOrderBacking(store);
-  useHomeMountain.setState({ level: "us", stateId: null, resortId: null });
+  useHomeMountain.setState({ resortId: "vail" });
   usePlaylistActions.setState({ fabOpen: false, sheetOpen: false, panel: "upload" });
   useStomp.setState({
     screen: "greet",
@@ -84,10 +84,7 @@ describe("Concept C bottom sheet", () => {
   });
 
   it("sheet titles follow active mountain playlist", () => {
-    act(() => {
-      useHomeMountain.getState().goState("co");
-      useHomeMountain.getState().selectResort("beaver-creek");
-    });
+    act(() => useHomeMountain.getState().selectResort("beaver-creek"));
     render(<StompApp />);
     fireEvent.click(screen.getByTestId("playlist-fab-share"));
     expect(screen.getByTestId("playlist-sheet").textContent).toMatch(/Beaver Creek lap mix/);

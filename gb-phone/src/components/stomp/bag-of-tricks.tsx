@@ -122,23 +122,36 @@ function HubTabs() {
 
 function LevelCards({ onOpen }: { onOpen: (band: Band) => void }) {
   const levels: Band[] = ["beginner", "intermediate", "advanced"];
+  const edge =
+    {
+      beginner: "from-sky-400/80 via-teal/40 to-transparent",
+      intermediate: "from-violet-400/80 via-pink/30 to-transparent",
+      advanced: "from-amber-300/70 via-pink/40 to-transparent",
+    } as const;
   return (
-    <div className="mt-4 flex flex-col gap-2 px-4" data-testid="bag-level-cards">
+    <div className="mt-4 flex flex-col gap-3 px-4" data-testid="bag-level-cards">
       {levels.map((band) => (
         <button
           key={band}
           type="button"
           data-testid={`bag-level-${band}`}
           onClick={() => onOpen(band)}
-          className="relative overflow-hidden rounded-3xl text-left"
+          className="relative overflow-hidden rounded-3xl text-left ring-1 ring-white/10"
         >
-          <img src={bagThumb(band === "beginner" ? "ollie" : band === "intermediate" ? "fs180" : "tail-grab")} alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />
-          <div className="relative flex items-center justify-between bg-gradient-to-r from-navy/90 to-navy/40 px-4 py-4">
+          <img
+            src={bagThumb(band === "beginner" ? "ollie" : band === "intermediate" ? "fs180" : "tail-grab")}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className={`absolute inset-0 bg-gradient-to-r ${edge[band]} opacity-90`} />
+          <div className="relative flex min-h-[5.5rem] items-end justify-between bg-gradient-to-t from-navy/95 via-navy/55 to-transparent px-4 pb-3 pt-10">
             <div>
               <p className="font-display text-3xl tracking-wide text-ink">{BAND_LABEL[band]}</p>
-              <p className="text-sm text-ink/75">{LEVEL_BLURB[band]}. {LEVEL_COUNTS[band]} tricks.</p>
+              <p className="text-sm text-ink/80">
+                {LEVEL_BLURB[band]}. {LEVEL_COUNTS[band]} tricks.
+              </p>
             </div>
-            {band === "advanced" ? <Lock className="size-5 text-pink" aria-hidden="true" /> : null}
+            {band === "advanced" ? <Lock className="mb-1 size-5 text-pink" aria-hidden="true" /> : null}
           </div>
         </button>
       ))}
@@ -194,20 +207,20 @@ function HubMyBag() {
               <Play className="size-5" fill="currentColor" />
             </span>
           </span>
-          <span className="absolute bottom-2 left-2 rounded-full bg-lime px-2.5 py-0.5 text-[10px] font-bold tracking-widest text-navy">
+          <span className="absolute bottom-2 left-2 text-[10px] font-bold tracking-[0.2em] text-lime drop-shadow">
             INTERMEDIATE
           </span>
         </div>
         <p className="mt-3 font-display text-3xl tracking-wide text-ink">{featured.name}</p>
         <p className="mt-1 text-sm text-pretty text-muted">{featured.detail}</p>
-        <div className="mt-3 grid grid-cols-3 gap-2">
+        <div className="mt-3 flex justify-center gap-6">
           {(["learn", "practice", "log"] as const).map((tab) => (
             <button
               key={tab}
               type="button"
               data-testid={`bag-featured-${tab}`}
               onClick={() => openTrick(featured.id, tab === "log" ? "log" : tab)}
-              className="h-10 rounded-full bg-snow/10 text-sm font-semibold text-ink ring-1 ring-line"
+              className="pb-0.5 text-sm font-semibold text-ink/90 hover:text-teal"
             >
               {tab === "learn" ? "Learn" : tab === "practice" ? "Practice" : "Log"}
             </button>
@@ -356,7 +369,7 @@ function MyBagList() {
   return (
     <div className="pb-28" data-testid="bag-my-list">
       <BagHeader title="My Bag of Tricks" onBack={back} />
-      <div className="mt-2 flex gap-2 overflow-x-auto px-4" data-testid="bag-list-filters">
+      <div className="mt-2 flex justify-center gap-5 px-4" data-testid="bag-list-filters">
         {filters.map((f) => (
           <button
             key={f.id}
@@ -364,8 +377,8 @@ function MyBagList() {
             data-testid={`bag-filter-${f.id}`}
             onClick={() => setBagFilter(f.id)}
             className={
-              "h-9 shrink-0 rounded-full px-3 text-sm font-semibold " +
-              (bagFilter === f.id ? "bg-teal/25 text-teal ring-1 ring-teal/50" : "bg-snow/5 text-muted ring-1 ring-line")
+              "pb-1 text-sm font-semibold " +
+              (bagFilter === f.id ? "border-b-2 border-teal text-ink" : "text-muted")
             }
           >
             {f.label}
@@ -437,7 +450,7 @@ function LearnList() {
         onBack={back}
         right={<Search className="size-5 text-muted" aria-hidden="true" />}
       />
-      <div className="mt-2 flex gap-2 overflow-x-auto px-4" data-testid="bag-learn-filters">
+      <div className="mt-2 flex gap-4 overflow-x-auto px-4" data-testid="bag-learn-filters">
         {filters.map((f) => (
           <button
             key={f.id}
@@ -445,8 +458,8 @@ function LearnList() {
             data-testid={`bag-learn-filter-${f.id}`}
             onClick={() => setLearnFilter(f.id)}
             className={
-              "h-9 shrink-0 rounded-full px-3 text-sm font-semibold " +
-              (learnFilter === f.id ? "bg-teal/25 text-teal ring-1 ring-teal/50" : "bg-snow/5 text-muted ring-1 ring-line")
+              "shrink-0 pb-1 text-sm font-semibold " +
+              (learnFilter === f.id ? "border-b-2 border-teal text-ink" : "text-muted")
             }
           >
             {f.label}
@@ -512,7 +525,7 @@ function TrickDetail() {
             </span>
           </span>
         </div>
-        <span className="mt-3 inline-flex rounded-full bg-lime px-3 py-1 text-[10px] font-bold tracking-widest text-navy">
+        <span className="mt-3 inline-block text-[10px] font-bold tracking-[0.2em] text-lime">
           {BAND_LABEL[trick.band].toUpperCase()}
         </span>
         <p className="mt-2 text-pretty text-sm text-muted">{trick.detail}</p>
@@ -609,7 +622,7 @@ function PracticeMode() {
           <Play className="size-10 text-ink drop-shadow" fill="currentColor" />
         </span>
       </div>
-      <div className="mt-3 flex justify-center gap-2 px-4" data-testid="bag-practice-speed">
+      <div className="mt-3 flex justify-center gap-5 px-4" data-testid="bag-practice-speed">
         {speeds.map((s) => (
           <button
             key={s.id}
@@ -617,8 +630,8 @@ function PracticeMode() {
             data-testid={`bag-speed-${s.id}`}
             onClick={() => setPracticeSpeed(s.id)}
             className={
-              "h-10 rounded-full px-3 text-xs font-semibold " +
-              (speed === s.id ? "bg-lime text-navy ring-1 ring-lime" : "bg-snow/5 text-ink ring-1 ring-line")
+              "pb-1 text-xs font-semibold " +
+              (speed === s.id ? "border-b-2 border-lime text-ink" : "text-muted")
             }
           >
             {s.label}
