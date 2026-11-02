@@ -38,3 +38,5 @@ export * as trips from "./trips/index.js";
 export * as daysesh from "./daysesh/index.js";
 // --- #14 Campfire CF-2 ---
 export * as campfireCf2 from "./campfire/cf2-index.js";
+// --- Integration rehearsal adapters A1–A7 (t1152u; A7 SPEC-only) ---
+export * as shared from "./shared/index.js";

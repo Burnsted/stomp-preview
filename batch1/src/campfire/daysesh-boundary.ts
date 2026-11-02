@@ -39,6 +39,8 @@ export function assertCampfireUntouched(args: {
 
 /**
  * Day Sesh / Trip Viewer participation never implies Squad membership.
+ * Prefer feeding isTripViewer / isDaySeshParticipant from A6 participationFacts
+ * (derived from #13 data) — never invent caller-trusted booleans.
  */
 export function viewerOrParticipantHasSquadAccess(args: {
   stomperId: StomperId;
