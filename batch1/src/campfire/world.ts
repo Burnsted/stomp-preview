@@ -666,7 +666,11 @@ export function beginQuickShare(
   if (args.squadIds.length !== 1) {
     return rejectMultiSquadShare(args.squadIds);
   }
-  const squad = w.squads.get(args.squadIds[0]!);
+  const squadId = args.squadIds[0]!;
+  if (!squadId || squadId === "unspecified") {
+    return rejectMultiSquadShare(args.squadIds);
+  }
+  const squad = w.squads.get(squadId);
   const asset = w.assets.get(args.mediaRefId);
   if (!squad || !asset) return err("not_found");
   const memberCount = w.memberships.filter(
@@ -687,11 +691,27 @@ export function confirmQuickShare(
   w: CampfireWorld,
   intentId: string,
   linkId: string,
+  opts?: { sessionUnlocked?: boolean },
 ): Result<CampfireWorld, DenyReason> {
   const intent = w.shareIntents.find((i) => i.id === intentId);
   if (!intent) return err("not_found");
-  const confirmed = confirmShare(intent);
-  if (!confirmed.ok) return confirmed;
+  const actor = w.people.get(intent.actorId);
+  if (!actor) return err("not_found");
+
+  // SV-0 CONFLICT-2: membership / media / J5 recheck before send
+  const confirmed = confirmShare(intent, {
+    nowIso: w.nowIso,
+    recheck: {
+      actor,
+      memberships: w.memberships,
+      assets: w.assets,
+      nowIso: w.nowIso,
+      sessionUnlocked: opts?.sessionUnlocked ?? true,
+    },
+  });
+  if (!confirmed.ok) {
+    return err(confirmed.error as DenyReason, confirmed.message);
+  }
   if (!shareWouldPost(confirmed.value)) return err("needs_confirm");
 
   // Quick Share into Squad with blocked person: allowed; no targeted notify
