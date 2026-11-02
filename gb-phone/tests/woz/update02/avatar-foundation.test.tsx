@@ -79,6 +79,16 @@ describe("Update02 — feature flags & privacy", () => {
     });
     expect(useAvatar.getState().draft.starterId).toBeNull();
   });
+
+  it("CI repair: all flags stay boolean false; isAvatarFlagOn never true", () => {
+    expect(AVATAR_FLAGS.gromFlowEnabled).toBe(false);
+    expect(AVATAR_FLAGS.walletPassesEnabled).toBe(false);
+    expect(AVATAR_FLAGS.aiTripPhotoEnabled).toBe(false);
+    for (const key of Object.keys(AVATAR_FLAGS) as (keyof typeof AVATAR_FLAGS)[]) {
+      expect(typeof AVATAR_FLAGS[key]).toBe("boolean");
+      expect(isAvatarFlagOn(key)).toBe(false);
+    }
+  });
 });
 
 describe("Update02 — starters & data model", () => {
@@ -111,6 +121,32 @@ describe("Update02 — starters & data model", () => {
     expect(cfg.layers.jacket.itemId).toBe("jacket-basic");
     expect(cfg.layers.headwear.itemId).toBe("helmet-basic");
     expect(cfg.stage).toBe(1);
+  });
+
+  it("CI repair: unknown starterId falls back via starterById → ADULT_STARTERS[0]", () => {
+    expect(starterById("not-a-real-starter")).toBeUndefined();
+    const fallback = starterById("not-a-real-starter") ?? ADULT_STARTERS[0]!;
+    expect(fallback.id).toBe(ADULT_STARTERS[0]!.id);
+    const cfg = configFromStarter(fallback, { stomperId: "draft" });
+    expect(cfg.starterId).toBe(ADULT_STARTERS[0]!.id);
+  });
+
+  it("CI repair: onboard renders safely when draft has unknown starterId", () => {
+    act(() => {
+      useAvatar.getState().startOnboarding("adult");
+      useAvatar.setState((st) => ({
+        draft: {
+          ...st.draft,
+          starterId: "ghost-starter-xx",
+          layers: configFromStarter(ADULT_STARTERS[0]!, { stomperId: "draft" }).layers,
+          step: 2,
+        },
+      }));
+      useStomp.setState({ screen: "avatar-onboard" });
+    });
+    render(<StompApp />);
+    expect(screen.getByTestId("avatar-onboard-2")).toBeTruthy();
+    expect(screen.getByTestId("onboard-look-preview")).toBeTruthy();
   });
 });
 

@@ -32,7 +32,8 @@ const COLOR_SWATCHES = ["#ff3b78", "#2ad4c2", "#d6f25a", "#5ec8ff", "#ff7a3c", "
 
 function draftConfig() {
   const draft = useAvatar.getState().draft;
-  const s = draft.starterId ? starterById(draft.starterId) : ADULT_STARTERS[0]!;
+  // Unknown / missing starterId → deterministic adult fallback (Nova / ADULT_STARTERS[0]).
+  const s = (draft.starterId ? starterById(draft.starterId) : undefined) ?? ADULT_STARTERS[0]!;
   const base = configFromStarter(s, {
     stomperId: "draft",
     displayName: draft.displayName || s.label,
