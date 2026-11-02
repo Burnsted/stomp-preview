@@ -10,11 +10,11 @@ import type { Band } from "@/lib/stomp/library";
 
 export const BAG_TAGLINE = "Learn • Practice • Log • Stomp It";
 
-/** Board 4 Learn card counts (SCOPE lock). */
+/** Master HQ catalog counts (Ted 2026-11-01) — Beginner 45 / Intermediate 55 / Advanced 25. */
 export const LEVEL_COUNTS = {
-  beginner: 32,
-  intermediate: 48,
-  advanced: 76,
+  beginner: 45,
+  intermediate: 55,
+  advanced: 25,
 } as const;
 
 export const LEVEL_BLURB = {
@@ -267,7 +267,7 @@ export const JOURNEY = {
   byLevel: [
     { band: "beginner" as Band, done: 14, total: 16, locked: false },
     { band: "intermediate" as Band, done: 7, total: 17, locked: false },
-    { band: "advanced" as Band, done: 0, total: 48, locked: true },
+    { band: "advanced" as Band, done: 0, total: 25, locked: false },
   ],
   unlocks: ["Ollie", "Box Slide", "F/S 180"],
 };

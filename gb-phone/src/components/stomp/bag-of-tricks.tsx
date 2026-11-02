@@ -152,7 +152,6 @@ function LevelCards({ onOpen }: { onOpen: (band: Band) => void }) {
                 {LEVEL_BLURB[band]}. {LEVEL_COUNTS[band]} tricks.
               </p>
             </div>
-            {band === "advanced" ? <Lock className="mb-1 size-5 text-pink" aria-hidden="true" /> : null}
           </div>
         </button>
       ))}

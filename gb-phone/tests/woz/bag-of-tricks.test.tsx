@@ -64,8 +64,8 @@ describe("Bag of Tricks — SCOPE locks", () => {
     expect(tabForScreen("bag")).toBeNull();
   });
 
-  it("level counts are Board 4: 32 / 48 / 76", () => {
-    expect(LEVEL_COUNTS).toEqual({ beginner: 32, intermediate: 48, advanced: 76 });
+  it("level counts are Master HQ: 45 / 55 / 25", () => {
+    expect(LEVEL_COUNTS).toEqual({ beginner: 45, intermediate: 55, advanced: 25 });
   });
 
   it("tagline + progress stats match copy bank", () => {
@@ -130,9 +130,11 @@ describe("Bag of Tricks — home entry + hub", () => {
     expect(screen.getByTestId("bag-tab-my-bag")).toBeTruthy();
     expect(screen.getByTestId("bag-tab-learn")).toBeTruthy();
     expect(screen.getByTestId("bag-tab-challenges")).toBeTruthy();
-    expect(screen.getByTestId("bag-level-beginner").textContent).toMatch(/32 tricks/);
-    expect(screen.getByTestId("bag-level-intermediate").textContent).toMatch(/48 tricks/);
-    expect(screen.getByTestId("bag-level-advanced").textContent).toMatch(/76 tricks/);
+    expect(screen.getByTestId("bag-level-beginner").textContent).toMatch(/45 tricks/);
+    expect(screen.getByTestId("bag-level-intermediate").textContent).toMatch(/55 tricks/);
+    expect(screen.getByTestId("bag-level-advanced").textContent).toMatch(/25 tricks/);
+    // Advanced is optional/browsable — not locked
+    expect(screen.getByTestId("bag-level-advanced").textContent).not.toMatch(/lock/i);
     expect(screen.getByTestId("bag-featured")).toBeTruthy();
     expect(screen.getByTestId("bag-my-progress").textContent).toMatch(/64%/);
     expect(screen.getByTestId("bag-quick-log")).toBeTruthy();
