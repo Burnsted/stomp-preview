@@ -16,7 +16,7 @@ Bounded fictional-data trip state machine landed under `batch1/src/trips/*` with
 |---|---|
 | Starting / base tip | `78dc9f9174acfbc16bf096e6c3673960a8e5da77` |
 | Feature branch | `cursor/trip-state-fictional-t1138u-5ae0` |
-| Implementation commit(s) | _(filled after commit)_ |
+| Implementation commit(s) | `5cdeb01` (`feat(trips): fictional-data trip state machine + AF suite (t1138u)`) |
 
 ## 3. Exact changed files
 
