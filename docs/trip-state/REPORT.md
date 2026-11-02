@@ -20,8 +20,8 @@ T1 Day Sesh isolation and T2 pure display helpers landed on draft PR #13.
 | T1 Day Sesh isolation | `581b946` — feat(daysesh): isolate Day Sesh from Trip Drop (T1 t1143u) |
 | T2 Display helpers | `615aff4` — feat(trips): pure display helpers AF13–AF21 + AF-X1..X6 (T2 t1143u) |
 | Docs + GB bridge | `326da10` — docs(trips): T1/T2 REPORT, CHANGELOG, GB interface bridge (t1143u) |
-| Docs HEAD pin | `918766c` — docs tip (t1143u) |
-| HEAD | `918766c373966a0e7a8cb7340a0d2e2be2ee6222` |
+| Docs HEAD pin | `ff39b4c` — docs tip (t1143u) |
+| HEAD | `ff39b4cfb5fc03053f4a06cceec39c188c10beb8` |
 | Feature branch | `cursor/trip-state-fictional-t1138u-5ae0` |
 | Draft PR | https://github.com/Burnsted/stomp-preview/pull/13 (draft=true; no merge) |
 | PR #12 tip (untouched) | `78dc9f9` on `cursor/alpine-redesign-hq-7022` |
