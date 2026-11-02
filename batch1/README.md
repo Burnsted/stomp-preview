@@ -10,6 +10,7 @@ Isolated TypeScript work on tip `702cf32` (Flutter **web static** preview).
 | Crew Invite stub (GB-owned) | `src/crew/invite-stub.ts` |
 | SESSION registry + Settings stub | `src/session/` + `preview/session-settings.html` |
 | Campfire / QR·NFC (types+fixtures) | `src/campfire/` · `src/identity/` |
+| Trip Drop state machine (fictional-data, t1138u) | `src/trips/` · AF tests in `tests/trip-state-*.test.ts` |
 | Tests | `tests/` |
 
 ```bash
