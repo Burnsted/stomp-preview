@@ -38,7 +38,7 @@ export function Home() {
         <div className="absolute right-0 bottom-28 left-5">
           <Wordmark tone="snow" />
           <p className="mt-2 max-w-56 text-lg font-medium text-pretty text-snow">
-            The Hands-Free Snowboard Caddy & Trick Log
+            Ride. Clip. Crew. Relive.
           </p>
         </div>
         <button

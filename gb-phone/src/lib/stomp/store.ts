@@ -22,7 +22,12 @@ export type Screen =
   | "session"
   | "stompers"
   | "bag"
-  | "woz";
+  | "woz"
+  | "avatar-onboard"
+  | "stomper-id"
+  | "avatar-locker"
+  | "trip-hub"
+  | "grom-onboard";
 
 export type Landing = {
   id: string;

@@ -23,7 +23,16 @@ export function tabForScreen(screen: Screen): PrimaryTabId | null {
   // Bag of Tricks is a feature surface (home tile), not a 5th tab — keep nav chrome, no Bag tab highlight.
   if (screen === "goals" || screen === "park") return "stats";
   if (screen === "bag") return null;
-  if (screen === "stompers" || screen === "crew" || screen === "woz") return "crew";
+  if (
+    screen === "stompers" ||
+    screen === "crew" ||
+    screen === "woz" ||
+    screen === "stomper-id" ||
+    screen === "avatar-locker" ||
+    screen === "trip-hub"
+  )
+    return "crew";
+  if (screen === "avatar-onboard" || screen === "grom-onboard") return "home";
   return null;
 }
 

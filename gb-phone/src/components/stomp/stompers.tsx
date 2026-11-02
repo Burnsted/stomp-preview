@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { AvatarBadge } from "@/components/stomp/avatar/avatar-renderer";
 import { WozEntry } from "@/components/stomp/woz-entry";
 import { HomeButton } from "@/components/stomp/chrome";
+import { useAvatar } from "@/lib/stomp/avatar/store";
 import { useStomp } from "@/lib/stomp/store";
 
 const VIBES = [
@@ -34,9 +36,11 @@ export function Stompers() {
   const setMeetup = useStomp((state) => state.setMeetup);
   const tomorrow = useStomp((state) => state.tomorrow);
   const setTomorrow = useStomp((state) => state.setTomorrow);
+  const avatarConfig = useAvatar((state) => state.config);
   const [tab, setTab] = useState<(typeof TABS)[number]>("Crew");
   const [vibe, setVibe] = useState(0);
   const [hidden, setHidden] = useState<string[]>([]);
+  const displayName = avatarConfig?.displayName || riderName;
 
   return (
     <div className="px-1 pb-28">
@@ -64,24 +68,45 @@ export function Stompers() {
       </div>
       {tab === "Crew" ? (
         <section className="px-4 pt-4">
-          <div className="flex items-center gap-3 rounded-3xl bg-snow p-4 ring-1 ring-line">
-            {selfie ? (
+          <div
+            className="flex items-center gap-3 rounded-3xl bg-snow p-4 ring-1 ring-line"
+            data-testid="crew-canonical-avatar-row"
+          >
+            {avatarConfig ? (
+              <button
+                type="button"
+                data-testid="crew-self-avatar"
+                onClick={() => setScreen("stomper-id")}
+                className="rounded-2xl"
+              >
+                <AvatarBadge config={avatarConfig} size={64} />
+              </button>
+            ) : selfie ? (
               <img src={selfie} alt="" className="size-16 rounded-2xl object-cover" />
             ) : (
               <span className="flex size-16 items-center justify-center rounded-2xl bg-lime font-display text-2xl">
-                {riderName.slice(0, 1)}
+                {displayName.slice(0, 1)}
               </span>
             )}
             <div>
-              <p className="font-display text-3xl leading-none">{riderName}</p>
+              <p className="font-display text-3xl leading-none">{displayName}</p>
               <p className="mt-1 text-sm text-muted">Your stomper pass. On this phone.</p>
             </div>
           </div>
           {crew.length > 0 ? (
-            <ul className="mt-3 flex flex-col gap-2">
+            <ul className="mt-3 flex flex-col gap-2" data-testid="crew-member-list">
               {crew.map((person) => (
                 <li key={person.code} className="flex h-14 items-center justify-between rounded-2xl bg-snow px-4 ring-1 ring-line">
-                  <span className="font-semibold">{person.name}</span>
+                  <span className="flex items-center gap-2 font-semibold">
+                    {avatarConfig && person.code === useStomp.getState().riderCode ? (
+                      <AvatarBadge config={avatarConfig} size={32} />
+                    ) : (
+                      <span className="flex size-8 items-center justify-center rounded-full bg-steel text-xs font-bold">
+                        {person.name.slice(0, 1)}
+                      </span>
+                    )}
+                    {person.name}
+                  </span>
                   <span className="text-sm text-muted">{person.code}</span>
                 </li>
               ))}
