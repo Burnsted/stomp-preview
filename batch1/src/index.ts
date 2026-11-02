@@ -33,7 +33,8 @@ export * as voice from "./session/voice-router.js";
 export * as ride from "./ride/ride.js";
 export * as media from "./media/crew-dump.js";
 export * as smartId from "./smartid/smart-id.js";
-// Trip Drop state machine — fictional-data (t1138u); no GB shell coupling
+// --- #13 Trip / Day Sesh ---
 export * as trips from "./trips/index.js";
-// Day Sesh — isolated lifecycle (t1143u); NOT a Trip Drop
 export * as daysesh from "./daysesh/index.js";
+// --- #14 Campfire CF-2 ---
+export * as campfireCf2 from "./campfire/cf2-index.js";
