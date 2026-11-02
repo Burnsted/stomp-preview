@@ -19,7 +19,8 @@ Bounded fictional-data trip state machine landed under `batch1/src/trips/*` with
 | Feature branch | `cursor/trip-state-fictional-t1138u-5ae0` |
 | Implementation | `5cdeb01` — feat(trips): fictional-data trip state machine + AF suite (t1138u) |
 | Docs SHA fill | `1ab50ac` — docs(trips): fill t1138u REPORT commit SHA + evidence |
-| HEAD | `1ab50ac2a0bde0cfdb84a6457316553ca16723ac` |
+| PR URL in REPORT | `34ea3be` — docs(trips): add draft PR #13 URL to t1138u REPORT |
+| HEAD | `34ea3be2649e0a882f62a5763397a737136db564` |
 
 ## 3. Exact changed files
 
