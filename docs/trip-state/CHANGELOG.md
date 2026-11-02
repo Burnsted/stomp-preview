@@ -1,5 +1,28 @@
 # Changelog — Trip state machine (fictional-data)
 
+## [t1143u] — 2026-11-02 — T1 Day Sesh isolation + T2 display helpers
+
+### Added
+- `batch1/src/daysesh/*` — isolated Day Sesh lifecycle (NOT a Trip Drop):
+  - Plan-ahead creation; active 24h from `scheduledStartAt` (not `createdAt`)
+  - Active Rider Pass required; no Viewers; $0 charge; no Trip Drop grace
+  - Temporary friends (`temporary_friend`); no automatic Squad membership
+  - Per-rider opt-in extensions (max +24h each; no count cap; decline/nonresponse keep prior window)
+  - `closeDaySesh` → `campfireEffects: []`; individual records kept (Rider Archive rules)
+- Pure display helpers: `trips/display.ts`, `daysesh/display.ts` (injected `nowIso` only)
+- Tests: AF-DS-01..13 + AF-DS-ISO; AF13–AF21 + AF21b; AF-X1..X6
+
+### Changed / Breaking (batch1 only)
+- Removed `TripKind "day_sesh"`, `daySeshAsTrip`, `createDaySeshDemo`, and all `kind==="day_sesh"` branches
+- AF8 uses daysesh `canJoinDaySesh`; AF10 rewritten (scheduledStartAt+24h; opt-in extensions; no Viewers)
+- Supersedes AF10 "no extension" with Owner Go opt-in extension defaults (Ted provisional technical)
+
+### Not in this batch
+- No GB shell / gb-phone UI changes (GB frozen — bridge doc only)
+- No Campfire storage/messaging/media/backend implementation (T3 = compatibility note)
+- No Avatar Foundation / PR #12 tip `78dc9f9` modifications
+- No live auth, payments, deletion jobs, merge, deploy, or publish
+
 ## [t1138u] — 2026-11-02
 
 ### Added

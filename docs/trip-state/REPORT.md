@@ -1,128 +1,188 @@
-# Trip State Machine — Fictional-Data Implementation Report (t1138u)
+# Trip State — T1/T2 Day Sesh Isolation + Display Helpers Report (t1143u)
 
 **Date (UTC):** 2026-11-02  
-**Agent:** Cursor Cloud (authorized Go by Ted Burns / Owner)  
-**Starting ref:** `78dc9f9174acfbc16bf096e6c3673960a8e5da77`  
+**Agent:** Cursor Cloud (Owner Go by Ted Burns / t1143u)  
+**Starting ref:** `70f9734c2bbc3e562aac840e604608f24cf93798`  
 **Branch:** `cursor/trip-state-fictional-t1138u-5ae0`  
-**Draft PR:** https://github.com/Burnsted/stomp-preview/pull/13 (SEPARATE from Avatar Foundation #12)  
-**PR policy:** SEPARATE draft PR — does **not** update Avatar Foundation draft PR #12 (`cursor/alpine-redesign-hq-7022`).
+**Draft PR:** https://github.com/Burnsted/stomp-preview/pull/13 (**ONLY** — no new PR opened)  
+**PR policy:** Update existing draft PR #13. PR #12 / Avatar Foundation tip `78dc9f9` untouched. No merge.
 
 ## 1. Verdict
 
-Bounded fictional-data trip state machine landed under `batch1/src/trips/*` with injected `Clock`, AF1–AF12 + AF22–AF41 automated coverage, and `POLICY_UNRESOLVED` stubs where cancel refunds / paid Viewer early-end / live admin / deletion jobs must not invent final policy. GB shell and tip `78dc9f9` Avatar Foundation code untouched.
+T1 Day Sesh isolation and T2 pure display helpers landed on draft PR #13.  
+`daySeshAsTrip` / `TripKind "day_sesh"` / `createDaySeshDemo` are gone. Day Sesh is a separate `batch1/src/daysesh/` model with Pass-required, no-Viewers, no-grace, opt-in extensions, and Campfire-safe close. Display helpers cover AF13–AF21 + AF-X1..X6. Local pr-verify equivalent is green. GB shell frozen (bridge doc only).
 
 ## 2. Branch + commit SHAs
 
 | Ref | SHA |
 |---|---|
-| Starting / base tip | `78dc9f9174acfbc16bf096e6c3673960a8e5da77` |
+| Start (PR #13 prior HEAD) | `70f9734c2bbc3e562aac840e604608f24cf93798` |
+| T1 Day Sesh isolation | `581b946` — feat(daysesh): isolate Day Sesh from Trip Drop (T1 t1143u) |
+| T2 Display helpers | `615aff4` — feat(trips): pure display helpers AF13–AF21 + AF-X1..X6 (T2 t1143u) |
+| Docs + GB bridge | *(this commit — see git log after push)* |
 | Feature branch | `cursor/trip-state-fictional-t1138u-5ae0` |
-| Implementation | `5cdeb01` — feat(trips): fictional-data trip state machine + AF suite (t1138u) |
-| Docs SHA fill | `1ab50ac` — docs(trips): fill t1138u REPORT commit SHA + evidence |
-| PR URL in REPORT | `34ea3be` — docs(trips): add draft PR #13 URL to t1138u REPORT |
-| HEAD | `34ea3be2649e0a882f62a5763397a737136db564` |
+| Draft PR | https://github.com/Burnsted/stomp-preview/pull/13 (draft=true; no merge) |
+| PR #12 tip (untouched) | `78dc9f9` on `cursor/alpine-redesign-hq-7022` |
 
-## 3. Exact changed files
+## 3. Changed-file summary
 
-### Source (`batch1/src/trips/`)
-- `types.ts` — Trip / membership / Pass / extension / retention / guard types (+ `cancelled` status)
-- `clock.ts` — injectable Clock, UTC day/month helpers
-- `policy.ts` — `PolicyDecision` stubs + disabled purchase interface
-- `timezone.ts` — IANA validation + display formatting (UTC storage)
-- `pass.ts` — `hasActivePass` / lapse helpers
-- `eligibility.ts` — Rider / Viewer / Day Sesh / download / co-host remove guards
-- `membership.ts` — `participationEndsAt` derivation, grace freeze, renewal, early-end cap, co-host appoint
-- `extensions.ts` — validate + approve extension (D5 approver Pass, no count cap)
-- `transitions.ts` — publish / start / auto-finalize / cancel / early-end
-- `retention.ts` — independent clocks; deletion job disabled
-- `renewal.ts` — optional renewal prompt (non-transactional)
-- `admin.ts` — two-person `adminCorrections[]` append (live UI disabled)
-- `fixtures.ts` — Saturday / October Park Lap + peak / extended / cancelled / early-end / sesh
-- `index.ts` — barrel
+### T1 — Day Sesh isolation
+| Action | Path |
+|---|---|
+| ADD | `batch1/src/daysesh/types.ts` |
+| ADD | `batch1/src/daysesh/lifecycle.ts` |
+| ADD | `batch1/src/daysesh/entitlement.ts` |
+| ADD | `batch1/src/daysesh/extensions.ts` |
+| ADD | `batch1/src/daysesh/fixtures.ts` |
+| ADD | `batch1/src/daysesh/index.ts` |
+| ADD | `batch1/tests/day-sesh-ds01-ds16.test.ts` |
+| EDIT | `batch1/src/trips/types.ts` — `TripKind = "trip"` only; remove DaySesh / expiresAt |
+| EDIT | `batch1/src/trips/eligibility.ts` — remove day_sesh branches + old canJoinDaySesh |
+| EDIT | `batch1/src/trips/extensions.ts` — remove day_sesh guard |
+| EDIT | `batch1/src/trips/transitions.ts` — remove day_sesh finalize branch |
+| EDIT | `batch1/src/trips/fixtures.ts` — delete daySeshAsTrip / createDaySeshDemo |
+| EDIT | `batch1/src/trips/membership.ts` — drop kind gate |
+| EDIT | `batch1/tests/trip-state-af1-af12.test.ts` — AF8/AF10 rewritten |
+| EDIT | `batch1/src/index.ts` — export `daysesh` namespace |
 
-### Wiring / tests / docs
-- `batch1/src/index.ts` — `export * as trips`
-- `batch1/tests/trip-state-af1-af12.test.ts`
-- `batch1/tests/trip-state-af22-af28.test.ts`
-- `batch1/tests/trip-state-af29-af41.test.ts`
-- `batch1/README.md` — trips row (if updated)
-- `docs/trip-state/CHANGELOG.md`
-- `docs/trip-state/REPORT.md` (this file)
+### T2 — Display helpers
+| Action | Path |
+|---|---|
+| ADD | `batch1/src/trips/display.ts` |
+| ADD | `batch1/src/daysesh/display.ts` |
+| ADD | `batch1/tests/trip-state-af13-af21.test.ts` |
+| ADD | `batch1/tests/display-cross-feature.test.ts` |
+| EDIT | barrels (`trips/index.ts`, `daysesh/index.ts`) |
+
+### Docs
+| Action | Path |
+|---|---|
+| EDIT | `docs/trip-state/REPORT.md` (this file) |
+| EDIT | `docs/trip-state/CHANGELOG.md` |
+| ADD | `docs/trip-state/GROK-BUILD-INTERFACE-BRIDGE.txt` |
 
 ### Explicitly NOT changed
-- `gb-phone/**` (no shell UI)
-- Avatar Foundation paths on tip `78dc9f9`
-- Branch `cursor/alpine-redesign-hq-7022` / PR #12
+- `gb-phone/**` (no shell UI; GB frozen)
+- Avatar Foundation / PR #12 / tip `78dc9f9`
+- Campfire storage/messaging/media/backend (T3 check-only)
+- Capture Studio, other sports, kiosks
 
-## 4. Test counts + execution evidence
+## 4. Exact local CI / test results
 
+### batch1 (T1 gate then full suite after T2)
 ```text
-cd batch1
-npm ci
-npm run typecheck   # pass
-npm test
+cd batch1 && npm ci && npm run typecheck && npm test
 
-# Vitest summary (full batch1 suite):
-# Test Files  16 passed (16)
-# Tests       355 passed | 4 skipped (359)
-
-# Trip AF suites:
-#   trip-state-af1-af12.test.ts   14 passed
-#   trip-state-af22-af28.test.ts   7 passed
-#   trip-state-af29-af41.test.ts  15 passed | 4 skipped
-# Node: v22.x · npm: 10.x
+# typecheck: PASS
+# Vitest (full batch1 after T1+T2):
+#   Test Files  19 passed (19)
+#   Tests       390 passed | 4 skipped (394)
+#
+# Trip / Day Sesh suites:
+#   trip-state-af1-af12.test.ts      14 passed
+#   trip-state-af13-af21.test.ts     10 passed  (AF13–AF21 + AF21b)
+#   trip-state-af22-af28.test.ts      7 passed
+#   trip-state-af29-af41.test.ts     15 passed | 4 skipped
+#   day-sesh-ds01-ds16.test.ts       19 passed  (AF-DS-01..13 + ISO)
+#   display-cross-feature.test.ts     6 passed  (AF-X1..X6)
 ```
 
-### AF coverage map
-| Range | Status |
+### gb-phone (pr-verify job equivalent)
+```text
+cd gb-phone
+npm ci
+npm run typecheck        # PASS
+npm run typecheck:woz    # PASS
+npm run test:woz         # 20 files, 878 passed
+npm test                 # 59 passed (stock node tests)
+npm run build            # PASS (db:migrate skipped — no DATABASE_URL)
+```
+
+### Definition-of-done checks
+| Check | Result |
 |---|---|
-| AF1–AF12 | Implemented & passing |
-| AF13–AF21 | Out of authorized scope this batch (Saturday/October fixtures still present for AF22+) |
-| AF22–AF28 | Implemented & passing |
-| AF29–AF41 | Implemented & passing |
-| POLICY_UNRESOLVED skips | 4 skipped tests (refunds, paid Viewer early-end, live admin, deletion jobs) |
+| `daySeshAsTrip` gone | PASS (AF-DS-ISO + fixtures grep) |
+| Trip has no `day_sesh` kind | PASS (`TripKind = "trip"`) |
+| T1 typecheck+test green before T2 | PASS |
+| T2 + full pr-verify green | PASS |
+| PR #12 untouched | PASS (no commits on alpine-redesign tip) |
+| No merge | PASS (draft PR #13 only) |
 
-### Spec note (AF6)
-Consolidated prose says Viewer/media deadline `2027-01-31` for official end `2026-12-16` + 45d. Calendar UTC +45d is `2027-01-30T23:59:00Z` (matches AF19/AF32 arithmetic). Tests assert correct +45d math; download on `2027-02-01` denied.
+## 5. Day Sesh isolation evidence
 
-## 5. Failed tests + unresolved gaps
+| Rule | Test ID | Evidence |
+|---|---|---|
+| Plan ahead | AF-DS-01 | plan 11-28 for 12-01 → planned; join w/ Pass pre-start |
+| Start clock | AF-DS-02 | activeEndsAt = scheduledStartAt+24h ≠ createdAt+24h |
+| Reschedule while planned | AF-DS-02b | recomputes end; rejected once active |
+| Pass required | AF-DS-03 | no/expired Pass → pass_inactive; mid-sesh Pass cut |
+| No charge | AF-DS-04 | daySeshCharge() === 0 |
+| No Viewers | AF-DS-05 | canAddDaySeshViewer denied; Viewer-only cannot join |
+| Temp friends | AF-DS-06 | kai source=temporary_friend |
+| No auto Squad | AF-DS-07 | Squad member list byte-identical after join+close |
+| Opt-in / decline / nonresponse | AF-DS-08a/b/c | per-rider ends |
+| Multi-extension | AF-DS-08d | first-only opt-in keeps first end |
+| Pass at resolve | AF-DS-08e | expired Pass → not extended |
+| No Trip Drop grace | AF-DS-09 / AF8 / AF-X4 | graceUntilAt future still denied |
+| Shared view close | AF-DS-10 | per-rider hide; whole view when last ends |
+| Records kept | AF-DS-11 | individual clip/ride refs retained on close |
+| Campfire safe | AF-DS-12 / AF-X6 | campfireEffects=[]; stub unchanged |
+| Module isolation | AF-DS-ISO | no forbidden trips imports; no day_sesh on Trip |
+| Type rejection | AF-DS-13 | Trip retention helpers reject DaySesh (@ts-expect-error) |
 
-- **Failed tests:** none.
-- **Skipped (intentional):**
-  1. Cancellation refunds / paid entitlements (F1)
-  2. Early-end effects on paid Viewer access (F3 / gated)
-  3. Live admin correction permissions + reviewer roster (D4)
-  4. Actual deletion/retention jobs (clocks compute only; never purge)
-- **Still OUTSTANDING (not invented):** exact production “entitlement rules” beyond fixture `entitlementOk`; renewal price/duration/payment; cancelled-trip retention anchor; Founder retention duration.
+Extension defaults applied (Ted provisional technical — NOT final pricing/entitlement policy):
+propose before sesh end; respond before own participation end; no response = no extension;
+no count cap; max 24h per extension; active Pass required; start editable only while planned.
 
-## 6. Security / entitlement risks
+## 6. Display-helper verification
 
-| Risk | Mitigation in this batch |
+| ID | Result |
 |---|---|
-| Approver without Pass could extend forever | D5 enforced: approver needs active Pass at `approvedAt` |
-| Co-host ends paying group's trip with one confirm | Implemented per D2+D7; flagged as F3 owner-awareness |
-| Host+all co-hosts lapse → no further extensions | Intended safeguard (F2); trip still auto-finalizes |
-| Silent rewrite of `officialEndDate` | Rejected via trip-management; admin path append-only + two-person |
-| Accidental refund/deletion side effects | Disabled interfaces + `POLICY_UNRESOLVED` stubs |
-| Real PII / live auth | Fictional IDs only (`host-hana`, `rider-rio`, …) |
+| AF13 extension history label | PASS |
+| AF14 canShowExtendControl role/deadline | PASS |
+| AF15 grace chip + Day Sesh deny + archive | PASS |
+| AF16 renewalRequiredLabel | PASS |
+| AF17 tripStatusLabel after auto-finalize | PASS |
+| AF18 October controls empty / mutations rejected | PASS |
+| AF19 projected vs finalized Viewer deadline | PASS |
+| AF20 Saturday/October fixture independence | PASS |
+| AF21 end labels + countdownParts | PASS |
+| AF21b no Date.now/setInterval in display.ts | PASS |
+| AF-X1 projected moves on extension; finalized fixed | PASS |
+| AF-X2 Viewer-only 12mo vs Rider Archive independence | PASS |
+| AF-X3 Viewer purchase never activates Pass | PASS |
+| AF-X4 Day Sesh denial label "Rider Pass required" | PASS |
+| AF-X5 mixed opt-in per-rider labels | PASS |
+| AF-X6 close/retention never touch Campfire/other records | PASS |
 
-## 7. GB integration dependencies
+## 7. T3 — Campfire compatibility findings (check only; no Campfire code)
 
-- GB shell remains **display-only** from fixture `nowIso` (t1135u) — no live clock/scheduler in shell.
-- Future adapter: map `batch1` trip fixtures → GB Trip Hub labels (`Ends…`, `Extended from…`, `Completed · Official end…`, `Cancelled` chip) without importing transition engine into UI yet.
-- Do not merge Saturday Park Lap ↔ October Park Lap fixtures.
-- Avatar Foundation / PR #12 tip stays read-only reference for non-collision.
+| Finding | Detail |
+|---|---|
+| No Campfire backend in batch1 | Only UI tab stub + HQ docs; no storage/messaging/media impl |
+| Close contract | `closeDaySesh` always returns `campfireEffects: []` |
+| Squad ownership | Day Sesh holds `linkedSquadId` read-only; never mutates Squad.memberIds |
+| Temp friend risk | Invite scope must remain non-promotable; "Add to Squad" = explicit separate action (future) |
+| Media into Campfire | Future: copy-ref with Campfire retention — not Day Sesh closure (OPEN) |
+| Shared invite util | Candidate `shared/invite.ts` with scope trip\|day_sesh\|squad (not implemented) |
+| Campfire retention policy | UNDECIDED / OPEN |
 
-## 8. Changelog
+## 8. Remaining risks / blocked approvals
 
-See `docs/trip-state/CHANGELOG.md` ([t1138u]).
+1. Extension `respondBy` exact default & product copy — provisional (sesh activeEndsAt); needs Ted confirm for GB UX.
+2. Mid-sesh Pass expiry: immediate cut (implemented) vs end-of-day — confirm for product.
+3. 38 POLICY_UNRESOLVED stubs retained (refunds, paid Viewer early-end, live admin, deletion jobs, renewal price).
+4. GB freeze — bridge written; no shell paste until unfreeze.
+5. Campfire backend / retention / invite util — deferred.
+6. PR #12 merge / Pages — out of scope.
+7. 45d prose discrepancy (2027-01-31 vs math 2027-01-30) — still noted; tests use correct math.
 
-## 9. Next bounded implementation recommendation
+## 9. PR confirmation
 
-1. **AF13–AF21 fixture display tests** (still pure/batch1) — countdown/label helpers consuming fixture `nowIso`, no GB shell edits.
-2. **woz-bridge read adapter** (flags off) exposing trip status chips to GB copy mocks only after explicit Go for shell touch.
-3. **Owner decisions required before any further Go:** F1 cancel refund/cleanup anchor; paid Viewer early-end; renewal price/duration; live admin roster.
-4. Do **not** start live entitlement backend, payments, or deletion workers.
+- Updated existing draft PR **#13** only: https://github.com/Burnsted/stomp-preview/pull/13  
+- Did **not** open another PR.  
+- Did **not** touch PR #12 / `cursor/alpine-redesign-hq-7022` / tip `78dc9f9`.  
+- Kept draft=true; no merge/deploy/publish/release.
 
 ---
-Hard stops honored: no merge · no deploy · no production credentials · no live personal data · no PR #12 updates · no Capture Studio / other sports / kiosks.
+Hard stops honored: fictional-data only · no real accounts · no live auth · no payments · no Campfire impl · no GB UI edits · no Capture Studio / other sports / kiosks.
