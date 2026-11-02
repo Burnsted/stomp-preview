@@ -12,11 +12,12 @@ const v = <T, E extends string>(r: { ok: boolean; value?: T; error?: E }): T => 
 describe("AF-CF voice boundaries", () => {
   it("AF-CF-48 voice post to all my Squads → rejected → pick ONE", () => {
     const w = CF.createWorld();
+    // SV-0 CONFLICT-1: prepareFromVoice denies multi-Squad (one Squad at a time)
     const a = CF.voiceCommand(w, CF.IDS.ava, "post to all my Squads");
-    expect(a.kind).toBe("share_prepare");
-    if (a.kind === "share_prepare") {
-      expect(a.multiRecipient).toBe(true);
-      expect(a.needsConfirm).toBe(true);
+    expect(a.kind).toBe("denied");
+    if (a.kind === "denied") {
+      expect(a.reason).toBe("multi_recipient");
+      expect(a.message).toMatch(/one Squad/i);
     }
     // Multi-recipient cannot confirm via Quick Share
     let w2 = v(CF.uploadMedia(w, { id: "mv48", ownerId: CF.IDS.ava, origin: "campfire" }));

@@ -59,7 +59,10 @@ export type DenyReason =
   | "duplicate"
   | "intent_invalid"
   | "campfire_disabled"
-  | "unresolved_policy";
+  | "unresolved_policy"
+  | "session_locked"
+  | "media_deleted"
+  | "already_handled";
 
 export interface ExpiryContract {
   assetOrMessageId: string;
@@ -201,8 +204,15 @@ export interface LegalPreservation {
 export type ShareIntentState =
   | "previewing"
   | "confirmed"
+  | "queued"
+  | "delivered"
+  | "failed"
   | "cancelled"
-  | "discarded";
+  | "discarded"
+  | "expired"
+  | "replaced"
+  | "rejected_recheck"
+  | "ambiguous";
 
 export interface ShareIntent {
   id: ShareIntentId;

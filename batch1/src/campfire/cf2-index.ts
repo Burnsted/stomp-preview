@@ -1,5 +1,5 @@
 /**
- * Campfire CF-2 fictional-data barrel (t1147u).
+ * Campfire CF-2 fictional-data barrel (t1147u) + SV-0 Sesh sharing contract.
  * Additive alongside legacy types/fixtures/interactions.
  */
 export * from "./policy.js";
@@ -13,6 +13,9 @@ export * from "./share.js";
 export * from "./safety.js";
 export * from "./erasure.js";
 export * from "./sesh-voice.js";
+export * from "./sesh-pending.js";
+export * from "./sesh-recheck.js";
+export * from "./sesh-character.js";
 export * from "./daysesh-boundary.js";
 export * from "./gb-contract.js";
 export * from "./world.js";
