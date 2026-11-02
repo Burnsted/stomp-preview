@@ -1,0 +1,73 @@
+================================================================================
+GROK BUILD INTERFACE BRIDGE — Trip Drop vs Day Sesh (t1143u)
+Draft PR #13 · branch cursor/trip-state-fictional-t1138u-5ae0
+GB SHELL FROZEN — this file is documentation for Ted only; no GB code changes.
+================================================================================
+
+1. PRODUCT SEPARATION (HARD)
+   - Trip Drop  ≠  Day Sesh
+   - Do NOT model Day Sesh as Trip{kind:"day_sesh"} or daySeshAsTrip.
+   - batch1 source of truth:
+       Trip Drop → batch1/src/trips/*
+       Day Sesh  → batch1/src/daysesh/*
+
+2. CLOCKS
+   Trip Drop:
+     - scheduledEndAt / extensions[] / officialEndDate (null until finalize)
+     - Injected Clock / fixture nowIso — no live wall-clock in shell
+   Day Sesh:
+     - May be planned ahead (status: planned)
+     - Active 24h window BEGINS at scheduledStartAt (NOT createdAt)
+     - activeEndsAt = scheduledStartAt + 24h (may advance per resolved opt-in extensions)
+     - Per-rider participationEndsAt; Pass expiry mid-sesh cuts access immediately (no grace)
+
+3. ENTITLEMENTS
+   Trip Drop:
+     - Riders need Pass (grace may apply on existing membership after mid-trip lapse)
+     - Viewers allowed (gated); media/Viewer deadline ≤ officialEndDate + 45d
+   Day Sesh:
+     - EVERY participant needs active Rider Pass
+     - NO Viewers (canAddDaySeshViewer always denied)
+     - NO additional Day Sesh charge (daySeshCharge = 0)
+     - Trip Drop expired-Pass grace NEVER unlocks Day Sesh
+     - Temporary friends (temporary_friend) OK; no automatic permanent Squad membership
+
+4. EXTENSIONS
+   Trip Drop: host/cohost approve; append-only extensions[]; no count cap
+   Day Sesh (Owner Go / Ted provisional technical defaults — NOT final pricing policy):
+     - Propose before current Day Sesh end
+     - Each Rider responds before their current authorized participation end
+     - No response = no extension for that Rider (prior window retained)
+     - Decline = prior window retained
+     - No arbitrary total extension-count cap
+     - Maximum 24 hours per extension
+     - Every extension requires an active Rider Pass at resolve
+     - Session start time editable only while still planned
+
+5. CLOSURE / CAMPFIRE
+   - Closing Day Sesh removes temporary shared access
+   - campfireEffects MUST be [] — never delete/mutate persistent Squad Campfire
+   - linkedSquadId is read-only reference only
+   - Eligible individual records remain under Rider Archive rules
+
+6. DISPLAY (pure helpers — ready for future GB adapter; do not paste into GB yet)
+   Trip: tripEndLabel, countdownParts, tripStatusLabel, extensionHistoryLabel,
+         canShowExtendControl, tripControls, riderStatusChip, renewalRequiredLabel,
+         viewerDeadlineLabel → {iso, authoritative}
+   Day Sesh: daySeshStatusLabel, daySeshParticipationLabel, extensionPromptLabel,
+             daySeshDenialLabel ("Rider Pass required")
+   Rules: no Date.now / setInterval in display modules; labels from fixture nowIso
+
+7. GB PASTE RULE
+   Existing Trip Drop bridge paste must NOT show Day Sesh as a Trip Drop screen.
+   When GB is unfrozen: separate Day Sesh endpoint/type; two clocks (planned/active);
+   no Viewer UI; per-rider extension opt-in prompt; Campfire never deleted by close.
+
+8. PR BOUNDARY
+   - Draft PR #13 only: https://github.com/Burnsted/stomp-preview/pull/13
+   - PR #12 / Avatar Foundation / alpine-redesign-hq-7022 tip 78dc9f9 UNTOUCHED
+   - No merge, deploy, publish, release, live auth, payments, or connectors
+
+================================================================================
+END BRIDGE
+================================================================================
