@@ -4,6 +4,7 @@
 **Agent:** Cursor Cloud (authorized Go by Ted Burns / Owner)  
 **Starting ref:** `78dc9f9174acfbc16bf096e6c3673960a8e5da77`  
 **Branch:** `cursor/trip-state-fictional-t1138u-5ae0`  
+**Draft PR:** https://github.com/Burnsted/stomp-preview/pull/13 (SEPARATE from Avatar Foundation #12)  
 **PR policy:** SEPARATE draft PR — does **not** update Avatar Foundation draft PR #12 (`cursor/alpine-redesign-hq-7022`).
 
 ## 1. Verdict
@@ -16,7 +17,9 @@ Bounded fictional-data trip state machine landed under `batch1/src/trips/*` with
 |---|---|
 | Starting / base tip | `78dc9f9174acfbc16bf096e6c3673960a8e5da77` |
 | Feature branch | `cursor/trip-state-fictional-t1138u-5ae0` |
-| Implementation commit(s) | `5cdeb01` (`feat(trips): fictional-data trip state machine + AF suite (t1138u)`) |
+| Implementation | `5cdeb01` — feat(trips): fictional-data trip state machine + AF suite (t1138u) |
+| Docs SHA fill | `1ab50ac` — docs(trips): fill t1138u REPORT commit SHA + evidence |
+| HEAD | `1ab50ac2a0bde0cfdb84a6457316553ca16723ac` |
 
 ## 3. Exact changed files
 
