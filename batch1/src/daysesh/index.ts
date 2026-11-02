@@ -6,4 +6,5 @@ export * from "./types.js";
 export * from "./lifecycle.js";
 export * from "./entitlement.js";
 export * from "./extensions.js";
+export * from "./display.js";
 export * from "./fixtures.js";

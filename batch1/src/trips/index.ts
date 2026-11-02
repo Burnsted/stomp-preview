@@ -15,4 +15,5 @@ export * from "./transitions.js";
 export * from "./retention.js";
 export * from "./renewal.js";
 export * from "./admin.js";
+export * from "./display.js";
 export * from "./fixtures.js";
