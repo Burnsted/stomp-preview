@@ -4,19 +4,27 @@
  */
 import { describe, expect, it } from "vitest";
 import {
+  canAddDaySeshViewer,
+  canJoinDaySesh,
+  createSunriseShredDaySesh,
+  daySeshStatusAt,
+  FIXTURE_ACTIVE_END,
+  FIXTURE_CREATED_AT,
+  FIXTURE_SCHEDULED_START,
+  offerDaySeshExtension,
+  sunrisePasses,
+  type DaySeshExtensionId,
+} from "../src/daysesh/index.js";
+import {
   ID,
   addUtcDays,
   approveExtension,
-  canAddViewer,
   canDownloadViewer,
   canJoinAsRider,
-  canJoinDaySesh,
-  createDaySeshDemo,
   createFictionalPeak,
   createPass,
   createPeakWorld,
   createViewerEntitlement,
-  daySeshAsTrip,
   fixedClock,
   mediaViewerDeadline,
   peakMemberships,
@@ -205,7 +213,7 @@ describe("AF1–AF12 trip timing (fictional-peak)", () => {
   });
 
   it("AF8 Pass lapse mid-extension: continue this trip; deny new trip + Day Sesh", () => {
-    let trip = createFictionalPeak({ scheduledEndAt: "2026-12-16T23:59:00Z" });
+    const trip = createFictionalPeak({ scheduledEndAt: "2026-12-16T23:59:00Z" });
     const memberships = peakMemberships(trip);
     const passes: PassEntitlement[] = [
       createPass({
@@ -232,9 +240,9 @@ describe("AF1–AF12 trip timing (fictional-peak)", () => {
     expect(canJoinAsRider(ID.rio, trip, passes, "2026-12-14T12:00:00Z", rio).ok).toBe(true);
     const other = createFictionalPeak({ id: "trip-new" as Trip["id"], name: "trip-new" });
     expect(canJoinAsRider(ID.rio, other, passes, "2026-12-14T12:00:00Z").ok).toBe(false);
-    const sesh = createDaySeshDemo();
+    // Day Sesh uses isolated canJoinDaySesh — Trip Drop grace NEVER unlocks it
+    const sesh = createSunriseShredDaySesh();
     expect(canJoinDaySesh(ID.rio, sesh, passes, "2026-12-14T12:00:00Z").ok).toBe(false);
-    void trip;
   });
 
   it("AF9 Archive clock from Pass expiry, unaffected by officialEndDate", () => {
@@ -244,22 +252,25 @@ describe("AF1–AF12 trip timing (fictional-peak)", () => {
     expect(archive.anchorIso).not.toBe("2026-12-16T23:59:00Z");
   });
 
-  it("AF10 Day Sesh 24h; no extension; no viewers", () => {
-    const sesh = createDaySeshDemo();
-    expect(sesh.expiresAt).toBe("2026-12-02T09:00:00Z");
-    const asTrip = daySeshAsTrip(sesh);
-    const res = approveExtension({
-      trip: asTrip,
-      memberships: peakMemberships(asTrip),
-      passes: createPeakWorld().passes,
+  it("AF10 Day Sesh: 24h from scheduledStartAt; opt-in extensions; no Viewers", () => {
+    const sesh = createSunriseShredDaySesh();
+    expect(sesh.createdAt).toBe(FIXTURE_CREATED_AT);
+    expect(sesh.scheduledStartAt).toBe(FIXTURE_SCHEDULED_START);
+    expect(sesh.activeEndsAt).toBe(FIXTURE_ACTIVE_END);
+    expect(sesh.activeEndsAt).not.toBe("2026-11-29T10:00:00Z"); // ≠ createdAt+24h
+    expect(daySeshStatusAt(sesh, FIXTURE_CREATED_AT)).toBe("planned");
+    expect(canAddDaySeshViewer(sesh).ok).toBe(false);
+    // Trip Drop approveExtension is not the Day Sesh path — opt-in offers exist instead
+    const during = "2026-12-01T18:00:00Z";
+    const offer = offerDaySeshExtension({
+      sesh: { ...sesh, status: "active" },
+      offerId: "ext-ds-af10" as DaySeshExtensionId,
+      proposedEndsAt: "2026-12-03T14:00:00Z",
+      offeredAt: during,
       actorId: ID.hana,
-      revisedEndAt: "2026-12-03T09:00:00Z",
-      extensionId: "ext-sesh" as ExtensionId,
-      clock: fixedClock("2026-12-01T12:00:00Z"),
+      passes: sunrisePasses(),
     });
-    expect(res.ok).toBe(false);
-    if (!res.ok) expect(res.reason).toBe("day_sesh_no_extension");
-    expect(canAddViewer(asTrip).ok).toBe(false);
+    expect(offer.ok).toBe(true);
   });
 
   it("AF11 Extension by viewer or rider rejected", () => {

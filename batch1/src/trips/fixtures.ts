@@ -1,10 +1,11 @@
 /**
  * Fictional trip fixtures only — no real accounts/PII.
  * Saturday Park Lap + October Park Lap kept SEPARATE (never derived/shared refs).
- * Additional: trip-fictional-peak, extended, cancelled, early-ended, day sesh.
+ * Additional: trip-fictional-peak, extended, cancelled, early-ended.
+ * Day Sesh fixtures live under `daysesh/` (isolated, t1143u).
  */
 
-import { addUtcDays, addUtcHours } from "./clock.js";
+import { addUtcDays } from "./clock.js";
 import { makeMembership } from "./membership.js";
 import {
   founderClock,
@@ -14,7 +15,6 @@ import {
   viewerOnlyAccountClock,
 } from "./retention.js";
 import type {
-  DaySesh,
   PassEntitlement,
   RetentionClock,
   StomperId,
@@ -186,35 +186,6 @@ export function createEarlyEndedTrip(): Trip {
       actorRole: "cohost",
       confirmedAt: "2026-12-11T14:00:00Z",
     },
-    entitlementOk: true,
-  });
-}
-
-export function createDaySeshDemo(): DaySesh {
-  const created = "2026-12-01T09:00:00Z";
-  return {
-    id: "sesh-demo" as TripId,
-    name: "Demo Day Sesh",
-    createdAtIso: created,
-    expiresAt: addUtcHours(created, 24),
-    hostId: ID.hana,
-    status: "active",
-  };
-}
-
-export function daySeshAsTrip(sesh: DaySesh): Trip {
-  return baseTrip({
-    id: sesh.id,
-    name: sesh.name,
-    kind: "day_sesh",
-    timeZone: "America/Denver",
-    startIso: sesh.createdAtIso,
-    originalEndAt: sesh.expiresAt,
-    scheduledEndAt: sesh.expiresAt,
-    officialEndDate: null,
-    hostId: sesh.hostId,
-    status: sesh.status === "expired" ? "completed" : "active",
-    expiresAt: sesh.expiresAt,
     entitlementOk: true,
   });
 }

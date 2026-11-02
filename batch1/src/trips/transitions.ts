@@ -45,17 +45,6 @@ export function maybeStartTrip(trip: Trip, clock: Clock): Trip {
  */
 export function maybeAutoFinalize(trip: Trip, clock: Clock): Trip {
   if (trip.status !== "active") return trip;
-  if (trip.kind === "day_sesh") {
-    if (trip.expiresAt && isAtOrAfter(clock.nowIso(), trip.expiresAt)) {
-      return {
-        ...trip,
-        status: "completed",
-        officialEndDate: trip.expiresAt,
-        finalizedBy: "auto",
-      };
-    }
-    return trip;
-  }
   if (isAtOrAfter(clock.nowIso(), trip.scheduledEndAt)) {
     return {
       ...trip,

@@ -48,7 +48,7 @@ export function applyPassLapseToMembership(
   trip: Trip,
   lapsedAtIso: string,
 ): TripMembership {
-  if (trip.status !== "active" || trip.kind !== "trip") return membership;
+  if (trip.status !== "active") return membership;
   if (membership.graceUntilAt) return membership; // already frozen
   const graceUntilAt = trip.scheduledEndAt;
   return {

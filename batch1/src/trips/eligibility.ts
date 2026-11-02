@@ -1,7 +1,6 @@
 import { isAtOrAfter, isBefore } from "./clock.js";
 import { hasActivePass } from "./pass.js";
 import type {
-  DaySesh,
   GuardResult,
   PassEntitlement,
   StomperId,
@@ -48,6 +47,7 @@ export function inGrace(
 /**
  * Rider access: at <= participationEndsAt, and either active Pass or grace covering at.
  * AF22: 11-08T20:00 true, 11-09T00:00 denied when participationEndsAt=11-08T23:59.
+ * Day Sesh uses daysesh/entitlement — never call this for Day Sesh.
  */
 export function hasRiderAccessAt(
   membership: TripMembership | undefined,
@@ -57,9 +57,6 @@ export function hasRiderAccessAt(
 ): boolean {
   if (!membership || membership.status !== "active") return false;
   if (!["host", "cohost", "rider"].includes(membership.role)) return false;
-  if (trip.kind === "day_sesh") {
-    return hasActivePass(passes, membership.stomperId, atIso);
-  }
   // Deny strictly after participationEndsAt
   if (isAtOrAfter(atIso, membership.participationEndsAt) && atIso !== membership.participationEndsAt) {
     return false;
@@ -81,9 +78,6 @@ export function canJoinAsRider(
   atIso: string,
   existing?: TripMembership,
 ): GuardResult {
-  if (trip.kind === "day_sesh") {
-    return { ok: false, reason: "role_cannot_join", message: "Use canJoinDaySesh" };
-  }
   if (trip.status !== "active" && trip.status !== "scheduled") {
     return { ok: false, reason: "trip_not_active" };
   }
@@ -97,27 +91,8 @@ export function canJoinAsRider(
   return { ok: true, value: undefined };
 }
 
-export function canJoinDaySesh(
-  stomperId: StomperId,
-  sesh: DaySesh | Trip,
-  passes: PassEntitlement[],
-  atIso: string,
-): GuardResult {
-  const expiresAt = sesh.expiresAt;
-  if (!expiresAt) {
-    return { ok: false, reason: "day_sesh_expired" };
-  }
-  if (isAtOrAfter(atIso, expiresAt) && atIso !== expiresAt) {
-    return { ok: false, reason: "day_sesh_expired" };
-  }
-  if (!hasActivePass(passes, stomperId, atIso)) {
-    return { ok: false, reason: "pass_inactive", message: "Day Sesh requires active Pass (no grace)" };
-  }
-  return { ok: true, value: undefined };
-}
-
 export function canAddViewer(trip: Trip): GuardResult {
-  if (trip.kind === "day_sesh") {
+  if (trip.kind !== "trip") {
     return { ok: false, reason: "day_sesh_no_viewers" };
   }
   return { ok: true, value: undefined };

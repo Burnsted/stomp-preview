@@ -49,15 +49,13 @@ export interface ExtendInput {
 /**
  * Approve an extension while active.
  * Guards: host/cohost, approver active Pass (D5), approvedAt < scheduledEndAt,
- * entitlementOk, revisedEnd > previousEnd, not day_sesh, trip active.
+ * entitlementOk, revisedEnd > previousEnd, trip active.
+ * Day Sesh extensions live in daysesh/extensions — never routed here.
  */
 export function approveExtension(input: ExtendInput): GuardResult<{ trip: Trip; record: ExtensionRecord }> {
   const { trip, memberships, passes, actorId, revisedEndAt, extensionId, clock } = input;
   const at = clock.nowIso();
 
-  if (trip.kind === "day_sesh") {
-    return { ok: false, reason: "day_sesh_no_extension" };
-  }
   if (trip.status === "completed" || trip.status === "retention-expired") {
     return { ok: false, reason: "trip_already_finalized" };
   }

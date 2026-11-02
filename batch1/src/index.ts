@@ -35,3 +35,5 @@ export * as media from "./media/crew-dump.js";
 export * as smartId from "./smartid/smart-id.js";
 // Trip Drop state machine — fictional-data (t1138u); no GB shell coupling
 export * as trips from "./trips/index.js";
+// Day Sesh — isolated lifecycle (t1143u); NOT a Trip Drop
+export * as daysesh from "./daysesh/index.js";

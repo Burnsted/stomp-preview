@@ -10,7 +10,8 @@ export type PassId = string & { readonly __brand: "PassId" };
 export type ExtensionId = string & { readonly __brand: "ExtensionId" };
 export type AdminCorrectionId = string & { readonly __brand: "AdminCorrectionId" };
 
-export type TripKind = "trip" | "day_sesh";
+/** Trip Drop only — Day Sesh is a separate type under `daysesh/` (t1143u). */
+export type TripKind = "trip";
 export type TripStatus =
   | "draft"
   | "scheduled"
@@ -109,8 +110,6 @@ export interface Trip {
    * Exact production entitlement rules remain OUTSTANDING — do not invent.
    */
   entitlementOk: boolean;
-  /** Day Sesh only: createdAt + 24h. */
-  expiresAt?: string;
 }
 
 export interface TripMembership {
@@ -168,15 +167,6 @@ export interface RetentionClock {
   policyUnresolved?: string;
   noticeSentIso?: string;
   exportOfferedIso?: string;
-}
-
-export interface DaySesh {
-  id: TripId;
-  name: string;
-  createdAtIso: string;
-  expiresAt: string;
-  hostId: StomperId;
-  status: "active" | "expired";
 }
 
 export type GuardReason =
