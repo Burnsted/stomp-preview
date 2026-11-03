@@ -28,7 +28,7 @@ Phase 1 streams remain intact (authz/export/merge/blockers/threat).
 | Field | Value |
 |---|---|
 | Branch | `cursor/release-security-readiness-t1184u-ef28` |
-| Tip | `4acf6b1cb2db7765f4e44c029b02581c5b31f9e2` |
+| Tip (CI green) | `90d299ad6bb1302434cdc221cef620332c0ac457` |
 | Feature Phase 2 | `4acf6b1cb2db7765f4e44c029b02581c5b31f9e2` |
 | #21 tip | `67358475dfdd9c23307f5a9d8a8b669138ca076e` |
 | #23 side-lane tip | `455faed3c088a840ef5cca9ed58bfe11fd1adf95` (NOT in authz chain) |
