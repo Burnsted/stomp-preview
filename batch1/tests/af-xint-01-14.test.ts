@@ -1,6 +1,6 @@
 /**
- * AF-XINT-01..14 — cross-feature acceptance (integration rehearsal t1152u).
- * Fictional data only. AF-XINT-11/12 = expected-fail (CONFLICT-1/2 → SV-0).
+ * AF-XINT-01..14 — cross-feature acceptance (integration rehearsal t1152u + t1159u).
+ * Fictional data only. AF-XINT-11/12 PASS after SV-0 cherry-pick (CONFLICT-1/2 closed).
  */
 import { describe, expect, it } from "vitest";
 import * as Shared from "../src/shared/index.js";
@@ -236,63 +236,67 @@ describe("AF-XINT cross-feature (t1152u)", () => {
     if (!post.ok) expect(post.error).toBe("not_member");
   });
 
-  // CONFLICT-1: prepareFromVoice("post to all squads") returns multiRecipient share_prepare
-  // instead of deny via rejectMultiSquadShare. Fix belongs in SV-0 — do not weaken.
-  it.fails(
-    "AF-XINT-11 Share: multi-squad denied (CONFLICT-1 / SV-0 pending)",
-    () => {
-      const action = CF.prepareFromVoice(
-        { kind: "post_to_all_squads" },
-        CF.IDS.ava,
-      );
-      // Desired SV-0 behaviour: deny one-Squad-at-a-time
-      expect(action.kind).toBe("denied");
-      if (action.kind === "denied") {
-        expect(action.reason).toBe("multi_recipient");
-      }
-    },
-  );
+  // CONFLICT-1 closed by SV-0: prepareFromVoice("post_to_all_squads") → denied multi_recipient.
+  it("AF-XINT-11 Share: multi-squad denied (CONFLICT-1 / SV-0)", () => {
+    const action = CF.prepareFromVoice(
+      { kind: "post_to_all_squads" },
+      CF.IDS.ava,
+    );
+    expect(action.kind).toBe("denied");
+    if (action.kind === "denied") {
+      expect(action.reason).toBe("multi_recipient");
+    }
+    const voiced = CF.voiceCommand(CF.createWorld(), CF.IDS.ava, "post to all my Squads");
+    expect(voiced.kind).toBe("denied");
+    if (voiced.kind === "denied") {
+      expect(voiced.reason).toBe("multi_recipient");
+    }
+  });
 
-  // CONFLICT-2: confirmShare has no TTL / permission recheck / delivery states.
-  // Desired: membership removed between prepare and confirm → deny. SV-0 pending.
-  it.fails(
-    "AF-XINT-12 Share: removed-between-prepare-and-confirm recheck denies (CONFLICT-2 / SV-0)",
-    () => {
-      let w = CF.createWorld();
-      w = v(
-        CF.uploadMedia(w, {
-          id: "med_c2",
-          ownerId: CF.IDS.ava,
-          origin: "campfire",
-        }),
-      );
-      w = v(
-        CF.beginQuickShare(w, {
-          intentId: "si_c2",
-          actorId: CF.IDS.ava,
-          mediaRefId: "med_c2",
-          squadIds: [CF.IDS.sunrise],
-        }),
-      );
-      // Revoke Ava's Sunrise membership between prepare and confirm
-      w = {
-        ...w,
-        memberships: w.memberships.map((m) =>
-          m.stomperId === CF.IDS.ava && m.squadId === CF.IDS.sunrise
-            ? { ...m, state: "revoked" as const, leftAt: w.nowIso }
-            : m,
-        ),
-      };
-      const intent = w.shareIntents.find((i) => i.id === "si_c2")!;
-      // Desired SV-0: confirmShare rechecks membership and denies
-      const confirmed = CF.confirmShare(intent);
-      // Also desired: world confirm path denies
-      const worldConfirm = CF.confirmQuickShare(w, "si_c2", "lnk_c2");
-      expect(confirmed.ok).toBe(false);
-      expect(worldConfirm.ok).toBe(false);
-      if (!confirmed.ok) expect(confirmed.error).toBe("not_member");
-    },
-  );
+  // CONFLICT-2 closed by SV-0: confirmShare + confirmQuickShare recheck membership.
+  it("AF-XINT-12 Share: removed-between-prepare-and-confirm recheck denies (CONFLICT-2 / SV-0)", () => {
+    let w = CF.createWorld();
+    w = v(
+      CF.uploadMedia(w, {
+        id: "med_c2",
+        ownerId: CF.IDS.ava,
+        origin: "campfire",
+      }),
+    );
+    w = v(
+      CF.beginQuickShare(w, {
+        intentId: "si_c2",
+        actorId: CF.IDS.ava,
+        mediaRefId: "med_c2",
+        squadIds: [CF.IDS.sunrise],
+      }),
+    );
+    // Revoke Ava's Sunrise membership between prepare and confirm
+    w = {
+      ...w,
+      memberships: w.memberships.map((m) =>
+        m.stomperId === CF.IDS.ava && m.squadId === CF.IDS.sunrise
+          ? { ...m, state: "revoked" as const, leftAt: w.nowIso }
+          : m,
+      ),
+    };
+    const intent = w.shareIntents.find((i) => i.id === "si_c2")!;
+    const confirmed = CF.confirmShare(intent, {
+      nowIso: w.nowIso,
+      recheck: {
+        actor: w.people.get(CF.IDS.ava)!,
+        memberships: w.memberships,
+        assets: w.assets,
+        nowIso: w.nowIso,
+        sessionUnlocked: true,
+      },
+    });
+    const worldConfirm = CF.confirmQuickShare(w, "si_c2", "lnk_c2");
+    expect(confirmed.ok).toBe(false);
+    expect(worldConfirm.ok).toBe(false);
+    if (!confirmed.ok) expect(confirmed.error).toBe("not_member");
+    if (!worldConfirm.ok) expect(worldConfirm.error).toBe("not_member");
+  });
 
   it("AF-XINT-13 Guards: GuardReason↔DenyReason map total; no ok leak", () => {
     const reasons = Object.keys(Shared.GUARD_TO_DENY) as GuardReason[];

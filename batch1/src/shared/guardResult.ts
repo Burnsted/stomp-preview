@@ -54,6 +54,10 @@ export const DENY_TO_GUARD: Record<DenyReason, GuardReason> = {
   intent_invalid: "invalid_publish",
   campfire_disabled: "policy_unresolved",
   unresolved_policy: "policy_unresolved",
+  // SV-0 DenyReasons (t1159u cherry-pick) — map without inventing new GuardReasons
+  session_locked: "confirmation_required",
+  media_deleted: "after_deadline",
+  already_handled: "invalid_publish",
 };
 
 export function mapGuardReasonToDeny(reason: GuardReason): DenyReason | "ok" {
