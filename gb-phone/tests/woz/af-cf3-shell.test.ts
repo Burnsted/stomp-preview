@@ -77,4 +77,71 @@ describe("AF-CF3 gb-phone bridge", () => {
     const closed = ava.closeDaySesh();
     expect(closed.campfireEffects).toEqual([]);
   });
+
+  it("AF-CF3-P04 soft-cap invite + Day Sesh clock + TTL expire + G4 tombstone", () => {
+    const ava = cf3.createCampfireClient(cf3.CF3_IDS.ava);
+    ava.seedToSoftCap(cf3.CF3_IDS.sunrise, cf3.SQUAD_SOFT_CAP);
+    const inv = ava.inviteMember({
+      inviteId: "p_inv",
+      squadId: cf3.CF3_IDS.sunrise,
+      toId: cf3.CF3_IDS.vik,
+    });
+    expect(inv.ok).toBe(true);
+    if (inv.ok) {
+      expect(inv.value.status).toBe("pending");
+      expect(inv.value.softCapNotice).toBe(true);
+    }
+
+    expect(
+      ava.seedMedia("p_ds", "day_sesh", {
+        daySeshOfficialEndedAt: "2026-02-01T00:00:00.000Z",
+        daySeshId: cf3.CF3_IDS.ds1,
+      }).ok,
+    ).toBe(true);
+    const before = ava.mediaClock("p_ds")!;
+    expect(before.expiresAt).toBe(cf3.daySeshMediaExpiresAt("2026-02-01T00:00:00.000Z"));
+    expect(
+      ava.prepareShare({
+        intentId: "p_si_ds",
+        mediaRefId: "p_ds",
+        squadIds: [cf3.CF3_IDS.sunrise],
+      }).ok,
+    ).toBe(true);
+    expect(ava.confirmShare("p_si_ds", "p_link_ds").ok).toBe(true);
+    expect(ava.mediaClock("p_ds")!.expiresAt).toBe(before.expiresAt);
+    expect(ava.lastMediaClockOk).toBe(true);
+
+    // TTL expire
+    let now = 5_000_000;
+    const timed = new cf3.CampfireClient(cf3.CF3_IDS.ava, ava.world, () => now);
+    expect(timed.seedMedia("p_ttl").ok).toBe(true);
+    expect(
+      timed.prepareShare({
+        intentId: "p_si_ttl",
+        mediaRefId: "p_ttl",
+        squadIds: [cf3.CF3_IDS.sunrise],
+        ttlMs: 500,
+      }).ok,
+    ).toBe(true);
+    now += 600;
+    expect(timed.expireShareIfNeeded()?.intentId).toBe("p_si_ttl");
+    expect(timed.confirmShare("p_si_ttl", "nope").ok).toBe(false);
+
+    // G4 Former STOMPER
+    const g4 = cf3.createCampfireClient(cf3.CF3_IDS.ava);
+    expect(
+      g4.seedErasedAuthorMessage({
+        id: "p_erased",
+        squadId: cf3.CF3_IDS.sunrise,
+        body: "gone",
+        authorId: cf3.CF3_IDS.ben,
+      }).ok,
+    ).toBe(true);
+    const page = g4.readCampfire(cf3.CF3_IDS.cfSunrise);
+    expect(page.ok).toBe(true);
+    if (!page.ok) return;
+    const row = page.value.items.find((r) => r.message.id === "p_erased")!;
+    expect(row.authorLabel).toBe(cf3.FORMER_STOMPER_LABEL);
+    expect(row.tombstoneKind).toBe("erased");
+  });
 });

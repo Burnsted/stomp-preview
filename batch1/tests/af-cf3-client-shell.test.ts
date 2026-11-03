@@ -278,3 +278,178 @@ describe("AF-CF3 contract surface", () => {
     expect(CF.GROK_BUILD_CAMPFIRE_BRIDGE_STATUS).toBe("HELD");
   });
 });
+
+describe("AF-CF3 soft-cap invite flow (t1193u)", () => {
+  it("AF-CF3-14 invite at soft-cap still pending + softCapNotice; not a hard deny", () => {
+    const client = CF.createCampfireClient(CF.IDS.ava);
+    client.seedToSoftCap(CF.IDS.sunrise, CF.SQUAD_SOFT_CAP);
+    expect(client.listMyCampfires().find((c) => c.squadId === CF.IDS.sunrise)!.softCapNotice).toBe(
+      true,
+    );
+    const before = client.softCapNotices();
+    const inv = v(
+      client.inviteMember({
+        inviteId: "cf3_inv_soft",
+        squadId: CF.IDS.sunrise,
+        toId: CF.IDS.vik,
+      }),
+    );
+    expect(inv.status).toBe("pending");
+    expect(inv.softCapNotice).toBe(true);
+    expect(inv.memberCount).toBeGreaterThanOrEqual(CF.SQUAD_SOFT_CAP);
+    expect(client.softCapNotices()).toBeGreaterThan(before);
+    expect(client.world.invites.find((i) => i.id === "cf3_inv_soft")!.status).toBe("pending");
+  });
+});
+
+describe("AF-CF3 Quick Share TTL / PendingStore (t1193u)", () => {
+  it("AF-CF3-15 pending TTL expire discards — nothing posts; multi deny copy path", () => {
+    let now = 1_000_000;
+    const client = new CF.CampfireClient(CF.IDS.ava, CF.createWorld(), () => now);
+    v(client.seedMedia("cf3_ttl_med"));
+    const draft = v(
+      client.prepareShare({
+        intentId: "si_ttl",
+        mediaRefId: "cf3_ttl_med",
+        squadIds: [CF.IDS.sunrise],
+        ttlMs: 1_000,
+      }),
+    );
+    expect(draft.expiresAtMs).toBe(now + 1_000);
+    expect(client.world.links).toHaveLength(0);
+
+    now += 1_001;
+    const expired = client.expireShareIfNeeded();
+    expect(expired?.intentId).toBe("si_ttl");
+    expect(client.lastShareDraft).toBeNull();
+    expect(client.confirmShare("si_ttl", "link_ttl").ok).toBe(false);
+    expect(client.lastDeny).toBe("expired");
+    expect(client.world.links).toHaveLength(0);
+
+    // multi deny
+    v(client.seedMedia("cf3_ttl_med2"));
+    const multi = client.prepareShare({
+      intentId: "si_multi2",
+      mediaRefId: "cf3_ttl_med2",
+      squadIds: [CF.IDS.sunrise, CF.IDS.powder],
+    });
+    expect(multi.ok).toBe(false);
+    if (!multi.ok) expect(multi.error).toBe("multi_recipient");
+  });
+});
+
+describe("AF-CF3 G2 historyCutoff field fidelity (t1193u)", () => {
+  it("AF-CF3-16 historyCutoffAt preferred over joinedAt when divergent", () => {
+    const ben = CF.createCampfireClient(CF.IDS.ben);
+    ben.world = v(
+      CF.postMessage(ben.world, {
+        id: "cf3_mid",
+        authorId: CF.IDS.ava,
+        squadId: CF.IDS.sunrise,
+        body: "middle",
+        createdAt: "2026-03-01T00:00:00.000Z",
+      }),
+    );
+    v(ben.leaveSquad(CF.IDS.sunrise));
+    v(ben.approveRejoin(CF.IDS.sunrise, "2026-02-01T00:00:00.000Z"));
+    // Force cutoff later than joinedAt (contract: historyCutoffAt wins).
+    ben.world = {
+      ...ben.world,
+      memberships: ben.world.memberships.map((m) =>
+        m.stomperId === CF.IDS.ben && m.state === "active" && m.squadId === CF.IDS.sunrise
+          ? { ...m, historyCutoffAt: "2026-04-01T00:00:00.000Z" }
+          : m,
+      ),
+    };
+    const info = ben.historyCutoff(CF.IDS.sunrise)!;
+    expect(info.historyCutoffAt).toBe("2026-04-01T00:00:00.000Z");
+    expect(info.prospectiveOnly).toBe(true);
+    expect(CF.canViewerSeeMessage(ben.world, CF.IDS.ben, "cf3_mid")).toBe(false);
+    expect(v(ben.readCampfire(CF.IDS.cfSunrise)).items.some((r) => r.message.id === "cf3_mid")).toBe(
+      false,
+    );
+  });
+});
+
+describe("AF-CF3 G3 nominate/accept polish (t1193u)", () => {
+  it("AF-CF3-17 only nominee can accept; banner names nominee", () => {
+    const ava = CF.createCampfireClient(CF.IDS.ava);
+    v(ava.nominateOwner(CF.IDS.sunrise, CF.IDS.eli));
+    expect(ava.ownershipBanner(CF.IDS.sunrise)).toMatch(/Eli/i);
+    expect(ava.viewerIsPendingNominee()).toBe(false);
+
+    // Wrong acceptor
+    const bad = ava.acceptOwnerTransfer(CF.IDS.ben);
+    expect(bad.ok).toBe(false);
+
+    const eli = CF.createCampfireClient(CF.IDS.eli);
+    eli.world = ava.world;
+    eli.pendingTransfer = ava.pendingTransfer;
+    expect(eli.viewerIsPendingNominee()).toBe(true);
+    v(eli.acceptOwnerTransfer(CF.IDS.eli));
+    expect(eli.world.squads.get(CF.IDS.sunrise)!.ownerId).toBe(CF.IDS.eli);
+    expect(eli.world.squads.get(CF.IDS.sunrise)!.ownershipState).toBe("resolved");
+  });
+});
+
+describe("AF-CF3 G4 erasure tombstone edges (t1193u)", () => {
+  it("AF-CF3-18 Former STOMPER tombstone + others' content kept; erased viewer denied", () => {
+    const ava = CF.createCampfireClient(CF.IDS.ava);
+    v(ava.postMessage({ id: "cf3_keep", squadId: CF.IDS.sunrise, body: "ava stays" }));
+    v(
+      ava.seedErasedAuthorMessage({
+        id: "cf3_gone",
+        squadId: CF.IDS.sunrise,
+        body: "ben gone",
+        authorId: CF.IDS.ben,
+      }),
+    );
+    const page = v(ava.readCampfire(CF.IDS.cfSunrise));
+    const gone = page.items.find((r) => r.message.id === "cf3_gone")!;
+    expect(gone.tombstoneKind).toBe("erased");
+    expect(gone.authorLabel).toBe(CF.FORMER_STOMPER_LABEL);
+    expect(gone.body).toMatch(/Former STOMPER/);
+    expect(gone.canDelete).toBe(false);
+    const kept = page.items.find((r) => r.message.id === "cf3_keep")!;
+    expect(kept.body).toBe("ava stays");
+    expect(kept.tombstoneKind).toBe("live");
+
+    // Erased Ben cannot list/read
+    const ben = CF.createCampfireClient(CF.IDS.ben);
+    ben.world = ava.world;
+    expect(ben.listMyCampfires()).toEqual([]);
+    expect(ben.readCampfire(CF.IDS.cfSunrise).ok).toBe(false);
+  });
+});
+
+describe("AF-CF3 Day Sesh media share clock (t1193u)", () => {
+  it("AF-CF3-19 Day Sesh Quick Share via adapter never extends media clock", () => {
+    const client = CF.createCampfireClient(CF.IDS.ava);
+    // Official end must leave 45d window open vs FIXTURE_NOW (2026-03-01).
+    v(
+      client.seedMedia("cf3_ds_med", "day_sesh", {
+        daySeshOfficialEndedAt: "2026-02-01T00:00:00.000Z",
+        daySeshId: CF.IDS.ds1,
+      }),
+    );
+    const beforeAsset = { ...client.world.assets.get("cf3_ds_med")! };
+    expect(beforeAsset.origin).toBe("day_sesh");
+    expect(beforeAsset.flag).toBe("day_sesh_45d_max");
+    expect(beforeAsset.expiresAt).toBe(CF.daySeshMediaExpiresAt("2026-02-01T00:00:00.000Z"));
+
+    v(
+      client.prepareShare({
+        intentId: "si_ds",
+        mediaRefId: "cf3_ds_med",
+        squadIds: [CF.IDS.sunrise],
+      }),
+    );
+    v(client.confirmShare("si_ds", "link_ds"));
+    const afterAsset = client.world.assets.get("cf3_ds_med")!;
+    expect(CF.assertShareDoesNotExtendMediaClock(beforeAsset, afterAsset)).toBe(true);
+    expect(afterAsset.expiresAt).toBe(beforeAsset.expiresAt);
+    expect(afterAsset.uploadedAt).toBe(beforeAsset.uploadedAt);
+    expect(client.lastMediaClockOk).toBe(true);
+    expect(client.world.links.some((l) => l.id === "link_ds")).toBe(true);
+  });
+});
