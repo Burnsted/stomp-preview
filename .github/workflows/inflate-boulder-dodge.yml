@@ -1,0 +1,33 @@
+name: inflate-boulder-dodge
+on:
+  push:
+    paths:
+      - 'arcade/boulder-dodge/.packed/**'
+      - '.github/workflows/inflate-boulder-dodge.yml'
+jobs:
+  inflate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inflate index.html
+        run: |
+          python3 - <<'PY'
+          import base64, zlib, pathlib
+          parts = [pathlib.Path(f'arcade/boulder-dodge/.packed/chunk{i}.b64').read_text().strip() for i in range(4)]
+          b64 = ''.join(parts)
+          raw = zlib.decompress(base64.b64decode(b64))
+          pathlib.Path('arcade/boulder-dodge/index.html').write_bytes(raw)
+          text = raw.decode('utf-8')
+          assert "setProperty('background-color'" in text
+          assert "version:'0.7.2'" in text
+          print('bytes', len(raw))
+          PY
+      - name: Commit inflated file
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add arcade/boulder-dodge/index.html
+          git diff --cached --quiet || git commit -m "fix(boulder-dodge): harden PLAY→JUMP red morph paint for phone"
+          git push
