@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 /**
- * MERGE-ORDER REHEARSAL (t1184u) — validation ONLY. Does NOT merge, rebase, or deploy.
+ * MERGE-ORDER REHEARSAL (t1184u + t1187u Phase 2) — validation ONLY.
+ * Does NOT merge, rebase, or deploy.
  *
- * Verifies recorded tip SHAs for draft PRs #12–#21 against expected dependency graph,
- * prints conflict hotspots + rollback checklist. Safe to run offline when SHAs are pinned.
+ * Verifies recorded tip SHAs for draft PRs #12–#22 (+ side-lane #23 note)
+ * against expected dependency graph. Safe to run offline when SHAs are pinned.
  *
  * Usage:
  *   node batch1/scripts/merge-order-rehearsal-t1184u.mjs
- *   node batch1/scripts/merge-order-rehearsal-t1184u.mjs --check-git   # optional live tip compare
+ *   node batch1/scripts/merge-order-rehearsal-t1184u.mjs --check-git
  */
 import { execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
@@ -18,7 +19,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const REPO_ROOT = join(__dirname, "../..");
 
-/** Pinned heads as of t1184u rehearsal (do not rewrite protected tips). */
+/** Pinned heads (do not rewrite protected tips). #22 = this readiness PR. */
 export const DRAFT_TIPS = [
   {
     pr: 12,
@@ -88,7 +89,28 @@ export const DRAFT_TIPS = [
     branch: "cursor/character-production-t1173u-e14a",
     tip: "67358475dfdd9c23307f5a9d8a8b669138ca076e",
     base: "cursor/character-roster-v24-t1171u-27f2",
-    role: "Character production — PROTECT / UNTOUCHED by t1184u",
+    role: "Character production — PROTECT / UNTOUCHED by t1184u/t1187u",
+  },
+  {
+    pr: 22,
+    branch: "cursor/release-security-readiness-t1184u-ef28",
+    tip: "66335ff1a3580e881504caacca39d6552232bdca",
+    base: "cursor/release-candidate-t1170u-8e36",
+    role: "Release-security readiness additive after #19 (Phase 1+2 fictional)",
+  },
+];
+
+/**
+ * Side-lane tips — NOT in product/authz merge chain.
+ * #23 is docs-only artwork scaffold based on main; do not fold into authz order.
+ */
+export const SIDE_LANE_TIPS = [
+  {
+    pr: 23,
+    branch: "cursor/franz-look2-modular-artwork",
+    tip: "455faed3c088a840ef5cca9ed58bfe11fd1adf95",
+    base: "main",
+    role: "Franz Look 2 artwork scaffold (docs-only) — NOT in product merge chain",
   },
 ];
 
@@ -122,16 +144,23 @@ export const MERGE_SEQUENCE = [
     risk: "high",
   },
   {
+    step: 6.5,
+    action: "Fold #22 release-security readiness (additive fictional authz/docs after #19)",
+    dependsOn: [19, 22],
+    risk: "medium",
+    note: "t1187u Phase 2 continues on #22 — still no live auth activation",
+  },
+  {
     step: 7,
     action: "Artwork #20 then #21 AFTER product/authz stack stable (separate lane)",
     dependsOn: [19],
     risk: "medium",
-    note: "t1184u does NOT touch #20/#21 tips",
+    note: "t1184u/t1187u do NOT touch #20/#21 tips; #23 is NOT in this chain",
   },
   {
     step: 8,
     action: "Production server authz wire-up (SEPARATE owner Go — never this PR)",
-    dependsOn: [19],
+    dependsOn: [19, 22],
     risk: "critical",
   },
 ];
@@ -146,7 +175,7 @@ export const CONFLICT_HOTSPOTS = [
 ];
 
 export const REGRESSION_SUITES = [
-  "batch1 vitest: AF-XINT, AF-AUTH, AF-G14, AF-RC, AF-JOURNEY, AF-AUTH-t1184u, AF-EXPORT",
+  "batch1 vitest: AF-XINT, AF-AUTH, AF-G14, AF-RC, AF-JOURNEY, AF-AUTH-t1184u, AF-EXPORT, AF-P2-t1187u",
   "gb-phone: typecheck + test:woz + npm test + build",
   "SHARE_MS === SESH_PENDING_TTL_MS === 20000",
   "YOUTH_CAMPFIRE_ENABLED === false",
@@ -155,7 +184,8 @@ export const REGRESSION_SUITES = [
 
 export const ROLLBACK = [
   "git revert merge commit(s); restore tip SHAs from DRAFT_TIPS",
-  "Never force-push to #12–#21 protected tips",
+  "Never force-push to #12–#22 protected product/readiness tips",
+  "Do not fold #23 into authz merge order (side-lane artwork scaffold)",
   "SV-0 regression → document only; do not reopen policy",
   "Authz flip-back: leave fictionalAuthz; do not enable live Better Auth",
   "Pages/deploy: hard ban — no rollback needed if never published",
@@ -194,9 +224,15 @@ function checkGitTips() {
 
 function main() {
   const checkGit = process.argv.includes("--check-git");
-  console.log("=== MERGE-ORDER REHEARSAL t1184u (NO MERGES) ===\n");
-  console.log("Pinned draft tips #12–#21:");
+  console.log("=== MERGE-ORDER REHEARSAL t1184u/t1187u (NO MERGES) ===\n");
+  console.log("Pinned draft tips #12–#22 (product/readiness):");
   for (const row of DRAFT_TIPS) {
+    console.log(
+      `  #${row.pr} ${short(row.tip)}  base=${row.base}  — ${row.role}`,
+    );
+  }
+  console.log("\nSide-lane (NOT in product merge chain):");
+  for (const row of SIDE_LANE_TIPS) {
     console.log(
       `  #${row.pr} ${short(row.tip)}  base=${row.base}  — ${row.role}`,
     );
@@ -234,22 +270,37 @@ function main() {
     );
   }
 
-  // Structural self-check: sequence mentions all product PRs before artwork
-  const productLast = MERGE_SEQUENCE.find((s) => s.step === 6);
+  // Structural self-check: #22 fold before artwork; #23 not in MERGE_SEQUENCE
+  const readiness = MERGE_SEQUENCE.find((s) => s.step === 6.5);
   const art = MERGE_SEQUENCE.find((s) => s.step === 7);
-  if (!productLast || !art || art.step <= productLast.step) {
-    console.error("FAIL: artwork step must follow product/authz fold");
+  if (!readiness || !art || art.step <= readiness.step) {
+    console.error("FAIL: artwork step must follow #22 readiness fold");
     exit = 1;
   } else {
-    console.log("\nSelf-check: artwork lane ordered after product/authz fold — OK");
+    console.log("\nSelf-check: artwork lane ordered after #22 readiness fold — OK");
+  }
+  const seqMentions23 = MERGE_SEQUENCE.some(
+    (s) =>
+      (s.dependsOn || []).includes(23) ||
+      String(s.action).includes("#23"),
+  );
+  if (seqMentions23) {
+    console.error("FAIL: #23 must not appear as a merge dependency in product sequence");
+    exit = 1;
+  } else {
+    console.log("Self-check: #23 excluded from product merge dependencies — OK");
+  }
+  if (!SIDE_LANE_TIPS.some((t) => t.pr === 23)) {
+    console.error("FAIL: SIDE_LANE_TIPS must pin #23");
+    exit = 1;
   }
 
   // Docs twin path presence (when run from a tip that includes t1184u docs)
   const twin = join(REPO_ROOT, "docs/release-security-t1184u/MERGE-ORDER-REHEARSAL.md");
   if (existsSync(twin)) {
     const body = readFileSync(twin, "utf8");
-    if (!body.includes("t1184u")) {
-      console.error("FAIL: twin MERGE-ORDER-REHEARSAL.md missing t1184u marker");
+    if (!body.includes("t1184u") || !body.includes("#22") || !body.includes("#23")) {
+      console.error("FAIL: twin MERGE-ORDER-REHEARSAL.md missing t1184u/#22/#23 markers");
       exit = 1;
     } else {
       console.log("Twin docs path present — OK");

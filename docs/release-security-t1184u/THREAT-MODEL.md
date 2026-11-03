@@ -1,7 +1,8 @@
-# THREAT-MODEL REVIEW — t1184u / t1185u
+# THREAT-MODEL REVIEW — t1184u / t1187u Phase 2
 
 **SCOPE:** Fictional-data authorization surfaces + documented production safeguards.  
-**OUT OF SCOPE / FORBIDDEN this batch:** physical erasure activation, legal-hold infra, live moderation, payments, youth enablement, real credentials.
+**Phase 2 adds:** append-only audit fiction, sessionKill fiction, rate-limit stubs, headers/hygiene/Android checklists.  
+**OUT OF SCOPE / FORBIDDEN this batch:** physical erasure activation, legal-hold infra, live moderation, payments, youth enablement, real credentials, Pages publish.
 
 Owner locks honored: **G1–G4**, Multi-Squad STOMPER, 1 Campfire/Squad, MediaRef links, Quick Share one Squad + 20s confirm.
 
@@ -85,6 +86,27 @@ Owner locks honored: **G1–G4**, Multi-Squad STOMPER, 1 Campfire/Squad, MediaRe
 - **Coverage:** AF-AUTH-02/06/09/10 · AF-DENY-01  
 - **Prod safeguard:** Never accept client entitlement booleans.
 
+### T10 — Missing audit trail (Phase 2)
+
+- **Threat:** Deny/allow decisions not attributable after incident.  
+- **Mitigation:** `FictionalAuthzAuditLog` append-only (actor, resource, action, reasonCode, timestamp, outcome).  
+- **Coverage:** AF-P2-AUDIT  
+- **Prod safeguard:** Central audit sink; immutability; retention policy (Ted Go).
+
+### T11 — Session reuse after G4 revoke (Phase 2)
+
+- **Threat:** Deleted actor keeps using old session/token.  
+- **Mitigation:** `revokeAccountAndKillSessions` + `session_killed` gates on Pass/Viewer/Campfire/export.  
+- **Coverage:** AF-P2-SESSION  
+- **Prod safeguard:** Real token revocation list / Better Auth session kill — **not wired**.
+
+### T12 — Share/export abuse volume (Phase 2)
+
+- **Threat:** Rapid Quick Share prepare or export spam.  
+- **Mitigation:** Fictional rate limiter (N/window); does not bypass membership authz.  
+- **Coverage:** AF-P2-RATE  
+- **Prod safeguard:** Edge/WAF + server quotas.
+
 ---
 
 ## 3. Explicit non-goals (do not implement here)
@@ -103,9 +125,12 @@ Owner locks honored: **G1–G4**, Multi-Squad STOMPER, 1 Campfire/Squad, MediaRe
 | Risk | Severity | Status |
 |---|---|---|
 | Fictional tests ≠ prod API | Critical | BLOCKED until staging SoT |
-| Android/device gaps | High | OPEN |
+| Live session/token revoke | Critical | Fictional DONE · Better Auth BLOCKED |
+| Android/device gaps | High | OPEN (checklist only) |
 | Counsel-pending G4 wipe | Critical | BLOCKED |
-| Artwork incomplete (#20/#21) | Medium | Parallel lane |
+| CSP/headers not applied to host | High | Docs READY · publish FORBIDDEN |
+| npm audit findings (zod/seroval/better-auth) | High | Documented · bump Ted-gated |
+| Artwork incomplete (#20/#21); #23 side-lane | Medium | Parallel / not in authz chain |
 | Merge conflicts on #14 rebase | High | Rehearsed only |
 
 ---
@@ -118,6 +143,7 @@ Owner locks honored: **G1–G4**, Multi-Squad STOMPER, 1 Campfire/Squad, MediaRe
 | AF-AUTH-t1184u | T1–T7, T9 |
 | AF-EXPORT / AF-DENY | T6–T8, T5, T9 |
 | AF-G14 | T2–T7 |
-| AF-MERGE-ORDER | Process / tip protection |
+| AF-P2-t1187u | T10–T12 (+ G4 aftermath audit) |
+| AF-MERGE-ORDER | Process / tip protection (#22/#23) |
 
-**Verdict:** Fictional threat coverage for listed surfaces is **adequate for draft readiness**. Production release remains **BLOCKED** on real authz, identity, G4 counsel, merge Go, and device acceptance.
+**Verdict:** Phase 2 closes fictional audit/session/rate gaps. Production release remains **BLOCKED** on real authz, identity, live session kill, G4 counsel, merge Go, headers hosting Go, dependency bumps, and device acceptance.

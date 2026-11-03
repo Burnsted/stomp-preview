@@ -91,7 +91,10 @@ export type AuthzDenyCode =
   | "not_host_or_cohost"
   | "history_cutoff"
   | "clock_extended"
-  | "export_actor_mismatch";
+  | "export_actor_mismatch"
+  /** t1187u Phase 2 — fictional session kill / abuse stubs (not Better Auth). */
+  | "session_killed"
+  | "rate_limited";
 
 export type AuthzDecision =
   | { allow: true; action: AuthzAction; code: "ok" }

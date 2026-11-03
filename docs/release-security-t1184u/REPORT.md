@@ -1,96 +1,81 @@
-# AGENT REPORT — t1184u / t1185u RELEASE-SECURITY-READINESS
+# AGENT REPORT — t1184u / t1187u Phase 2 on draft PR #22
 
-**Owner:** Ted · **Batch:** STOMP MASTER HQ parallel release-readiness  
-**DRAFT PR:** (filled after open) · **Do not merge · do not deploy · do not touch #21**
-
----
-
-## Work implemented
-
-1. **Server authz readiness (fictional)** — Extended `fictionalAuthz` with MediaRef, Trip Drop, Day Sesh 45d, Campfire history (G2), owner elevation (G3), personal export; erased actors denied on prepare-share; `PROD-AUTHZ-REQUIREMENTS.md` contract (not activated).  
-2. **Merge-order rehearsal** — Pinned #12–#21 tips, dependency sequence, conflicts, regression, rollback in docs + `merge-order-rehearsal-t1184u.mjs` + AF-MERGE-ORDER tests. **Zero merges executed.**  
-3. **Release-blocker matrix** — Single prioritized matrix in `RELEASE-BLOCKERS.md`.  
-4. **Rider export + access-denial** — `riderPersonalExport.ts` + AF-EXPORT / AF-DENY allow+deny coverage (expired pass, leave, rejoin cutoff, revoke, 20s TTL).  
-5. **Threat-model** — `THREAT-MODEL.md` covering authz isolation, 45d clock, Campfire repost, accept-only ownership, 20s confirm, deletion→logical revoke.
-
-Twin docs: `docs/release-security-t1184u/`.
+**Owner:** Ted · **Continue on:** https://github.com/Burnsted/stomp-preview/pull/22  
+**Branch:** `cursor/release-security-readiness-t1184u-ef28`  
+**DRAFT — do not merge · do not deploy · #21 untouched**
 
 ---
 
-## Exact branch + commit
+## Work implemented (Phase 2)
+
+| ID | Work | Paths |
+|---|---|---|
+| A | Append-only fictional authz audit | `batch1/src/shared/fictionalAuthzAudit.ts` |
+| B | Session kill on G4 + gated Pass/Viewer/Campfire/export | `batch1/src/shared/fictionalSessionRevoke.ts` |
+| C | Rate-limit stubs (share prepare / export) | `batch1/src/shared/fictionalRateLimit.ts` |
+| D | Security headers / CSP checklist | `docs/.../SECURITY-HEADERS-CSP.md` |
+| E | Secrets + npm audit hygiene | `docs/.../SECRETS-DEPENDENCY-HYGIENE.md`; `gb-phone/.gitignore` `.env` |
+| F | Android security smoke checklist | `docs/.../ANDROID-SECURITY-SMOKE.md` (**OPEN**) |
+| G | Merge-order pins #22 + side-lane #23 | script + `MERGE-ORDER-REHEARSAL.md` |
+| H | Packet refresh | blockers / threat / readiness / REPORT |
+
+Phase 1 streams remain intact (authz/export/merge/blockers/threat).
+
+---
+
+## Exact branch + tip
 
 | Field | Value |
 |---|---|
 | Branch | `cursor/release-security-readiness-t1184u-ef28` |
-| Base | #19 `cursor/release-candidate-t1170u-8e36` @ `9c6cc96eae05c438e2a5c479e0e477034c60fdab` |
-| Feature commit | `7252d5f15c4b5e408d8512d0b01c631e841250c7` |
-| Tip (CI green) | `950b93bd6b8e187a4bfe0c6bed7bca5956bc1ec1` |
-| Draft PR | https://github.com/Burnsted/stomp-preview/pull/22 |
-| CI | **BOTH SUCCESS** — run `41713226256` (`batch1 typecheck + test` · `gb-phone typecheck + woz tests + build`) |
-| #21 tip (untouched) | `67358475dfdd9c23307f5a9d8a8b669138ca076e` |
+| Tip | *(set after Phase 2 push + CI)* |
+| Feature Phase 2 | *(set after commit)* |
+| #21 tip | `67358475dfdd9c23307f5a9d8a8b669138ca076e` |
+| #23 side-lane tip | `455faed3c088a840ef5cca9ed58bfe11fd1adf95` (NOT in authz chain) |
 
 ---
 
-## Tests passed / failed
+## Tests
 
-| Suite | Result |
+| Suite | Expected |
 |---|---|
-| batch1 typecheck | PASS |
-| batch1 vitest | **605 passed / 8 skipped** (includes +18 new t1184u tests) |
-| AF-AUTH-t1184u | 7/7 PASS |
-| AF-EXPORT / AF-DENY | 8/8 PASS |
-| AF-MERGE-ORDER | 3/3 PASS |
-| gb-phone typecheck + typecheck:woz | PASS |
-| gb-phone test:woz | **891 passed** |
-| gb-phone npm test | **66 passed** |
-| gb-phone build | PASS |
-| Failed | **none** (local) |
+| AF-P2-AUDIT / SESSION / RATE | new green |
+| Prior AF-AUTH-t1184u / AF-EXPORT / AF-MERGE-ORDER | remain green |
+| batch1 full vitest | green |
+| CI both pr-verify jobs | required SUCCESS |
 
-CI: wait for both `pr-verify` jobs SUCCESS on new draft PR tip.
+Failed: *(none expected; fill after run)*
 
 ---
 
-## Blockers ranked
+## Blockers ranked (headline)
 
-1. Production server authz + identity (**Critical** — BLOCKED)  
-2. G4 physical erasure / counsel (**Critical** — BLOCKED)  
-3. Merge-order Go #12–#19 (**High** — rehearsed only)  
-4. Android device acceptance (**High** — OPEN)  
-5. Artwork #20/#21 (**Medium** — parallel; protected)  
-6. Youth / payments / F1–F5 (**HELD**)  
-7. Deploy / Pages (**Forbidden**)
+1. Prod authz + identity (**Critical**)  
+2. Live session/token revoke (**Critical** — fictional only)  
+3. G4 physical erasure counsel (**Critical**)  
+4. Merge-order Go (**High**)  
+5. CSP/headers hosting + Pages (**High** — docs ready)  
+6. npm audit bumps (**High** — documented)  
+7. Android device smoke (**High** — OPEN)  
+8. Artwork #20/#21; #23 side-lane (**Medium**)  
+9. Youth/payments/F1–F5 (**HELD**)  
 
 ---
 
-## Merge-order / rollback results
+## Merge-order / rollback
 
-- Rehearsal script: **PASS (no merges executed)**  
-- Artwork lane ordered after product/authz fold  
-- #21 tip SHA verified unchanged  
-- Rollback: revert merges + restore pinned tip SHAs; never force-push #12–#21; SV-0 document-only; leave fictionalAuthz  
+- #22 additive after #19; #23 **excluded** from product merge dependencies  
+- Rehearsal PASS · **zero merges**  
+- Rollback: restore pinned tips; never force-push #12–#22; do not fold #23 into authz  
 
 ---
 
 ## Production security requirements
 
-See `PROD-AUTHZ-REQUIREMENTS.md` + `THREAT-MODEL.md`. Headline: server SoT for Pass/Viewer/Squad/Campfire/MediaRef/share/Day Sesh/export; refuse client clocks; 20s CAS; G4 logical revoke immediate; physical wipe separate counsel track. **Nothing activated in this PR.**
+Unchanged SoT packet + Phase 2: audit sink, real session kill, edge rate limits, CSP/headers on host, dependency bumps. **Nothing activated.**
 
 ---
 
-## Decisions needing Ted approval
+## Ted approvals needed
 
-1. Merge-order Go for product stack #12–#19  
-2. Production authz / identity Go  
-3. Counsel Go for G4 physical erasure (if ever)  
-4. Youth / payments (HELD)  
-5. Pages / prod deploy (if ever)  
-6. When to land artwork #20/#21 after product tip stable  
-
----
-
-## Hard boundaries confirmed
-
-- No merge / deploy / Pages / live auth / payments / youth / deletion jobs / physical erasure / legal-hold / live moderation  
-- #21 character branch untouched  
-- G1–G4 LOCKED; SV-0 closed  
-- Client demo ≠ production authorization  
+Merge-order · prod authz/identity/session kill · G4 counsel · CSP/Pages · npm bumps · device smoke · youth/payments · artwork lane timing  
