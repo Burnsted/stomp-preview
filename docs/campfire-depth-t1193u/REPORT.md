@@ -11,7 +11,7 @@ Maximize Campfire client depth on top of CF-3 shell (`cc1f153` / PR #24) — sof
 |---|---|
 | Branch | `cursor/campfire-depth-t1193u-738a` |
 | Base tip | `cc1f153fd1dff312da4ded7d54329399534be980` (CF-3 / PR #24) |
-| HEAD | _(filled after commit)_ |
+| HEAD | `95acc858d082a6f6f4c9e97e27ce2567d28583c6` |
 | Draft PR | _(filled after open)_ · **not merged** |
 | CI | _(filled after green)_ |
 
