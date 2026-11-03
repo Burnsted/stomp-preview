@@ -4,9 +4,10 @@
  * the plate is missing (until GB delivers modular transparent plates).
  *
  * HARD: do not crop composite posters or approved visual masters into fake
- * layers. Owner visual masters (Looks 1–3) live under
- * docs/character-production-t1173u/masters/ for QA only — they are NOT
- * interchangeable with modular plates (see slot-readiness.ts).
+ * layers. All eight owner visual masters live under
+ * docs/character-production-t1173u/masters/ (+ handoff-t1175u/) for QA only —
+ * they are NOT interchangeable with modular plates (see slot-readiness.ts).
+ * Runtime plates: /stomper/{ageBand}/{slot}/{itemId}@512.webp when GB delivers.
  */
 import type { AgeBand, AvatarSlot } from "@/lib/stomp/avatar/types";
 

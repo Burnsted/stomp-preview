@@ -1,50 +1,57 @@
-# UPDATED-GB-HANDOFF — Precise technical asset handoff (t1173u / t1174u)
+# UPDATED-GB-HANDOFF — Precise technical asset handoff (t1175u)
 
-**Audience:** Grok Build — produce modular transparent plates when artwork is ready.  
-**Design:** CLOSED. Roster v2.4 LOCKED. Masters ≠ modular plates.
+**Audience:** Grok Build — produce **real composable transparent plates**, not another poster.  
+**Source package:** `handoff-t1175u/` (quotes `GROK_BUILD_HANDOFF.md` below).  
+**Design:** CLOSED. All eight visual refs LOCKED. Masters ≠ modular plates.
 
-## 0. Critical distinction
+## Stages (do not conflate)
 
-| | Visual MASTER | Modular PLATE |
-|---|---|---|
-| What | Owner-approved full-res render | Per-slot transparent WebP |
-| Looks 1–3 | **On disk** under `docs/.../masters/` | Still required separately for layering |
-| Looks 4–5 | Owner-approved; **PNG not on disk** | Do not invent; wait for masters |
-| Look 6 | **OWNER LOCKED** prose; **PNG PENDING RE-ATTACH** | Do not invent `look6-m-leo-APPROVED.png` |
-| Grom | Pending production approval | No handoff yet |
-| Forbidden | Cropping masters/posters → fake layers | Baking pants into jacket; earrings; Woz character |
-
-## 1. What we have now
-
-### A. Reference / QA masters (Looks 1–3 only)
-
-| starterId | File |
+| Stage | Status |
 |---|---|
-| `m-samir` | `masters/look1-m-samir-APPROVED.png` |
-| `f-hana` | `masters/look2-f-hana-APPROVED.png` |
-| `f-priya` | `masters/look3-f-priya-APPROVED.png` |
+| **Visual-ref approval** | **CLOSED** — eight APPROVED_MASTER PNGs + roster composite |
+| **Asset delivery** (modular alpha WebP plates) | **OPEN** |
+| **Android functionality** (selector + Locker compositing) | **AWAITING_GB_PLATES** — first gate = Look 2 |
 
-### B. Look 6 lock (no file yet)
+## Quote — GROK_BUILD_HANDOFF.md (authoritative)
 
-- Starter: `m-leo` — status **OWNER_LOCKED + AWAITING_MASTER_FILE**
-- Spec: young Japanese male; white jacket black/orange accents; white-and-black pants; **goggles on head ONLY** (no Meta Oakley Vanguard / `glasses-meta-oakley`)
-- When Ted re-attaches: `masters/look6-m-leo-APPROVED.png` → then APPROVED_MASTER
+> Treat the 8 exact files in APPROVED_REFERENCES as immutable face/wardrobe/pose guides.  
+> Import Woz's catalog IDs from ASSET_MAP.json; preserve his selector, look naming and main navigation.  
+> Do not recreate the approved designs; do not make up new characters, look names, or additional Groms.  
+>  
+> Produce for each adult look: high-resolution full-body cutout; aligned editable jacket and matching pants/bib plates; headwear/hair; goggles or wraparound glasses; gloves, boots, board; optional backpack OFF by default; optimized 512×512 sRGB transparent WebP from 1024 masters.  
+>  
+> **Do a ONE-character compositing QA first: test Look 2's mint jacket with real tinted jacket/pant plates;** verify full-body preview, jacket swap, eyewear swap, backpack, name persistence and return to Locker on the same phone.  
+> Do not claim success from a static still, an enlarged poster crop, or an isolated UI mock.
 
-### C. Do NOT hand off
+## First acceptance = Adult Look 2 (`f-hana`)
 
-- Invented Look 4/5/6 master PNGs  
-- Any Woz-named STOMPER character / preset name  
-- Grom assets before owner production approval  
-- Poster-crop “layers”
+**Pass criteria:** mint jacket + matching pants as **separate** transparent plates, layered in the **real** character selector and Locker on **physical Android** — identity matches `masters/look2-f-hana-APPROVED.png` / handoff `02_Adult_Look_2_f-hana.png` (sha256 `b92ba262…`).
 
-## 2. Modular plates (when masters exist)
+## Runtime paths (already wired — do not invent files)
 
-Same contract as before: `stomper/{band}/{slot}/{itemId}@512.webp` + starter previews. Jacket + pants separate. Backpack OFF by default. Look 6 eyewear = `goggles-basic` only.
+```
+/stomper/{adult|grom}/{slot}/{itemId}@512.webp
+/stomper/{adult|grom}/starter/{starterId}/preview@512.webp
+```
 
-## 3. Loading (wired)
+`AvatarRenderer`: plate probe → composite; else `svg-fallback`. Docs masters never auto-mount.
 
-Plate probe → composite; else SVG fallback. Docs masters never auto-mount as plates.
+## Look-specific eyewear (locked)
 
-## 4. Out of scope
+| starterId | Rule |
+|---|---|
+| `m-devon` | Black NON-reflective goggles |
+| `f-nova` | Red-orange wraparound glasses; beanie NO bun |
+| `m-leo` | Goggles on head — **NOT** Meta Oakley Vanguard |
 
-Youth enrollment, payments, Pages/deploy, prod authz, regenerating Looks 1–3, inventing missing masters.
+## Forbidden
+
+- Regenerating / recoloring / substituting faces  
+- Poster-crop → fake modular layers  
+- Woz-named STOMPER / preset displayNames  
+- Claiming success without Android Look 2 layered QA  
+- Youth enrollment / payments / Pages / merge
+
+## What we have now (handoff only these)
+
+All eight refs under `handoff-t1175u/APPROVED_REFERENCES/` and `masters/*-APPROVED.png`. Modular plates: **none yet**.

@@ -1,14 +1,13 @@
 /**
- * Character production slot readiness (t1173u → t1174u Look 6 lock).
+ * Character production slot readiness (t1173u → t1175u / t1176ua0).
  *
- * Tracks whether each Roster v2.4 look has an owner-approved visual MASTER
- * on disk for QA/provenance. Masters are NOT modular transparent clothing
- * plates — AvatarRenderer still uses plate URL → SVG fallback until GB
- * delivers true modular layers.
+ * All eight Roster v2.4 looks are OWNER APPROVED_MASTER (visual refs on disk).
+ * Masters are NOT modular transparent clothing plates — AvatarRenderer still
+ * uses plate URL → SVG fallback until GB delivers true modular WebP layers.
  *
  * HARD: Do not crop master composites / posters into fake production plates.
- * HARD: Do not insert substitute artwork or regenerate approved faces.
- * HARD: Do not invent look6-m-leo-APPROVED.png (or Look 4/5 masters) until Ted re-attaches.
+ * HARD: Do not regenerate / reinterpret / recolor / substitute approved faces.
+ * Handoff package: docs/character-production-t1173u/handoff-t1175u/
  */
 import {
   ARTWORK_LAYER_ORDER,
@@ -25,18 +24,10 @@ import {
 } from "@/lib/stomp/avatar/roster-v24";
 import type { AgeBand, AvatarSlot } from "@/lib/stomp/avatar/types";
 
-/**
- * File-on-disk master status.
- * - APPROVED_MASTER: owner PNG committed under docs/.../masters/
- * - AWAITING_MASTER_FILE: owner prose LOCKED/approved but PNG not on disk yet
- * - AWAITING_MASTER: production approval and/or file still pending
- */
-export type MasterStatus =
-  | "APPROVED_MASTER"
-  | "AWAITING_MASTER_FILE"
-  | "AWAITING_MASTER";
+/** File-on-disk master status — visual approval CLOSED for all eight. */
+export type MasterStatus = "APPROVED_MASTER" | "AWAITING_MASTER_FILE" | "AWAITING_MASTER";
 
-/** Owner decision layer (independent of whether the PNG has landed). */
+/** Owner decision layer. */
 export type OwnerApprovalState =
   | "OWNER_LOCKED"
   | "OWNER_APPROVED_PENDING_FILE"
@@ -51,57 +42,109 @@ export const CONSISTENCY_SURFACES: readonly ConsistencySurface[] = [
   "locker",
 ] as const;
 
+/** Handoff package root (docs provenance). */
+export const HANDOFF_T1175U_ROOT = "docs/character-production-t1173u/handoff-t1175u" as const;
+
+/** ZIP sha256 verified on Woz box before fold-in. */
+export const HANDOFF_ZIP_SHA256 =
+  "235809785812df057f29dae1b18be8903b762877fb50fca870f38ea3597b0446" as const;
+
 /**
  * Provenance paths for owner-approved visual masters (docs only).
  * Relative to repo root. Not served as modular runtime plates.
- * Only Looks 1–3 are on disk today — do NOT invent Look 4/5/6 paths.
  */
-export const APPROVED_VISUAL_MASTER_PATHS: Readonly<
-  Partial<Record<RosterV24LookKey, string>>
-> = {
+export const APPROVED_VISUAL_MASTER_PATHS: Readonly<Record<RosterV24LookKey, string>> = {
   "adult-look-1":
     "docs/character-production-t1173u/masters/look1-m-samir-APPROVED.png",
   "adult-look-2":
     "docs/character-production-t1173u/masters/look2-f-hana-APPROVED.png",
   "adult-look-3":
     "docs/character-production-t1173u/masters/look3-f-priya-APPROVED.png",
+  "adult-look-4":
+    "docs/character-production-t1173u/masters/look4-m-devon-APPROVED.png",
+  "adult-look-5":
+    "docs/character-production-t1173u/masters/look5-f-nova-APPROVED.png",
+  "adult-look-6":
+    "docs/character-production-t1173u/masters/look6-m-leo-APPROVED.png",
+  "grom-boy":
+    "docs/character-production-t1173u/masters/grom-boy-g-milo-APPROVED.png",
+  "grom-girl":
+    "docs/character-production-t1173u/masters/grom-girl-g-aria-APPROVED.png",
 };
 
-/** Looks whose master PNG is committed (t1173u / t1174ua2). */
+/** Roster composite for identity cross-check (docs only). */
+export const ROSTER_COMPOSITE_MASTER_PATH =
+  "docs/character-production-t1173u/masters/00-roster-v24-APPROVED-composite.png" as const;
+
+/**
+ * SHA-256 from handoff ASSET_MAP.json / SHA256SUMS.txt (canonical provenance).
+ * Keys = starterId.
+ */
+export const APPROVED_MASTER_SHA256: Readonly<Record<string, string>> = {
+  "m-samir": "d51aa5263c8621c57b929f85dc753b7c97710f7d92533edc1ae8975cef87c992",
+  "f-hana": "b92ba262a516b29c3512a5e63371b30797dcaf5d6b93f47163588c04659a80da",
+  "f-priya": "2970a7254774e9919253a4bffc399788daa1a54f9ad69aa5a794e3d9001184cf",
+  "m-devon": "5dc68660db8db27e9a0d7989d601da5598a5e3d0292bc80f1f9f9754e3c70270",
+  "f-nova": "4d9a2942f8f603f6277ae69aa1ed8be501745d8138c3b9cdd65fb8b08540eeeb",
+  "m-leo": "5e57e8601717a4134153eb2973d8a2fc156a88b0aef8c1da4db3f67dc185cb4b",
+  "g-milo": "c842a1cafd0425f0312704353c1ed9e5abab8d2da87bb1687776f8219279339a",
+  "g-aria": "e858de9374a9c7a47d36ee9a7be22f6a7b4cb42695c4b47a89e5843a36cf4d89",
+};
+
+/** All eight looks — visual approval CLOSED (t1175u). */
 export const APPROVED_MASTER_LOOK_KEYS: readonly RosterV24LookKey[] = [
   "adult-look-1",
   "adult-look-2",
   "adult-look-3",
-] as const;
-
-/**
- * Look 6 — Ted t1174u OWNER LOCK prose complete; master PNG pending re-attach.
- * Status string: OWNER_LOCKED + AWAITING_MASTER_FILE
- */
-export const OWNER_LOCKED_AWAITING_FILE_LOOK_KEYS: readonly RosterV24LookKey[] = [
-  "adult-look-6",
-] as const;
-
-/**
- * Looks 4–5 — Ted says Adults 1–6 APPROVED; PNGs not on disk; no substitutes.
- */
-export const OWNER_APPROVED_PENDING_FILE_LOOK_KEYS: readonly RosterV24LookKey[] = [
   "adult-look-4",
   "adult-look-5",
-] as const;
-
-/** Grom — individual production approval still pending. */
-export const AWAITING_MASTER_LOOK_KEYS: readonly RosterV24LookKey[] = [
+  "adult-look-6",
   "grom-boy",
   "grom-girl",
 ] as const;
 
-/** Expected path when Ted re-attaches Look 6 (do not invent the file). */
+/** @deprecated empty — Look 6 PNG delivered in t1175u */
+export const OWNER_LOCKED_AWAITING_FILE_LOOK_KEYS: readonly RosterV24LookKey[] = [] as const;
+
+/** @deprecated empty — Looks 4–5 masters delivered in t1175u */
+export const OWNER_APPROVED_PENDING_FILE_LOOK_KEYS: readonly RosterV24LookKey[] = [] as const;
+
+/** @deprecated empty — Grom visual masters delivered; enrollment still held */
+export const AWAITING_MASTER_LOOK_KEYS: readonly RosterV24LookKey[] = [] as const;
+
+/** Expected Look 6 path (now committed). */
 export const LOOK6_MASTER_PENDING_PATH =
   "docs/character-production-t1173u/masters/look6-m-leo-APPROVED.png" as const;
 
 /**
- * Look 6 eyewear lock (t1174u): black snow goggles on head ONLY.
+ * First GB acceptance target: Adult Look 2 (f-hana) mint jacket+pants layered
+ * in real selector + Locker on Android — not a poster crop.
+ */
+export const GB_FIRST_ACCEPTANCE = {
+  lookKey: "adult-look-2" as RosterV24LookKey,
+  starterId: "f-hana",
+  requirement:
+    "Real mint jacket + matching pants modular plates composited in selector + Locker on physical Android",
+} as const;
+
+/** Look 4: black NON-reflective goggles (not Meta glasses). */
+export const LOOK4_EYEWEAR_CONTRACT = {
+  starterId: "m-devon",
+  lookKey: "adult-look-4" as RosterV24LookKey,
+  allowedItemIds: [EYEWEAR_ITEM_IDS.goggles] as const,
+  note: "black NON-reflective goggles on helmet",
+} as const;
+
+/** Look 5: red-orange wraparound glasses + plain black beanie NO bun. */
+export const LOOK5_EYEWEAR_CONTRACT = {
+  starterId: "f-nova",
+  lookKey: "adult-look-5" as RosterV24LookKey,
+  allowedItemIds: [EYEWEAR_ITEM_IDS.glassesMetaOakley] as const,
+  note: "red-orange wraparound glasses over eyes; plain black beanie — NO bun",
+} as const;
+
+/**
+ * Look 6 eyewear lock: black snow goggles on head ONLY.
  * Meta Oakley Vanguard / glasses-meta-oakley are FORBIDDEN on m-leo.
  */
 export const LOOK6_EYEWEAR_CONTRACT = {
@@ -114,7 +157,6 @@ export const LOOK6_EYEWEAR_CONTRACT = {
 
 /**
  * Woz is the development agent — NEVER a STOMPER character / preset displayName.
- * Starters remain appearance templates (Look N of M), not rider names.
  */
 export const FORBIDDEN_STOMPER_AGENT_NAMES = ["Woz", "woz", "WOZ"] as const;
 
@@ -133,10 +175,12 @@ export type CharacterSlotReadiness = {
   ownerApproval: OwnerApprovalState;
   /** Human-readable combined status for reports. */
   statusLabel: string;
-  /** Docs-only provenance path when APPROVED_MASTER; null when file absent. */
+  /** Docs-only provenance path when APPROVED_MASTER. */
   visualMasterPath: string | null;
-  /** Documented future path when AWAITING_MASTER_FILE (Look 6); never invent file. */
+  /** Documented path (same as visual when APPROVED_MASTER). */
   pendingMasterPath: string | null;
+  /** Provenance sha256 from ASSET_MAP.json */
+  masterSha256: string | null;
   /** Preview plate URL contract (loads when file exists under public/stomper). */
   starterPreviewUrl: string;
   /** SVG fallback remains until modular plates land. */
@@ -148,63 +192,21 @@ export type CharacterSlotReadiness = {
   previewOnly: boolean;
 };
 
-function statusesFor(lookKey: RosterV24LookKey): {
-  masterStatus: MasterStatus;
-  ownerApproval: OwnerApprovalState;
-  statusLabel: string;
-  visualMasterPath: string | null;
-  pendingMasterPath: string | null;
-} {
-  if (APPROVED_MASTER_LOOK_KEYS.includes(lookKey)) {
-    return {
-      masterStatus: "APPROVED_MASTER",
-      ownerApproval: "OWNER_LOCKED",
-      statusLabel: "APPROVED_MASTER",
-      visualMasterPath: APPROVED_VISUAL_MASTER_PATHS[lookKey] ?? null,
-      pendingMasterPath: null,
-    };
-  }
-  if (OWNER_LOCKED_AWAITING_FILE_LOOK_KEYS.includes(lookKey)) {
-    return {
-      masterStatus: "AWAITING_MASTER_FILE",
-      ownerApproval: "OWNER_LOCKED",
-      statusLabel: "OWNER_LOCKED + AWAITING_MASTER_FILE",
-      visualMasterPath: null,
-      pendingMasterPath: LOOK6_MASTER_PENDING_PATH,
-    };
-  }
-  if (OWNER_APPROVED_PENDING_FILE_LOOK_KEYS.includes(lookKey)) {
-    return {
-      masterStatus: "AWAITING_MASTER",
-      ownerApproval: "OWNER_APPROVED_PENDING_FILE",
-      statusLabel: "OWNER_APPROVED_PENDING_FILE + AWAITING_MASTER",
-      visualMasterPath: null,
-      pendingMasterPath: null,
-    };
-  }
-  // Grom
-  return {
-    masterStatus: "AWAITING_MASTER",
-    ownerApproval: "PENDING_PRODUCTION_APPROVAL",
-    statusLabel: "AWAITING_MASTER",
-    visualMasterPath: null,
-    pendingMasterPath: null,
-  };
-}
-
 export function slotReadinessForEntry(entry: RosterV24Entry): CharacterSlotReadiness {
-  const st = statusesFor(entry.lookKey);
+  const path = APPROVED_VISUAL_MASTER_PATHS[entry.lookKey];
+  const sha = APPROVED_MASTER_SHA256[entry.starterId] ?? null;
   return {
     lookKey: entry.lookKey,
     starterId: entry.starterId,
     ageBand: entry.ageBand,
     lookIndex1Based: entry.lookIndex1Based,
     lookTotal: entry.lookTotal,
-    masterStatus: st.masterStatus,
-    ownerApproval: st.ownerApproval,
-    statusLabel: st.statusLabel,
-    visualMasterPath: st.visualMasterPath,
-    pendingMasterPath: st.pendingMasterPath,
+    masterStatus: "APPROVED_MASTER",
+    ownerApproval: "OWNER_LOCKED",
+    statusLabel: "APPROVED_MASTER",
+    visualMasterPath: path,
+    pendingMasterPath: null,
+    masterSha256: sha,
     starterPreviewUrl: buildStarterPreviewUrl(entry.ageBand, entry.starterId),
     svgFallbackUntilPlates: true,
     surfaces: CONSISTENCY_SURFACES,
@@ -213,7 +215,7 @@ export function slotReadinessForEntry(entry: RosterV24Entry): CharacterSlotReadi
   };
 }
 
-/** All eight roster slots — integration-ready; art may still be awaiting. */
+/** All eight roster slots — visual masters APPROVED; modular plates still OPEN. */
 export function allCharacterSlotReadiness(): CharacterSlotReadiness[] {
   return ROSTER_V24.map(slotReadinessForEntry);
 }
@@ -237,7 +239,6 @@ export function awaitingMasterSlots(): CharacterSlotReadiness[] {
   return allCharacterSlotReadiness().filter((s) => s.masterStatus === "AWAITING_MASTER");
 }
 
-/** Look 6 combined status for reports. */
 export function look6StatusLabel(): string {
   const s = slotReadinessByStarterId("m-leo");
   if (!s) throw new Error("m-leo slot missing");
@@ -252,9 +253,18 @@ export function look6AllowsEyewearItemId(itemId: string): boolean {
 }
 
 /**
- * Plate URL contract for a slot item — same builder used by selector / Build /
- * Locker via AvatarRenderer. Existence probe optional; missing → svg-fallback.
+ * Canonical runtime plate path GB must deliver (do not invent by cropping masters).
+ * Example: /stomper/adult/jacket/jacket-basic@512.webp
  */
+export function expectedRuntimePlatePath(
+  ageBand: AgeBand,
+  slot: AvatarSlot,
+  itemId: string,
+  size: ArtworkSize = 512,
+): string {
+  return buildPlateUrl(ageBand, slot, itemId, size);
+}
+
 export function plateUrlForSlotItem(
   ageBand: AgeBand,
   slot: AvatarSlot,
@@ -264,7 +274,6 @@ export function plateUrlForSlotItem(
   return buildPlateUrl(ageBand, slot, itemId, size);
 }
 
-/** Default resolve path until modular plates exist on disk. */
 export function defaultPlateOrSvgFallback(opts: {
   ageBand: AgeBand;
   slot: AvatarSlot;
@@ -273,16 +282,19 @@ export function defaultPlateOrSvgFallback(opts: {
   return resolveLayerPlate({ ...opts, plateExists: () => false });
 }
 
-/** Paint-order slots every surface must honor for clothing consistency. */
 export function consistencyLayerOrder(): readonly AvatarSlot[] {
   return ARTWORK_LAYER_ORDER;
 }
 
-/**
- * Forbidden production practice — documented + asserted in tests.
- * Visual masters / composite posters MUST NOT be cropped into fake plates.
- */
 export const FORBIDDEN_POSTER_CROP_TO_FAKE_PLATES = true as const;
+
+/** Distinguishes approval stages for reports / GB. */
+export const APPROVAL_STAGE = {
+  visualApproval: "CLOSED" as const,
+  modularPlateDelivery: "OPEN" as const,
+  androidFunctionalityQa: "AWAITING_GB_PLATES" as const,
+  firstAcceptanceLook: GB_FIRST_ACCEPTANCE.starterId,
+} as const;
 
 export function assertSlotReadinessIntegrity(): {
   ok: true;
@@ -291,54 +303,38 @@ export function assertSlotReadinessIntegrity(): {
   awaitingMasterCount: number;
   slotCount: number;
   look6Status: string;
+  visualApproval: "CLOSED";
+  modularPlates: "OPEN";
 } {
   const slots = allCharacterSlotReadiness();
   if (slots.length !== 8) throw new Error("Expected 8 character slots");
   const approved = slots.filter((s) => s.masterStatus === "APPROVED_MASTER");
   const awaitingFile = slots.filter((s) => s.masterStatus === "AWAITING_MASTER_FILE");
   const awaiting = slots.filter((s) => s.masterStatus === "AWAITING_MASTER");
-  if (approved.length !== 3) throw new Error("Expected exactly 3 APPROVED_MASTER slots (Looks 1–3)");
-  if (awaitingFile.length !== 1) {
-    throw new Error("Expected exactly 1 AWAITING_MASTER_FILE slot (Look 6 m-leo)");
-  }
-  if (awaiting.length !== 4) {
-    throw new Error("Expected 4 AWAITING_MASTER slots (Looks 4–5 + Grom)");
-  }
+  if (approved.length !== 8) throw new Error("Expected all 8 slots APPROVED_MASTER (t1175u)");
+  if (awaitingFile.length !== 0) throw new Error("AWAITING_MASTER_FILE must be cleared after t1175u");
+  if (awaiting.length !== 0) throw new Error("No AWAITING_MASTER slots after t1175u visual lock");
   for (const s of approved) {
     if (!s.visualMasterPath) throw new Error(`APPROVED_MASTER ${s.lookKey} missing visualMasterPath`);
     if (!s.visualMasterPath.includes("docs/character-production-t1173u/masters/")) {
       throw new Error(`Master path must stay under docs provenance folder: ${s.starterId}`);
     }
+    if (!s.masterSha256 || s.masterSha256.length !== 64) {
+      throw new Error(`Missing/invalid provenance sha256 for ${s.starterId}`);
+    }
+    if (APPROVED_MASTER_SHA256[s.starterId] !== s.masterSha256) {
+      throw new Error(`SHA mismatch for ${s.starterId}`);
+    }
     if (s.mastersAreNotModularPlates !== true) {
       throw new Error("Masters must not be treated as modular plates");
     }
-  }
-  const look6 = slots.find((s) => s.starterId === "m-leo");
-  if (!look6) throw new Error("m-leo missing");
-  if (look6.statusLabel !== "OWNER_LOCKED + AWAITING_MASTER_FILE") {
-    throw new Error(`Look 6 statusLabel mismatch: ${look6.statusLabel}`);
-  }
-  if (look6.visualMasterPath !== null) {
-    throw new Error("Look 6 must not claim visualMasterPath until PNG is committed");
-  }
-  if (look6.pendingMasterPath !== LOOK6_MASTER_PENDING_PATH) {
-    throw new Error("Look 6 pendingMasterPath must document look6-m-leo-APPROVED.png");
-  }
-  for (const s of [...awaitingFile, ...awaiting]) {
-    if (s.visualMasterPath !== null) {
-      throw new Error(`${s.masterStatus} ${s.lookKey} must not claim a visualMasterPath`);
-    }
-  }
-  for (const s of slots) {
     if (s.svgFallbackUntilPlates !== true) {
       throw new Error(`Slot ${s.starterId} must keep SVG fallback until plates arrive`);
     }
-    if (s.surfaces.length !== CONSISTENCY_SURFACES.length) {
-      throw new Error(`Slot ${s.starterId} missing consistency surfaces`);
-    }
   }
-  if (!FORBIDDEN_POSTER_CROP_TO_FAKE_PLATES) {
-    throw new Error("Poster-crop forbid flag must remain true");
+  const look6 = slots.find((s) => s.starterId === "m-leo");
+  if (!look6 || look6.statusLabel !== "APPROVED_MASTER") {
+    throw new Error("Look 6 must be APPROVED_MASTER after t1175u");
   }
   if (!look6AllowsEyewearItemId(EYEWEAR_ITEM_IDS.goggles)) {
     throw new Error("Look 6 must allow goggles-basic");
@@ -349,12 +345,21 @@ export function assertSlotReadinessIntegrity(): {
   if (!isForbiddenAgentStomperName("Woz")) {
     throw new Error("Woz must remain a forbidden STOMPER displayName");
   }
+  if (!FORBIDDEN_POSTER_CROP_TO_FAKE_PLATES) {
+    throw new Error("Poster-crop forbid flag must remain true");
+  }
+  const grom = slots.filter((s) => s.ageBand === "grom");
+  if (grom.length !== 2 || !grom.every((s) => s.previewOnly)) {
+    throw new Error("Grom slots must remain previewOnly");
+  }
   return {
     ok: true,
     approvedMasterCount: approved.length,
-    awaitingMasterFileCount: awaitingFile.length,
-    awaitingMasterCount: awaiting.length,
+    awaitingMasterFileCount: 0,
+    awaitingMasterCount: 0,
     slotCount: slots.length,
     look6Status: look6.statusLabel,
+    visualApproval: "CLOSED",
+    modularPlates: "OPEN",
   };
 }

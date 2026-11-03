@@ -1,32 +1,38 @@
-# REPORT — Ted Burns MASTER HQ t1173u / t1174u Look 6 lock (Woz)
+# REPORT — Ted Burns MASTER HQ t1175u / t1176ua0 (Woz consolidated readiness)
 
-**Batch:** Character Production Update + Adult Look 6 OWNER LOCK  
-**Base tip:** PR #20 (`1975363`) · **Draft PR #21** branch `cursor/character-production-t1173u-e14a`  
-**Boundaries:** No merge · no Pages/deploy · no prod authz · no youth · design CLOSED
+**Batch:** Eight-character APPROVED artwork handoff folded into draft PR #21  
+**Branch:** `cursor/character-production-t1173u-e14a` · base PR #20  
+**Boundaries:** No merge · no Pages/deploy · no prod authz · no youth · no payments
 
 ## Verdict
 
-STOMP remains **technically ready** to receive the eight character assets. Looks **1–3** stay **APPROVED_MASTER** on disk (unchanged). Look **6 (`m-leo`)** is **OWNER_LOCKED + AWAITING_MASTER_FILE** — lock prose recorded; master PNG **not on disk** (do not invent). Looks **4–5** owner-approved pending files. Grom still awaiting; `gromFlowEnabled=false`.
+**Visual approval CLOSED for all 8 looks.** Production modular plates **OPEN**. First GB acceptance target: **Adult Look 2 (`f-hana`)** mint jacket+pants layered in real selector + Locker on Android.
 
-## Look 6 status string
+## Tip / CI
 
-**`OWNER_LOCKED + AWAITING_MASTER_FILE`**
+See PR #21 tip SHA and both pr-verify SUCCESS after this commit.
 
-## Actual blockers (only)
+## What landed
 
-1. Look 6 master PNG re-attach (`look6-m-leo-APPROVED.png`)  
-2. Look 4 / Look 5 master PNGs  
-3. Grom Boy / Grom Girl production approval  
-4. Modular transparent plates + starter preview WebPs  
-5. Device QA pending plates  
+| Item | Location |
+|---|---|
+| Full handoff package | `handoff-t1175u/` (APPROVED_REFERENCES, ASSET_MAP, SHA256SUMS, README/WOZ/GB handoffs) |
+| 8 masters + roster composite | `masters/look{1–6}-*-APPROVED.png`, `grom-*-APPROVED.png`, `00-roster-…` |
+| Slot readiness | 8× **APPROVED_MASTER** + provenance SHA-256 |
+| Look 6 | `AWAITING_MASTER_FILE` **cleared** |
+| Contracts preserved | plate URL · SVG fallback · jacket/pants coupling · backpack OFF · grom preview-only |
 
-## Hard contracts
+## Looks 1–3 integrity
 
-- Look 6: goggles-on-head ONLY — no Meta Oakley Vanguard  
-- Ban Woz-named STOMPER / preset displayName (Woz = agent)  
-- Masters ≠ modular plates; no poster-crop fakes  
-- Starters = Look N of M templates  
+Byte-identical to prior APPROVED masters (sha256 match ASSET_MAP / prior tip).
 
-## Docs
+## Actual blockers remaining
 
-`OWNER-APPROVAL-LOOKS-1-3.md` · `OWNER-APPROVAL-LOOK-6.md` · `SLOT-READINESS.md` · `CONSISTENCY-CONTRACT.md` · `UPDATED-GB-HANDOFF.md` · `ACTUAL-BLOCKERS.md` · `masters/` (Looks 1–3 only)
+1. Modular transparent plates (OPEN)  
+2. Starter preview WebPs  
+3. Look 2 mint Android QA awaiting GB plates  
+4. Remaining look plates + device QA after Look 2  
+
+## Hard locks
+
+Masters ≠ plates · no poster-crop · stable starter_ids · no preset displayNames · Look 4/5/6 eyewear rules · no Woz STOMPER · `gromFlowEnabled=false`

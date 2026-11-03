@@ -1,52 +1,52 @@
-# SLOT-READINESS — All eight character slots (t1173u / t1174u)
+# SLOT-READINESS — All eight character slots (t1175u / t1176ua0)
 
-**Purpose:** Technical integration slots are ready to receive approved assets. Art production continues independently.  
-**Code:** `gb-phone/src/lib/stomp/avatar/slot-readiness.ts` + locked map in `roster-v24.ts`.  
-**HARD:** Visual masters ≠ modular transparent plates. Do not crop masters/posters into fake layers. Do not invent missing PNGs.
+**Purpose:** Technical integration slots ready; **visual approval CLOSED** for all eight looks. Modular production plates remain **OPEN**.  
+**Code:** `gb-phone/src/lib/stomp/avatar/slot-readiness.ts` + `roster-v24.ts`.  
+**Handoff package:** `handoff-t1175u/` (ASSET_MAP + SHA256SUMS + APPROVED_REFERENCES).  
+**HARD:** Visual masters ≠ modular transparent plates. Do not crop masters/posters into fake layers.
 
-## Master status legend
+## Master status
 
 | Status | Meaning |
 |---|---|
-| **APPROVED_MASTER** | Owner approved full-res visual master **on disk** (docs provenance). |
-| **OWNER_LOCKED + AWAITING_MASTER_FILE** | Owner lock prose complete; **PNG not on disk** — do not invent file. |
-| **OWNER_APPROVED_PENDING_FILE + AWAITING_MASTER** | Owner says approved; PNG not on disk; no substitutes. |
-| **AWAITING_MASTER** | Production approval and/or file still pending. |
+| **APPROVED_MASTER** | Owner visual master on disk under `masters/` (docs provenance only). |
 
-Runtime still SVG/plate-fallback until modular plates arrive for all looks.
+Runtime still SVG/plate-fallback until GB delivers true modular WebP plates under `public/stomper/...@512.webp`.
 
-## Eight slots
+## Eight slots — ALL APPROVED_MASTER
 
-| Look | starterId | Status | Visual master (docs only) | Surfaces | SVG fallback |
-|---|---|---|---|---|---|
-| Adult Look 1 of 6 | `m-samir` | **APPROVED_MASTER** | `masters/look1-m-samir-APPROVED.png` | selector · Build · Locker | yes until plates |
-| Adult Look 2 of 6 | `f-hana` | **APPROVED_MASTER** | `masters/look2-f-hana-APPROVED.png` | selector · Build · Locker | yes until plates |
-| Adult Look 3 of 6 | `f-priya` | **APPROVED_MASTER** | `masters/look3-f-priya-APPROVED.png` | selector · Build · Locker | yes until plates |
-| Adult Look 4 of 6 | `m-devon` | **OWNER_APPROVED_PENDING_FILE + AWAITING_MASTER** | — (PNG not on disk) | selector · Build · Locker | yes until plates |
-| Adult Look 5 of 6 | `f-nova` | **OWNER_APPROVED_PENDING_FILE + AWAITING_MASTER** | — (PNG not on disk) | selector · Build · Locker | yes until plates |
-| Adult Look 6 of 6 | `m-leo` | **OWNER_LOCKED + AWAITING_MASTER_FILE** | pending path only: `masters/look6-m-leo-APPROVED.png` (**do not invent**) | selector · Build · Locker | yes until plates |
-| Grom Boy Look 1 of 2 | `g-milo` | **AWAITING_MASTER** | — | preview only (`gromFlowEnabled=false`) | yes until plates |
-| Grom Girl Look 2 of 2 | `g-aria` | **AWAITING_MASTER** | — | preview only (`gromFlowEnabled=false`) | yes until plates |
+| Look | starterId | Status | Visual master (docs only) | Surfaces |
+|---|---|---|---|---|
+| Adult Look 1 of 6 | `m-samir` | **APPROVED_MASTER** | `masters/look1-m-samir-APPROVED.png` | selector · Build · Locker |
+| Adult Look 2 of 6 | `f-hana` | **APPROVED_MASTER** | `masters/look2-f-hana-APPROVED.png` | selector · Build · Locker |
+| Adult Look 3 of 6 | `f-priya` | **APPROVED_MASTER** | `masters/look3-f-priya-APPROVED.png` | selector · Build · Locker |
+| Adult Look 4 of 6 | `m-devon` | **APPROVED_MASTER** | `masters/look4-m-devon-APPROVED.png` | selector · Build · Locker |
+| Adult Look 5 of 6 | `f-nova` | **APPROVED_MASTER** | `masters/look5-f-nova-APPROVED.png` | selector · Build · Locker |
+| Adult Look 6 of 6 | `m-leo` | **APPROVED_MASTER** | `masters/look6-m-leo-APPROVED.png` | selector · Build · Locker |
+| Grom Boy Look 1 of 2 | `g-milo` | **APPROVED_MASTER** (preview only) | `masters/grom-boy-g-milo-APPROVED.png` | preview; `gromFlowEnabled=false` |
+| Grom Girl Look 2 of 2 | `g-aria` | **APPROVED_MASTER** (preview only) | `masters/grom-girl-g-aria-APPROVED.png` | preview; `gromFlowEnabled=false` |
 
-## Look 6 hard contract (t1174u)
+Roster composite (cross-check only): `masters/00-roster-v24-APPROVED-composite.png`
 
-- White jacket + black/orange accents; coordinated white-and-black pants
-- **Goggles on head ONLY** (`goggles-basic`) — **no** Meta Oakley Vanguard / `glasses-meta-oakley`
-- No Woz-named STOMPER character or preset `displayName` (Woz = development agent)
-- Starters = looks (`Look N of M`), not names
+## Eyewear locks (unchanged)
 
-## Plate vs master distinction
+| Look | Rule |
+|---|---|
+| 4 `m-devon` | Black **NON-reflective** goggles |
+| 5 `f-nova` | Red-orange wraparound glasses; plain black beanie **NO bun** |
+| 6 `m-leo` | Goggles-on-head (white strap / orange accent) — **NOT** Meta Oakley Vanguard |
 
-| Asset class | Location | Runtime? |
+## Plate vs master
+
+| Asset | Location | Runtime? |
 |---|---|---|
-| **Visual master** | `docs/character-production-t1173u/masters/*-APPROVED.png` | **No** |
-| **Starter preview / modular plates** | `public/stomper/...` | Yes when delivered |
-| **SVG fallback** | in-renderer | Yes (current default) |
+| Visual master | `docs/.../masters/*-APPROVED.png` | **No** |
+| Modular / preview plates | `public/stomper/{band}/{slot}/{itemId}@512.webp` | Yes when GB delivers |
+| SVG fallback | AvatarRenderer | Yes until plates exist |
 
-## Counts (on disk today)
+## Counts
 
-- APPROVED_MASTER: **3** (`m-samir`, `f-hana`, `f-priya`)
-- OWNER_LOCKED + AWAITING_MASTER_FILE: **1** (`m-leo`)
-- OWNER_APPROVED_PENDING_FILE + AWAITING_MASTER: **2** (`m-devon`, `f-nova`)
-- AWAITING_MASTER (Grom): **2** (`g-milo`, `g-aria`)
-- Integration slots ready: **8 / 8**
+- APPROVED_MASTER: **8 / 8**
+- AWAITING_MASTER_FILE: **0** (Look 6 cleared)
+- Modular plates delivered: **0** (OPEN)
+- First GB acceptance: **Adult Look 2 (`f-hana`)** mint jacket+pants on Android

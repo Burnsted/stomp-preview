@@ -12,8 +12,8 @@ STOMPER Character Roster v2.4 remains LOCKED overall.
 - Adult Look 3 — APPROVED. Fuller blonde, rounder face, cheerful, purple/white jacket + matching purple pants. ID: `f-priya`  
   **Visual master file:** `masters/look3-f-priya-APPROVED.png` (t1174ua2 selector mock; Look 3 selected)
 
-## Still in production (no redesign)
-Adult Looks 4, 5, 6; Grom Boy; Grom Girl → status **AWAITING_MASTER**.
+## Status update (t1175u)
+Adult Looks 4–6 and Grom Boy/Girl visual masters are now also **APPROVED_MASTER** (see `handoff-t1175u/` + `masters/`). Modular transparent plates remain OPEN. No redesign.
 
 ## Rules
 - Approved renders = **visual masters**, NOT interchangeable transparent clothing layers.

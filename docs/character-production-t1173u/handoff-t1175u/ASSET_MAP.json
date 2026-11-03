@@ -1,0 +1,98 @@
+{
+  "package_version": "1.0",
+  "date": "2026-11-03",
+  "status": "Eight owner-approved appearance references; production image layers NOT included",
+  "visual_approval": "LOCKED \u2013 do not regenerate, restyle, recolor or replace without owner approval",
+  "identity_contract": "starter IDs stable, no preset display names",
+  "grom_policy": "visual preview only; youth account/social enrollment disabled",
+  "items": [
+    {
+      "look": "Adult Look 1",
+      "starter_id": "m-samir",
+      "filename": "01_Adult_Look_1_m-samir.png",
+      "original": "stomp_adult_look_1_gear_lookbook.png",
+      "kind": "Approved multi-view lookbook",
+      "details": "Tan/black outfit, subtle smile; no character changes.",
+      "width_px": 1536,
+      "height_px": 1024,
+      "sha256": "d51aa5263c8621c57b929f85dc753b7c97710f7d92533edc1ae8975cef87c992"
+    },
+    {
+      "look": "Adult Look 2",
+      "starter_id": "f-hana",
+      "filename": "02_Adult_Look_2_f-hana.png",
+      "original": "stomp_snowboarder_in_mint_technical_gear.png",
+      "kind": "Approved full-body studio render",
+      "details": "Brunette, realistic mint shell, matching pants; no dark-green regression.",
+      "width_px": 1122,
+      "height_px": 1402,
+      "sha256": "b92ba262a516b29c3512a5e63371b30797dcaf5d6b93f47163588c04659a80da"
+    },
+    {
+      "look": "Adult Look 3",
+      "starter_id": "f-priya",
+      "filename": "03_Adult_Look_3_f-priya.png",
+      "original": "stomp_blonde_lookbook_showcase.png",
+      "kind": "Approved single-character gallery card",
+      "details": "Fuller blonde, rounder face, cheerful, purple-white jacket and purple pants.",
+      "width_px": 941,
+      "height_px": 1672,
+      "sha256": "2970a7254774e9919253a4bffc399788daa1a54f9ad69aa5a794e3d9001184cf"
+    },
+    {
+      "look": "Adult Look 4",
+      "starter_id": "m-devon",
+      "filename": "04_Adult_Look_4_m-devon.png",
+      "original": "a_highly_detailed_realistic_studio_style_characte.png",
+      "kind": "Approved full-body studio render",
+      "details": "Orange/charcoal jacket, orange pant accents, black NON-reflective goggles; owner-selected image.",
+      "width_px": 1024,
+      "height_px": 1536,
+      "sha256": "5dc68660db8db27e9a0d7989d601da5598a5e3d0292bc80f1f9f9754e3c70270"
+    },
+    {
+      "look": "Adult Look 5",
+      "starter_id": "f-nova",
+      "filename": "05_Adult_Look_5_f-nova.png",
+      "original": "filipina_snowboarder_in_prism_shades.png",
+      "kind": "Approved full-body studio render",
+      "details": "Pink multi-panel shell, plain black beanie (NO bun), wraparound reflective red-orange sports glasses; no earrings.",
+      "width_px": 1122,
+      "height_px": 1402,
+      "sha256": "4d9a2942f8f603f6277ae69aa1ed8be501745d8138c3b9cdd65fb8b08540eeeb"
+    },
+    {
+      "look": "Adult Look 6",
+      "starter_id": "m-leo",
+      "filename": "06_Adult_Look_6_m-leo.png",
+      "original": "a_crisp_high_detail_studio_style_product_charact.png",
+      "kind": "Approved individual character/detail poster",
+      "details": "Young Japanese male, white/black technical outerwear with orange accents; goggles on head with black lens, white strap and orange accent; NOT Meta glasses.",
+      "width_px": 1024,
+      "height_px": 1536,
+      "sha256": "5e57e8601717a4134153eb2973d8a2fc156a88b0aef8c1da4db3f67dc185cb4b"
+    },
+    {
+      "look": "Grom Boy",
+      "starter_id": "g-milo",
+      "filename": "07_Grom_Boy_g-milo.png",
+      "original": "a_crisp_highly_detailed_studio_style_promotional.png",
+      "kind": "Approved individual character/detail poster",
+      "details": "Approximately 10 years old; mountain-print orange/black/white outfit. Appearance preview only.",
+      "width_px": 1024,
+      "height_px": 1536,
+      "sha256": "c842a1cafd0425f0312704353c1ed9e5abab8d2da87bb1687776f8219279339a"
+    },
+    {
+      "look": "Grom Girl",
+      "starter_id": "g-aria",
+      "filename": "08_Grom_Girl_g-aria.png",
+      "original": "grom_girl_amber_goggles_snow_poster.png",
+      "kind": "Approved individual character/detail poster",
+      "details": "Approximately 6\u20139 years old; yellow shell, charcoal-gray pants with pink accents, clear amber-yellow goggles; appearance preview only.",
+      "width_px": 1026,
+      "height_px": 1533,
+      "sha256": "e858de9374a9c7a47d36ee9a7be22f6a7b4cb42695c4b47a89e5843a36cf4d89"
+    }
+  ]
+}

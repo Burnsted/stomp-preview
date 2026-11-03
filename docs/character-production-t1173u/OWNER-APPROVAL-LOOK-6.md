@@ -3,8 +3,8 @@
 **When:** 2026-11-03 ~11:38 AM ET (America/New_York)  
 **Message:** t1174u  
 **Starter ID (roster v2.4):** `m-leo` — Look 6 of 6 adults  
-**Slot status:** **OWNER_LOCKED + AWAITING_MASTER_FILE**  
-**Master PNG:** **PENDING RE-ATTACH** — chat attachment from phone did not land on Woz box. Do **not** invent `look6-m-leo-APPROVED.png`. Do **not** flip runtime plates from a fabricated file.
+**Slot status:** **APPROVED_MASTER** (t1175u handoff — PNG delivered)  
+**Master PNG:** `masters/look6-m-leo-APPROVED.png` (+ handoff `APPROVED_REFERENCES/06_Adult_Look_6_m-leo.png`). Prior t1174u pending-reattach is **cleared**. Still **not** a modular transparent plate — do not crop into fake layers.
 
 ## Locked visual reference (Ted — exact)
 
@@ -30,9 +30,9 @@
 | Band | Owner decision | Master file on disk | Slot status |
 |---|---|---|---|
 | Adult Looks 1–3 | APPROVED / LOCKED | **Yes** (`look{1,2,3}-*-APPROVED.png`) | **APPROVED_MASTER** |
-| Adult Looks 4–5 (`m-devon`, `f-nova`) | APPROVED (owner) | **No** | **OWNER_APPROVED_PENDING_FILE + AWAITING_MASTER** |
-| Adult Look 6 (`m-leo`) | **LOCKED** (owner) | **No** — MASTER PNG PENDING RE-ATTACH | **OWNER_LOCKED + AWAITING_MASTER_FILE** |
-| Grom Boy / Grom Girl | Individual production approval **still pending** | No | **AWAITING_MASTER** |
+| Adult Looks 4–5 (`m-devon`, `f-nova`) | APPROVED (owner) | **Yes** (t1175u) | **APPROVED_MASTER** |
+| Adult Look 6 (`m-leo`) | **LOCKED** (owner) | **Yes** (t1175u) | **APPROVED_MASTER** |
+| Grom Boy / Grom Girl | Visual masters **APPROVED** (t1175u); enrollment still HELD | **Yes** | **APPROVED_MASTER** (preview-only) |
 
 ## Boundaries (unchanged)
 
@@ -40,6 +40,4 @@ No merges, deployment, publishing, or youth activation (`gromFlowEnabled=false`)
 
 ## Next file action
 
-When Ted re-attaches Look 6 PNG: save as  
-`masters/look6-m-leo-APPROVED.png`  
-then flip slot `m-leo` → **APPROVED_MASTER** on draft PR #21. Until then keep SVG/plate fallback; do not invent art.
+Look 6 master is on disk. **Next:** Grok Build produces true modular transparent plates matching this master (goggles-on-head only). SVG/plate fallback remains until those plates land. First Android acceptance remains Look 2 (`f-hana`).
