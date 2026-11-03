@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent, type PointerEvent } from "
 import { holdListen, readAudioRoute, type AudioRoute } from "@/lib/stomp/audio-route";
 import { useMusicSources } from "@/lib/stomp/music-sources";
 import { routeSession, speakSession, type SessionAct, type SessionMode } from "@/lib/stomp/session-voice";
+import { useSocial } from "@/lib/stomp/social-store";
 import { useStomp } from "@/lib/stomp/store";
 
 export function useSessionRouter() {
@@ -15,13 +16,33 @@ export function useSessionRouter() {
 
   function apply(raw: string, mode: SessionMode = "command", speak = true): SessionAct {
     const act = routeSession(raw, { meetup, tomorrow, mode });
-    if (speak) speakSession(act.say);
+    let say = act.say;
+    if (act.social === "catchup") {
+      const last = useSocial.getState().notes.at(-1);
+      say = last ? `${last.from} said ${last.text}` : "No messages.";
+    } else if (act.social === "share") {
+      useSocial.getState().stageShare("north", "1.4s air", "photo");
+      say = useSocial.getState().notice || say;
+    } else if (act.social === "message" && act.message) {
+      useSocial.getState().stageShare("north", act.message, "text");
+      say = useSocial.getState().notice || say;
+    } else if (act.social === "confirm") {
+      useSocial.getState().confirmShare();
+      say = useSocial.getState().notice || say;
+    } else if (act.social === "cancel") {
+      useSocial.getState().cancelShare();
+      say = "Share cancelled.";
+    } else if (act.social === "sessions") {
+      const trip = useSocial.getState().trip;
+      say = trip.joined ? `You're on ${trip.name}.` : `${trip.name} is waiting. Preview, then join.`;
+    }
+    if (speak) speakSession(say);
     if (act.musicSource) setActiveSource(act.musicSource);
     if (act.run === "start") startRun();
     else if (act.run === "end") endRun();
     else if (act.screen) setScreen(act.screen);
     if (act.note) addCallout(act.note);
-    return act;
+    return { ...act, say };
   }
 
   return { apply };

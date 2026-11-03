@@ -317,6 +317,9 @@ function HubMyBag() {
           ))}
         </ul>
       </section>
+      <p className="mt-3 px-4 text-sm text-muted" data-testid="bag-self-reported-note">
+        Marks here are self-reported on this phone. Confirmed clips stay on Rider history.
+      </p>
     </div>
   );
 }

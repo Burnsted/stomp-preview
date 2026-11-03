@@ -1,6 +1,7 @@
-# GROK-BUILD-CONTRACT-MAP — t1159u / t1160u
+# GROK-BUILD-CONTRACT-MAP — t1159u / t1160u · updated t1163u/t1164u
 
-**STATUS: HELD — copy-ready for GB handoff. Do NOT paste into GB shell. Do NOT edit gb-phone product UI on this branch.**  
+**STATUS: HELD paste policy unchanged — do NOT paste contract methods into live GB shell beyond the verified selective Rider fold.**  
+**t1163u/t1164u:** Rider source ZIP verified (`d8984922…afe4`); ADDED `social.*` + `rider-hub.tsx` + surgical MODIFIED hunks landed on throwaway tip only (compare-don’t-rebuild).  
 **Branding sync:** orange accent · Hands-Free retired · Core Sesh artwork · Home / five-tab nav / Crew Invite **preserved**.
 
 ---
@@ -12,7 +13,7 @@
 | **IMPLEMENTED (fictional)** | batch1 pure TS + vitest; not production security |
 | **IMPLEMENTED (preview)** | gb-phone UI on box; local/demo |
 | **MOCK/FICTIONAL** | Stub / bridge / SPEC only |
-| **GB source unverified — awaiting transfer** | Claimed Rider files not on box (t1160u) |
+| **GB source verified (t1163u)** | ZIP sha256 `d8984922…afe4`; selective fold on throwaway tip |
 | **NOT IMPLEMENTED / HELD** | Needs Ted Go + separate unfreeze |
 
 ---
@@ -105,7 +106,7 @@ Exclusions: auth, live_data, push, upload, moderation_execution, legal_hold, del
 | Gap | Label |
 |---|---|
 | Wire CF-2/SV-0 into gb-phone UI | HELD |
-| Rider Hub / social.ts / social-store | **GB source unverified — awaiting transfer** |
+| Rider Hub / social.ts / social-store | **GB source verified** — landed selective on throwaway; DEMO ONLY; server authz still missing |
 | Server authz for all table rows above | NOT IMPLEMENTED |
 | Youth enrollment | HELD (A7 SPEC) |
 | Deletion jobs / live moderation | HELD |
@@ -124,15 +125,17 @@ Exclusions: auth, live_data, push, upload, moderation_execution, legal_hold, del
 7. Branding: orange; no Hands-Free tagline revival; Core Sesh artwork.  
 8. After Ted transfers Rider files: **compare-don’t-rebuild** against this map; reuse UI that matches; adapt mismatches; do not fork parallel authz.
 
-### t1160u proxy compare (until transfer)
+### t1163u verified compare (done on throwaway)
 
-| Claimed GB file | On-box proxy | Action when transferred |
+| GB file | Action taken | Residual |
 |---|---|---|
-| `src/lib/stomp/social.ts` | none / woz-bridge campfire + native-share | Diff fields vs share/sesh contracts |
-| `src/lib/stomp/social-store.ts` | `store.ts` riderName/mates | Diff vs Trip membership + Pass |
-| `src/lib/stomp/social.test.ts` | AF-RC / AF-SV | Map demo tests → acceptance gaps |
-| `src/components/stomp/rider-hub.tsx` | stompers / bag / mountain-home | Ensure no nav takeover |
-| Wiring app/store/session-voice/mic/stompers/bag/mountain-home/package.json | present on box | Preserve Home/Crew Invite; additive only |
+| `social.ts` / `social-store.ts` / `social.test.ts` | **ADDED** at gb-phone paths | Client demo ≠ server authz |
+| `rider-hub.tsx` | **ADDED**; mount via Screen `"hub"` | Not a Home replacement |
+| store / session-voice / session-mic / app / stompers / package.json | **CHERRY-PICK** surgical hunks | No wholesale replace |
+| bag.tsx / mountain-home.tsx | **ADAPT** → bag-of-tricks / home | One note + one Rider control |
+| greet.tsx / og.jpg | **SKIP** | Untouched |
+
+Full matrix: `docs/rider-source-compare-t1163u/FILE-DIFF-MATRIX.md`.
 
 ---
 
@@ -145,7 +148,7 @@ Exclusions: auth, live_data, push, upload, moderation_execution, legal_hold, del
 | gb-phone five-tab Home + Crew Invite + Avatar QR | **IMPLEMENTED (preview)** |
 | woz-bridge Campfire local dump | **MOCK/FICTIONAL** |
 | native OS share sheet | **IMPLEMENTED (preview)** ≠ Squad Quick Share |
-| GB Rider Hub demo (phone) | **GB source unverified — awaiting transfer** · DEMO ONLY |
+| GB Rider Hub demo (phone) | **IMPLEMENTED (preview)** on throwaway tip · DEMO ONLY · source verified t1163u |
 | Server Pass/Viewer/Squad/share authz | **NOT IMPLEMENTED** |
 | Payments / live accounts / Pages prod publish | **NOT IMPLEMENTED / FORBIDDEN here** |
 | A7 youth | **MOCK/FICTIONAL SPEC-only** |
@@ -155,14 +158,14 @@ Exclusions: auth, live_data, push, upload, moderation_execution, legal_hold, del
 ## Copy-ready bridge blurb (HELD)
 
 ```
-GROK BUILD INTERFACE BRIDGE — Release-blocker closure (t1159u/t1160u)
+GROK BUILD INTERFACE BRIDGE — Release-blocker closure (t1159u/t1160u) + Rider fold (t1163u/t1164u)
 Branch: cursor/release-blocker-closure-t1159u
-STATUS: HELD — docs only; NO GB shell product edits; NO paste until Ted Go.
+STATUS: HELD paste for contract methods; Rider ZIP verified; selective fold on throwaway only. NO merge/deploy.
 
 1. Exports: trips + daysesh + campfireCf2 (+ SV-0) + shared (A1–A6; A7 SPEC).
 2. CONFLICT-1/2 closed fictionally; AF-RC-01..10 success+deny matrix green.
 3. Preserve Home, five-tab nav, Crew Invite. Orange branding; Hands-Free retired.
-4. GB Rider source NOT on box — compare-don't-rebuild after Ted transfer.
+4. GB Rider source VERIFIED (sha256 d8984922…afe4) — ADDED social.* + rider-hub; surgical MODIFIED; no wholesale.
 5. Client Rider/Viewer limits are DEMO ONLY — server authz required for release.
 6. Do NOT implement: youth enable, payments, deletion jobs, Capture Studio, deploy.
 ```

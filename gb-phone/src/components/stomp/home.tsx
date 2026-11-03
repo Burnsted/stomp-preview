@@ -95,6 +95,14 @@ export function Home() {
             <span className="mt-1 block text-xs font-medium text-muted">Demo — stays on this phone</span>
           </button>
         </div>
+        <button
+          type="button"
+          data-testid="home-rider-hub"
+          onClick={() => setScreen("hub")}
+          className="mt-3 text-sm text-muted"
+        >
+          Rider
+        </button>
       </section>
     </div>
   );

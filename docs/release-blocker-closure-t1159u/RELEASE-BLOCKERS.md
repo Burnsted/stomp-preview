@@ -21,7 +21,7 @@
 | Critical bugs | CONFLICT-1 multi-Squad share | Closed on this tip | Yes (fictional) | AF-XINT-11 PASS after SV-0 cherry-pick |
 | Critical bugs | CONFLICT-2 prepare→confirm recheck | Closed on this tip | Yes (fictional) | AF-XINT-12 PASS |
 | Critical bugs | Client Rider/Viewer as “security” | Critical if treated as prod | **No — owner** | t1160u: demo-only; server authz required |
-| Missing integrations | GB Rider Hub / social.* source | High | Blocked | Phone/desktop offline; no file-level diff |
+| Missing integrations | GB Rider Hub / social.* source | — | **Closed (t1163u)** | ZIP verified; selective fold — see `docs/rider-source-compare-t1163u/` |
 | Missing integrations | Wire A1–A6 into GB shell | High | **Owner** | Contract map HELD; no GB product edits here |
 | Missing integrations | SV-0 UI (pending confirm / character) | Medium | Owner later | batch1 fictional ready; GB paste HELD |
 | Missing integrations | Trip Drop invitation UI from Avatar | Medium | Owner later | batch1 AF-RC-01 asserts; gb-phone partial |
