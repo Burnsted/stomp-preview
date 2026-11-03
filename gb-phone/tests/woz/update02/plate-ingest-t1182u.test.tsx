@@ -1,0 +1,251 @@
+// @vitest-environment jsdom
+/**
+ * t1182u — plate ingest + Look-2 mint gate + eight-look matrix (fail-closed).
+ */
+import { act, cleanup, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { PRIMARY_TABS } from "@/components/stomp/alpine-chrome";
+import { AvatarLocker } from "@/components/stomp/avatar/avatar-locker";
+import { AvatarOnboard } from "@/components/stomp/avatar/avatar-onboard";
+import { AvatarRenderer } from "@/components/stomp/avatar/avatar-renderer";
+import {
+  BACKPACK_OFF_ITEM_ID,
+  EYEWEAR_ITEM_IDS,
+} from "@/lib/stomp/avatar/artwork";
+import { AVATAR_FLAGS } from "@/lib/stomp/avatar/flags";
+import {
+  LOOK2_JACKET_ITEM_ID,
+  LOOK2_PANTS_ITEM_ID,
+  LOOK2_STARTER_ID,
+} from "@/lib/stomp/avatar/look2-acceptance";
+import {
+  LOOK2_MINT_REQUIRED_PATHS,
+  eightLookPlateMatrix,
+  evaluateLook2MintGate,
+  ingestLook2MintReceipt,
+  lookPlateSlotByStarterId,
+} from "@/lib/stomp/avatar/plate-registry";
+import { ROSTER_V24 } from "@/lib/stomp/avatar/roster-v24";
+import { configFromStarter, starterById } from "@/lib/stomp/avatar/starters";
+import { useAvatar } from "@/lib/stomp/avatar/store";
+import { useStomp } from "@/lib/stomp/store";
+
+afterEach(() => {
+  cleanup();
+});
+
+beforeEach(() => {
+  localStorage.clear();
+  act(() => {
+    useAvatar.getState().resetAll();
+    useStomp.getState().setScreen("greet");
+  });
+});
+
+function look2Config(overrides?: {
+  jacket?: string;
+  pants?: string;
+  goggles?: string;
+  backpack?: string;
+  displayName?: string;
+}) {
+  const base = configFromStarter(starterById(LOOK2_STARTER_ID)!, {
+    stomperId: "t1182",
+    displayName: overrides?.displayName ?? "TedRider",
+  });
+  return {
+    ...base,
+    layers: {
+      ...base.layers,
+      jacket: {
+        ...base.layers.jacket,
+        itemId: overrides?.jacket ?? LOOK2_JACKET_ITEM_ID,
+      },
+      pants: {
+        ...base.layers.pants,
+        itemId: overrides?.pants ?? LOOK2_PANTS_ITEM_ID,
+      },
+      goggles: {
+        ...base.layers.goggles,
+        itemId: overrides?.goggles ?? EYEWEAR_ITEM_IDS.goggles,
+      },
+      backpack: {
+        ...base.layers.backpack,
+        itemId: overrides?.backpack ?? BACKPACK_OFF_ITEM_ID,
+      },
+    },
+  };
+}
+
+describe("t1182u — plate ingest + Look-2 mint gate", () => {
+  it("LOOK2_MINT_REQUIRED_PATHS match GB handoff exact paths", () => {
+    expect(LOOK2_MINT_REQUIRED_PATHS).toEqual([
+      "/stomper/adult/jacket/jacket-look2-mint@512.webp",
+      "/stomper/adult/pants/pants-look2-mint@512.webp",
+      "/stomper/adult/body/body-athletic@512.webp",
+      "/stomper/adult/face/face-female@512.webp",
+      "/stomper/adult/hair/hair-straight@512.webp",
+      "/stomper/adult/headwear/helmet-basic@512.webp",
+      "/stomper/adult/goggles/goggles-basic@512.webp",
+      "/stomper/adult/gloves/gloves-basic@512.webp",
+      "/stomper/adult/boots/boots-basic@512.webp",
+      "/stomper/adult/board/board-basic@512.webp",
+      "/stomper/adult/starter/f-hana/preview@512.webp",
+    ]);
+  });
+
+  it("ingest receipt is BLOCKED when no plates on disk (fail-closed)", () => {
+    const receipt = ingestLook2MintReceipt(() => false);
+    expect(receipt.ingested).toBe(false);
+    expect(receipt.blocked).toBe(true);
+    expect(receipt.missingPaths).toHaveLength(LOOK2_MINT_REQUIRED_PATHS.length);
+    expect(receipt.readyPaths).toHaveLength(0);
+    expect(receipt.note).toMatch(/ABSENT/i);
+  });
+
+  it("eight-look matrix covers all roster starters; only Look 2 is Android gate", () => {
+    const matrix = eightLookPlateMatrix(() => false);
+    expect(matrix).toHaveLength(ROSTER_V24.length);
+    expect(matrix).toHaveLength(8);
+    for (const slot of matrix) {
+      expect(slot.status).toBe("missing-plates");
+      expect(slot.missingPaths.length).toBeGreaterThan(0);
+    }
+    const look2 = matrix.find((s) => s.starterId === LOOK2_STARTER_ID)!;
+    expect(look2.androidAcceptanceGate).toBe(true);
+    expect(look2.requiredPaths).toEqual([...LOOK2_MINT_REQUIRED_PATHS]);
+    const others = matrix.filter((s) => s.starterId !== LOOK2_STARTER_ID);
+    expect(others.every((s) => s.androidAcceptanceGate === false)).toBe(true);
+    expect(others.filter((s) => s.previewOnly).map((s) => s.starterId).sort()).toEqual([
+      "g-aria",
+      "g-milo",
+    ]);
+  });
+
+  it("FAIL CLOSED: incomplete set → never acceptance-eligible", () => {
+    const cfg = look2Config();
+    const onlyJacket = (url: string) => url.includes(LOOK2_JACKET_ITEM_ID);
+    const gate = evaluateLook2MintGate({ config: cfg, pathExists: onlyJacket });
+    expect(gate.acceptanceEligible).toBe(false);
+    expect(gate.plateComplete).toBe(false);
+    expect(gate.failReasons).toContain("incomplete-set");
+    expect(gate.failReasons).toContain("plates-absent");
+    expect(gate.dataMissingPlates).toBeGreaterThan(0);
+  });
+
+  it("FAIL CLOSED: wrong jacket ID", () => {
+    const cfg = look2Config({ jacket: "jacket-basic" });
+    const gate = evaluateLook2MintGate({
+      config: cfg,
+      pathExists: () => true,
+    });
+    expect(gate.acceptanceEligible).toBe(false);
+    expect(gate.failReasons).toContain("wrong-jacket-id");
+  });
+
+  it("FAIL CLOSED: eyewear-on (Meta Oakley) during Look-2 acceptance", () => {
+    const cfg = look2Config({ goggles: EYEWEAR_ITEM_IDS.glassesMetaOakley });
+    const gate = evaluateLook2MintGate({
+      config: cfg,
+      pathExists: () => true,
+    });
+    expect(gate.acceptanceEligible).toBe(false);
+    expect(gate.failReasons).toContain("eyewear-on");
+  });
+
+  it("FAIL CLOSED: backpack-on during Look-2 acceptance", () => {
+    const cfg = look2Config({ backpack: "backpack-daypack" });
+    const gate = evaluateLook2MintGate({
+      config: cfg,
+      pathExists: () => true,
+    });
+    expect(gate.acceptanceEligible).toBe(false);
+    expect(gate.failReasons).toContain("backpack-on");
+  });
+
+  it("eligible only when full set present + mint jacket/pants + goggles-basic + backpack OFF", () => {
+    const cfg = look2Config();
+    const gate = evaluateLook2MintGate({
+      config: cfg,
+      pathExists: () => true,
+      plateProbe: () => "present",
+    });
+    expect(gate.failReasons).toEqual([]);
+    expect(gate.plateComplete).toBe(true);
+    expect(gate.acceptanceEligible).toBe(true);
+    expect(gate.dataMissingPlates).toBe(0);
+  });
+
+  it("AvatarRenderer stays svg-fallback + not eligible with plates absent", async () => {
+    const cfg = look2Config();
+    render(<AvatarRenderer config={cfg} testId="t1182-renderer" />);
+    const el = screen.getByTestId("t1182-renderer");
+    expect(el.getAttribute("data-render-mode")).toBe("svg-fallback");
+    expect(el.getAttribute("data-acceptance-eligible")).toBe("false");
+    expect(el.getAttribute("data-plate-complete")).toBe("false");
+    // Initial probe may be pending (missing=0); after settle, missing reported or still not eligible.
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 30));
+    });
+    expect(el.getAttribute("data-acceptance-eligible")).toBe("false");
+    expect(el.getAttribute("data-render-mode")).not.toBe("plates");
+  });
+
+  it("Locker surfaces data-acceptance-eligible / data-missing-plates (fail-closed)", () => {
+    act(() => {
+      useAvatar.getState().startOnboarding("adult");
+      useAvatar.getState().selectStarter(LOOK2_STARTER_ID);
+      useAvatar.getState().setDisplayName("LockerRider");
+      useAvatar.getState().commitOnboarding("ME-T1182");
+      useStomp.getState().setScreen("avatar-locker");
+    });
+    expect(useAvatar.getState().config!.displayName).toBe("LockerRider");
+    render(<AvatarLocker />);
+    const locker = screen.getByTestId("avatar-locker");
+    expect(locker.getAttribute("data-acceptance-eligible")).toBe("false");
+    expect(Number(locker.getAttribute("data-missing-plates"))).toBe(
+      LOOK2_MINT_REQUIRED_PATHS.length,
+    );
+    expect(locker.getAttribute("data-android-acceptance-gate")).toBe("true");
+    expect(locker.getAttribute("data-plate-slot-status")).toBe("missing-plates");
+    const gate = screen.getByTestId("locker-plate-gate");
+    expect(gate.getAttribute("data-acceptance-eligible")).toBe("false");
+    // Name preserved — no silent Nova/Mira/Kai
+    expect(screen.getByText("LockerRider")).toBeTruthy();
+  });
+
+  it("Look N of M selector cards expose plate attrs; Look 2 is sole gate", () => {
+    act(() => {
+      useAvatar.getState().startOnboarding("adult");
+      useStomp.getState().setScreen("avatar-onboard");
+    });
+    render(<AvatarOnboard />);
+    const hana = screen.getByTestId("starter-f-hana");
+    expect(hana.getAttribute("data-android-acceptance-gate")).toBe("true");
+    expect(hana.getAttribute("data-acceptance-eligible")).toBe("false");
+    expect(Number(hana.getAttribute("data-missing-plates"))).toBeGreaterThan(0);
+    expect(hana.getAttribute("data-look-of-m")).toMatch(/^Look \d+ of \d+$/);
+
+    const samir = screen.getByTestId("starter-m-samir");
+    expect(samir.getAttribute("data-android-acceptance-gate")).toBe("false");
+    expect(samir.getAttribute("data-acceptance-eligible")).toBe("false");
+    expect(samir.getAttribute("data-plate-slot-status")).toBe("missing-plates");
+  });
+
+  it("Home / five-tab / gromFlow / identity locks stay green", () => {
+    expect(PRIMARY_TABS.map((t) => t.label)).toEqual([
+      "Home",
+      "Map",
+      "Music",
+      "Stats",
+      "Crew",
+    ]);
+    expect(AVATAR_FLAGS.gromFlowEnabled).toBe(false);
+    const cfg = look2Config({ displayName: "KeepMyName" });
+    expect(cfg.displayName).toBe("KeepMyName");
+    expect(cfg.displayName).not.toMatch(/Nova|Mira|Kai/i);
+    const slot = lookPlateSlotByStarterId("g-milo");
+    expect(slot?.previewOnly).toBe(true);
+    expect(slot?.androidAcceptanceGate).toBe(false);
+  });
+});

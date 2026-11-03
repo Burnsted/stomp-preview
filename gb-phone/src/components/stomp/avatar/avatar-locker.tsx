@@ -1,5 +1,6 @@
 /**
  * Persistent Avatar Locker — cosmetics + safety gear (never locked).
+ * Surfaces Look-2 mint plate gate attrs (t1182u) — fail-closed when plates absent.
  */
 import { AlpineTopBar } from "@/components/stomp/alpine-chrome";
 import { AvatarRenderer } from "@/components/stomp/avatar/avatar-renderer";
@@ -11,6 +12,11 @@ import {
   LOCKER_CATALOG,
   unlockedForSlot,
 } from "@/lib/stomp/avatar/locker";
+import { LOOK2_STARTER_ID } from "@/lib/stomp/avatar/look2-acceptance";
+import {
+  evaluateLook2MintGate,
+  lookPlateSlotByStarterId,
+} from "@/lib/stomp/avatar/plate-registry";
 import { useAvatar } from "@/lib/stomp/avatar/store";
 import { STAGE_LABELS, STYLE_LABELS, type AvatarSlot, type StylePath } from "@/lib/stomp/avatar/types";
 import { useStomp } from "@/lib/stomp/store";
@@ -57,14 +63,50 @@ export function AvatarLocker() {
     );
   }
 
+  // Fail-closed: no invented plates. When GB drops WebPs under public/stomper,
+  // AvatarRenderer Image probe flips; gate strip stays honest until then.
+  const plateSlot = lookPlateSlotByStarterId(config.starterId);
+  const look2Gate =
+    config.starterId === LOOK2_STARTER_ID
+      ? evaluateLook2MintGate({ config })
+      : null;
+
   return (
-    <div className="pb-28" data-testid="avatar-locker">
+    <div
+      className="pb-28"
+      data-testid="avatar-locker"
+      data-acceptance-eligible={
+        look2Gate ? (look2Gate.acceptanceEligible ? "true" : "false") : "false"
+      }
+      data-missing-plates={String(
+        look2Gate?.dataMissingPlates ?? plateSlot?.missingPaths.length ?? 0,
+      )}
+      data-plate-slot-status={plateSlot?.status ?? "missing-plates"}
+      data-android-acceptance-gate={plateSlot?.androidAcceptanceGate ? "true" : "false"}
+    >
       <AlpineTopBar title="Locker" showBack onBack={() => setScreen("greet")} right={<ThemeToggle />} />
       <div className="flex flex-col items-center px-5 pt-2">
         <AvatarRenderer config={config} size={168} interactive showBackground testId="locker-avatar" />
         <p className="mt-2 font-display text-3xl tracking-wide">{config.displayName}</p>
         <p className="text-sm text-muted">
           {STYLE_LABELS[config.stylePath]} · {STAGE_LABELS[config.stage]}
+        </p>
+        <p
+          className="mt-1 text-xs text-muted"
+          data-testid="locker-plate-gate"
+          data-acceptance-eligible={
+            look2Gate ? (look2Gate.acceptanceEligible ? "true" : "false") : "false"
+          }
+          data-missing-plates={String(
+            look2Gate?.dataMissingPlates ?? plateSlot?.missingPaths.length ?? 0,
+          )}
+          data-plate-slot-status={plateSlot?.status ?? "missing-plates"}
+        >
+          {look2Gate?.acceptanceEligible
+            ? "Look 2 plates ready — Android acceptance eligible"
+            : plateSlot?.androidAcceptanceGate
+              ? `Look 2 mint plates missing (${look2Gate?.dataMissingPlates ?? 0}) — not acceptance-eligible`
+              : "Modular plates pending for this look"}
         </p>
 
         <div className="mt-4 grid w-full grid-cols-2 gap-2">
