@@ -14,8 +14,8 @@
 |---|---|
 | Draft PR | #17 (DRAFT / DO NOT MERGE) |
 | Branch | `cursor/release-blocker-closure-t1159u` |
-| HEAD | `0ce772d8b31ba3307b6f508e910b58ea82a55ea8` (feature `add3ebb`) |
-| CI | pr-verify after push |
+| HEAD | `0e92a44eb55fbda1e0e7b6c53b48b45c0873ae6b` (feature `add3ebb`) |
+| CI | BOTH jobs PASS — https://github.com/Burnsted/stomp-preview/actions/runs/41572325511 |
 
 ---
 
