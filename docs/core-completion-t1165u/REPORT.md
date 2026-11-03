@@ -49,7 +49,7 @@
 | #14 | `ec870fe5b4ab025b3dadcfc10e78bcf517aa8736` | BOTH SUCCESS |
 | #15 | `16b61211f4caecc28ced981952a7171fc9659454` | BOTH SUCCESS |
 | #16 | `e737b380af51b527d91a4e0a2a8e3da084d60fc9` | BOTH SUCCESS |
-| #17 | *(this tip after push)* | Await BOTH SUCCESS |
+| #17 |  | Await BOTH SUCCESS |
 
 Protected #12–#16 **not edited**.
 
@@ -83,7 +83,7 @@ Protected #12–#16 **not edited**.
 | social.test | **7/7 PASS** |
 | Failures | **None** on local tip |
 
-CI URL: filled after push BOTH SUCCESS.
+CI URL: pending tip push — see PR checks.
 
 ---
 
