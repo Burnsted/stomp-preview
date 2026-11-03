@@ -49,5 +49,8 @@ main
 | Branch | `cursor/release-candidate-t1170u-8e36` |
 | Parent | #18 @ `69d3daf` |
 | Purpose | Isolated fictional-data RC + security/artwork/test docs — **no main merge** |
+| Tip (pushed) | `36448c45280bcc719fd5bde6b1bc9aa193dd8e7a` |
+| DRAFT PR | https://github.com/Burnsted/stomp-preview/pull/19 |
+| CI on tip | **BOTH SUCCESS** (pr-verify) |
 
-Reconfirm CI on this PR after each push. Protected #12–#16 tips were **not** modified.
+Protected #12–#16 tips were **not** modified.

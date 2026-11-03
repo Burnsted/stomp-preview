@@ -55,6 +55,7 @@ Protected #12–#16 **not edited**.
 | gb-phone test:woz | **891 passed** (22 files) |
 | gb-phone npm test (stock) | **66 passed** |
 | gb-phone build | **PASS** (local) |
+| DRAFT PR #19 CI | **BOTH SUCCESS** @ `36448c4` |
 
 New: AF-AUTH-13..15 · RC-J01..J10 · RC-AV-01..05. Prior AF-G14 14/14 untouched.
 

@@ -31,7 +31,7 @@
 |---|---|
 | `batch1` `npm run typecheck` | **PASS** |
 | `gb-phone` `npm run typecheck` + `typecheck:woz` | **PASS** |
-| CI on DRAFT PR | Await both SUCCESS after push |
+| CI on DRAFT PR #19 @ `36448c4` | **BOTH SUCCESS** (`batch1 typecheck + test` · `gb-phone typecheck + woz tests + build`) |
 
 ---
 
