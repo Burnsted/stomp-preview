@@ -6,8 +6,10 @@
  * Starter `.label` remains an appearance-template tag only (t1169u) — never
  * a silent displayName.
  *
- * Do NOT invent conflicting starter IDs. Do NOT crop composite posters into
- * "modular" layers — GB must ship true transparent plates (see artwork.ts).
+ * Do NOT invent conflicting starter IDs. Do NOT crop composite posters or
+ * approved visual masters into "modular" layers — GB must ship true
+ * transparent plates (see artwork.ts / slot-readiness.ts). Looks 1–3 have
+ * APPROVED_MASTER provenance under docs/character-production-t1173u/masters/.
  */
 import { ADULT_STARTERS, GROM_STARTERS, starterById } from "@/lib/stomp/avatar/starters";
 import type { AgeBand, Presenting, StarterDef } from "@/lib/stomp/avatar/types";

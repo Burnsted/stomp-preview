@@ -1,9 +1,12 @@
 /**
- * Artwork plate URL + layering contract (t1170u foundation → t1171u v2.4).
+ * Artwork plate URL + layering contract (t1170u → t1171u v2.4 → t1173u).
  * Prefer plate WebP by layer itemId; AvatarRenderer falls back to SVG when
- * the plate is missing (until GB delivers modular transparent masters).
+ * the plate is missing (until GB delivers modular transparent plates).
  *
- * HARD: do not crop the Final Roster v2.4 composite poster into fake layers.
+ * HARD: do not crop composite posters or approved visual masters into fake
+ * layers. Owner visual masters (Looks 1–3) live under
+ * docs/character-production-t1173u/masters/ for QA only — they are NOT
+ * interchangeable with modular plates (see slot-readiness.ts).
  */
 import type { AgeBand, AvatarSlot } from "@/lib/stomp/avatar/types";
 
