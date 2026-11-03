@@ -40,7 +40,12 @@ Modular plates for these looks **must** match these masters. Do not regenerate f
 
 ## Looks 4–6 + Grom
 
-Slots exist and share the same contracts. Until masters arrive, SVG placeholders remain. No substitute art.
+Slots exist and share the same contracts. Until master PNGs arrive, SVG placeholders remain. No substitute art.
+
+- Looks 4–5: owner-approved pending files (`AWAITING_MASTER`).
+- Look 6 (`m-leo`): **OWNER_LOCKED + AWAITING_MASTER_FILE** — goggles-on-head ONLY; **no** Meta Oakley Vanguard. PNG pending re-attach — do not invent.
+- Grom: production approval pending; `gromFlowEnabled=false`.
+- **Woz** is the development agent — never a STOMPER character or preset `displayName`.
 
 ## Regression guards (tests)
 

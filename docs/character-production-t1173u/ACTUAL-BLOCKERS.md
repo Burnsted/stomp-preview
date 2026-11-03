@@ -1,32 +1,32 @@
-# ACTUAL-BLOCKERS — t1173u consolidated (real blockers only)
+# ACTUAL-BLOCKERS — t1173u / t1174u (real blockers only)
 
-Technical integration for eight slots is ready. Below are **actual** remaining blockers — not intentional holds restated as failures, and not work already done on tip.
+Technical integration for eight slots is ready. Below are **actual** remaining blockers.
 
-## OPEN (blocks full artwork acceptance / layered customize)
+## OPEN
 
 | # | Blocker | Owner | Notes |
 |---|---|---|---|
-| 1 | **Modular transparent layer plates not delivered** for any of the eight looks (1024/512). Runtime = SVG fallback only. | Grok Build / art | Masters for Looks 1–3 exist for QA; they are **not** modular plates |
-| 2 | **Starter preview WebPs** missing under `gb-phone/public/stomper/.../preview@512.webp` for mapped IDs | Grok Build / art | URL contract ready; files not on disk |
-| 3 | **Owner visual masters still missing** for Adult Looks 4–6 + Grom Boy/Girl | Owner / art production | Slots wired; status AWAITING_MASTER — no substitutes |
-| 4 | **Jacket-set art plates** (coordinated pants/bibs as separate alphas) + Look 5 glasses/beanie hair plates | Grok Build / art | Logic ready; art outstanding |
-| 5 | **Physical Android device QA** (390×844 + hardware) once plates land | QA | Carried; cannot close without assets |
+| 1 | **Look 6 master PNG missing** (`look6-m-leo-APPROVED.png`) | Owner (Ted) — re-attach | Status **OWNER_LOCKED + AWAITING_MASTER_FILE**; do not invent |
+| 2 | **Look 4 / Look 5 master PNGs missing** (`m-devon`, `f-nova`) | Owner / art | Owner says Adults 1–6 APPROVED; files not on disk — keep AWAITING_MASTER; no substitutes |
+| 3 | **Grom Boy / Grom Girl** individual production approval pending | Owner / art | AWAITING_MASTER; `gromFlowEnabled=false` |
+| 4 | **Modular transparent layer plates** not delivered for any of the eight looks | Grok Build / art | Masters ≠ plates; SVG fallback only |
+| 5 | **Starter preview WebPs** missing under `gb-phone/public/stomper/` | Grok Build / art | URL contract ready |
+| 6 | Jacket-set / Look 5 eyewear-hair art plates (when masters land) | Grok Build / art | Look 6: goggles-only — no Meta Oakley Vanguard |
+| 7 | Physical Android device QA once plates land | QA | Carried |
 
-## HELD (intentional — not ship defects)
+## HELD (intentional)
 
 | Item | Status |
 |---|---|
-| `gromFlowEnabled=false` (Grom enrollment) | **HELD** — legal/owner |
-| Payments / wallet / production authz | **HELD** — out of scope |
-| Pages / prod deploy / merge to main | **HELD** — DRAFT PR only |
+| `gromFlowEnabled=false` | **HELD** |
+| Payments / wallet / production authz | **HELD** |
+| Pages / prod deploy / merge | **HELD** — DRAFT PR only |
 
-## NOT blockers (done on this tip)
+## NOT blockers
 
-- Eight-look ID mapping (`m-samir` … `g-aria`) from PR #20 preserved  
-- Slot readiness for all 8 (APPROVED_MASTER ×3 + AWAITING_MASTER ×5)  
-- Plate URL + SVG fallback path  
-- Consistency contract across selector / Build Your Look / Locker  
-- Jacket→pants coordination; backpack OFF; eyewear options; STOMPER names (t1169u)  
-- Looks 1–3 visual masters archived under `docs/.../masters/` for provenance/QA  
-- Explicit forbid: poster-crop → fake modular plates  
-- Grom enrollment remains disabled
+- Eight-look ID mapping preserved from PR #20  
+- Looks 1–3 APPROVED_MASTER on disk (unchanged)  
+- Look 6 owner lock prose recorded (`OWNER-APPROVAL-LOOK-6.md`)  
+- Slot readiness / consistency / GB handoff contracts  
+- Ban: Woz-named STOMPER; Look 6 Meta Oakley glasses  
+- Poster-crop → fake plates forbidden  

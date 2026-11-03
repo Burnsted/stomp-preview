@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 /**
- * t1173u — Character production readiness: slot status, approved masters,
- * consistency contract, grom held, no substitute art / poster-crop plates.
+ * t1173u / t1174u — Character production readiness + Look 6 OWNER LOCK.
+ * Slot status, approved masters, grom held, no substitute art / poster-crop plates.
  */
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -9,6 +9,7 @@ import { AvatarRenderer } from "@/components/stomp/avatar/avatar-renderer";
 import {
   ARTWORK_LAYER_ORDER,
   BACKPACK_OFF_ITEM_ID,
+  EYEWEAR_ITEM_IDS,
   buildPlateUrl,
   buildStarterPreviewUrl,
   resolveLayerPlate,
@@ -21,12 +22,20 @@ import {
   AWAITING_MASTER_LOOK_KEYS,
   CONSISTENCY_SURFACES,
   FORBIDDEN_POSTER_CROP_TO_FAKE_PLATES,
+  LOOK6_EYEWEAR_CONTRACT,
+  LOOK6_MASTER_PENDING_PATH,
+  OWNER_APPROVED_PENDING_FILE_LOOK_KEYS,
+  OWNER_LOCKED_AWAITING_FILE_LOOK_KEYS,
   allCharacterSlotReadiness,
   approvedMasterSlots,
   assertSlotReadinessIntegrity,
+  awaitingMasterFileSlots,
   awaitingMasterSlots,
   consistencyLayerOrder,
   defaultPlateOrSvgFallback,
+  isForbiddenAgentStomperName,
+  look6AllowsEyewearItemId,
+  look6StatusLabel,
   plateUrlForSlotItem,
   slotReadinessByStarterId,
 } from "@/lib/stomp/avatar/slot-readiness";
@@ -51,13 +60,16 @@ beforeEach(() => {
   });
 });
 
-describe("t1173u — eight integration slots ready", () => {
+describe("t1173u/t1174u — eight integration slots ready", () => {
   it("exposes exactly eight slots with plate URL + SVG fallback contracts", () => {
     const integrity = assertSlotReadinessIntegrity();
     expect(integrity.ok).toBe(true);
     expect(integrity.slotCount).toBe(8);
+    expect(integrity.approvedMasterCount).toBe(3);
+    expect(integrity.awaitingMasterFileCount).toBe(1);
+    expect(integrity.awaitingMasterCount).toBe(4);
+    expect(integrity.look6Status).toBe("OWNER_LOCKED + AWAITING_MASTER_FILE");
     expect(allCharacterSlotReadiness()).toHaveLength(8);
-    // Roster mapping from t1171u remains locked.
     expect(assertRosterV24Integrity().ok).toBe(true);
   });
 
@@ -79,34 +91,36 @@ describe("t1173u — eight integration slots ready", () => {
       expect(s.mastersAreNotModularPlates).toBe(true);
       expect(s.svgFallbackUntilPlates).toBe(true);
     }
-    expect(APPROVED_VISUAL_MASTER_PATHS["adult-look-1"]).toContain("look1-m-samir-APPROVED.png");
-    expect(APPROVED_VISUAL_MASTER_PATHS["adult-look-2"]).toContain("look2-f-hana-APPROVED.png");
-    expect(APPROVED_VISUAL_MASTER_PATHS["adult-look-3"]).toContain("look3-f-priya-APPROVED.png");
   });
 
-  it("marks Looks 4–6 + Grom as AWAITING_MASTER with slots still wired", () => {
-    expect(AWAITING_MASTER_LOOK_KEYS).toEqual([
-      "adult-look-4",
-      "adult-look-5",
-      "adult-look-6",
-      "grom-boy",
-      "grom-girl",
-    ]);
+  it("marks Look 6 OWNER_LOCKED + AWAITING_MASTER_FILE without inventing PNG", () => {
+    expect(OWNER_LOCKED_AWAITING_FILE_LOOK_KEYS).toEqual(["adult-look-6"]);
+    expect(look6StatusLabel()).toBe("OWNER_LOCKED + AWAITING_MASTER_FILE");
+    const look6 = slotReadinessByStarterId("m-leo")!;
+    expect(look6.masterStatus).toBe("AWAITING_MASTER_FILE");
+    expect(look6.ownerApproval).toBe("OWNER_LOCKED");
+    expect(look6.statusLabel).toBe("OWNER_LOCKED + AWAITING_MASTER_FILE");
+    expect(look6.visualMasterPath).toBeNull();
+    expect(look6.pendingMasterPath).toBe(LOOK6_MASTER_PENDING_PATH);
+    expect(look6.pendingMasterPath).toContain("look6-m-leo-APPROVED.png");
+    expect(awaitingMasterFileSlots()).toHaveLength(1);
+    // Must not claim APPROVED_MASTER without a committed file.
+    expect(APPROVED_VISUAL_MASTER_PATHS["adult-look-6"]).toBeUndefined();
+  });
+
+  it("marks Looks 4–5 owner-approved pending file; Grom awaiting production", () => {
+    expect(OWNER_APPROVED_PENDING_FILE_LOOK_KEYS).toEqual(["adult-look-4", "adult-look-5"]);
+    expect(AWAITING_MASTER_LOOK_KEYS).toEqual(["grom-boy", "grom-girl"]);
     const awaiting = awaitingMasterSlots();
-    expect(awaiting).toHaveLength(5);
-    expect(awaiting.map((s) => s.starterId)).toEqual([
-      "m-devon",
-      "f-nova",
-      "m-leo",
-      "g-milo",
-      "g-aria",
-    ]);
-    for (const s of awaiting) {
-      expect(s.masterStatus).toBe("AWAITING_MASTER");
-      expect(s.visualMasterPath).toBeNull();
-      expect(s.starterPreviewUrl).toBe(buildStarterPreviewUrl(s.ageBand, s.starterId));
-      expect(s.surfaces).toEqual([...CONSISTENCY_SURFACES]);
-    }
+    expect(awaiting.map((s) => s.starterId)).toEqual(["m-devon", "f-nova", "g-milo", "g-aria"]);
+    expect(slotReadinessByStarterId("m-devon")!.statusLabel).toBe(
+      "OWNER_APPROVED_PENDING_FILE + AWAITING_MASTER",
+    );
+    expect(slotReadinessByStarterId("f-nova")!.statusLabel).toBe(
+      "OWNER_APPROVED_PENDING_FILE + AWAITING_MASTER",
+    );
+    expect(slotReadinessByStarterId("g-milo")!.ownerApproval).toBe("PENDING_PRODUCTION_APPROVAL");
+    expect(slotReadinessByStarterId("g-aria")!.previewOnly).toBe(true);
   });
 
   it("builds plate URLs by itemId for every roster starter age band", () => {
@@ -125,6 +139,25 @@ describe("t1173u — eight integration slots ready", () => {
   });
 });
 
+describe("t1174u — Look 6 eyewear + Woz ban", () => {
+  it("allows goggles-basic only; forbids Meta Oakley Vanguard on m-leo", () => {
+    expect(LOOK6_EYEWEAR_CONTRACT.starterId).toBe("m-leo");
+    expect(look6AllowsEyewearItemId(EYEWEAR_ITEM_IDS.goggles)).toBe(true);
+    expect(look6AllowsEyewearItemId(EYEWEAR_ITEM_IDS.glassesMetaOakley)).toBe(false);
+    expect(LOOK6_EYEWEAR_CONTRACT.forbiddenItemIds).toContain("glasses-meta-oakley");
+  });
+
+  it("forbids Woz as a STOMPER displayName (agent ≠ character)", () => {
+    expect(isForbiddenAgentStomperName("Woz")).toBe(true);
+    expect(isForbiddenAgentStomperName("woz")).toBe(true);
+    expect(isForbiddenAgentStomperName("RidgeFox")).toBe(false);
+    // Starters remain templates — Look N of M, not personality labels as names.
+    const look6 = ROSTER_V24.find((e) => e.starterId === "m-leo")!;
+    expect(rosterLookOrdinalLabel(look6)).toBe(lookOrdinalLabel(6, 6));
+    expect(rosterLookOrdinalLabel(look6)).not.toBe(starterById("m-leo")!.label);
+  });
+});
+
 describe("t1173u — consistency across selector / Build Your Look / Locker", () => {
   it("shares silhouette + layer order + backpack-off across surfaces", () => {
     expect(CONSISTENCY_SURFACES).toEqual(["selector", "build-your-look", "locker"]);
@@ -139,7 +172,6 @@ describe("t1173u — consistency across selector / Build Your Look / Locker", ()
       expect(cfg.starterId).toBe(entry.starterId);
       expect(starterById(cfg.starterId)!.silhouette).toBe(entry.silhouette);
       expect(cfg.layers.backpack.itemId).toBe(BACKPACK_OFF_ITEM_ID);
-      // Same renderer contract on all surfaces.
       render(<AvatarRenderer config={cfg} testId={`consist-${entry.starterId}`} />);
       const el = screen.getByTestId(`consist-${entry.starterId}`);
       expect(el.getAttribute("data-starter")).toBe(entry.starterId);
@@ -155,10 +187,10 @@ describe("t1173u — consistency across selector / Build Your Look / Locker", ()
       useAvatar.getState().startOnboarding("adult");
       useAvatar.getState().selectStarter("m-samir");
       useAvatar.getState().setDisplayName("TedBoard");
-      useAvatar.getState().selectStarter("f-priya");
+      useAvatar.getState().selectStarter("m-leo");
     });
     expect(useAvatar.getState().draft.displayName).toBe("TedBoard");
-    expect(useAvatar.getState().draft.starterId).toBe("f-priya");
+    expect(useAvatar.getState().draft.starterId).toBe("m-leo");
     expect(isValidStomperDisplayName("TedBoard")).toBe(true);
     const cfg = configFromStarter(starterById("f-hana")!, { stomperId: "y" });
     expect(cfg.displayName).toBe("");
@@ -169,8 +201,6 @@ describe("t1173u — consistency across selector / Build Your Look / Locker", ()
 describe("t1173u — masters ≠ modular plates; grom held", () => {
   it("forbids poster-crop → fake modular plates", () => {
     expect(FORBIDDEN_POSTER_CROP_TO_FAKE_PLATES).toBe(true);
-    // Even when a plateExists probe is true for a fake path, production
-    // contract still requires separate transparent layers — masters stay in docs/.
     for (const s of approvedMasterSlots()) {
       expect(s.visualMasterPath!.startsWith("docs/")).toBe(true);
       expect(s.visualMasterPath!.includes("/public/stomper/")).toBe(false);
