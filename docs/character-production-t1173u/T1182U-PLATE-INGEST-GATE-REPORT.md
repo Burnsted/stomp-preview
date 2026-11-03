@@ -62,8 +62,13 @@ Engineering **ingest scaffolding + eight-look matrix + Locker/selector wiring + 
 
 ## CI
 
-Await both pr-verify checks green on tip after push (recorded in tip SHA below when green).
+Both pr-verify jobs **SUCCESS** on tip `aeb59171f1d3a6c0257dbce379263fdee259c75b`:
+- `batch1 typecheck + test`
+- `gb-phone typecheck + woz tests + build`  
+Run: https://github.com/Burnsted/stomp-preview/actions/runs/41706605405
+
+_(This docs receipt commit may advance tip; feature pack CI green above.)_
 
 ## Tip SHA
 
-`d86f745834df6885d0a5ba763e99acdbc2df1fbb` — awaiting both CI green after push.
+`aeb59171f1d3a6c0257dbce379263fdee259c75b` — both CI green (see run above).
