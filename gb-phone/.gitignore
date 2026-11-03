@@ -5,3 +5,7 @@ dist/
 .nitro/
 .tanstack/
 test-results/
+# Local secrets / env — never commit (t1187u hygiene)
+.env
+.env.*
+!.env.example
