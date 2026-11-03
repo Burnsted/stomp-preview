@@ -287,3 +287,84 @@ describe("AF-AUTH-12 Rider Hub bridge table completeness", () => {
     expect(confirm.batch1Surface).toBe("campfireCf2.sesh");
   });
 });
+
+/** t1170u — additional fictional denial paths (no live auth activation). */
+describe("AF-AUTH-13 erased account denied (G4 logical)", () => {
+  it("allow active; deny after eraseStomper via authorizeNonErasedAccount + Campfire", () => {
+    let w = CF.createWorld();
+    const ben = w.people.get(CF.IDS.ben)!;
+    expect(Shared.authorizeNonErasedAccount({ stomper: ben }).allow).toBe(true);
+    expect(
+      Shared.authorizeCampfireAccess({
+        stomper: ben,
+        campfire: w.campfires.get(CF.IDS.cfSunrise)!,
+        memberships: w.memberships,
+      }).allow,
+    ).toBe(true);
+    w = CF.eraseStomper(w, CF.IDS.ben);
+    const erased = w.people.get(CF.IDS.ben)!;
+    const denyAcct = Shared.authorizeNonErasedAccount({ stomper: erased });
+    expect(denyAcct.allow).toBe(false);
+    if (!denyAcct.allow) expect(denyAcct.code).toBe("account_erased");
+    const denyCf = Shared.authorizeCampfireAccess({
+      stomper: erased,
+      campfire: w.campfires.get(CF.IDS.cfSunrise)!,
+      memberships: w.memberships,
+    });
+    expect(denyCf.allow).toBe(false);
+    if (!denyCf.allow) expect(denyCf.code).toBe("account_erased");
+  });
+});
+
+describe("AF-AUTH-14 youth Campfire enrollment HELD", () => {
+  it("deny youth while YOUTH_CAMPFIRE_ENABLED=false; allow adult", () => {
+    expect(CF.YOUTH_CAMPFIRE_ENABLED).toBe(false);
+    const w = CF.createWorld();
+    const adult = w.people.get(CF.IDS.ava)!;
+    expect(Shared.authorizeAdultCampfireEnrollment({ stomper: adult }).allow).toBe(true);
+    const youth = { ...adult, id: CF.IDS.vik, accountStatus: "youth" as const };
+    const deny = Shared.authorizeAdultCampfireEnrollment({ stomper: youth });
+    expect(deny.allow).toBe(false);
+    if (!deny.allow) expect(deny.code).toBe("youth_disabled");
+  });
+});
+
+describe("AF-AUTH-15 Squad isolation + expired share confirm deny", () => {
+  it("non-member cannot prepare Sunrise share; SESH pending past 20s denied", () => {
+    const w = CF.createWorld();
+    // Vik is not Sunrise member — prepare deny
+    const iso = Shared.authorizePrepareShare({
+      actorId: CF.IDS.vik,
+      squadIds: [CF.IDS.sunrise],
+      memberships: w.memberships,
+    });
+    expect(iso.allow).toBe(false);
+    if (!iso.allow) expect(iso.code).toBe("not_member");
+
+    expect(CF.SESH_PENDING_TTL_MS).toBe(20_000);
+    expect(Shared.RIDER_HUB_SHARE_MS).toBe(20_000);
+    expect(Shared.RIDER_HUB_SHARE_MS).toBe(CF.SESH_PENDING_TTL_MS);
+
+    // SHARE_MS / SESH TTL: pending claim after 20s+1ms is denied
+    const clock = { t: 1_000_000 };
+    const store = new CF.PendingStore(() => clock.t);
+    store.prepare({
+      pendingId: "p_auth15",
+      actorId: CF.IDS.ava,
+      kind: "share_media",
+      squadId: CF.IDS.sunrise,
+      contentHash: "auth15",
+      mediaRefId: "auth15" as CF.MediaRefId,
+      readbackText: "Share",
+      ttlMs: CF.SESH_PENDING_TTL_MS,
+    });
+    clock.t += CF.SESH_PENDING_TTL_MS + 1;
+    const late = CF.claimPendingConfirmation(store, {
+      pendingId: "p_auth15",
+      actorId: CF.IDS.ava,
+      channel: "tap",
+      sessionUnlocked: true,
+    });
+    expect(late.ok).toBe(false);
+  });
+});
