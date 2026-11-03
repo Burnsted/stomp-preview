@@ -1,5 +1,6 @@
 name: inflate-boulder-dodge
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'arcade/boulder-dodge/.packed/**'
@@ -22,6 +23,7 @@ jobs:
           text = raw.decode('utf-8')
           assert "setProperty('background-color'" in text
           assert "version:'0.7.2'" in text
+          assert 'jumpBoing' in text
           print('bytes', len(raw))
           PY
       - name: Commit inflated file
@@ -29,5 +31,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add arcade/boulder-dodge/index.html
-          git diff --cached --quiet || git commit -m "fix(boulder-dodge): harden PLAY→JUMP red morph paint for phone"
+          git diff --cached --quiet || git commit -m "fix: restore boulder-dodge v0.7.2 index.html+sw.js (replace path stub)"
           git push
