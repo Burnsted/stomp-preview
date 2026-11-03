@@ -16,6 +16,7 @@ import * as C from "@/lib/stomp/woz-bridge/crew";
 import { routeTyped, SESSION_BRIDGE_FLAGS, helpText, type GbAction } from "@/lib/stomp/woz-bridge/session";
 import { ride as R, runFromGbSession, type FeatureKind } from "@/lib/stomp/woz-bridge/ride";
 import { media as M, mediaFromGbClips, CAMPFIRE_GUARDS } from "@/lib/stomp/woz-bridge/campfire";
+import { CampfireShell } from "@/components/stomp/campfire-shell";
 import { smartId as S, nfc, SMART_ID_FLAGS, demoTag } from "@/lib/stomp/woz-bridge/smartid";
 import { friendlyError, scanLabel, NFC_WRITE_MSG, UPLOAD_OFF_MSG, DEMO_LABEL, SESSION_EMPTY, RUNS_EMPTY, HITS_EMPTY, rideBanner, REVOKE_CONFIRM, CLAIM_EMPTY, CLAIM_HINT, normalizeClaimCode, CREW_EMPTY, CREW_ROW_HINT, CREW_SELF_NOTE, crewConfirmCopy, crewStateError, plainError, CAMPFIRE_DEMO_BANNER, CAMPFIRE_CLOSE_CONFIRM, CAMPFIRE_CLOSED_COMMENT, COMMENT_EMPTY, mentionError, rideEndSummary, DATA_INTRO, DATA_EXPORT_READY, DATA_IMPORT_EMPTY, DATA_CLEAR_LABEL, DATA_CLEARED, lastExportHint, SMARTID_EMPTY, SMARTID_DONE, SUSPEND_CONFIRM, REVOKED_BANNER, smartIdStateLabel, smartIdActions, INVITE_EMPTY, RIDE_PAUSED_START } from "@/lib/stomp/woz-bridge/copy";
 import { MAX_UTTERANCE } from "@/lib/stomp/woz-bridge/session";
@@ -412,6 +413,8 @@ function CampfirePanel() {
   const canComment = campfireOpen && text.trim().length > 0;
   return (
     <div className="space-y-3">
+      {/* CF-3 Squad Campfire shell — upgrades Campfire tab to CF-2/G1–G4 contracts; legacy crew-dump kept below for batch8 regressions. */}
+      <CampfireShell />
       <div className="rounded-3xl bg-snow p-4 ring-1 ring-line" data-testid="campfire">
         <div className="flex items-center justify-between"><h2 className="font-semibold">Campfire {campfireOpen ? "· open" : "· closed"}</h2><DemoBadge label={DEMO_LABEL.campfire} /></div>
         <p role="note" className="mt-1 rounded-2xl bg-lime/40 px-3 py-1 text-xs font-semibold" data-testid="campfire-demo-banner">{CAMPFIRE_DEMO_BANNER}</p>
