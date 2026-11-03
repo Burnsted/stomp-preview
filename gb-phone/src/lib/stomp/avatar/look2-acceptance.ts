@@ -110,14 +110,20 @@ export const LOOK2_ANDROID_ACCEPTANCE_CHECKS = [
 
 export type Look2AcceptanceCheckId = (typeof LOOK2_ANDROID_ACCEPTANCE_CHECKS)[number]["id"];
 
-/** Current engineering readiness — plates still missing ⇒ gate not passable. */
+/** Look 2 mint plates shipped from owner modular sheet (t1188u/t1189u). */
 export const LOOK2_GATE_STATUS = {
   visualMaster: "APPROVED_MASTER" as const,
-  modularPlates: "OPEN" as const,
-  androidQa: "AWAITING_GB_PLATES" as const,
+  /** Required mint WebPs present under public/stomper — not invented. */
+  modularPlates: "PRESENT" as const,
+  /** Physical Android Batch E still needs device evidence — not auto-PASS. */
+  androidQa: "OPEN_DEVICE" as const,
   firstGate: true as const,
   inventingPlatesForbidden: true as const,
   posterCropForbidden: true as const,
+  inkVariants: "ABSENT" as const,
+  sourceSheet: "docs/character-production-t1173u/masters/look2-f-hana-MODULAR-SHEET.png" as const,
+  sourceSheetSha256:
+    "e273e6c13142cf068d25fc1c18503d1d59e947e8af52fee54b9c8e2abda93322" as const,
 };
 
 export function look2DefaultLayerItemIds(): {

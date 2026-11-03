@@ -86,7 +86,7 @@ describe("t1175u — eight APPROVED_MASTER slots", () => {
     expect(integrity.awaitingMasterFileCount).toBe(0);
     expect(integrity.awaitingMasterCount).toBe(0);
     expect(integrity.visualApproval).toBe("CLOSED");
-    expect(integrity.modularPlates).toBe("OPEN");
+    expect(integrity.modularPlates).toBe("LOOK2_PRESENT_OTHERS_OPEN");
     expect(integrity.look6Status).toBe("APPROVED_MASTER");
     expect(APPROVED_MASTER_LOOK_KEYS).toHaveLength(8);
     expect(approvedMasterSlots()).toHaveLength(8);
@@ -167,8 +167,8 @@ describe("t1175u — eight APPROVED_MASTER slots", () => {
   it("names Look 2 as first GB Android acceptance target", () => {
     expect(GB_FIRST_ACCEPTANCE.starterId).toBe("f-hana");
     expect(APPROVAL_STAGE.visualApproval).toBe("CLOSED");
-    expect(APPROVAL_STAGE.modularPlateDelivery).toBe("OPEN");
-    expect(APPROVAL_STAGE.androidFunctionalityQa).toBe("AWAITING_GB_PLATES");
+    expect(APPROVAL_STAGE.modularPlateDelivery).toBe("LOOK2_PRESENT_OTHERS_OPEN");
+    expect(APPROVAL_STAGE.androidFunctionalityQa).toBe("OPEN_DEVICE");
     expect(APPROVAL_STAGE.firstAcceptanceLook).toBe("f-hana");
   });
 });
@@ -184,8 +184,9 @@ describe("t1177u — Look 2 mint acceptance / plate-renderer contract", () => {
     expect(c.pantsPlateUrl).toBe("/stomper/adult/pants/pants-look2-mint@512.webp");
     expect(c.masterSha256).toBe(LOOK2_MASTER_SHA256);
     expect(c.checkCount).toBe(LOOK2_ANDROID_ACCEPTANCE_CHECKS.length);
-    expect(LOOK2_GATE_STATUS.modularPlates).toBe("OPEN");
-    expect(LOOK2_GATE_STATUS.androidQa).toBe("AWAITING_GB_PLATES");
+    expect(LOOK2_GATE_STATUS.modularPlates).toBe("PRESENT");
+    expect(LOOK2_GATE_STATUS.androidQa).toBe("OPEN_DEVICE");
+    expect(LOOK2_GATE_STATUS.inkVariants).toBe("ABSENT");
     expect(LOOK2_GATE_STATUS.inventingPlatesForbidden).toBe(true);
     expect(look2ExpectedRuntimePlatePaths()).toEqual([
       look2JacketPlateUrl(),
@@ -196,7 +197,7 @@ describe("t1177u — Look 2 mint acceptance / plate-renderer contract", () => {
     expect(GB_FIRST_ACCEPTANCE.pantsItemId).toBe("pants-look2-mint");
   });
 
-  it("defaults f-hana layers to separate mint jacket/pants; SVG until plates exist", () => {
+  it("defaults f-hana layers to separate mint jacket/pants; plates mode when mint set shipped", () => {
     const cfg = configFromStarter(starterById("f-hana")!, {
       stomperId: "a",
       displayName: "MintQA",
@@ -210,7 +211,8 @@ describe("t1177u — Look 2 mint acceptance / plate-renderer contract", () => {
     const swapped = applyJacketSet(cfg.layers, "jacket-look2-mint", "#14b8a6");
     expect(swapped.pants.itemId).toBe("pants-look2-mint");
     render(<AvatarRenderer config={cfg} testId="look2-render" />);
-    expect(screen.getByTestId("look2-render").getAttribute("data-render-mode")).toBe("svg-fallback");
+    expect(screen.getByTestId("look2-render").getAttribute("data-render-mode")).toBe("plates");
+    expect(screen.getByTestId("look2-render").getAttribute("data-acceptance-eligible")).toBe("true");
     expect(screen.getByTestId("look2-render").getAttribute("data-starter")).toBe("f-hana");
     expect(screen.getByTestId("look2-render").getAttribute("data-backpack")).toBe("off");
   });
@@ -224,7 +226,7 @@ describe("t1175u — identity / Woz ban / consistency", () => {
     expect(rosterLookOrdinalLabel(look6)).not.toBe(starterById("m-leo")!.label);
   });
 
-  it("shares silhouette + backpack-off across surfaces; SVG until plates", () => {
+  it("shares silhouette + backpack-off across surfaces; Look 2 plates / others SVG", () => {
     expect(CONSISTENCY_SURFACES).toEqual(["selector", "build-your-look", "locker"]);
     expect(consistencyLayerOrder()).toEqual(ARTWORK_LAYER_ORDER);
     for (const entry of ROSTER_V24) {
@@ -234,9 +236,12 @@ describe("t1175u — identity / Woz ban / consistency", () => {
       });
       expect(cfg.layers.backpack.itemId).toBe(BACKPACK_OFF_ITEM_ID);
       render(<AvatarRenderer config={cfg} testId={`consist-${entry.starterId}`} />);
-      expect(screen.getByTestId(`consist-${entry.starterId}`).getAttribute("data-render-mode")).toBe(
-        "svg-fallback",
-      );
+      const mode = screen.getByTestId(`consist-${entry.starterId}`).getAttribute("data-render-mode");
+      if (entry.starterId === "f-hana") {
+        expect(mode).toBe("plates");
+      } else {
+        expect(mode).toBe("svg-fallback");
+      }
       cleanup();
     }
   });

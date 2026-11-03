@@ -1,8 +1,9 @@
 /**
- * Plate ingest registry + eight-look slot matrix (t1182u).
+ * Plate ingest registry + eight-look slot matrix (t1182u → t1189u).
  *
- * Wires contracts that light up WHEN real plates land under public/stomper.
- * Does NOT invent WebP/PNG files. Fail-closed until paths exist.
+ * Look 2 mint plates are shipped from owner modular sheet under public/stomper.
+ * Other looks stay fail-closed (missing-plates) until real assets land.
+ * Does NOT invent WebP/PNG / ink variants.
  *
  * Look 2 (f-hana) is the ONLY Android acceptance gate.
  */
@@ -17,6 +18,10 @@ import {
   LOOK2_PANTS_ITEM_ID,
   LOOK2_STARTER_ID,
 } from "@/lib/stomp/avatar/look2-acceptance";
+import {
+  look2MintRequiredAllShipped,
+  shippedPlatePathExists,
+} from "@/lib/stomp/avatar/look2-plate-manifest";
 import {
   evaluatePlateAssembly,
   type PlateProbeStatus,
@@ -91,11 +96,11 @@ function defaultRequiredPathsForEntry(entry: RosterV24Entry): string[] {
 }
 
 /**
- * Eight-look plate slot matrix — stubs for Looks 1 & 3–8; Look 2 is the gate.
- * `pathExists` optional: when omitted, all slots report missing-plates (fail-closed).
+ * Eight-look plate slot matrix — Look 2 uses shipped mint set; Looks 1 & 3–8
+ * stay missing-plates until real assets (fail-closed). Look 2 is the gate.
  */
 export function eightLookPlateMatrix(
-  pathExists: (url: string) => boolean = () => false,
+  pathExists: (url: string) => boolean = shippedPlatePathExists,
 ): LookPlateSlot[] {
   return ROSTER_V24.map((entry) => {
     const requiredPaths =
@@ -122,7 +127,7 @@ export function eightLookPlateMatrix(
 
 export function lookPlateSlotByStarterId(
   starterId: string,
-  pathExists: (url: string) => boolean = () => false,
+  pathExists: (url: string) => boolean = shippedPlatePathExists,
 ): LookPlateSlot | undefined {
   return eightLookPlateMatrix(pathExists).find((s) => s.starterId === starterId);
 }
@@ -134,13 +139,13 @@ export function lookPlateSlotByStarterId(
  */
 export function evaluateLook2MintGate(opts: {
   config: AvatarConfig;
-  /** Sync existence probe (tests / Node). Browser may pass probe from Image cache. */
+  /** Sync existence probe (tests / Node). Defaults to shipped Look 2 mint manifest. */
   pathExists?: (url: string) => boolean;
   /** Optional plate assembly probe; defaults from pathExists. */
   plateProbe?: (url: string) => PlateProbeStatus;
 }): Look2MintGateResult {
   const { config } = opts;
-  const pathExists = opts.pathExists ?? (() => false);
+  const pathExists = opts.pathExists ?? shippedPlatePathExists;
   const plateProbe: (url: string) => PlateProbeStatus =
     opts.plateProbe ?? ((url) => (pathExists(url) ? "present" : "missing"));
 
@@ -207,8 +212,10 @@ export function platePathFor(
   return buildPlateUrl(ageBand, slot, itemId, 512);
 }
 
-/** Ingest receipt when Ted/GB drops plates — never invents files. */
-export function ingestLook2MintReceipt(pathExists: (url: string) => boolean): {
+/** Ingest receipt — never invents files. Defaults to shipped Look 2 mint set. */
+export function ingestLook2MintReceipt(
+  pathExists: (url: string) => boolean = shippedPlatePathExists,
+): {
   ingested: boolean;
   missingPaths: readonly string[];
   readyPaths: readonly string[];
@@ -217,14 +224,14 @@ export function ingestLook2MintReceipt(pathExists: (url: string) => boolean): {
 } {
   const missingPaths = LOOK2_MINT_REQUIRED_PATHS.filter((p) => !pathExists(p));
   const readyPaths = LOOK2_MINT_REQUIRED_PATHS.filter((p) => pathExists(p));
-  const ingested = missingPaths.length === 0;
+  const ingested = missingPaths.length === 0 && look2MintRequiredAllShipped();
   return {
     ingested,
     missingPaths,
     readyPaths,
     blocked: !ingested,
     note: ingested
-      ? "Look 2 mint plate set present under public/stomper — gate may flip eligible"
-      : "Look 2 mint plates ABSENT — fail-closed; do not invent assets",
+      ? "Look 2 mint plate set PRESENT under public/stomper — acceptanceEligible when outfit constraints hold"
+      : "Look 2 mint plates incomplete — fail-closed; do not invent assets",
   };
 }

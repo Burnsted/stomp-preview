@@ -8,8 +8,8 @@
 | Stage | Status |
 |---|---|
 | Visual-ref approval | **CLOSED** (8/8 APPROVED_MASTER under `docs/.../masters/`) |
-| Modular plate delivery | **OPEN** |
-| Android functionality | **AWAITING_GB_PLATES** — first gate Look 2 |
+| Modular plate delivery | **LOOK2_PRESENT** (owner modular sheet → public/stomper); Looks 1 & 3–8 still OPEN |
+| Android functionality | **OPEN_DEVICE** — Look 2 plates on disk; physical Batch E not auto-PASS |
 
 ## Required patches already on PR #21 tip (Woz)
 

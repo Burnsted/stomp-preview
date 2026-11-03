@@ -1,49 +1,42 @@
-# Batch E — Look 2 Android checklist twin (t1182u)
+# Batch E — Look 2 Android checklist twin (t1182u → t1189u)
 
 **Owner:** Ted / QA (physical Android only)  
 **Gate:** Look 2 (`f-hana`) mint plates — **first** Android acceptance  
 **Code tip:** draft PR #21 · `cursor/character-production-t1173u-e14a`  
-**Status today:** **BLOCKED** — modular plates not on disk; do **not** mark PASS from desktop SVG stills
+**Engineering:** Look 2 mint WebPs **PRESENT** · `data-acceptance-eligible=true` for mint defaults  
+**Device evidence:** **OPEN** — run below on phone; do **not** mark PASS from desktop alone
 
 ## When to run
 
-Run **only after** `data-acceptance-eligible=true` on Locker / Look 2 renderer (full `/stomper/adult/...@512.webp` set present). Until then every row stays **BLOCKED / not run**.
+Plates are on disk. Run E1–E10 on physical Android in real selector + Locker. Screenshots only until Ted signs PASS.
 
-## Phone steps (screenshots only — no fake pass)
+## Phone steps (screenshots only)
 
 | # | Step | Pass only if | Evidence |
 |---|---|---|---|
-| E1 | Open Create → select Look 2 (`f-hana`) | Selector shows Look N of M; card has `data-android-acceptance-gate=true` | Screenshot selector |
-| E2 | Confirm plate attrs | `data-acceptance-eligible=true` and `data-missing-plates=0` on selector/Locker | Screenshot attrs / DevTools |
-| E3 | Build Your Look preview | Full-body layered jacket over pants (not poster crop / merged bitmap) | Screenshot preview |
+| E1 | Open Create → select Look 2 (`f-hana`) | Selector shows Look N of M; `data-android-acceptance-gate=true` | Screenshot selector |
+| E2 | Confirm plate attrs | `data-acceptance-eligible=true` and `data-missing-plates=0` | Screenshot / DevTools |
+| E3 | Build Your Look preview | Full-body layered jacket over pants (not poster / merged bitmap) | Screenshot preview |
 | E4 | Name before commit | Enter display name; commit blocked until name set | Screenshot name + ID |
-| E5 | Jacket swap | Change jacket → coordinated pants itemId; layers stay independent | Screenshot before/after |
-| E6 | Eyewear swap | Goggles slot swap works (`goggles-basic` available); Meta Oakley not required for gate | Screenshot |
-| E7 | Backpack OFF | Default `backpack-none`; daypack optional, not auto | Screenshot Locker backpack |
+| E5 | Jacket swap | Change jacket → coordinated pants; layers independent; incomplete → not half-dressed | Screenshot before/after |
+| E6 | Eyewear swap | Goggles slot works (`goggles-basic`); Meta Oakley not required for gate | Screenshot |
+| E7 | Backpack OFF | Default `backpack-none`; daypack optional | Screenshot Locker |
 | E8 | Board layer | Board plate present as own layer | Screenshot |
-| E9 | Return to Locker | Same `starterId` + layers + **user** displayName (no Nova/Mira/Kai) | Screenshot Locker |
-| E10 | Identity vs master | Face/body/outfit read matches `masters/look2-f-hana-APPROVED.png` | Side-by-side screenshot |
+| E9 | Return to Locker | Same `starterId` + layers + **user** displayName | Screenshot Locker |
+| E10 | Identity vs master | Matches `masters/look2-f-hana-APPROVED.png` + modular sheet assembly | Side-by-side |
 
-## Automatic FAIL (do not claim pass)
+## Automatic FAIL
 
-- SVG-only desktop still presented as Android layered acceptance  
-- Partial plate set / half-dressed rider  
-- Docs master / poster mounted as runtime layer  
-- `data-acceptance-eligible=false` while claiming pass  
-- `gromFlowEnabled=true` or youth flows  
-- Silent starter labels as displayName  
+- SVG-only desktop still as Android pass  
+- Partial / half-dressed rider  
+- Docs master as runtime layer  
+- Silent Nova/Mira/Kai displayName  
+- `gromFlowEnabled=true`  
 
-## Engineering twin (already on tip)
-
-- Fail-closed ingest: `gb-phone/src/lib/stomp/avatar/plate-registry.ts`  
-- All-or-nothing assembly: `plate-assembly.ts` + `AvatarRenderer`  
-- AF regressions: `gb-phone/tests/woz/update02/plate-ingest-t1182u.test.tsx`  
-- Acceptance contract: `LOOK2-MINT-ACCEPTANCE.md`  
-
-## Honest status
+## Status
 
 | Item | Status |
 |---|---|
-| Ingest + matrix + Locker wiring | **LANDED** (code) |
-| Live Look 2 WebP plates | **BLOCKED** |
-| Physical Android E1–E10 | **BLOCKED** (no plates → no run) |
+| Look 2 mint plates on disk | **PRESENT** |
+| Engineering acceptanceEligible (mint defaults) | **true** (CI) |
+| Physical Android E1–E10 | **OPEN** (await device run) |

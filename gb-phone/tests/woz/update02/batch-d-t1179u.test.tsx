@@ -148,17 +148,27 @@ describe("t1179u Batch D — verify + harden", () => {
     expect(useAvatar.getState().draft.displayName).not.toBe("Nova");
   });
 
-  it("D6 honest error state when artwork missing", () => {
+  it("D6 honest plate state: Look 2 complete when mint set shipped; partial still incomplete", () => {
     const cfg = configFromStarter(starterById(LOOK2_STARTER_ID)!, {
       stomperId: "d6",
       displayName: "Honest",
     });
-    render(<AvatarRenderer config={cfg} testId="batch-d-missing" />);
-    const el = screen.getByTestId("batch-d-missing");
-    expect(el.getAttribute("data-render-mode")).toBe("svg-fallback");
-    expect(el.getAttribute("data-acceptance-eligible")).toBe("false");
-    expect(el.getAttribute("data-plate-complete")).toBe("false");
+    render(<AvatarRenderer config={cfg} testId="batch-d-look2" />);
+    const el = screen.getByTestId("batch-d-look2");
+    expect(el.getAttribute("data-render-mode")).toBe("plates");
+    expect(el.getAttribute("data-acceptance-eligible")).toBe("true");
+    expect(el.getAttribute("data-plate-complete")).toBe("true");
     expect(Number(el.getAttribute("data-required-plates"))).toBeGreaterThan(5);
+
+    // Non–Look-2 starter still incomplete / svg-fallback (no invented plates)
+    const other = configFromStarter(starterById("m-samir")!, { stomperId: "d6b" });
+    render(<AvatarRenderer config={other} testId="batch-d-other" />);
+    expect(screen.getByTestId("batch-d-other").getAttribute("data-render-mode")).toBe(
+      "svg-fallback",
+    );
+    expect(screen.getByTestId("batch-d-other").getAttribute("data-acceptance-eligible")).toBe(
+      "false",
+    );
   });
 
   it("D7 STOMPER-first nav preserved (Home + five tabs); grom held", () => {

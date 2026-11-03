@@ -131,10 +131,11 @@ function StarterCard({
     () => configFromStarter(s, { stomperId: "preview", displayName: lookLabel }),
     [s, lookLabel],
   );
-  // Fail-closed plate matrix attrs (t1182u) — Look 2 is sole Android gate.
+  // Plate matrix attrs — Look 2 mint may be ingest-ready; others missing-plates.
   const plateSlot = lookPlateSlotByStarterId(starterId);
   const missingCount = plateSlot?.missingPaths.length ?? 0;
-  const acceptanceEligible = false; // never eligible until real plates + gate flip
+  const acceptanceEligible =
+    plateSlot?.androidAcceptanceGate === true && plateSlot.status === "ingest-ready";
   return (
     <button
       type="button"

@@ -94,7 +94,7 @@ describe("t1178u — plate assembly all-or-nothing", () => {
     expect(cfg.layers.backpack.itemId).toBe(BACKPACK_OFF_ITEM_ID);
   });
 
-  it("AvatarRenderer reports incomplete (not plates) when no public plates exist", () => {
+  it("AvatarRenderer uses plates for Look 2 mint set; incomplete jacket id stays svg", () => {
     const cfg = configFromStarter(starterById(LOOK2_STARTER_ID)!, {
       stomperId: "x",
       displayName: "MintRider",
@@ -102,15 +102,25 @@ describe("t1178u — plate assembly all-or-nothing", () => {
     render(<AvatarRenderer config={cfg} testId="t1178-look2" />);
     const el = screen.getByTestId("t1178-look2");
     expect(el.getAttribute("data-starter")).toBe("f-hana");
-    expect(el.getAttribute("data-render-mode")).toBe("svg-fallback");
-    expect(el.getAttribute("data-plate-complete")).toBe("false");
-    expect(el.getAttribute("data-acceptance-eligible")).toBe("false");
+    expect(el.getAttribute("data-render-mode")).toBe("plates");
+    expect(el.getAttribute("data-plate-complete")).toBe("true");
+    expect(el.getAttribute("data-acceptance-eligible")).toBe("true");
     expect(el.getAttribute("data-backpack")).toBe("off");
     expect(el.getAttribute("data-jacket")).toBe(LOOK2_JACKET_ITEM_ID);
     expect(el.getAttribute("data-pants")).toBe(LOOK2_PANTS_ITEM_ID);
     expect(el.getAttribute("data-board")).toBeTruthy();
     expect(el.getAttribute("data-goggles")).toBeTruthy();
-    // Must not claim success via plates mode with zero assets.
-    expect(el.getAttribute("data-render-mode")).not.toBe("plates");
+
+    const wrongJacket = {
+      ...cfg,
+      layers: { ...cfg.layers, jacket: { ...cfg.layers.jacket, itemId: "jacket-basic" } },
+    };
+    render(<AvatarRenderer config={wrongJacket} testId="t1178-incomplete" />);
+    expect(screen.getByTestId("t1178-incomplete").getAttribute("data-render-mode")).toBe(
+      "svg-fallback",
+    );
+    expect(screen.getByTestId("t1178-incomplete").getAttribute("data-acceptance-eligible")).toBe(
+      "false",
+    );
   });
 });

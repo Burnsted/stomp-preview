@@ -296,8 +296,10 @@ export const FORBIDDEN_POSTER_CROP_TO_FAKE_PLATES = true as const;
 /** Distinguishes approval stages for reports / GB. */
 export const APPROVAL_STAGE = {
   visualApproval: "CLOSED" as const,
-  modularPlateDelivery: "OPEN" as const,
-  androidFunctionalityQa: "AWAITING_GB_PLATES" as const,
+  /** Look 2 mint set PRESENT from owner modular sheet; Looks 1 & 3–8 still OPEN. */
+  modularPlateDelivery: "LOOK2_PRESENT_OTHERS_OPEN" as const,
+  /** Physical Android Batch E — device OPEN, not auto-PASS. */
+  androidFunctionalityQa: "OPEN_DEVICE" as const,
   firstAcceptanceLook: GB_FIRST_ACCEPTANCE.starterId,
 } as const;
 
@@ -309,7 +311,7 @@ export function assertSlotReadinessIntegrity(): {
   slotCount: number;
   look6Status: string;
   visualApproval: "CLOSED";
-  modularPlates: "OPEN";
+  modularPlates: "LOOK2_PRESENT_OTHERS_OPEN";
 } {
   const slots = allCharacterSlotReadiness();
   if (slots.length !== 8) throw new Error("Expected 8 character slots");
@@ -365,6 +367,6 @@ export function assertSlotReadinessIntegrity(): {
     slotCount: slots.length,
     look6Status: look6.statusLabel,
     visualApproval: "CLOSED",
-    modularPlates: "OPEN",
+    modularPlates: "LOOK2_PRESENT_OTHERS_OPEN",
   };
 }

@@ -1,10 +1,13 @@
-# LOOK2-MINT-ACCEPTANCE — Physical Android gate (t1177u)
+# LOOK2-MINT-ACCEPTANCE — Physical Android gate (t1177u → t1189u)
 
 **Starter:** `f-hana` · Adult Look **2 of 6**  
 **Visual master:** `masters/look2-f-hana-APPROVED.png`  
 **sha256:** `b92ba262a516b29c3512a5e63371b30797dcaf5d6b93f47163588c04659a80da` (ASSET_MAP)  
+**Modular source sheet:** `masters/look2-f-hana-MODULAR-SHEET.png`  
+**sheet sha256:** `e273e6c13142cf068d25fc1c18503d1d59e947e8af52fee54b9c8e2abda93322`  
 **Code contract:** `gb-phone/src/lib/stomp/avatar/look2-acceptance.ts`  
-**Status:** Visual **APPROVED_MASTER** · Modular plates **OPEN** · Android QA **AWAITING_GB_PLATES**
+**Status:** Visual **APPROVED_MASTER** · Modular plates **PRESENT** · Android QA **OPEN_DEVICE**  
+**Ink variants:** **ABSENT** (not on sheet — not invented)
 
 ## Pass criteria (ALL required — physical Android only)
 
@@ -20,29 +23,36 @@
 | 8 | Return to Locker | Same `starterId` + layers + name after leaving and returning |
 | 9 | Identity match | Face/body/outfit read matches Look 2 master (sha above) — no regenerate |
 
-## Expected runtime paths (GB delivers — do not invent here)
+## Runtime paths (PRESENT on tip)
 
 ```
 /stomper/adult/jacket/jacket-look2-mint@512.webp
 /stomper/adult/pants/pants-look2-mint@512.webp
+/stomper/adult/body/body-athletic@512.webp
+/stomper/adult/face/face-female@512.webp
+/stomper/adult/hair/hair-straight@512.webp
+/stomper/adult/headwear/helmet-basic@512.webp
+/stomper/adult/goggles/goggles-basic@512.webp
+/stomper/adult/gloves/gloves-basic@512.webp
+/stomper/adult/boots/boots-basic@512.webp
+/stomper/adult/board/board-basic@512.webp
 /stomper/adult/starter/f-hana/preview@512.webp
 ```
 
-Optional masters: same paths with `@1024.webp`.
+Optional: `/stomper/adult/backpack/backpack-daypack@512.webp` (not required for acceptance; default OFF).
 
 ## Automatic FAIL
 
-- Poster-crop / composite-slice “plates”
-- Docs masters mounted as runtime layers
-- Claiming success from desktop screenshot of SVG fallback only
-- Merged jacket+pants single bitmap
-- **Partial plate set** (only jacket or only some layers) — renderer must stay SVG / incomplete
-- `data-acceptance-eligible=false` while claiming pass
-- Enabling `gromFlowEnabled` or youth flows
+- Poster-crop / docs master mounted as runtime layer  
+- Claiming success from SVG-only desktop still  
+- Merged jacket+pants single bitmap  
+- Partial plate set → must stay SVG / incomplete  
+- `data-acceptance-eligible=false` while claiming pass  
+- Enabling `gromFlowEnabled` or youth flows  
 
-## Engineering prep (done on this tip)
+## Engineering (landed)
 
-- Catalog IDs + jacket-set coupling wired
-- `f-hana` default layers point at Look 2 mint itemIds (SVG tint until plates land)
-- **All-or-nothing** assembly (t1178u): `data-render-mode=plates` **only** when every required layer WebP is present; else `svg-fallback` + missing-asset attrs
-- Required Look 2 runtime set includes jacket, pants, body, face, hair, headwear, goggles, gloves, boots, board (+ preview); backpack OFF omitted
+- Catalog IDs + jacket-set coupling  
+- All-or-nothing assembly + missing-asset attrs  
+- Plate extract from owner modular sheet (`scripts/extract-look2-mint-plates.py`)  
+- Selector/Locker use real plates when mint set complete; `acceptanceEligible` honest  

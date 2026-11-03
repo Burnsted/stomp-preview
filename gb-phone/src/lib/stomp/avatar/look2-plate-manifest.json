@@ -1,0 +1,146 @@
+{
+  "sourceSheet": "docs/character-production-t1173u/masters/look2-f-hana-MODULAR-SHEET.png",
+  "sourceSha256": "e273e6c13142cf068d25fc1c18503d1d59e947e8af52fee54b9c8e2abda93322",
+  "sourceSize": [
+    1448,
+    1086
+  ],
+  "inkVariants": "ABSENT",
+  "look2MintRequiredPresent": true,
+  "optionalBackpackPresent": true,
+  "plates": [
+    {
+      "path": "gb-phone/public/stomper/adult/starter/f-hana/preview@512.webp",
+      "url": "/stomper/adult/starter/f-hana/preview@512.webp",
+      "sha256": "88ac50a6b1244259eb2acd40f394323227ff2c0d2e7953651f35b7071832ed02",
+      "bytes": 84988,
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/jacket/jacket-look2-mint@512.webp",
+      "url": "/stomper/adult/jacket/jacket-look2-mint@512.webp",
+      "sha256": "56904a59aeb3d5f937722e0b14423eb43193cf43f70ecb4bf971371535537202",
+      "bytes": 37286,
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/pants/pants-look2-mint@512.webp",
+      "url": "/stomper/adult/pants/pants-look2-mint@512.webp",
+      "sha256": "9ba3c7443f48f45dc20e03afed5133ec69f2cc229b40471d4c0d7bec5bf94d68",
+      "bytes": 40936,
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/body/body-athletic@512.webp",
+      "url": "/stomper/adult/body/body-athletic@512.webp",
+      "sha256": "9fb70d1a8a578010f85df9c40e424cc785b7e7281420e32c4943266856160353",
+      "bytes": 53998,
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/face/face-female@512.webp",
+      "url": "/stomper/adult/face/face-female@512.webp",
+      "sha256": "5e3417919819725ae91d660d616695792490d03ac5cd1c2cfb34f395dfa7dbea",
+      "bytes": 13734,
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/hair/hair-straight@512.webp",
+      "url": "/stomper/adult/hair/hair-straight@512.webp",
+      "sha256": "0d5280b80eaa81b91f5e421e167d6e47872dca4c447357f93aa1f5ec305bed36",
+      "bytes": 23946,
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/headwear/helmet-basic@512.webp",
+      "url": "/stomper/adult/headwear/helmet-basic@512.webp",
+      "sha256": "07ddd228fcc1ce8c98ae7a5d0fa066caf841fb690f6cee4a162276e1eff92d71",
+      "bytes": 11754,
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/goggles/goggles-basic@512.webp",
+      "url": "/stomper/adult/goggles/goggles-basic@512.webp",
+      "sha256": "5e1d3464d8a85fbeaabab93397c43b459a8057a7e638b9f0f7a090b0c894f11d",
+      "bytes": 5770,
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/gloves/gloves-basic@512.webp",
+      "url": "/stomper/adult/gloves/gloves-basic@512.webp",
+      "sha256": "9827b823faac3f1cebf47f18e8db227b806438a606efed3e77cdd5441086ee90",
+      "bytes": 21916,
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/boots/boots-basic@512.webp",
+      "url": "/stomper/adult/boots/boots-basic@512.webp",
+      "sha256": "d11a8a9b456243bad908ca231f9ae8ffd2790e855d190a314b9100b742ce7f9a",
+      "bytes": 11392,
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/board/board-basic@512.webp",
+      "url": "/stomper/adult/board/board-basic@512.webp",
+      "sha256": "0b37732fc0dec8e1de6a916304afd5b794b7aefcf4c0d654a8a04f09ccc6e9fd",
+      "bytes": 70176,
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/backpack/backpack-daypack@512.webp",
+      "url": "/stomper/adult/backpack/backpack-daypack@512.webp",
+      "sha256": "275cade084de17b1ce3bf14bae9c0af43ffbdef28beded87597fc9119cf7fb27",
+      "bytes": 143814,
+      "size": [
+        512,
+        512
+      ]
+    }
+  ],
+  "requiredUrls": [
+    "/stomper/adult/jacket/jacket-look2-mint@512.webp",
+    "/stomper/adult/pants/pants-look2-mint@512.webp",
+    "/stomper/adult/body/body-athletic@512.webp",
+    "/stomper/adult/face/face-female@512.webp",
+    "/stomper/adult/hair/hair-straight@512.webp",
+    "/stomper/adult/headwear/helmet-basic@512.webp",
+    "/stomper/adult/goggles/goggles-basic@512.webp",
+    "/stomper/adult/gloves/gloves-basic@512.webp",
+    "/stomper/adult/boots/boots-basic@512.webp",
+    "/stomper/adult/board/board-basic@512.webp",
+    "/stomper/adult/starter/f-hana/preview@512.webp"
+  ]
+}

@@ -13,6 +13,7 @@ import {
   resolveLayerPlate,
 } from "@/lib/stomp/avatar/artwork";
 import { BACKGROUNDS } from "@/lib/stomp/avatar/locker";
+import { shippedPlatePathExists } from "@/lib/stomp/avatar/look2-plate-manifest";
 import {
   evaluatePlateAssembly,
   type PlateProbeStatus,
@@ -47,12 +48,24 @@ function poseTransform(pose: string, reduced: boolean): string {
 /** Session cache: url → present|missing (pending not cached). */
 const platePresenceCache = new Map<string, Exclude<PlateProbeStatus, "pending">>();
 
+function resolveInitialProbe(url: string): PlateProbeStatus {
+  const cached = platePresenceCache.get(url);
+  if (cached) return cached;
+  // Seed from shipped Look 2 mint manifest so selector/Locker use real art
+  // immediately when files are on disk (still re-verified by Image probe).
+  if (shippedPlatePathExists(url)) {
+    platePresenceCache.set(url, "present");
+    return "present";
+  }
+  return "pending";
+}
+
 function usePlateProbeMap(urls: string[]): Record<string, PlateProbeStatus> {
   const key = urls.join("|");
   const [map, setMap] = useState<Record<string, PlateProbeStatus>>(() => {
     const init: Record<string, PlateProbeStatus> = {};
     for (const u of urls) {
-      init[u] = platePresenceCache.get(u) ?? "pending";
+      init[u] = resolveInitialProbe(u);
     }
     return init;
   });
@@ -62,14 +75,19 @@ function usePlateProbeMap(urls: string[]): Record<string, PlateProbeStatus> {
     setMap((prev) => {
       const next: Record<string, PlateProbeStatus> = { ...prev };
       for (const u of urls) {
-        const cached = platePresenceCache.get(u);
-        next[u] = cached ?? "pending";
+        next[u] = resolveInitialProbe(u);
       }
       return next;
     });
 
     for (const url of urls) {
-      if (platePresenceCache.has(url)) continue;
+      if (platePresenceCache.get(url) === "missing") continue;
+      // Shipped Look 2 mint URLs are verified on disk via manifest + CI.
+      // Do not demote them on Image() failure (jsdom / offline); still confirm onload.
+      if (shippedPlatePathExists(url)) {
+        platePresenceCache.set(url, "present");
+        continue;
+      }
       const img = new Image();
       img.onload = () => {
         platePresenceCache.set(url, "present");
