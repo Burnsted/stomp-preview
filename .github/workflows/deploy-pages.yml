@@ -1,1 +1,143 @@
-PLACEHOLDER3
+# Build gb-phone (Vite SPA) and publish to GitHub Pages.
+# Live URL: https://burnsted.github.io/stomp-preview/
+#
+# Durable path: actions/deploy-pages (GitHub Actions as Pages source).
+# Legacy fallback: git-sync static site onto main root so "Deploy from
+# branch: main /" keeps serving the Vite app without wiping gb-phone/ history.
+# (peaceiris cannot publish main→main; we rsync + commit instead.)
+name: deploy-pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "gb-phone/**"
+      - "arcade/**"
+      - ".github/workflows/deploy-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build gb-phone pages
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gb-phone
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: gb-phone/package-lock.json
+      - run: npm ci
+      - name: Verify locked CrewLink Invite (greet.tsx export)
+        run: |
+          # Greet() home UX may change; CrewLink Invite export must stay byte-stable.
+          expected=7795349de918fc1228687f677ff0064f4287e817662f6ccb4fd0fa2ba421fcbe
+          actual=$(python3 - <<'PY2'
+          from pathlib import Path
+          import hashlib
+          text = Path("src/components/stomp/greet.tsx").read_text()
+          start = text.index("export function CrewLink()")
+          print(hashlib.sha256(text[start:].encode()).hexdigest())
+          PY2
+          )
+          echo "CrewLink export sha256=$actual"
+          test "$actual" = "$expected"
+      - run: npm run build:pages
+      - name: Include arcade HTML games in Pages artifact
+        working-directory: .
+        run: |
+          set -euo pipefail
+          if [ -d arcade ]; then
+            mkdir -p site-pages/arcade
+            cp -a arcade/. site-pages/arcade/
+            echo "Bundled arcade/ into site-pages"
+            find site-pages/arcade -type f | head
+          fi
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site-pages
+      - name: Upload legacy-root sync bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-pages-legacy
+          path: site-pages
+
+  deploy-github-pages:
+    name: deploy (Actions Pages)
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Prefer Actions as Pages source
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api --method PUT "repos/${{ github.repository }}/pages" \
+            -f build_type=workflow || true
+      - id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+
+  deploy-legacy-main-root:
+    name: sync site onto main root (legacy Pages)
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: site-pages-legacy
+          path: site-pages
+      - name: Copy Vite site into repo root (keep gb-phone / docs / arcade / history)
+        run: |
+          set -euo pipefail
+          # Replace only published site paths; never touch gb-phone/, docs/, batch1/, flutter-holding/, arcade/.
+          # Note: upload-artifact may omit empty dotfiles like .nojekyll — recreate it.
+          rm -rf assets __grok stomp
+          cp -a site-pages/index.html site-pages/404.html ./
+          cp -a site-pages/favicon.svg site-pages/og.jpg ./
+          cp -a site-pages/assets site-pages/__grok site-pages/stomp ./
+          if [ -d site-pages/arcade ]; then
+            mkdir -p arcade
+            cp -a site-pages/arcade/. arcade/
+          fi
+          : > .nojekyll
+          rm -rf site-pages
+          test -f index.html
+          test -f .nojekyll
+          grep -q '/stomp-preview/assets/' index.html
+          ! grep -qi flutter_bootstrap index.html
+      - name: Commit and push root site if changed
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- \
+            index.html 404.html .nojekyll favicon.svg og.jpg \
+            assets __grok stomp arcade
+          if git diff --cached --quiet; then
+            echo "No root site changes to publish."
+            exit 0
+          fi
+          git commit -m "deploy(pages): gb-phone Vite static site [skip ci]"
+          git push origin HEAD:main
