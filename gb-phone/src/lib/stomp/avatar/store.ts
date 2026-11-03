@@ -11,6 +11,7 @@ import {
   starterUnlocks,
   unlockForActivity,
 } from "@/lib/stomp/avatar/locker";
+import { isValidStomperDisplayName } from "@/lib/stomp/avatar/identity";
 import { ADULT_STARTERS, GROM_STARTERS, configFromStarter, starterById } from "@/lib/stomp/avatar/starters";
 import type { PoseId as Pose } from "@/lib/stomp/avatar/locker";
 import type {
@@ -149,7 +150,8 @@ export const useAvatar = create<AvatarState>()(
             ...st.draft,
             starterId,
             stylePath: s.styleHint,
-            displayName: st.draft.displayName || s.label,
+            // Preserve user-entered name; never fill from starter template label.
+            displayName: st.draft.displayName,
             layers: cfg.layers,
             backgroundId: cfg.backgroundId,
             step: 2,
@@ -211,6 +213,7 @@ export const useAvatar = create<AvatarState>()(
       commitOnboarding: (stomperId) => {
         const { draft } = get();
         if (!draft.starterId || !draft.layers) return null;
+        if (!isValidStomperDisplayName(draft.displayName)) return null;
         const s = starterById(draft.starterId);
         if (!s) return null;
         const now = new Date().toISOString();
@@ -218,7 +221,7 @@ export const useAvatar = create<AvatarState>()(
           version: 1,
           stomperId,
           starterId: draft.starterId,
-          displayName: draft.displayName.trim() || s.label,
+          displayName: draft.displayName.trim(),
           presenting: s.presenting,
           ageBand: s.ageBand,
           stylePath: draft.stylePath,

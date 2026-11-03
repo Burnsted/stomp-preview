@@ -5,6 +5,7 @@
 import { AlpineTopBar } from "@/components/stomp/alpine-chrome";
 import { AvatarRenderer } from "@/components/stomp/avatar/avatar-renderer";
 import { isAvatarFlagOn } from "@/lib/stomp/avatar/flags";
+import { isValidStomperDisplayName, lookOrdinalLabel } from "@/lib/stomp/avatar/identity";
 import { GROM_STARTERS, configFromStarter, starterById } from "@/lib/stomp/avatar/starters";
 import { useAvatar } from "@/lib/stomp/avatar/store";
 import { useStomp } from "@/lib/stomp/store";
@@ -40,17 +41,19 @@ export function GromOnboard() {
   }
 
   const starter = draft.starterId ? starterById(draft.starterId) : null;
+  const nameOk = isValidStomperDisplayName(draft.displayName);
   const preview = starter
     ? {
         ...configFromStarter(starter, {
           stomperId: "grom-draft",
-          displayName: draft.displayName || starter.label,
+          displayName: draft.displayName,
         }),
         layers: draft.layers ?? configFromStarter(starter, { stomperId: "grom-draft" }).layers,
       }
     : null;
 
   function finish() {
+    if (!nameOk) return;
     ensureCode();
     const code = useStomp.getState().riderCode || "grom";
     const cfg = commit(code);
@@ -73,8 +76,9 @@ export function GromOnboard() {
           <>
             <p className="mt-4 text-xs font-bold tracking-widest text-pink">3 GIRLS · 3 BOYS</p>
             <div className="mt-2 grid grid-cols-3 gap-2" data-testid="grom-starter-grid">
-              {GROM_STARTERS.map((s) => {
-                const cfg = configFromStarter(s, { stomperId: "preview" });
+              {GROM_STARTERS.map((s, i) => {
+                const lookLabel = lookOrdinalLabel(i + 1, GROM_STARTERS.length);
+                const cfg = configFromStarter(s, { stomperId: "preview", displayName: lookLabel });
                 return (
                   <button
                     key={s.id}
@@ -84,7 +88,9 @@ export function GromOnboard() {
                     className="flex flex-col items-center rounded-2xl bg-snow/10 p-2 ring-1 ring-line"
                   >
                     <AvatarRenderer config={cfg} size={80} interactive={false} />
-                    <span className="mt-1 text-xs font-semibold">{s.label}</span>
+                    <span className="mt-1 text-xs font-semibold" data-testid={`grom-look-label-${s.id}`}>
+                      {lookLabel}
+                    </span>
                   </button>
                 );
               })}
@@ -130,11 +136,17 @@ export function GromOnboard() {
                 />
               ))}
             </div>
+            {!nameOk ? (
+              <p className="mt-3 text-xs text-pink" data-testid="grom-name-required">
+                Enter a nickname before revealing your ID.
+              </p>
+            ) : null}
             <button
               type="button"
               data-testid="grom-finish"
               onClick={finish}
-              className="mt-6 h-14 w-full rounded-full bg-lime font-semibold text-navy"
+              disabled={!nameOk}
+              className="mt-6 h-14 w-full rounded-full bg-lime font-semibold text-navy disabled:opacity-40"
             >
               Show GROM STOMPER ID
             </button>
