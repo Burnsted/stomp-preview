@@ -27,6 +27,9 @@ export type SessionAct = {
   lookup?: string;
   /** Tesla borrow — voice can switch music source */
   musicSource?: MusicSourceId;
+  /** Rider Hub social intents (demo only — client). */
+  social?: "catchup" | "share" | "confirm" | "cancel" | "sessions" | "message";
+  message?: string;
 };
 
 const WAKE = /^(?:hey|yo)\s+session\b[,.]?\s*/i;
@@ -75,9 +78,21 @@ export function routeSession(
     return { say: `${card.name}. ${line}.`, screen: "goals", lookup: card.name };
   }
 
+  if (/^confirm( share| send)?$/.test(q)) return { say: "Sending.", social: "confirm", screen: "hub" };
+  if (/^cancel share$/.test(q)) return { say: "Share cancelled.", social: "cancel", screen: "hub" };
+  if (/catch up|recent messages/.test(q)) return { say: "Catching up.", social: "catchup", screen: "hub" };
+  if (/upcoming|active session|what's coming|whats coming/.test(q)) {
+    return { say: "Here's what's on.", social: "sessions", screen: "hub" };
+  }
+  const told = q.match(/^(?:message|tell) (?:north crew|the squad) (.+)$/);
+  if (told) return { say: "Preview that message.", social: "message", message: told[1], screen: "hub" };
+  if (/share (the |my )?(clip|photo|video|air)/.test(q)) {
+    return { say: "Preview the share.", social: "share", screen: "hub" };
+  }
+
   if (mention("favorites") || mention("favourite")) return { say: SESSION_CONFIRM.gotIt, screen: "favorites" };
   if (mention("offline")) return { say: SESSION_CONFIRM.gotIt, screen: "offline" };
-  if (mention("campfire") || mention("apres") || mention("après")) return { say: SESSION_CONFIRM.gotIt, screen: "stompers" };
+  if (mention("campfire") || mention("apres") || mention("après")) return { say: "Campfire.", screen: "hub" };
   if (mention("stompers") || mention("nearby")) {
     return {
       say: mention("nearby") ? "Nearby stays off." : SESSION_CONFIRM.gotIt,

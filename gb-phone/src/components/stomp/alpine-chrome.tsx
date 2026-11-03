@@ -29,7 +29,8 @@ export function tabForScreen(screen: Screen): PrimaryTabId | null {
     screen === "woz" ||
     screen === "stomper-id" ||
     screen === "avatar-locker" ||
-    screen === "trip-hub"
+    screen === "trip-hub" ||
+    screen === "hub"
   )
     return "crew";
   if (screen === "avatar-onboard" || screen === "grom-onboard") return "home";

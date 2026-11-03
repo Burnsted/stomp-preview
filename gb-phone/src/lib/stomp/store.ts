@@ -22,6 +22,7 @@ export type Screen =
   | "session"
   | "stompers"
   | "bag"
+  | "hub"
   | "woz"
   | "avatar-onboard"
   | "stomper-id"

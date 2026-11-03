@@ -185,6 +185,14 @@ export function Stompers() {
           </button>
           <button
             type="button"
+            data-testid="open-campfire-hub"
+            onClick={() => setScreen("hub")}
+            className="mt-4 text-sm font-semibold text-teal"
+          >
+            Open campfire
+          </button>
+          <button
+            type="button"
             onClick={() => setScreen("map")}
             className="mt-4 h-14 w-full rounded-full bg-pink font-semibold text-snow"
           >

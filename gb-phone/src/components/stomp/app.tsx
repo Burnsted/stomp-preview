@@ -16,6 +16,7 @@ import { AirLog, Guide, Playlist, StashPins } from "@/components/stomp/more";
 import { OfflineScreen } from "@/components/stomp/offline-screen";
 import { Goals, TerrainPark } from "@/components/stomp/park";
 import { PlaylistFab } from "@/components/stomp/playlist-chrome";
+import { RiderHub } from "@/components/stomp/rider-hub";
 import { TodaySession } from "@/components/stomp/session";
 import { Stompers } from "@/components/stomp/stompers";
 import { Run } from "@/components/stomp/run";
@@ -81,6 +82,7 @@ export function StompApp() {
           {screen === "session" ? <TodaySession /> : null}
           {screen === "stompers" ? <Stompers /> : null}
           {screen === "bag" ? <BagOfTricks /> : null}
+          {screen === "hub" ? <RiderHub /> : null}
           {screen === "woz" ? <WozLab /> : null}
           {screen === "avatar-onboard" ? <AvatarOnboard /> : null}
           {screen === "stomper-id" ? <StomperIdScreen /> : null}
