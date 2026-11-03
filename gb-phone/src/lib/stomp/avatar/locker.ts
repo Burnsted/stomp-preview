@@ -31,7 +31,25 @@ export const LOCKER_CATALOG: LockerItem[] = [
   { id: "pants-park-bibs", slot: "pants", label: "Park Bibs", stage: 2, stylePath: "park-street", isSafety: false, fill: "#1e1b4b", unlockRule: "activity" },
   { id: "pants-freeride", slot: "pants", label: "Freeride Pants", stage: 2, stylePath: "mountain-freeride", isSafety: false, fill: "#0f172a", unlockRule: "activity" },
   { id: "pants-signature", slot: "pants", label: "Signature Pants", stage: 3, stylePath: "any", isSafety: false, fill: "#3b0764", unlockRule: "milestone" },
-  // Roster-aligned jacket shells (itemIds for approved artwork plates)
+  // Roster-aligned jacket/pants shells (itemIds for approved artwork plates — t1177u Look 2 first)
+  {
+    id: "jacket-look2-mint",
+    slot: "jacket",
+    label: "Look 2 Mint Shell",
+    stage: 1,
+    isSafety: false,
+    fill: "#14b8a6",
+    unlockRule: "starter",
+  },
+  {
+    id: "pants-look2-mint",
+    slot: "pants",
+    label: "Look 2 Mint Pants",
+    stage: 1,
+    isSafety: false,
+    fill: "#0d9488",
+    unlockRule: "starter",
+  },
   { id: "jacket-look5-pink", slot: "jacket", label: "Look 5 Pink Shell", stage: 1, isSafety: false, fill: "#ff3b78", unlockRule: "starter" },
   { id: "jacket-look6-white", slot: "jacket", label: "Look 6 White Shell", stage: 1, isSafety: false, fill: "#f8fafc", unlockRule: "starter" },
   // Original STOMP board graphic

@@ -49,4 +49,9 @@ Roster composite (cross-check only): `masters/00-roster-v24-APPROVED-composite.p
 - APPROVED_MASTER: **8 / 8**
 - AWAITING_MASTER_FILE: **0** (Look 6 cleared)
 - Modular plates delivered: **0** (OPEN)
-- First GB acceptance: **Adult Look 2 (`f-hana`)** mint jacket+pants on Android
+- **Next gate:** Look 2 mint acceptance — `LOOK2-MINT-ACCEPTANCE.md`  
+  Paths: `jacket-look2-mint` + `pants-look2-mint` + `f-hana` preview `@512.webp`
+
+## Plate / renderer contract
+
+See `PLATE-RENDERER-CONTRACT.md` — path pattern, layer order, backpack OFF, SVG fallback, masters never auto-mount from `docs/`.

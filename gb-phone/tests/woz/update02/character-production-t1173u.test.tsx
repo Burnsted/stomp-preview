@@ -17,6 +17,20 @@ import {
 import { AVATAR_FLAGS } from "@/lib/stomp/avatar/flags";
 import { isValidStomperDisplayName, lookOrdinalLabel } from "@/lib/stomp/avatar/identity";
 import {
+  LOOK2_ANDROID_ACCEPTANCE_CHECKS,
+  LOOK2_GATE_STATUS,
+  LOOK2_JACKET_ITEM_ID,
+  LOOK2_MASTER_SHA256,
+  LOOK2_PANTS_ITEM_ID,
+  LOOK2_STARTER_ID,
+  assertLook2AcceptanceContract,
+  look2ExpectedRuntimePlatePaths,
+  look2JacketPlateUrl,
+  look2PantsPlateUrl,
+} from "@/lib/stomp/avatar/look2-acceptance";
+import { applyJacketSet } from "@/lib/stomp/avatar/jacket-sets";
+import { itemById } from "@/lib/stomp/avatar/locker";
+import {
   APPROVAL_STAGE,
   APPROVED_MASTER_LOOK_KEYS,
   APPROVED_MASTER_SHA256,
@@ -156,6 +170,49 @@ describe("t1175u — eight APPROVED_MASTER slots", () => {
     expect(APPROVAL_STAGE.modularPlateDelivery).toBe("OPEN");
     expect(APPROVAL_STAGE.androidFunctionalityQa).toBe("AWAITING_GB_PLATES");
     expect(APPROVAL_STAGE.firstAcceptanceLook).toBe("f-hana");
+  });
+});
+
+describe("t1177u — Look 2 mint acceptance / plate-renderer contract", () => {
+  it("locks Look 2 catalog IDs, paths, checklist without inventing plate files", () => {
+    const c = assertLook2AcceptanceContract();
+    expect(c.ok).toBe(true);
+    expect(c.starterId).toBe(LOOK2_STARTER_ID);
+    expect(c.jacketItemId).toBe(LOOK2_JACKET_ITEM_ID);
+    expect(c.pantsItemId).toBe(LOOK2_PANTS_ITEM_ID);
+    expect(c.jacketPlateUrl).toBe("/stomper/adult/jacket/jacket-look2-mint@512.webp");
+    expect(c.pantsPlateUrl).toBe("/stomper/adult/pants/pants-look2-mint@512.webp");
+    expect(c.masterSha256).toBe(LOOK2_MASTER_SHA256);
+    expect(c.checkCount).toBe(LOOK2_ANDROID_ACCEPTANCE_CHECKS.length);
+    expect(LOOK2_GATE_STATUS.modularPlates).toBe("OPEN");
+    expect(LOOK2_GATE_STATUS.androidQa).toBe("AWAITING_GB_PLATES");
+    expect(LOOK2_GATE_STATUS.inventingPlatesForbidden).toBe(true);
+    expect(look2ExpectedRuntimePlatePaths()).toEqual([
+      look2JacketPlateUrl(),
+      look2PantsPlateUrl(),
+      "/stomper/adult/starter/f-hana/preview@512.webp",
+    ]);
+    expect(GB_FIRST_ACCEPTANCE.jacketItemId).toBe("jacket-look2-mint");
+    expect(GB_FIRST_ACCEPTANCE.pantsItemId).toBe("pants-look2-mint");
+  });
+
+  it("defaults f-hana layers to separate mint jacket/pants; SVG until plates exist", () => {
+    const cfg = configFromStarter(starterById("f-hana")!, {
+      stomperId: "a",
+      displayName: "MintQA",
+    });
+    expect(cfg.layers.jacket.itemId).toBe("jacket-look2-mint");
+    expect(cfg.layers.pants.itemId).toBe("pants-look2-mint");
+    expect(cfg.layers.jacket.itemId).not.toBe(cfg.layers.pants.itemId);
+    expect(cfg.layers.backpack.itemId).toBe(BACKPACK_OFF_ITEM_ID);
+    expect(itemById("jacket-look2-mint")?.slot).toBe("jacket");
+    expect(itemById("pants-look2-mint")?.slot).toBe("pants");
+    const swapped = applyJacketSet(cfg.layers, "jacket-look2-mint", "#14b8a6");
+    expect(swapped.pants.itemId).toBe("pants-look2-mint");
+    render(<AvatarRenderer config={cfg} testId="look2-render" />);
+    expect(screen.getByTestId("look2-render").getAttribute("data-render-mode")).toBe("svg-fallback");
+    expect(screen.getByTestId("look2-render").getAttribute("data-starter")).toBe("f-hana");
+    expect(screen.getByTestId("look2-render").getAttribute("data-backpack")).toBe("off");
   });
 });
 

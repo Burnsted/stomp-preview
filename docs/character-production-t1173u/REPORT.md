@@ -6,7 +6,8 @@
 
 ## Verdict
 
-**Visual approval CLOSED for all 8 looks.** Production modular plates **OPEN**. First GB acceptance target: **Adult Look 2 (`f-hana`)** mint jacket+pants layered in real selector + Locker on Android.
+**Visual approval CLOSED for all 8 looks.** Production modular plates **OPEN**.  
+**Next gate (t1177u):** Look 2 mint plate/renderer acceptance contract ready — `LOOK2-MINT-ACCEPTANCE.md` + `PLATE-RENDERER-CONTRACT.md`. Catalog IDs `jacket-look2-mint` / `pants-look2-mint` wired; no plate files invented.
 
 ## Tip / CI
 
@@ -28,10 +29,10 @@ Byte-identical to prior APPROVED masters (sha256 match ASSET_MAP / prior tip).
 
 ## Actual blockers remaining
 
-1. Modular transparent plates (OPEN)  
-2. Starter preview WebPs  
-3. Look 2 mint Android QA awaiting GB plates  
-4. Remaining look plates + device QA after Look 2  
+1. Look 2 mint plates + Android QA (first gate)  
+2. Modular plates for remaining looks  
+3. Starter preview WebPs (non–Look-2)  
+4. Device QA after Look 2 pass  
 
 ## Hard locks
 

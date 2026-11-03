@@ -1,57 +1,36 @@
-# UPDATED-GB-HANDOFF — Precise technical asset handoff (t1175u)
+# UPDATED-GB-HANDOFF — Look 2 first gate (t1177u)
 
-**Audience:** Grok Build — produce **real composable transparent plates**, not another poster.  
-**Source package:** `handoff-t1175u/` (quotes `GROK_BUILD_HANDOFF.md` below).  
-**Design:** CLOSED. All eight visual refs LOCKED. Masters ≠ modular plates.
+**Audience:** Grok Build (when Ted unfreezes messaging) — produce **real composable transparent plates**.  
+**Source package:** `handoff-t1175u/` · acceptance: `LOOK2-MINT-ACCEPTANCE.md` · renderer: `PLATE-RENDERER-CONTRACT.md`  
+**Design:** CLOSED. Visual refs LOCKED. Masters ≠ modular plates.
 
-## Stages (do not conflate)
+## Stages
 
 | Stage | Status |
 |---|---|
-| **Visual-ref approval** | **CLOSED** — eight APPROVED_MASTER PNGs + roster composite |
-| **Asset delivery** (modular alpha WebP plates) | **OPEN** |
-| **Android functionality** (selector + Locker compositing) | **AWAITING_GB_PLATES** — first gate = Look 2 |
+| Visual-ref approval | **CLOSED** (8/8) |
+| Asset delivery (modular plates) | **OPEN** — first deliver Look 2 mint |
+| Android functionality | **AWAITING_GB_PLATES** — gate = Look 2 |
 
-## Quote — GROK_BUILD_HANDOFF.md (authoritative)
+## Quote — GROK_BUILD_HANDOFF.md
 
-> Treat the 8 exact files in APPROVED_REFERENCES as immutable face/wardrobe/pose guides.  
-> Import Woz's catalog IDs from ASSET_MAP.json; preserve his selector, look naming and main navigation.  
-> Do not recreate the approved designs; do not make up new characters, look names, or additional Groms.  
->  
-> Produce for each adult look: high-resolution full-body cutout; aligned editable jacket and matching pants/bib plates; headwear/hair; goggles or wraparound glasses; gloves, boots, board; optional backpack OFF by default; optimized 512×512 sRGB transparent WebP from 1024 masters.  
->  
-> **Do a ONE-character compositing QA first: test Look 2's mint jacket with real tinted jacket/pant plates;** verify full-body preview, jacket swap, eyewear swap, backpack, name persistence and return to Locker on the same phone.  
-> Do not claim success from a static still, an enlarged poster crop, or an isolated UI mock.
+> Do a ONE-character compositing QA first: test Look 2's mint jacket with real tinted jacket/pant plates; verify full-body preview, jacket swap, eyewear swap, backpack, name persistence and return to Locker on the same phone. Do not claim success from a static still, an enlarged poster crop, or an isolated UI mock.
 
 ## First acceptance = Adult Look 2 (`f-hana`)
 
-**Pass criteria:** mint jacket + matching pants as **separate** transparent plates, layered in the **real** character selector and Locker on **physical Android** — identity matches `masters/look2-f-hana-APPROVED.png` / handoff `02_Adult_Look_2_f-hana.png` (sha256 `b92ba262…`).
-
-## Runtime paths (already wired — do not invent files)
-
-```
-/stomper/{adult|grom}/{slot}/{itemId}@512.webp
-/stomper/{adult|grom}/starter/{starterId}/preview@512.webp
-```
-
-`AvatarRenderer`: plate probe → composite; else `svg-fallback`. Docs masters never auto-mount.
-
-## Look-specific eyewear (locked)
-
-| starterId | Rule |
+| | |
 |---|---|
-| `m-devon` | Black NON-reflective goggles |
-| `f-nova` | Red-orange wraparound glasses; beanie NO bun |
-| `m-leo` | Goggles on head — **NOT** Meta Oakley Vanguard |
+| Jacket plate | `/stomper/adult/jacket/jacket-look2-mint@512.webp` |
+| Pants plate | `/stomper/adult/pants/pants-look2-mint@512.webp` |
+| Preview | `/stomper/adult/starter/f-hana/preview@512.webp` |
+| Master QA | `masters/look2-f-hana-APPROVED.png` sha256 `b92ba262…` |
+
+Pass = separate transparent plates layered in **real** selector + Locker on **physical Android** (full checklist in `LOOK2-MINT-ACCEPTANCE.md`).
+
+## Runtime (wired — no invent)
+
+`AvatarRenderer` probes plate URLs → `plates` mode; else `svg-fallback`. Docs masters never auto-mount. Jacket-set keeps jacket/pants as two itemIds. Backpack OFF by default. Look N of M naming; user STOMPER names preserved.
 
 ## Forbidden
 
-- Regenerating / recoloring / substituting faces  
-- Poster-crop → fake modular layers  
-- Woz-named STOMPER / preset displayNames  
-- Claiming success without Android Look 2 layered QA  
-- Youth enrollment / payments / Pages / merge
-
-## What we have now (handoff only these)
-
-All eight refs under `handoff-t1175u/APPROVED_REFERENCES/` and `masters/*-APPROVED.png`. Modular plates: **none yet**.
+Poster-crop · regenerate faces · Woz-named STOMPER · youth/payments/Pages/merge · claiming Look 2 pass without Android checklist.

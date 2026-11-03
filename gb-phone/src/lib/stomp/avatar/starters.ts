@@ -287,12 +287,20 @@ export function starterById(id: string): StarterDef | undefined {
 
 export function layersFromStarter(s: StarterDef): AvatarLayers {
   const bodyId = `body-${s.silhouette}`;
+  // Look 2 (f-hana) first-gate plate IDs — SVG tint fallback until GB WebPs land (t1177u).
+  const isLook2 = s.id === "f-hana";
   return {
     body: { itemId: bodyId, color: s.skinTone },
     face: { itemId: `face-${s.presenting}`, color: s.skinTone },
     hair: { itemId: `hair-${s.hairStyle}`, color: s.hairColor },
-    pants: { itemId: "pants-basic", color: s.pantsFill },
-    jacket: { itemId: "jacket-basic", color: s.jacketFill },
+    pants: {
+      itemId: isLook2 ? "pants-look2-mint" : "pants-basic",
+      color: isLook2 ? "#0d9488" : s.pantsFill,
+    },
+    jacket: {
+      itemId: isLook2 ? "jacket-look2-mint" : "jacket-basic",
+      color: s.jacketFill,
+    },
     // Optional jacket accessory — OFF by default (t1171u).
     backpack: { itemId: "backpack-none" },
     gloves: { itemId: "gloves-basic", color: "#1e293b" },

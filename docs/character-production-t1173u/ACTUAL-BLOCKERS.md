@@ -1,30 +1,30 @@
-# ACTUAL-BLOCKERS — t1175u / t1176ua0 (real blockers only)
+# ACTUAL-BLOCKERS — t1177u (real blockers only)
 
 **Visual approval:** CLOSED for all eight looks.  
-Below are **actual** remaining production blockers.
+**Next gate:** Look 2 (`f-hana`) mint plate acceptance on physical Android — see `LOOK2-MINT-ACCEPTANCE.md`.
 
 ## OPEN
 
 | # | Blocker | Owner | Notes |
 |---|---|---|---|
-| 1 | **Modular transparent layer plates** not delivered for any of the eight looks | Grok Build / art | Masters ≠ plates; SVG fallback only. Do not poster-crop |
-| 2 | **Starter preview WebPs** missing under `gb-phone/public/stomper/.../preview@512.webp` | Grok Build / art | URL contract ready |
-| 3 | **Look 2 (`f-hana`) mint jacket+pants Android QA** | GB → QA | First acceptance: real layered plates in selector + Locker on physical Android |
-| 4 | Jacket-set / eyewear-hair plates matching locked looks 4–6 | Grok Build / art | Look 4 non-reflective goggles; Look 5 wraparound + beanie no bun; Look 6 goggles-on-head only |
-| 5 | Physical Android device QA for remaining looks after Look 2 | QA | After first acceptance |
+| 1 | **Look 2 mint modular plates** (`jacket-look2-mint` + `pants-look2-mint` + `f-hana` preview WebP) not on disk | Grok Build / art | First acceptance gate; paths contracted; **no invent/crop** |
+| 2 | **Look 2 Android QA** (selector + Locker layering per checklist) | QA after GB | Blocked on #1 |
+| 3 | Modular transparent plates for remaining Looks 1,3–6 + Grom | Grok Build / art | After Look 2 pass |
+| 4 | Starter preview WebPs for non–Look-2 IDs | Grok Build / art | URL contract ready |
+| 5 | Device QA for remaining looks after Look 2 | QA | After #3 |
 
-## HELD (intentional — not defects)
+## HELD (intentional)
 
 | Item | Status |
 |---|---|
-| `gromFlowEnabled=false` (enrollment) | **HELD** — Grom masters are preview-only |
+| `gromFlowEnabled=false` | **HELD** — Grom masters preview-only |
 | Payments / wallet / production authz | **HELD** |
 | Pages / prod deploy / merge | **HELD** — DRAFT PR only |
+| Messaging Grok Build | **HELD** — Ted freeze (t1177u) |
 
-## CLOSED (this tip)
+## CLOSED / prepared (this tip)
 
-- Eight owner visual masters on disk + handoff package `handoff-t1175u/`  
-- Looks 1–3 byte-identical to prior APPROVED masters  
-- Look 6 `AWAITING_MASTER_FILE` cleared → **APPROVED_MASTER**  
-- Looks 4–5 + Grom visual masters committed  
-- Slot readiness 8× APPROVED_MASTER; provenance SHA-256 from ASSET_MAP  
+- Eight APPROVED_MASTER visual refs + handoff package  
+- Plate/renderer contract docs (`PLATE-RENDERER-CONTRACT.md`)  
+- Look 2 acceptance checklist + catalog IDs / jacket-set / default layer wiring  
+- SVG fallback retained until real plates exist  

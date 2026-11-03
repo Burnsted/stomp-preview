@@ -123,8 +123,13 @@ export const LOOK6_MASTER_PENDING_PATH =
 export const GB_FIRST_ACCEPTANCE = {
   lookKey: "adult-look-2" as RosterV24LookKey,
   starterId: "f-hana",
+  jacketItemId: "jacket-look2-mint",
+  pantsItemId: "pants-look2-mint",
+  jacketPlateUrl: "/stomper/adult/jacket/jacket-look2-mint@512.webp",
+  pantsPlateUrl: "/stomper/adult/pants/pants-look2-mint@512.webp",
+  previewUrl: "/stomper/adult/starter/f-hana/preview@512.webp",
   requirement:
-    "Real mint jacket + matching pants modular plates composited in selector + Locker on physical Android",
+    "Real mint jacket + matching pants modular plates (jacket-look2-mint + pants-look2-mint) composited in selector + Locker on physical Android",
 } as const;
 
 /** Look 4: black NON-reflective goggles (not Meta glasses). */
