@@ -82,6 +82,19 @@ import {
   viewerOrParticipantHasSquadAccess,
 } from "./daysesh-boundary.js";
 import {
+  approveNewMembership,
+  assertShareDoesNotExtendMediaClock,
+  authorizeMediaAccess,
+  acceptOwnerTransfer,
+  departOwnerWithoutSuccessor,
+  messageVisibleToMembership,
+  nominateOwnerSuccessor,
+  revokeAccountAccess,
+  activeMembership,
+  daySeshMediaExpiresAt,
+  type OwnerTransferPending,
+} from "./lifecycle-g1g4.js";
+import {
   micDeniedFallback,
   parseVoiceUtterance,
   prepareFromVoice,
@@ -504,6 +517,8 @@ export function acceptInvite(
   const invites = w.invites.map((i) =>
     i.id === inviteId ? { ...i, status: "accepted" as const } : i,
   );
+  const at = joinedAt ?? w.nowIso;
+  // G2 — always append a NEW membership row (prospective); never revive a left row.
   const memberships: Membership[] = [
     ...w.memberships,
     {
@@ -511,7 +526,8 @@ export function acceptInvite(
       stomperId: inv.toStomperId,
       role: "member",
       state: "active",
-      joinedAt: joinedAt ?? w.nowIso,
+      joinedAt: at,
+      historyCutoffAt: at,
     },
   ];
   return ok({ ...w, invites, memberships });
@@ -529,6 +545,8 @@ export function uploadMedia(
     trip?: TripEndAnchor | null;
     tripBoundIso?: string | null;
     daySeshId?: string;
+    /** G1 — official Day Sesh end for 45d max retention. */
+    daySeshOfficialEndedAt?: string | null;
   },
 ): Result<CampfireWorld, DenyReason> {
   const uploadedAt = args.uploadedAt ?? w.nowIso;
@@ -555,6 +573,14 @@ export function uploadMedia(
           }).deadlineIso
         : null);
 
+  const daySeshOfficialEndedAt =
+    args.origin === "day_sesh"
+      ? args.daySeshOfficialEndedAt ??
+        w.daySesh.officialEndedAt ??
+        w.daySesh.closedAt ??
+        null
+      : null;
+
   const expiry = computeMediaExpiry({
     origin: args.origin,
     uploadedAt,
@@ -565,9 +591,10 @@ export function uploadMedia(
         : args.origin === "day_sesh"
           ? undefined
           : tripBound,
+    daySeshOfficialEndedAt,
   });
 
-  // For day_sesh without trip bind → DEADLINE_UNSPECIFIED
+  // G1 — day_sesh uses day_sesh_45d_max (official end + 45d); Campfire share must not rewrite
   const asset: MediaAsset = {
     id: args.id as MediaAsset["id"],
     ownerId: args.ownerId,
@@ -972,8 +999,15 @@ export function eraseStomper(
   stomperId: StomperId,
 ): CampfireWorld {
   const person = stomper(w, stomperId);
-  const result = eraseAccount({
+  // G4 — immediate logical revoke of memberships/invites/sessions/grants
+  const revoked = revokeAccountAccess({
     stomper: person,
+    memberships: w.memberships,
+    invites: w.invites,
+    nowIso: w.nowIso,
+  });
+  const result = eraseAccount({
+    stomper: revoked.stomper,
     messages: w.messages,
     assets: [...w.assets.values()],
     links: w.links,
@@ -989,6 +1023,8 @@ export function eraseStomper(
     assets,
     links: result.links,
     blocks: result.blocks,
+    memberships: revoked.memberships,
+    invites: revoked.invites as CampfireWorld["invites"],
   };
 }
 
@@ -1003,7 +1039,22 @@ export function closeLinkedDaySesh(w: CampfireWorld): {
     memberships: w.memberships.filter((m) => m.squadId === IDS.sunrise),
   };
   const closed = closeDaySesh(w.daySesh, w.nowIso);
-  const world = { ...w, daySesh: closed.sesh };
+  const official = closed.sesh.officialEndedAt ?? closed.sesh.closedAt ?? w.nowIso;
+  // G1 — freeze Day Sesh media clocks from official end (never extended by later Campfire links)
+  const assets = new Map(w.assets);
+  for (const [id, a] of assets) {
+    if (a.origin === "day_sesh" && (a.daySeshId === closed.sesh.id || !a.daySeshId)) {
+      if (a.expiresAt == null) {
+        assets.set(id, {
+          ...a,
+          expiresAt: daySeshMediaExpiresAt(official),
+          flag: "day_sesh_45d_max",
+          daySeshId: a.daySeshId ?? closed.sesh.id,
+        });
+      }
+    }
+  }
+  const world = { ...w, daySesh: closed.sesh, assets };
   const after = {
     squad: world.squads.get(IDS.sunrise)!,
     campfire: world.campfires.get(IDS.cfSunrise)!,
@@ -1015,6 +1066,114 @@ export function closeLinkedDaySesh(w: CampfireWorld): {
     untouched: assertCampfireUntouched({ before, after }),
   };
 }
+
+/** G2 — approve rejoin as a NEW membership (prospective history only). */
+export function approveSquadRejoin(
+  w: CampfireWorld,
+  args: { squadId: string; stomperId: StomperId; joinedAt?: string },
+): Result<CampfireWorld, DenyReason> {
+  const at = args.joinedAt ?? w.nowIso;
+  const memberships = approveNewMembership({
+    memberships: w.memberships,
+    squadId: args.squadId,
+    stomperId: args.stomperId,
+    joinedAt: at,
+  });
+  if (!memberships.ok) return memberships;
+  return ok({ ...w, memberships: memberships.value });
+}
+
+/** G2 — message visible under active membership historyCutoff. */
+export function canViewerSeeMessage(
+  w: CampfireWorld,
+  viewerId: StomperId,
+  messageId: string,
+): boolean {
+  const msg = w.messages.find((m) => m.id === messageId);
+  if (!msg) return false;
+  const cf = [...w.campfires.values()].find((c) => c.id === msg.campfireId);
+  if (!cf) return false;
+  const membership = activeMembership(w.memberships, cf.squadId, viewerId);
+  return messageVisibleToMembership(msg, membership);
+}
+
+export function nominateSquadOwner(
+  w: CampfireWorld,
+  args: { squadId: string; fromOwnerId: StomperId; nomineeId: StomperId },
+): Result<{ world: CampfireWorld; transfer: OwnerTransferPending }, DenyReason> {
+  const squad = w.squads.get(args.squadId);
+  if (!squad) return err("not_found");
+  const result = nominateOwnerSuccessor({
+    squad,
+    memberships: w.memberships,
+    people: w.people,
+    fromOwnerId: args.fromOwnerId,
+    nomineeId: args.nomineeId,
+    nowIso: w.nowIso,
+  });
+  if (!result.ok) return result;
+  const squads = new Map(w.squads);
+  squads.set(args.squadId, result.value.squad);
+  return ok({ world: { ...w, squads }, transfer: result.value.transfer });
+}
+
+export function acceptSquadOwnerTransfer(
+  w: CampfireWorld,
+  transfer: OwnerTransferPending,
+  acceptorId: StomperId,
+): Result<CampfireWorld, DenyReason> {
+  const squad = w.squads.get(transfer.squadId);
+  if (!squad) return err("not_found");
+  const result = acceptOwnerTransfer({
+    squad,
+    memberships: w.memberships,
+    transfer,
+    acceptorId,
+    nowIso: w.nowIso,
+  });
+  if (!result.ok) return result;
+  const squads = new Map(w.squads);
+  squads.set(transfer.squadId, result.value.squad);
+  return ok({ ...w, squads, memberships: result.value.memberships });
+}
+
+export function departSquadOwner(
+  w: CampfireWorld,
+  args: { squadId: string; ownerId: StomperId; remainAsMember?: boolean },
+): Result<CampfireWorld, DenyReason> {
+  const squad = w.squads.get(args.squadId);
+  if (!squad) return err("not_found");
+  const result = departOwnerWithoutSuccessor({
+    squad,
+    memberships: w.memberships,
+    ownerId: args.ownerId,
+    leftAt: w.nowIso,
+    remainAsMember: args.remainAsMember,
+  });
+  if (!result.ok) return result;
+  const squads = new Map(w.squads);
+  squads.set(args.squadId, result.value.squad);
+  return ok({ ...w, squads, memberships: result.value.memberships });
+}
+
+export function recheckMediaAccess(
+  w: CampfireWorld,
+  args: { actorId: StomperId; mediaRefId: string; squadId: string },
+): Result<true, DenyReason> {
+  const asset = w.assets.get(args.mediaRefId);
+  if (!asset) return err("not_found");
+  const cf = campfireBySquad(w, args.squadId);
+  return authorizeMediaAccess({
+    stomper: stomper(w, args.actorId),
+    campfireSquadId: args.squadId,
+    memberships: w.memberships,
+    asset,
+    nowIso: w.nowIso,
+    campfire: cf,
+  });
+}
+
+export { assertShareDoesNotExtendMediaClock };
 
 export function voiceCommand(
   w: CampfireWorld,

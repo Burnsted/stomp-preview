@@ -6,6 +6,8 @@
 
 export const CAMPFIRE_TEXT_MAX_MONTHS = 12;
 export const CAMPFIRE_MEDIA_MAX_DAYS = 90;
+/** G1 LOCKED — Day Sesh-hosted media max retention after official Day Sesh end. */
+export const DAY_SESH_MEDIA_MAX_DAYS = 45;
 /** Re-exported contract value — trip Drop media ≤45d from officialEndDate. */
 export { VIEWER_MEDIA_MAX_DAYS } from "./trip-shim.js";
 
@@ -22,19 +24,24 @@ export const CAMPFIRE_POLICY = {
   textRetentionMonths: CAMPFIRE_TEXT_MAX_MONTHS,
   standaloneMediaDays: CAMPFIRE_MEDIA_MAX_DAYS,
   tripMediaMaxDays: 45,
-  /** Lazy read-time expiry only — no sweeper. */
+  daySeshMediaMaxDays: DAY_SESH_MEDIA_MAX_DAYS,
+  /** Lazy read-time expiry only — no sweeper / production deletion jobs. */
   deletionJobs: false,
   liveModerationProvider: false,
   legalHoldInfra: false,
   youthCampfire: false,
   discretionaryArchive: false,
   reportPausesRetention: false,
-  /** Activity / Squad / repost never resets clocks. */
+  /** Activity / Squad / repost / Campfire link never resets clocks. */
   resetOn: "never" as const,
+  /** G2 — rejoin is prospective only. */
+  rejoinExposesHistory: false,
+  /** G3 — no auto-promote on owner departure. */
+  autoPromoteOwner: false,
 } as const;
 
 /**
- * Gates that remain disabled / unresolved (do not invent final behavior).
+ * Gates: G1–G3 product rules LOCKED (t1166u). Remaining = legal/infra activation.
  */
 export type UnresolvedGate =
   | "day_sesh_media_deadline"
@@ -47,22 +54,25 @@ export type UnresolvedGate =
   | "account_erasure_legal_confirm"
   | "sesh_animation_gb";
 
-export const UNRESOLVED_GATES: Record<UnresolvedGate, { status: "disabled" | "unresolved"; note: string }> = {
+export const UNRESOLVED_GATES: Record<
+  UnresolvedGate,
+  { status: "disabled" | "unresolved" | "locked"; note: string }
+> = {
   day_sesh_media_deadline: {
-    status: "unresolved",
-    note: "G1 — Day Sesh media exact deletion deadline FLAGGED; use DEADLINE_UNSPECIFIED.",
+    status: "locked",
+    note: "G1 LOCKED t1166u — Day Sesh media max 45d after official end; Campfire link never extends clock.",
   },
   rejoin_history: {
-    status: "unresolved",
-    note: "G2 / AF-CF-35 — historical access after rejoin not locked.",
+    status: "locked",
+    note: "G2 LOCKED t1166u / AF-CF-35 — rejoin requires new approval; history not auto-exposed.",
   },
   owner_leave_transfer: {
-    status: "unresolved",
-    note: "G3 / AF-CF-36 — Squad owner leave / ownership transfer not locked.",
+    status: "locked",
+    note: "G3 LOCKED t1166u / AF-CF-36 — nominate+accept only; else unresolved-owner; no auto-promote.",
   },
   owner_account_deletion: {
-    status: "unresolved",
-    note: "G3 / AF-CF-59 — owner account deletion succession not locked.",
+    status: "locked",
+    note: "G3/G4 LOCKED t1166u / AF-CF-59 — owner may depart; unresolved-owner safe; no forced stay.",
   },
   legal_preservation_infra: {
     status: "disabled",
@@ -74,11 +84,11 @@ export const UNRESOLVED_GATES: Record<UnresolvedGate, { status: "disabled" | "un
   },
   production_deletion_job: {
     status: "disabled",
-    note: "AF-CF-81 — expiry is soft hide at read; no purge job.",
+    note: "AF-CF-81 / G4 — logical revoke + soft hide only; no production purge job.",
   },
   account_erasure_legal_confirm: {
     status: "unresolved",
-    note: "G4 — AF-CF-57 fictional sim ready; counsel confirm before live.",
+    note: "G4 — fictional logical revoke LOCKED; physical storage erasure schedules need tech+legal review before live.",
   },
   sesh_animation_gb: {
     status: "disabled",

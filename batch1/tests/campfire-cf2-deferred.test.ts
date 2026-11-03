@@ -1,25 +1,13 @@
 /**
- * Deferred AF-CF cases — explicitly skipped with reasons (CF-DECISION-CLOSURE).
- * Do not invent final behavior for these gates.
+ * Deferred AF-CF cases — Sesh animation / legal infra / deletion jobs remain skipped.
+ * G2/G3 product gates LOCKED t1166u — markers assert locked status (behavior in AF-G14).
  */
 import { describe, expect, it } from "vitest";
 import * as CF from "../src/campfire/cf2-index.js";
 
-describe("AF-CF deferred (7) — skipped pending owner/legal/GB", () => {
-  it.skip("AF-CF-35 rejoin history — G2 unresolved: returning STOMPER history access not locked", () => {
-    expect(CF.UNRESOLVED_GATES.rejoin_history.status).toBe("unresolved");
-  });
-
-  it.skip("AF-CF-36 owner leave/transfer — G3 unresolved: succession rule not locked", () => {
-    expect(CF.UNRESOLVED_GATES.owner_leave_transfer.status).toBe("unresolved");
-  });
-
+describe("AF-CF deferred (remaining) — skipped pending legal/GB/infra", () => {
   it.skip("AF-CF-51 Sesh animation state machine — GB frozen / bridge HELD", () => {
     expect(CF.seshAnimationStateMachine().enabled).toBe(false);
-  });
-
-  it.skip("AF-CF-59 Squad owner account deletion — G3 unresolved", () => {
-    expect(CF.ownerAccountDeletionAllowed(CF.IDS.ava).allowed).toBe(false);
   });
 
   it.skip("AF-CF-79 legal preservation infra — type-only; infra disabled", () => {
@@ -37,8 +25,19 @@ describe("AF-CF deferred (7) — skipped pending owner/legal/GB", () => {
   });
 });
 
-describe("deferred gate markers still readable (not counted as AF-CF pass)", () => {
-  it("exposes unresolved gates for Woz/Ted reporting", () => {
+describe("G1–G3 gate markers LOCKED (t1166u) — readable for Woz/Ted reporting", () => {
+  it("day_sesh_media_deadline / rejoin_history / owner_leave_transfer / owner_account_deletion locked", () => {
+    expect(CF.UNRESOLVED_GATES.day_sesh_media_deadline.status).toBe("locked");
+    expect(CF.UNRESOLVED_GATES.rejoin_history.status).toBe("locked");
+    expect(CF.UNRESOLVED_GATES.owner_leave_transfer.status).toBe("locked");
+    expect(CF.UNRESOLVED_GATES.owner_account_deletion.status).toBe("locked");
+    expect(CF.ownerAccountDeletionAllowed(CF.IDS.ava).allowed).toBe(true);
+    expect(CF.ownerAccountDeletionAllowed(CF.IDS.ava).forcesStay).toBe(false);
+    expect(CF.ownerAccountDeletionAllowed(CF.IDS.ava).autoPromotesSuccessor).toBe(false);
+    expect(CF.ownerAccountDeletionAllowed(CF.IDS.ava).physicalWipeGuaranteed).toBe(false);
+  });
+
+  it("exposes remaining unresolved/disabled gates for reporting", () => {
     expect(CF.UNRESOLVED_GATES.rejoin_history.note).toMatch(/AF-CF-35/);
     expect(CF.UNRESOLVED_GATES.owner_leave_transfer.note).toMatch(/AF-CF-36/);
     expect(CF.UNRESOLVED_GATES.sesh_animation_gb.note).toMatch(/AF-CF-51/);
@@ -46,5 +45,6 @@ describe("deferred gate markers still readable (not counted as AF-CF pass)", () 
     expect(CF.UNRESOLVED_GATES.legal_preservation_infra.note).toMatch(/AF-CF-79/);
     expect(CF.UNRESOLVED_GATES.live_moderation_provider.note).toMatch(/AF-CF-80/);
     expect(CF.UNRESOLVED_GATES.production_deletion_job.note).toMatch(/AF-CF-81/);
+    expect(CF.UNRESOLVED_GATES.account_erasure_legal_confirm.status).toBe("unresolved");
   });
 });

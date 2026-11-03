@@ -5,6 +5,7 @@ import {
   CAMPFIRE_MEDIA_MAX_DAYS,
   CAMPFIRE_TEXT_MAX_MONTHS,
   CAMPFIRE_POLICY,
+  DAY_SESH_MEDIA_MAX_DAYS,
 } from "./policy.js";
 import {
   addUtcDays,
@@ -20,6 +21,7 @@ import type {
   Message,
   MessageState,
 } from "./cf2-types.js";
+import { daySeshMediaDeadlineLocked, daySeshMediaExpiresAt } from "./lifecycle-g1g4.js";
 
 export function textExpiresAt(createdAt: string): string {
   return addUtcMonths(createdAt, CAMPFIRE_TEXT_MAX_MONTHS);
@@ -33,21 +35,24 @@ export function tripMediaExpiresAt(trip: TripEndAnchor): string | null {
   return mediaViewerDeadline(trip).deadlineIso;
 }
 
-/** Day Sesh media — never invent a deletion deadline. */
-export function daySeshMediaDeadline(): DaySeshMediaDeadline {
-  return {
-    kind: "session_policy",
-    deadlineAt: null,
-    flag: "DEADLINE_UNSPECIFIED",
-  };
+/**
+ * G1 LOCKED — Day Sesh media max 45d after official Day Sesh end.
+ * Without an official end yet, deadlineAt is null (not past-due); flag still day_sesh_45d_max.
+ */
+export function daySeshMediaDeadline(
+  officialEndedAt?: string | null,
+): DaySeshMediaDeadline {
+  return daySeshMediaDeadlineLocked(officialEndedAt);
 }
 
 export function computeMediaExpiry(args: {
   origin: MediaAsset["origin"];
   uploadedAt: string;
   trip?: TripEndAnchor | null;
-  /** Optional known bound when Day Sesh media is also trip-linked. */
+  /** Optional known bound when Day Sesh media is also trip-linked — NEVER extends past min. */
   tripBoundIso?: string | null;
+  /** G1 — official Day Sesh end anchor. */
+  daySeshOfficialEndedAt?: string | null;
 }): Pick<MediaAsset, "expiresAt" | "flag"> {
   if (args.origin === "campfire") {
     return { expiresAt: standaloneMediaExpiresAt(args.uploadedAt) };
@@ -58,16 +63,27 @@ export function computeMediaExpiry(args: {
     }
     return { expiresAt: tripMediaExpiresAt(args.trip) };
   }
-  // day_sesh — DEADLINE_UNSPECIFIED; if trip-linked, never extend past trip bound
-  const ds = daySeshMediaDeadline();
+  // day_sesh — G1 45d max from official end; Campfire link must not rewrite this later
+  const ds = daySeshMediaDeadline(args.daySeshOfficialEndedAt);
+  let expiresAt =
+    ds.deadlineAt ??
+    (args.daySeshOfficialEndedAt
+      ? daySeshMediaExpiresAt(args.daySeshOfficialEndedAt)
+      : null);
   if (args.tripBoundIso) {
-    return {
-      expiresAt: args.tripBoundIso,
-      flag: ds.flag,
-    };
+    // Known trip-linked bound may apply before/alongside DS clock; NEVER extends past min.
+    if (expiresAt) {
+      const a = new Date(expiresAt).getTime();
+      const b = new Date(args.tripBoundIso).getTime();
+      expiresAt = new Date(Math.min(a, b)).toISOString();
+    } else {
+      expiresAt = args.tripBoundIso;
+    }
   }
-  return { expiresAt: null, flag: ds.flag };
+  return { expiresAt, flag: "day_sesh_45d_max" };
 }
+
+export { DAY_SESH_MEDIA_MAX_DAYS };
 
 export function expiryContractForMessage(msg: Message): ExpiryContract {
   return {
@@ -81,12 +97,12 @@ export function expiryContractForMessage(msg: Message): ExpiryContract {
 export function expiryContractForMedia(asset: MediaAsset): ExpiryContract {
   let source: ExpirySource = "campfire_media_90d";
   if (asset.origin === "trip_drop") source = "trip_drop_45d";
-  if (asset.origin === "day_sesh") source = "day_sesh_session";
+  if (asset.origin === "day_sesh") source = "day_sesh_45d";
   return {
     assetOrMessageId: asset.id,
     source,
     expiresAt: asset.expiresAt,
-    resetOn: "never",
+    resetOn: CAMPFIRE_POLICY.resetOn,
     flag: asset.flag,
   };
 }

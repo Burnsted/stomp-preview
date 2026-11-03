@@ -86,13 +86,17 @@ Reuse — do not rewrite: `trips.eligibility`, `daysesh.entitlement`, `campfireC
 
 | Item | State |
 |---|---|
-| G1 Day Sesh media deadline | OPEN (`DEADLINE_UNSPECIFIED`) |
-| G2–G4 rejoin / owner leave / erasure | HELD |
+| G1 Day Sesh media deadline | **LOCKED** fictionally (`day_sesh_45d_max`) — prod authz still required |
+| G2 rejoin / G3 owner transfer | **LOCKED** fictionally — prod authz still required |
+| G4 logical revoke | **LOCKED** fictionally; physical wipe **not** guaranteed |
+| G4 storage erasure schedules | Unresolved — see `ERASURE-LIFECYCLE.md` (docs only; NOT executed) |
 | F1–F5 | HELD |
 | Youth Campfire | HELD (`YOUTH_CAMPFIRE_ENABLED=false`) |
 | Payments | HELD |
 | Live deletion jobs | HELD (`assertNoDeletionJob().enabled === false`) |
-| Legal G4 erasure | Owner + counsel |
+| Legal G4 erasure activation | Owner + counsel |
+
+**t1166u note:** G1–G4 product policies are LOCKED for fictional tip + AF-G14. This packet remains **prepared but not executed** for production identity/authz/media lifecycle/storage/deletion.
 
 ---
 

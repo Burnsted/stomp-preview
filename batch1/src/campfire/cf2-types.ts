@@ -35,6 +35,7 @@ export type ExpirySource =
   | "campfire_media_90d"
   | "trip_drop_45d"
   | "day_sesh_session"
+  | "day_sesh_45d"
   | "legal_preservation";
 
 export type ViewerRender =
@@ -68,15 +69,18 @@ export interface ExpiryContract {
   assetOrMessageId: string;
   source: ExpirySource;
   expiresAt: string | null;
-  /** Clocks never reset on repost/link/react/forward/activity. */
+  /** Clocks never reset on repost/link/react/forward/activity/Campfire share. */
   resetOn: "never";
-  flag?: "DEADLINE_UNSPECIFIED";
+  /** @deprecated G1 locked — prefer day_sesh_45d_max */
+  flag?: "DEADLINE_UNSPECIFIED" | "day_sesh_45d_max";
 }
 
 export interface DaySeshMediaDeadline {
   kind: "session_policy";
   deadlineAt: string | null;
-  flag: "DEADLINE_UNSPECIFIED";
+  /** G1 LOCKED t1166u */
+  flag: "day_sesh_45d_max";
+  maxDays: 45;
 }
 
 export interface Stomper {
@@ -86,6 +90,8 @@ export interface Stomper {
   accountStatus: AccountStatus;
 }
 
+export type SquadOwnershipState = "resolved" | "pending_transfer" | "unresolved";
+
 export interface Squad {
   id: SquadId;
   name: string;
@@ -93,6 +99,10 @@ export interface Squad {
   /** Exactly one persistent private Campfire per Squad. */
   campfireId: CampfireId;
   createdAt: string;
+  /** G3 — ownership transfer / unresolved-owner state. */
+  ownershipState?: SquadOwnershipState;
+  pendingNomineeId?: StomperId;
+  unresolvedSince?: string;
 }
 
 export interface Campfire {
@@ -110,6 +120,11 @@ export interface Membership {
   state: MembershipState;
   joinedAt: string;
   leftAt?: string;
+  /**
+   * G2 — prospective history cutoff (defaults to joinedAt).
+   * Messages before cutoff are NOT auto-visible after rejoin.
+   */
+  historyCutoffAt?: string;
 }
 
 export interface Message {
@@ -138,9 +153,9 @@ export interface MediaAsset {
   ownerId: StomperId | "former_stomper";
   origin: MediaOrigin;
   uploadedAt: string;
-  /** Derived at create; NEVER rewritten by link/repost/react/forward. */
+  /** Derived at create; NEVER rewritten by link/repost/react/forward/Campfire share. */
   expiresAt: string | null;
-  flag?: "DEADLINE_UNSPECIFIED";
+  flag?: "DEADLINE_UNSPECIFIED" | "day_sesh_45d_max";
   tripId?: TripId;
   daySeshId?: DaySeshId;
   /** Fictional local URI only. */
@@ -226,7 +241,7 @@ export interface ShareIntent {
     memberCount: number;
     thumbLabel: string;
     expiresAt: string | null;
-    expirySource: ExpirySource | "DEADLINE_UNSPECIFIED";
+    expirySource: ExpirySource | "DEADLINE_UNSPECIFIED" | "day_sesh_45d_max";
   };
   createdAt: string;
   confirmedAt?: string;
@@ -249,6 +264,8 @@ export interface DaySeshStub {
   status: "planned" | "active" | "closed" | "expired";
   participantIds: StomperId[];
   closedAt?: string;
+  /** G1 — official end anchor for media retention (set on close). */
+  officialEndedAt?: string | null;
 }
 
 export interface CloseDaySeshResult {

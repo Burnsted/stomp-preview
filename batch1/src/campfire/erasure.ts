@@ -102,13 +102,25 @@ export function displayNameForAuthor(
   return profiles.get(authorId)?.displayName ?? FORMER_STOMPER_LABEL;
 }
 
-/** Owner account deletion when ownership not transferred — unresolved. */
+/**
+ * G3/G4 LOCKED — owner may delete/depart their account without forced stay.
+ * Succession is separate (nominate+accept or unresolved-owner).
+ * Physical storage erasure still requires legal confirm before live activation.
+ */
 export function ownerAccountDeletionAllowed(_squadOwnerId: StomperId): {
-  allowed: false;
+  allowed: true;
+  forcesStay: false;
+  autoPromotesSuccessor: false;
+  physicalWipeGuaranteed: false;
   gate: typeof UNRESOLVED_GATES.owner_account_deletion;
+  storageErasureGate: typeof UNRESOLVED_GATES.account_erasure_legal_confirm;
 } {
   return {
-    allowed: false,
+    allowed: true,
+    forcesStay: false,
+    autoPromotesSuccessor: false,
+    physicalWipeGuaranteed: false,
     gate: UNRESOLVED_GATES.owner_account_deletion,
+    storageErasureGate: UNRESOLVED_GATES.account_erasure_legal_confirm,
   };
 }

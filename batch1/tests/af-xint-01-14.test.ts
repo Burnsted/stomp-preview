@@ -155,9 +155,9 @@ describe("AF-XINT cross-feature (t1152u)", () => {
     expect(JSON.stringify(campfire)).toBe(JSON.stringify(before.campfire));
   });
 
-  it("AF-XINT-08 DaySesh×Campfire: DS media preview shows DEADLINE_UNSPECIFIED", () => {
+  it("AF-XINT-08 DaySesh×Campfire: DS media preview shows day_sesh_45d_max (G1)", () => {
     const flag = CF.daySeshMediaPolicyFlag();
-    expect(flag.flag).toBe("DEADLINE_UNSPECIFIED");
+    expect(flag.flag).toBe("day_sesh_45d_max");
     expect(flag.deadlineAt).toBeNull();
     let w = CF.createWorld();
     w = v(
@@ -168,7 +168,7 @@ describe("AF-XINT cross-feature (t1152u)", () => {
       }),
     );
     const asset = w.assets.get("ds_media")!;
-    expect(asset.flag).toBe("DEADLINE_UNSPECIFIED");
+    expect(asset.flag).toBe("day_sesh_45d_max");
     w = v(
       CF.beginQuickShare(w, {
         intentId: "si_ds",
@@ -178,7 +178,7 @@ describe("AF-XINT cross-feature (t1152u)", () => {
       }),
     );
     const intent = w.shareIntents.find((i) => i.id === "si_ds")!;
-    expect(intent.preview.expirySource).toBe("DEADLINE_UNSPECIFIED");
+    expect(intent.preview.expirySource).toBe("day_sesh_45d_max");
   });
 
   it("AF-XINT-09 Viewer≠Squad: ViewerEntitlement holder denied Campfire (via A6)", () => {

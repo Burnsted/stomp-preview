@@ -18,7 +18,13 @@ export function closeDaySesh(
   nowIso: string,
 ): CloseDaySeshResult {
   return {
-    sesh: { ...sesh, status: "closed", closedAt: nowIso },
+    sesh: {
+      ...sesh,
+      status: "closed",
+      closedAt: nowIso,
+      /** G1 — official end anchors Day Sesh media retention max. */
+      officialEndedAt: sesh.officialEndedAt ?? nowIso,
+    },
     campfireEffects: [],
   };
 }
@@ -61,6 +67,6 @@ export function viewerOrParticipantHasSquadAccess(args: {
   return false;
 }
 
-export function daySeshMediaPolicyFlag() {
-  return daySeshMediaDeadline();
+export function daySeshMediaPolicyFlag(officialEndedAt?: string | null) {
+  return daySeshMediaDeadline(officialEndedAt);
 }

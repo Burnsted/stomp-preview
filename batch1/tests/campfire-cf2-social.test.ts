@@ -296,7 +296,7 @@ describe("AF-CF-60–65 / 67 / 76 Day Sesh + departure + author rights", () => {
     expect(world.daySesh.status).toBe("closed");
   });
 
-  it("AF-CF-61 DS1 media / session clock → DEADLINE_UNSPECIFIED, link tombstones only via known bound", () => {
+  it("AF-CF-61 DS1 media / session clock → day_sesh_45d_max; null until official end", () => {
     let w = CF.createWorld();
     w = v(
       CF.uploadMedia(w, {
@@ -307,7 +307,7 @@ describe("AF-CF-60–65 / 67 / 76 Day Sesh + departure + author rights", () => {
         tripBoundIso: null,
       }),
     );
-    expect(w.assets.get("dsmed61")!.flag).toBe("DEADLINE_UNSPECIFIED");
+    expect(w.assets.get("dsmed61")!.flag).toBe("day_sesh_45d_max");
     expect(w.assets.get("dsmed61")!.expiresAt).toBeNull();
   });
 

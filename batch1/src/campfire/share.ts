@@ -53,7 +53,11 @@ export function prepareShare(args: {
       memberCount: args.memberCount,
       thumbLabel: args.media.bytesLabel,
       expiresAt: contract.expiresAt,
-      expirySource: (contract.flag ?? contract.source) as ExpirySource | "DEADLINE_UNSPECIFIED",
+      expirySource: (contract.flag === "day_sesh_45d_max"
+        ? "day_sesh_45d_max"
+        : contract.flag === "DEADLINE_UNSPECIFIED"
+          ? "DEADLINE_UNSPECIFIED"
+          : contract.source) as ExpirySource | "DEADLINE_UNSPECIFIED" | "day_sesh_45d_max",
     },
     createdAt: args.nowIso,
   };

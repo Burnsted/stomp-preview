@@ -473,11 +473,12 @@ describe("AF-RC-09 Personal history/export → retention boundaries", () => {
     expect(viewerClock.kind).toBe("viewer_only_12mo");
   });
 
-  it("denial: soft-hide past expiry; no deletion jobs; Day Sesh deadline unspecified", () => {
+  it("denial: soft-hide past expiry; no deletion jobs; Day Sesh G1 day_sesh_45d_max", () => {
     expect(CF.assertNoDeletionJob().enabled).toBe(false);
     const dsDeadline = CF.daySeshMediaDeadline();
-    expect(dsDeadline.flag).toBe("DEADLINE_UNSPECIFIED");
+    expect(dsDeadline.flag).toBe("day_sesh_45d_max");
     expect(dsDeadline.deadlineAt).toBeNull();
+    expect(dsDeadline.maxDays).toBe(45);
     let w = CF.createWorld();
     w = v(
       CF.postMessage(w, {

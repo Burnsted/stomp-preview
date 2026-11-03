@@ -53,6 +53,7 @@ export function createCf2Squads(): Squad[] {
       ownerId: IDS.ava,
       campfireId: IDS.cfSunrise,
       createdAt: T0,
+      ownershipState: "resolved",
     },
     {
       id: IDS.powder,
@@ -60,6 +61,7 @@ export function createCf2Squads(): Squad[] {
       ownerId: IDS.dee,
       campfireId: IDS.cfPowder,
       createdAt: T0,
+      ownershipState: "resolved",
     },
     {
       id: IDS.frost,
@@ -67,6 +69,7 @@ export function createCf2Squads(): Squad[] {
       ownerId: IDS.cal,
       campfireId: IDS.cfFrost,
       createdAt: T0,
+      ownershipState: "resolved",
     },
   ];
 }

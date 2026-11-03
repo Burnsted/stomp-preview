@@ -17,5 +17,6 @@ export * from "./sesh-pending.js";
 export * from "./sesh-recheck.js";
 export * from "./sesh-character.js";
 export * from "./daysesh-boundary.js";
+export * from "./lifecycle-g1g4.js";
 export * from "./gb-contract.js";
 export * from "./world.js";

@@ -192,7 +192,7 @@ describe("AF-CF media + retention", () => {
         },
       }),
     );
-    expect(w.assets.get("m46")!.flag).toBe("DEADLINE_UNSPECIFIED");
+    expect(w.assets.get("m46")!.flag).toBe("day_sesh_45d_max");
     expect(w.assets.get("m46")!.expiresAt).toBe(tripBound);
   });
 
@@ -223,12 +223,13 @@ describe("AF-CF media + retention", () => {
     expect(quote.body).toBeNull();
   });
 
-  it("AF-CF-75 Day Sesh media without exact deadline → DEADLINE_UNSPECIFIED", () => {
+  it("AF-CF-75 Day Sesh media before official end → day_sesh_45d_max, deadline null until end", () => {
     let w = CF.createWorld();
     w = v(CF.uploadMedia(w, { id: "m75", ownerId: CF.IDS.ava, origin: "day_sesh", tripBoundIso: null }));
-    expect(w.assets.get("m75")!.flag).toBe("DEADLINE_UNSPECIFIED");
+    expect(w.assets.get("m75")!.flag).toBe("day_sesh_45d_max");
     expect(w.assets.get("m75")!.expiresAt).toBeNull();
-    expect(CF.daySeshMediaDeadline().flag).toBe("DEADLINE_UNSPECIFIED");
+    expect(CF.daySeshMediaDeadline().flag).toBe("day_sesh_45d_max");
+    expect(CF.daySeshMediaDeadline().deadlineAt).toBeNull();
   });
 
   it("AF-CF-77 cross-Squad media expiry isolation (unlink one)", () => {

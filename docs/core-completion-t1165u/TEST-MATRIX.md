@@ -1,4 +1,4 @@
-# TEST-MATRIX — t1165u
+# TEST-MATRIX — t1165u + t1166u (G1–G4)
 
 Fictional data only. Client Rider Hub = DEMO ONLY.
 
@@ -32,37 +32,58 @@ Fictional data only. Client Rider Hub = DEMO ONLY.
 | Expired pending (TTL 20s) | AF-JOURNEY / AF-RC-06 | PASS |
 | Trip Viewer ≠ Campfire react | AF-AUTH-05 | PASS |
 | Account ownership mismatch | AF-AUTH-01 | PASS |
-| Failed network ops | Fictional — PendingStore `failed` markers exist; no live network in suite | Documented MOCK |
 
 ---
 
-## C. Regression locks
+## C. G1–G4 policy lock (Ted's 14) — AF-G14
+
+| ID | Case | Result |
+|---|---|---|
+| AF-G14-01 | Day Sesh media window / flag | PASS |
+| AF-G14-02 | 45d max after official end | PASS |
+| AF-G14-03 | Campfire link no clock reset | PASS |
+| AF-G14-04 | Expired / revoked deny | PASS |
+| AF-G14-05 | Leave terminates access | PASS |
+| AF-G14-06 | Rejoin new approval | PASS |
+| AF-G14-07 | No history auto-expose | PASS |
+| AF-G14-08 | Ownership accept-only | PASS |
+| AF-G14-09 | Unresolved no elevate | PASS |
+| AF-G14-10 | Members + moderation intact | PASS |
+| AF-G14-11 | Deletion denies new auth | PASS |
+| AF-G14-12 | Others' content not erased | PASS |
+| AF-G14-13 | Trip Drop + Campfire retention | PASS |
+| AF-G14-14 | SV-0 / authz / Squad isolation | PASS |
+
+---
+
+## D. Regression locks
 
 | Suite | Count | Result |
 |---|---|---|
-| batch1 vitest (all) | **559 passed / 11 skipped** | PASS |
-| AF-RC-01..10 | 21 | PASS |
-| AF-XINT-01..14 | 14 | PASS |
+| batch1 vitest (all) | tip | PASS target |
+| AF-G14-01..14 | 14 | PASS (new) |
+| AF-RC-01..10 | 21 | PASS (G1 flag update) |
+| AF-XINT-01..14 | 14 | PASS (G1 flag update) |
 | AF-SV (sesh-sv0-*) | green | PASS — **not reopened** |
-| AF-AUTH-01..12 | 12 | PASS (new) |
-| AF-JOURNEY | 5 | PASS (new) |
+| AF-AUTH-01..12 | 12 | PASS |
+| AF-JOURNEY | 5 | PASS |
 | gb-phone social.test | 7 | PASS |
-| gb-phone npm test | 66+ | PASS |
-| gb-phone vitest woz | **881** | PASS (+ cf2-share bridge) |
-| batch1 tsc | — | PASS |
-| gb-phone tsc / typecheck:woz | — | PASS |
+| gb-phone vitest woz | tip | PASS |
+| batch1 / gb-phone tsc | — | PASS |
 
 ---
 
-## D. Explicit OPEN / HELD (not invented)
+## E. Explicit OPEN / HELD (not invented)
 
 | Decision | State |
 |---|---|
-| G1 Day Sesh media deadline | OPEN — `DEADLINE_UNSPECIFIED` |
-| G2–G4 | HELD |
+| G1 Day Sesh media deadline | **LOCKED** — `day_sesh_45d_max` / 45d after official end |
+| G2 rejoin history | **LOCKED** — prospective only |
+| G3 owner transfer / unresolved | **LOCKED** — nominate+accept; no auto-promote |
+| G4 logical revoke | **LOCKED** (fictional) |
+| G4 physical storage erasure / legal confirm | **unresolved** — docs only |
 | F1–F5 | HELD |
 | Youth Campfire | HELD |
 | Payments | HELD |
-| Live deletion jobs | HELD |
-| Legal G4 erasure | Owner + counsel |
+| Live deletion jobs | HELD / disabled |
 | Production server authz | Packet ready — **NOT activated** |
