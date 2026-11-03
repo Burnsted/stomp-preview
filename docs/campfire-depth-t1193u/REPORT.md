@@ -11,7 +11,7 @@ Maximize Campfire client depth on top of CF-3 shell (`cc1f153` / PR #24) — sof
 |---|---|
 | Branch | `cursor/campfire-depth-t1193u-738a` |
 | Base tip | `cc1f153fd1dff312da4ded7d54329399534be980` (CF-3 / PR #24) |
-| HEAD | `855bfdf7ee858f488f1537744b4493e410ac14ba` |
+| HEAD | `2a2aeacff30441033f4049edd3d745d5599141a4` |
 | Draft PR | https://github.com/Burnsted/stomp-preview/pull/26 · **not merged** |
 | CI | [pr-verify 41742204370](https://github.com/Burnsted/stomp-preview/actions/runs/41742204370) — **both jobs success** |
 
