@@ -14,6 +14,28 @@ export const LOCKER_CATALOG: LockerItem[] = [
   { id: "jacket-basic", slot: "jacket", label: "Everyday Shell", stage: 1, isSafety: false, fill: "#2ad4c2", unlockRule: "starter" },
   { id: "pants-basic", slot: "pants", label: "Ride Pants", stage: 1, isSafety: false, fill: "#1e293b", unlockRule: "starter" },
   { id: "board-basic", slot: "board", label: "First Board", stage: 1, isSafety: false, fill: "#d6f25a", unlockRule: "starter" },
+  // Backpack — optional jacket accessory; OFF sentinel is always free (t1171u)
+  { id: "backpack-none", slot: "backpack", label: "No Backpack", stage: 1, isSafety: false, fill: "transparent", unlockRule: "starter" },
+  { id: "backpack-daypack", slot: "backpack", label: "Daypack", stage: 2, isSafety: false, fill: "#334155", unlockRule: "activity" },
+  // Eyewear — goggles + Meta Oakley-style glasses (goggles slot)
+  {
+    id: "glasses-meta-oakley",
+    slot: "goggles",
+    label: "Meta Oakley-style Glasses",
+    stage: 1,
+    isSafety: false,
+    fill: "#0f172a",
+    unlockRule: "starter",
+  },
+  // Coordinated pants/bibs for jacket sets (separate layers — t1171u)
+  { id: "pants-park-bibs", slot: "pants", label: "Park Bibs", stage: 2, stylePath: "park-street", isSafety: false, fill: "#1e1b4b", unlockRule: "activity" },
+  { id: "pants-freeride", slot: "pants", label: "Freeride Pants", stage: 2, stylePath: "mountain-freeride", isSafety: false, fill: "#0f172a", unlockRule: "activity" },
+  { id: "pants-signature", slot: "pants", label: "Signature Pants", stage: 3, stylePath: "any", isSafety: false, fill: "#3b0764", unlockRule: "milestone" },
+  // Roster-aligned jacket shells (itemIds for approved artwork plates)
+  { id: "jacket-look5-pink", slot: "jacket", label: "Look 5 Pink Shell", stage: 1, isSafety: false, fill: "#ff3b78", unlockRule: "starter" },
+  { id: "jacket-look6-white", slot: "jacket", label: "Look 6 White Shell", stage: 1, isSafety: false, fill: "#f8fafc", unlockRule: "starter" },
+  // Original STOMP board graphic
+  { id: "board-stomp-graphic", slot: "board", label: "STOMP Graphic", stage: 2, stylePath: "any", isSafety: false, fill: "#d6f25a", unlockRule: "participation" },
   { id: "hair-undercut", slot: "hair", label: "Undercut", stage: 1, isSafety: false, fill: "#1a1a1a", unlockRule: "starter" },
   { id: "hair-braids", slot: "hair", label: "Braids", stage: 1, isSafety: false, fill: "#4a2c0a", unlockRule: "starter" },
   { id: "hair-bob", slot: "hair", label: "Bob", stage: 1, isSafety: false, fill: "#c2410c", unlockRule: "starter" },

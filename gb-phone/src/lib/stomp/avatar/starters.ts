@@ -293,6 +293,8 @@ export function layersFromStarter(s: StarterDef): AvatarLayers {
     hair: { itemId: `hair-${s.hairStyle}`, color: s.hairColor },
     pants: { itemId: "pants-basic", color: s.pantsFill },
     jacket: { itemId: "jacket-basic", color: s.jacketFill },
+    // Optional jacket accessory — OFF by default (t1171u).
+    backpack: { itemId: "backpack-none" },
     gloves: { itemId: "gloves-basic", color: "#1e293b" },
     headwear: { itemId: "helmet-basic", color: "#0f172a" },
     goggles: { itemId: "goggles-basic", color: s.goggleTint },

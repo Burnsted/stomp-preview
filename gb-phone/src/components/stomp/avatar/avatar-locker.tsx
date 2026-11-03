@@ -18,6 +18,7 @@ import { useStomp } from "@/lib/stomp/store";
 const SLOTS: AvatarSlot[] = [
   "jacket",
   "pants",
+  "backpack",
   "headwear",
   "goggles",
   "gloves",

@@ -139,3 +139,42 @@ Use sRGB; strip metadata; no progressive JPEG for alpha plates.
 - Pay-to-win cosmetics  
 - Capture Studio / Arcade art  
 - Auto-assigning preset STOMPER names from artwork filenames  
+
+---
+
+## 11. Roster v2.4 extension (t1171u) — OWNER LOCK
+
+**STATUS:** Character-design CLOSED. Production plates only — no redesign / no poster crops as layers.  
+Authoritative mapping: `docs/character-roster-v24-t1171u/EIGHT-LOOK-MAPPING.md` + `gb-phone/src/lib/stomp/avatar/roster-v24.ts`.
+
+### Slots (v2.4 — independently swappable)
+
+`body` · `face` · `hair` · `pants` · `jacket` · `backpack` · `gloves` · `headwear` · `goggles` · `boots` · `board`
+
+- **Backpack** optional jacket accessory; default itemId `backpack-none` (OFF).  
+- **Eyewear** on `goggles` slot: `goggles-basic` + `glasses-meta-oakley`.  
+- **Jacket sets** auto-select coordinated `pants-*` / bibs; keep separate plates.  
+- **Boards** = original STOMP graphics only (`board-basic`, `board-park-graphic`, `board-powder`, `board-stomp-graphic`).  
+- **No earrings** / unnecessary jewelry in any plate.
+
+### Layer paint order (bottom → top)
+
+`board` → `boots` → `pants` → `body` → `face` → `jacket` → `backpack` → `gloves` → `hair` → `headwear` → `goggles`
+
+### Dimensions / naming (unchanged + backpack)
+
+| Plate | Size |
+|---|---|
+| Master | **1024 × 1024** WebP/PNG alpha |
+| Runtime | **512 × 512** WebP alpha |
+
+```
+stomper/{ageBand}/{slot}/{itemId}@{512|1024}.webp
+stomper/{ageBand}/starter/{starterId}/preview@512.webp
+```
+
+`itemId` **must** match `LOCKER_CATALOG.id`. Renderer prefers plate URL; **SVG fallback** until files exist. Lazy-load non-selected looks. Two-rider carousel configs stay independent (`carousel-riders.ts`).
+
+### Grom / youth
+
+Grom Boy / Girl = **visual previews only**. `gromFlowEnabled` stays `false`. No youth enrollment activation in this batch.

@@ -14,6 +14,7 @@ export type AvatarSlot =
   | "hair"
   | "pants"
   | "jacket"
+  | "backpack"
   | "gloves"
   | "headwear"
   | "goggles"
