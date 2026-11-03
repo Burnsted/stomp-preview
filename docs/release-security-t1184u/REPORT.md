@@ -23,7 +23,7 @@ Twin docs: `docs/release-security-t1184u/`.
 |---|---|
 | Branch | `cursor/release-security-readiness-t1184u-ef28` |
 | Base | #19 `cursor/release-candidate-t1170u-8e36` @ `9c6cc96eae05c438e2a5c479e0e477034c60fdab` |
-| Tip commit | *(set after push)* |
+| Tip commit | `7252d5f15c4b5e408d8512d0b01c631e841250c7` |
 | #21 tip (untouched) | `67358475dfdd9c23307f5a9d8a8b669138ca076e` |
 
 ---
