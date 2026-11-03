@@ -1,8 +1,14 @@
 /**
- * CF-3 Squad Campfire client shell (t1190u).
+ * CF-3 Squad Campfire client shell (t1190u + t1193u depth).
  * Fictional in-memory world via CampfireClient. Does not replace Home / five-tab / Crew Invite.
  */
-import { CF3_IDS, FORMER_STOMPER_LABEL, SQUAD_SOFT_CAP, SESH_PENDING_TTL_MS } from "@/lib/stomp/woz-bridge/cf3-client";
+import { useEffect } from "react";
+import {
+  CF3_IDS,
+  FORMER_STOMPER_LABEL,
+  SQUAD_SOFT_CAP,
+  SESH_PENDING_TTL_MS,
+} from "@/lib/stomp/woz-bridge/cf3-client";
 import { useCf3 } from "@/lib/stomp/cf3-store";
 
 const focus =
@@ -18,6 +24,12 @@ const VIEWERS = [
   { id: CF3_IDS.cal, label: "Cal" },
   { id: CF3_IDS.dee, label: "Dee" },
   { id: CF3_IDS.gia, label: "Gia (youth)" },
+] as const;
+
+const NOMINEES = [
+  { id: CF3_IDS.cal, label: "Cal" },
+  { id: CF3_IDS.eli, label: "Eli" },
+  { id: CF3_IDS.ben, label: "Ben" },
 ] as const;
 
 function renderBadge(kind: string, render: string) {
@@ -37,7 +49,7 @@ export function CampfireShell() {
           <div>
             <h2 className="font-semibold">Squad Campfire</h2>
             <p className="pt-0.5 text-xs text-muted" data-testid="cf3-demo-banner">
-              CF-3 fictional shell · CF-2 / G1–G4 contracts · no live auth
+              CF-3 depth shell · CF-2 / G1–G4 / SV-0 · no live auth
             </p>
           </div>
           <span className="rounded-full bg-lime/50 px-2 py-0.5 text-[10px] font-bold">DEMO</span>
@@ -77,6 +89,7 @@ export function CampfireShell() {
         {s.view === "list" ? <ListView /> : null}
         {s.view === "thread" ? <ThreadView /> : null}
         {s.view === "share" ? <ShareSheet /> : null}
+        {s.view === "invite" ? <InviteSheet /> : null}
       </div>
     </div>
   );
@@ -108,12 +121,17 @@ function ListView() {
               </p>
               {row.softCapNotice ? (
                 <p className="pt-1 text-[11px] font-semibold text-pink" data-testid="cf3-soft-cap">
-                  Soft cap notice · {SQUAD_SOFT_CAP}+ members
+                  Soft cap notice · {SQUAD_SOFT_CAP}+ members (invite still allowed)
                 </p>
               ) : null}
               {row.ownershipState === "unresolved" ? (
                 <p className="pt-1 text-[11px] font-semibold" data-testid="cf3-list-unresolved">
                   Owner unresolved
+                </p>
+              ) : null}
+              {row.ownershipState === "pending_transfer" ? (
+                <p className="pt-1 text-[11px] font-semibold" data-testid="cf3-list-pending-transfer">
+                  Owner transfer pending
                 </p>
               ) : null}
             </button>
@@ -126,6 +144,12 @@ function ListView() {
         </button>
         <button type="button" className={chip} data-testid="cf3-close-daysesh" onClick={() => s.closeDaySesh()}>
           Close Day Sesh
+        </button>
+        <button type="button" className={chip} data-testid="cf3-open-invite" onClick={() => s.openInviteSheet()}>
+          Invite…
+        </button>
+        <button type="button" className={chip} data-testid="cf3-seed-soft-cap" onClick={() => s.seedSoftCapDemo()}>
+          Seed soft-cap (20)
         </button>
       </div>
     </div>
@@ -147,6 +171,17 @@ function ThreadView() {
         <span className="text-[10px] text-muted">G2/G3/G4</span>
       </div>
 
+      {s.historyCutoff ? (
+        <p
+          role="status"
+          className="mt-2 rounded-2xl bg-snow px-3 py-2 text-xs text-muted ring-1 ring-line"
+          data-testid="cf3-history-cutoff"
+        >
+          Prospective history only · cutoff {s.historyCutoff.historyCutoffAt} (posts before cutoff stay hidden after
+          rejoin)
+        </p>
+      ) : null}
+
       {s.ownershipBanner ? (
         <p
           role="status"
@@ -159,11 +194,14 @@ function ThreadView() {
 
       <ul className="mt-3 max-h-64 space-y-2 overflow-y-auto" data-testid="cf3-messages">
         {s.thread.length === 0 ? (
-          <li className="text-sm text-muted">No visible messages (prospective history may hide older posts).</li>
+          <li className="text-sm text-muted" data-testid="cf3-empty-prospective">
+            No visible messages — prospective history may hide older posts (G2 historyCutoff).
+          </li>
         ) : null}
         {s.thread.map((row) => {
           const badge = renderBadge(row.tombstoneKind, row.render);
           const collapsed = row.render === "collapsed_for_blocker";
+          const isFormer = row.authorLabel === FORMER_STOMPER_LABEL;
           return (
             <li
               key={row.message.id}
@@ -171,12 +209,15 @@ function ThreadView() {
               data-testid={`cf3-msg-${row.message.id}`}
               data-render={row.render}
               data-tombstone={row.tombstoneKind}
+              data-former={isFormer ? "1" : "0"}
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-semibold">
                   {row.authorLabel}
-                  {row.authorLabel === FORMER_STOMPER_LABEL ? (
-                    <span className="ml-1 text-[10px] text-muted">(G4)</span>
+                  {isFormer ? (
+                    <span className="ml-1 text-[10px] text-muted" data-testid="cf3-former-badge">
+                      (G4)
+                    </span>
                   ) : null}
                 </span>
                 {badge ? (
@@ -215,6 +256,7 @@ function ThreadView() {
                 ) : null}
                 {row.message.authorId !== s.viewerId &&
                 row.message.authorId !== "former_stomper" &&
+                !isFormer &&
                 row.tombstoneKind === "live" ? (
                   <button
                     type="button"
@@ -252,21 +294,73 @@ function ThreadView() {
         </button>
       </form>
 
-      <div className="mt-2 flex flex-wrap gap-1" data-testid="cf3-thread-actions">
+      <div className="mt-2 flex flex-wrap gap-1 items-center" data-testid="cf3-thread-actions">
         <button type="button" className={chip} data-testid="cf3-quick-share" onClick={() => s.openShareSheet()}>
           Quick Share
+        </button>
+        <button
+          type="button"
+          className={chip}
+          data-testid="cf3-quick-share-daysesh"
+          onClick={() => s.openShareSheet({ daySesh: true })}
+        >
+          Share Day Sesh media
+        </button>
+        <button
+          type="button"
+          className={chip}
+          data-testid="cf3-multi-deny"
+          onClick={() => s.openShareSheet({ multiDenyDemo: true })}
+        >
+          Multi-Squad deny
         </button>
         <button type="button" className={chip} data-testid="cf3-leave" onClick={() => s.leaveSelected()}>
           Leave Squad
         </button>
-        <button type="button" className={chip} data-testid="cf3-nominate" onClick={() => s.nominateCal()}>
-          Nominate Cal
+        <button type="button" className={chip} data-testid="cf3-open-invite" onClick={() => s.openInviteSheet()}>
+          Invite…
         </button>
-        <button type="button" className={chip} data-testid="cf3-accept-transfer" onClick={() => s.acceptTransferAsCal()}>
-          Accept as Cal
+      </div>
+
+      <div className="mt-2 flex flex-wrap gap-1 items-center" data-testid="cf3-g3-actions">
+        <label className="text-[11px] text-muted" htmlFor="cf3-nominee">
+          Nominate
+        </label>
+        <select
+          id="cf3-nominee"
+          className="h-9 rounded-full px-2 text-xs ring-1 ring-line"
+          data-testid="cf3-nominee-select"
+          value={s.nomineeId}
+          onChange={(e) => s.setNominee(e.target.value)}
+        >
+          {NOMINEES.map((n) => (
+            <option key={n.id} value={n.id}>
+              {n.label}
+            </option>
+          ))}
+        </select>
+        <button type="button" className={chip} data-testid="cf3-nominate" onClick={() => s.nominateSelected()}>
+          Nominate
+        </button>
+        <button
+          type="button"
+          className={chip}
+          data-testid="cf3-accept-transfer"
+          onClick={() => s.acceptTransferAsViewer()}
+        >
+          Accept as viewer
         </button>
         <button type="button" className={chip} data-testid="cf3-depart-owner" onClick={() => s.departOwnerUnresolved()}>
           Owner depart (unresolved)
+        </button>
+      </div>
+
+      <div className="mt-2 flex flex-wrap gap-1" data-testid="cf3-g4-actions">
+        <button type="button" className={chip} data-testid="cf3-seed-erased" onClick={() => s.seedErasedTombstone()}>
+          Seed Former STOMPER
+        </button>
+        <button type="button" className={chip} data-testid="cf3-erase-viewer" onClick={() => s.eraseViewerDemo()}>
+          Erase my account (G4)
         </button>
       </div>
     </div>
@@ -276,14 +370,34 @@ function ThreadView() {
 function ShareSheet() {
   const s = useCf3();
   const draft = s.shareDraft;
+  const ttlSec = Math.ceil(s.shareTtlMs / 1000);
+
+  useEffect(() => {
+    if (!draft) return;
+    const id = window.setInterval(() => s.tickShareTtl(), 250);
+    return () => window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- tick via store; draft identity drives interval
+  }, [draft?.intentId]);
+
   return (
-    <div className="mt-3 rounded-2xl bg-white/80 p-3 ring-1 ring-line" data-testid="cf3-share-sheet" role="dialog" aria-label="Quick Share confirm">
+    <div
+      className="mt-3 rounded-2xl bg-white/80 p-3 ring-1 ring-line"
+      data-testid="cf3-share-sheet"
+      role="dialog"
+      aria-label="Quick Share confirm"
+    >
       <h3 className="font-semibold">Quick Share</h3>
       <p className="pt-1 text-sm">
         Send clip to <strong>{draft?.squadName ?? "one Squad"}</strong>? Explicit confirm required.
       </p>
-      <p className="pt-1 text-xs text-muted">
-        Pending TTL {SESH_PENDING_TTL_MS / 1000}s (SV-0). Cancel or background discards — nothing posts.
+      {draft?.mediaOrigin === "day_sesh" ? (
+        <p className="pt-1 text-xs font-semibold" data-testid="cf3-share-daysesh-clock">
+          Day Sesh media · expiresAt {draft.mediaExpiresAtBefore ?? "n/a"} · confirm must not extend clock
+        </p>
+      ) : null}
+      <p className="pt-1 text-xs text-muted" data-testid="cf3-share-ttl">
+        Pending TTL {ttlSec}s remaining (SV-0 · {SESH_PENDING_TTL_MS / 1000}s contract). Cancel or background discards —
+        nothing posts.
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         <button type="button" className={primary} data-testid="cf3-share-confirm" onClick={() => s.confirmShare()}>
@@ -294,6 +408,51 @@ function ShareSheet() {
         </button>
         <button type="button" className={chip} data-testid="cf3-share-discard" onClick={() => s.discardShareBackground()}>
           Background discard
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function InviteSheet() {
+  const s = useCf3();
+  const memberCount =
+    s.list.find((c) => c.squadId === (s.selectedSquadId ?? CF3_IDS.sunrise))?.memberCount ??
+    s.client.listMyCampfires().find((c) => c.squadId === (s.selectedSquadId ?? CF3_IDS.sunrise))?.memberCount ??
+    0;
+  const atSoftCap = memberCount >= SQUAD_SOFT_CAP;
+
+  return (
+    <div
+      className="mt-3 rounded-2xl bg-white/80 p-3 ring-1 ring-line"
+      data-testid="cf3-invite-sheet"
+      role="dialog"
+      aria-label="Squad invite"
+    >
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="font-semibold">Invite to Squad</h3>
+        <button type="button" className={chip} data-testid="cf3-invite-back" onClick={() => s.backToList()}>
+          ← List
+        </button>
+      </div>
+      <p className="pt-1 text-sm">
+        Soft cap is a <strong>notice</strong>, not a hard deny. At {SQUAD_SOFT_CAP}+ members, invites still go pending.
+      </p>
+      <p className="pt-1 text-xs text-muted" data-testid="cf3-invite-count">
+        Active members: {memberCount}
+        {atSoftCap ? ` · soft-cap notice armed (≥${SQUAD_SOFT_CAP})` : ""}
+      </p>
+      {s.lastSoftCapInvite?.softCapNotice ? (
+        <p className="pt-2 text-xs font-semibold text-pink" data-testid="cf3-invite-soft-notice">
+          Soft-cap notice fired · notices={s.lastSoftCapInvite.softCapNotices} · status={s.lastSoftCapInvite.status}
+        </p>
+      ) : null}
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button type="button" className={chip} data-testid="cf3-seed-soft-cap" onClick={() => s.seedSoftCapDemo()}>
+          Seed to {SQUAD_SOFT_CAP}
+        </button>
+        <button type="button" className={primary} data-testid="cf3-invite-vik" onClick={() => s.inviteVikSoftCap()}>
+          Invite Vik
         </button>
       </div>
     </div>

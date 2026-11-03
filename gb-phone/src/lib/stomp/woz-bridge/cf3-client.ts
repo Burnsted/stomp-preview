@@ -14,6 +14,9 @@ export {
   type QuickShareDraft,
   type TombstoneKind,
   type CampfireClientSnapshot,
+  type SoftCapInviteResult,
+  type HistoryCutoffInfo,
+  type MediaClockSnapshot,
 } from "@woz/campfire/client-adapter.js";
 
 export {
@@ -29,4 +32,7 @@ export {
   SQUAD_SOFT_CAP,
   YOUTH_CAMPFIRE_ENABLED,
   SESH_PENDING_TTL_MS,
+  daySeshMediaExpiresAt,
+  assertShareDoesNotExtendMediaClock,
+  createWorld,
 } from "@woz/campfire/cf2-index.js";

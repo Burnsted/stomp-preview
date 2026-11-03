@@ -78,15 +78,16 @@ export function authorizeMediaAccess(args: {
 }
 
 /**
- * G2 — active membership for read: only messages at/after this membership's joinedAt.
- * Prior history is NOT automatically exposed after rejoin.
+ * G2 — active membership for read: only messages at/after historyCutoffAt
+ * (defaults to joinedAt). Prior history is NOT automatically exposed after rejoin.
  */
 export function messageVisibleToMembership(
   msg: Message,
   membership: Membership | undefined,
 ): boolean {
   if (!membership || membership.state !== "active") return false;
-  return new Date(msg.createdAt).getTime() >= new Date(membership.joinedAt).getTime();
+  const cutoff = membership.historyCutoffAt ?? membership.joinedAt;
+  return new Date(msg.createdAt).getTime() >= new Date(cutoff).getTime();
 }
 
 export function activeMembership(

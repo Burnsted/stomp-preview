@@ -16,6 +16,8 @@
 | Fictional server-authz design | `fictionalAuthz` + AF-AUTH-01..12 |
 | **G1–G4 product policy (fictional)** | LOCKED t1166u — AF-G14 + `lifecycle-g1g4` |
 | Protected tip CI #12–#16 | Both jobs SUCCESS (reconfirmed) |
+| Campfire CF-3 client shell (t1190u) | **PREVIEW_WIRED** on throwaway PR #24 — fictional only |
+| Campfire depth (t1193u) | Soft-cap invite / SV-0 TTL / G2–G4 UX / DS clock on throwaway — **not** merge Go |
 
 ---
 
@@ -29,20 +31,21 @@
 | Security | Youth Campfire | High | Yes — HELD |
 | Security | Live moderation / legal hold | High | Yes |
 | Product | Merge-order Go #12→#13→rebase #14/#16 | High | **Yes** |
-| Product | Wire A1–A6 + CF-2 into GB shell beyond throwaway | High | Yes — paste HELD |
+| Product | Wire A1–A6 + CF-2 into GB shell beyond throwaway | High | Yes — paste **HELD** (`GROK_BUILD_CAMPFIRE_BRIDGE_STATUS`); CF-3 shell = PREVIEW_WIRED only |
 | Product | G1–G3 product rules | — | **LOCKED** fictionally; prod authz still required |
 | Product | G4 physical erasure / legal confirm | Medium | Unresolved — docs only |
 | Product | F1–F5 | Medium | HELD |
-| Product | Home / five-tab / Crew Invite freeze | High | Hold — preserved |
+| Product | Home / five-tab / Crew Invite freeze | High | Hold — preserved (t1193u untouched) |
 | Deploy | Pages / prod / payments | Blocker | **Do not** |
 
 ---
 
 ## Can proceed now (no merge)
 
-1. Iterate AF-AUTH / AF-JOURNEY / AF-RC / **AF-G14** on throwaway  
+1. Iterate AF-AUTH / AF-JOURNEY / AF-RC / **AF-G14** / **AF-CF3** on throwaway  
 2. Docs-only merge plan / authz packet / erasure lifecycle updates  
-3. Keep CI green on #17  
+3. Keep CI green on #17 / Campfire depth drafts (#24 / t1193u) — **no merge Go**  
+
 
 ## Needs owner approval
 
