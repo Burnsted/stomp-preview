@@ -1,5 +1,22 @@
-const C='boulder-dodge-v7-2';
-self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['./','./index.html','./sw.js'])).then(()=>self.skipWaiting()));});
+/* boulder-dodge-v7-3 — network-first for navigations/HTML; cache fallback offline */
+const C='boulder-dodge-v7-3';
+const ASSETS=['./','./index.html','./sw.js'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
-// Scope is registered as './' from the game folder, so this SW never controls the parent stomp-preview site.
-self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));
+self.addEventListener('fetch',e=>{
+  const req=e.request;
+  if(req.method!=='GET')return;
+  const url=new URL(req.url);
+  const isHTML=req.mode==='navigate'||url.pathname.endsWith('.html')||url.pathname.endsWith('/');
+  if(isHTML){
+    // Network-first so preview deploys win over stale cache; fall back to cache offline.
+    e.respondWith(fetch(req).then(res=>{const copy=res.clone();caches.open(C).then(c=>c.put(req,copy));return res;}).catch(()=>caches.match(req).then(r=>r||caches.match('./index.html'))));
+    return;
+  }
+  // Stale-while-revalidate for SW + other assets
+  e.respondWith(caches.open(C).then(async cache=>{
+    const cached=await cache.match(req);
+    const net=fetch(req).then(res=>{cache.put(req,res.clone());return res;}).catch(()=>cached);
+    return cached||net;
+  }));
+});
