@@ -66,4 +66,4 @@ Await both pr-verify checks green on tip after push (recorded in tip SHA below w
 
 ## Tip SHA
 
-`5f1e76ce4e8fa8b26872dd589cab22ac6f2fc8c5` — awaiting both CI green after push.
+`12dcb1c2518e87adcc39b5ca158e3a6133fee35e` — awaiting both CI green after push.
