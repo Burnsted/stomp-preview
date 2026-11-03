@@ -3,7 +3,7 @@
 **Status:** DRAFT / DO NOT MERGE · throwaway #17 only  
 **PR:** https://github.com/Burnsted/stomp-preview/pull/17  
 **Branch:** `cursor/release-blocker-closure-t1159u`  
-**HEAD:** `3d604bf49a04b20be602a172b4fd710a84abac8b` (feature `b0116a3f225cf213a49b5cee26e0dddee899eea2`)  
+**HEAD:** `dd56a8218ce5d67b000919206a76d324c91523a8` (feature `b0116a3f225cf213a49b5cee26e0dddee899eea2`)  
 **No merge · no Pages · no payments · no youth · no live auth · no storage deletion jobs · SV-0 closed.**
 
 **Authority (t1166u):** Ted owner-approved G1–G4 LOCKED Nov 2, 2026 — fictional-data + docs + tests only.
