@@ -1,15 +1,19 @@
 /**
- * Grok Build Campfire bridge — INTERFACE CONTRACT ONLY (HELD).
- * No GB shell / phone preview edits in this batch.
- * See GROK-BUILD-CAMPFIRE-BRIDGE-POLICY-LOCK.txt (t1147u).
+ * Grok Build Campfire bridge — CF-3 client shell may wire preview adapters
+ * (t1190u). Live authz / deletion jobs / youth / payments remain HELD.
+ * See GROK-BUILD-CAMPFIRE-BRIDGE-POLICY-LOCK.txt (t1147u) + CF-3 REPORT.
  */
 import type { GrokBuildCampfireContract } from "./cf2-types.js";
 
+/** Contract catalog remains the source of method names; CF-3 wires a fictional client adapter. */
 export const GROK_BUILD_CAMPFIRE_BRIDGE_STATUS = "HELD" as const;
 
+/** Preview-only CF-3 client shell status (does not activate live GB paste). */
+export const CF3_CLIENT_SHELL_STATUS = "PREVIEW_WIRED" as const;
+
 /**
- * Surface GB would eventually consume once Ted Go + separate GB unfreeze.
- * Not wired to gb-phone; documentation + type-only anchor.
+ * Surface GB eventually consumes. CF-3 preview wires these via CampfireClient;
+ * live GB paste / production authz stay HELD.
  */
 export const GB_CAMPFIRE_CONTRACT_METHODS = [
   "listMyCampfires",
