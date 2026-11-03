@@ -312,7 +312,8 @@ export function configFromStarter(
     version: 1,
     stomperId: opts.stomperId,
     starterId: s.id,
-    displayName: opts.displayName ?? s.label,
+    // Starter `.label` is an appearance-template tag only — never a silent displayName.
+    displayName: opts.displayName ?? "",
     presenting: s.presenting,
     ageBand: s.ageBand,
     stylePath: opts.stylePath ?? s.styleHint,

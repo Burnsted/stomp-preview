@@ -12,6 +12,7 @@ import { PRIMARY_TABS, tabForScreen } from "@/components/stomp/alpine-chrome";
 import { AvatarRenderer } from "@/components/stomp/avatar/avatar-renderer";
 import { AVATAR_FLAGS, isAvatarFlagOn } from "@/lib/stomp/avatar/flags";
 import { isSafetyItem, isUnlocked, LOCKER_CATALOG, starterUnlocks } from "@/lib/stomp/avatar/locker";
+import { isValidStomperDisplayName, lookOrdinalLabel } from "@/lib/stomp/avatar/identity";
 import { ADULT_STARTERS, GROM_STARTERS, configFromStarter, starterById } from "@/lib/stomp/avatar/starters";
 import { useAvatar } from "@/lib/stomp/avatar/store";
 import { applyTheme, useTheme } from "@/lib/stomp/avatar/theme";
@@ -199,9 +200,14 @@ describe("Update02 — adult onboarding Screens 1–5", () => {
     expect(screen.getByTestId("avatar-onboard-1")).toBeTruthy();
     expect(within(screen.getByTestId("starter-grid-female")).getAllByTestId(/^starter-f-/)).toHaveLength(6);
     expect(within(screen.getByTestId("starter-grid-male")).getAllByTestId(/^starter-m-/)).toHaveLength(6);
+    expect(screen.getByTestId("starter-look-label-f-nova").textContent).toBe(lookOrdinalLabel(1, 12));
+    expect(screen.getByTestId("starter-look-label-m-kai").textContent).toBe(lookOrdinalLabel(7, 12));
+    expect(screen.queryByText("Nova")).toBeNull();
+    expect(screen.queryByText("Kai")).toBeNull();
 
     fireEvent.click(screen.getByTestId("starter-f-nova"));
     expect(screen.getByTestId("avatar-onboard-2")).toBeTruthy();
+    expect(useAvatar.getState().draft.displayName).toBe("");
     fireEvent.change(screen.getByTestId("onboard-display-name"), { target: { value: "NovaRide" } });
     fireEvent.click(screen.getByTestId("onboard-to-vibe"));
 
@@ -223,6 +229,94 @@ describe("Update02 — adult onboarding Screens 1–5", () => {
     expect(screen.getByTestId("stomper-id-card")).toBeTruthy();
     expect(useAvatar.getState().onboardComplete).toBe(true);
     expect(useAvatar.getState().config?.displayName).toBe("NovaRide");
+  });
+});
+
+describe("t1169u — avatar identity (starters are looks, not names)", () => {
+  it("blocks empty / whitespace-only names from commitOnboarding", () => {
+    act(() => {
+      useAvatar.getState().startOnboarding("adult");
+      useAvatar.getState().selectStarter("f-nova");
+    });
+    expect(isValidStomperDisplayName("")).toBe(false);
+    expect(isValidStomperDisplayName("   ")).toBe(false);
+    expect(useAvatar.getState().commitOnboarding("ME0001")).toBeNull();
+    expect(useAvatar.getState().onboardComplete).toBe(false);
+    expect(useAvatar.getState().config).toBeNull();
+
+    act(() => {
+      useAvatar.getState().setDisplayName("   ");
+    });
+    expect(useAvatar.getState().commitOnboarding("ME0001")).toBeNull();
+    expect(useAvatar.getState().config).toBeNull();
+  });
+
+  it("changing starter looks does not overwrite an entered displayName", () => {
+    act(() => {
+      useAvatar.getState().startOnboarding("adult");
+      useAvatar.getState().selectStarter("f-nova");
+      useAvatar.getState().setDisplayName("PowderFox");
+      useAvatar.getState().selectStarter("m-kai");
+    });
+    const draft = useAvatar.getState().draft;
+    expect(draft.starterId).toBe("m-kai");
+    expect(draft.displayName).toBe("PowderFox");
+    expect(draft.displayName).not.toBe(starterById("m-kai")!.label);
+    expect(draft.displayName).not.toBe("Kai");
+    expect(draft.displayName).not.toBe("Nova");
+  });
+
+  it("saved identity persists after look / locker change", () => {
+    act(() => {
+      useAvatar.getState().startOnboarding("adult");
+      useAvatar.getState().selectStarter("f-mira");
+      useAvatar.getState().setDisplayName("RidgeRunner");
+      const cfg = useAvatar.getState().commitOnboarding("ME0001");
+      expect(cfg?.displayName).toBe("RidgeRunner");
+      useAvatar.getState().unlockItem("jacket-park-bold", "activity");
+      useAvatar.getState().equipItem("jacket", "jacket-park-bold", "#ff3b78");
+      useAvatar.getState().setStylePath("park-street");
+    });
+    expect(useAvatar.getState().config?.displayName).toBe("RidgeRunner");
+    expect(useAvatar.getState().config?.starterId).toBe("f-mira");
+    expect(useAvatar.getState().config?.layers.jacket.itemId).toBe("jacket-park-bold");
+    expect(useAvatar.getState().config?.stylePath).toBe("park-street");
+  });
+
+  it("returning riders keep displayName (not re-labeled to starter)", () => {
+    act(() => {
+      const saved = configFromStarter(starterById("m-owen")!, {
+        stomperId: "ME0001",
+        displayName: "TedBurns",
+      });
+      useAvatar.setState({
+        config: saved,
+        onboardComplete: true,
+        unlocks: starterUnlocks(),
+        draft: {
+          starterId: "m-owen",
+          stylePath: saved.stylePath,
+          displayName: "TedBurns",
+          layers: saved.layers,
+          personalize: { ...saved.personalize },
+          backgroundId: saved.backgroundId,
+          step: "done",
+        },
+      });
+      // Re-entering look picker must not stamp starter template label onto identity.
+      useAvatar.getState().selectStarter("f-jade");
+    });
+    expect(useAvatar.getState().draft.displayName).toBe("TedBurns");
+    expect(useAvatar.getState().draft.displayName).not.toBe("Jade");
+    expect(useAvatar.getState().draft.displayName).not.toBe("Owen");
+    expect(useAvatar.getState().config?.displayName).toBe("TedBurns");
+  });
+
+  it("configFromStarter never defaults displayName to starter label", () => {
+    const cfg = configFromStarter(starterById("f-nova")!, { stomperId: "x" });
+    expect(cfg.displayName).toBe("");
+    expect(cfg.displayName).not.toBe("Nova");
+    expect(cfg.starterId).toBe("f-nova");
   });
 });
 

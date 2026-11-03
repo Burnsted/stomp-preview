@@ -7,6 +7,7 @@ import { AlpineTopBar } from "@/components/stomp/alpine-chrome";
 import { AvatarRenderer } from "@/components/stomp/avatar/avatar-renderer";
 import { ThemeToggle } from "@/components/stomp/avatar/theme-toggle";
 import { BACKGROUNDS, unlockedForSlot } from "@/lib/stomp/avatar/locker";
+import { isValidStomperDisplayName, lookOrdinalLabel } from "@/lib/stomp/avatar/identity";
 import { ADULT_STARTERS, configFromStarter, starterById } from "@/lib/stomp/avatar/starters";
 import { useAvatar } from "@/lib/stomp/avatar/store";
 import {
@@ -32,11 +33,12 @@ const COLOR_SWATCHES = ["#ff3b78", "#2ad4c2", "#d6f25a", "#5ec8ff", "#ff7a3c", "
 
 function draftConfig() {
   const draft = useAvatar.getState().draft;
-  // Unknown / missing starterId → deterministic adult fallback (Nova / ADULT_STARTERS[0]).
+  // Unknown / missing starterId → deterministic adult appearance fallback (ADULT_STARTERS[0]).
+  // Never use starter `.label` as displayName — templates are looks, not personalities.
   const s = (draft.starterId ? starterById(draft.starterId) : undefined) ?? ADULT_STARTERS[0]!;
   const base = configFromStarter(s, {
     stomperId: "draft",
-    displayName: draft.displayName || s.label,
+    displayName: draft.displayName,
     stylePath: draft.stylePath,
   });
   return {
@@ -79,27 +81,52 @@ function Screen1Starter({ onSkip }: { onSkip: () => void }) {
         <p className="mt-2 text-sm text-muted">Pick a starter look. You can customize everything next — and later in the Locker.</p>
         <p className="mt-4 text-xs font-bold tracking-widest text-teal">FEMALE-PRESENTING · 6</p>
         <div className="mt-2 grid grid-cols-3 gap-2" data-testid="starter-grid-female">
-          {female.map((s) => (
-            <StarterCard key={s.id} starterId={s.id} onPick={() => selectStarter(s.id)} />
+          {female.map((s, i) => (
+            <StarterCard
+              key={s.id}
+              starterId={s.id}
+              lookIndex={i + 1}
+              lookTotal={available.length}
+              onPick={() => selectStarter(s.id)}
+            />
           ))}
         </div>
         <p className="mt-5 text-xs font-bold tracking-widest text-sky">MALE-PRESENTING · 6</p>
         <div className="mt-2 grid grid-cols-3 gap-2" data-testid="starter-grid-male">
-          {male.map((s) => (
-            <StarterCard key={s.id} starterId={s.id} onPick={() => selectStarter(s.id)} />
+          {male.map((s, i) => (
+            <StarterCard
+              key={s.id}
+              starterId={s.id}
+              lookIndex={female.length + i + 1}
+              lookTotal={available.length}
+              onPick={() => selectStarter(s.id)}
+            />
           ))}
         </div>
-        <p className="mt-4 text-center text-xs text-muted">12 distinct starters · placeholders with real silhouette / hair / color differences</p>
+        <p className="mt-4 text-center text-xs text-muted">
+          {available.length} distinct looks · placeholders with real silhouette / hair / color differences
+        </p>
       </div>
     </div>
   );
 }
 
-function StarterCard({ starterId, onPick }: { starterId: string; onPick: () => void }) {
+function StarterCard({
+  starterId,
+  lookIndex,
+  lookTotal,
+  onPick,
+}: {
+  starterId: string;
+  lookIndex: number;
+  lookTotal: number;
+  onPick: () => void;
+}) {
   const s = starterById(starterId)!;
+  const lookLabel = lookOrdinalLabel(lookIndex, lookTotal);
   const cfg = useMemo(
-    () => configFromStarter(s, { stomperId: "preview", displayName: s.label }),
-    [s],
+    () => configFromStarter(s, { stomperId: "preview", displayName: lookLabel }),
+    [s, lookLabel],
   );
   return (
     <button
@@ -109,7 +136,9 @@ function StarterCard({ starterId, onPick }: { starterId: string; onPick: () => v
       className="flex flex-col items-center rounded-2xl bg-snow/10 p-2 ring-1 ring-line"
     >
       <AvatarRenderer config={cfg} size={88} interactive={false} showBackground testId={`starter-preview-${starterId}`} />
-      <span className="mt-1 text-xs font-semibold">{s.label}</span>
+      <span className="mt-1 text-xs font-semibold" data-testid={`starter-look-label-${starterId}`}>
+        {lookLabel}
+      </span>
       <span className="text-[10px] text-muted">{s.silhouette}</span>
     </button>
   );
@@ -323,8 +352,10 @@ function Screen5Id() {
   const ensureCode = useStomp((s) => s.ensureCode);
   const riderCode = useStomp((s) => s.riderCode);
   const cfg = draftConfig();
+  const nameOk = isValidStomperDisplayName(draft.displayName);
 
   function finish() {
+    if (!nameOk) return;
     ensureCode();
     const code = useStomp.getState().riderCode || "local";
     const next = commit(code);
@@ -345,13 +376,21 @@ function Screen5Id() {
         <div className="mt-4">
           <AvatarRenderer config={cfg} size={180} interactive showBackground testId="onboard-id-preview" />
         </div>
-        <p className="mt-2 font-display text-3xl tracking-wide text-lime">{draft.displayName || cfg.displayName}</p>
+        <p className="mt-2 font-display text-3xl tracking-wide text-lime" data-testid="onboard-id-display-name">
+          {nameOk ? draft.displayName.trim() : "Name your STOMPER"}
+        </p>
+        {!nameOk ? (
+          <p className="mt-1 text-xs text-pink" data-testid="onboard-name-required">
+            Choose a display name on Look before revealing your ID.
+          </p>
+        ) : null}
         <p className="mt-2 text-xs text-muted">Code ready: {riderCode || "(will issue on reveal)"}</p>
         <button
           type="button"
           data-testid="reveal-stomper-id"
           onClick={finish}
-          className="mt-6 h-14 w-full rounded-full bg-lime font-semibold text-navy"
+          disabled={!nameOk}
+          className="mt-6 h-14 w-full rounded-full bg-lime font-semibold text-navy disabled:opacity-40"
         >
           Reveal my STOMPER ID
         </button>
