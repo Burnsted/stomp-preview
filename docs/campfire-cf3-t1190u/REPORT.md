@@ -11,7 +11,9 @@ Wire CF-2 / SV-0 / G1–G4 fictional contracts into a **gb-phone Squad Campfire 
 |---|---|
 | Branch | `cursor/campfire-cf3-client-shell-t1190u-22f0` |
 | Base tip | `5dc2c8e8bd198b4f244226b3ff18ad1dd21ba7fb` (#17 release-blocker tip) |
-| Draft | yes · **not merged** |
+| HEAD | `4c68007e81e21b55ea4b51e09ac86c40760da528` |
+| Draft PR | https://github.com/Burnsted/stomp-preview/pull/24 · **not merged** |
+| CI | [pr-verify 41738914418](https://github.com/Burnsted/stomp-preview/actions/runs/41738914418) — **both jobs success** |
 
 ## Client surface
 
