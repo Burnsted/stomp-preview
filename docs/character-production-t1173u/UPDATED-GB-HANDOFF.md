@@ -1,8 +1,9 @@
-# UPDATED-GB-HANDOFF — Look 2 first gate (t1177u)
+# UPDATED-GB-HANDOFF — Look 2 first gate (t1177u / t1178u)
 
 **Audience:** Grok Build (when Ted unfreezes messaging) — produce **real composable transparent plates**.  
-**Source package:** `handoff-t1175u/` · acceptance: `LOOK2-MINT-ACCEPTANCE.md` · renderer: `PLATE-RENDERER-CONTRACT.md`  
-**Design:** CLOSED. Visual refs LOCKED. Masters ≠ modular plates.
+**Primary consolidated handoff:** `GB-RENDERER-CORRECTNESS-HANDOFF.md` (exact paths + Woz patches + fail modes).  
+**Also:** `handoff-t1175u/` · `LOOK2-MINT-ACCEPTANCE.md` · `PLATE-RENDERER-CONTRACT.md`  
+**Design:** CLOSED. Visual refs LOCKED. Masters ≠ modular plates. All-or-nothing plate compositing (no partial assemble).
 
 ## Stages
 

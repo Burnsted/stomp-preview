@@ -30,13 +30,15 @@ Jacket paints **above** pants. Jacket-set UX writes **two** itemIds (never one m
 - `displayName` = user-created STOMPER name only (required before commit)
 - Stable starter_ids: `m-samir` … `g-aria`
 
-## Renderer behavior
+## Renderer behavior (t1178u all-or-nothing)
 
-1. Probe plate URLs for each layer itemId  
-2. If any plate loads → `data-render-mode="plates"` and composite `<image>` stack  
-3. Else → `data-render-mode="svg-fallback"` (tinted placeholders)  
-4. `data-backpack="off"` when backpack-none  
-5. `data-starter="{starterId}"` for consistency across selector / Build Your Look / Locker  
+1. Probe plate URLs for **every required** layer itemId (backpack OFF skipped)  
+2. **All present** → `data-render-mode="plates"` + `data-plate-complete=true` + `data-acceptance-eligible=true`  
+3. **Any missing / pending / partial** → `data-render-mode="svg-fallback"` + reason (`incomplete-set` \| `no-plates` \| `pending-probes`) — **never** half-dressed plate stack  
+4. `data-missing-plates` / `data-present-plates` / `data-required-plates` for missing-asset reporting (blocks false success)  
+5. `data-backpack="off"` when backpack-none; board + goggles itemIds exposed on shell  
+6. `data-starter="{starterId}"` for consistency across selector / Build Your Look / Locker  
+7. Docs / handoff / APPROVED_REFERENCES paths are **forbidden** as runtime plates  
 
 ## Look 2 first gate paths
 

@@ -84,6 +84,15 @@ export function resolveLayerPlate(opts: {
     return { mode: "svg-fallback", slot, itemId: BACKPACK_OFF_ITEM_ID, reason: "backpack-off" };
   }
   const url = buildPlateUrl(ageBand, slot, itemId, size);
+  // Docs masters / handoff refs are never runtime plates (t1178u).
+  if (
+    url.includes("/docs/") ||
+    url.includes("character-production") ||
+    url.includes("APPROVED_REFERENCES") ||
+    !url.startsWith("/stomper/")
+  ) {
+    return { mode: "svg-fallback", slot, itemId, reason: "missing-plate" };
+  }
   if (plateExists?.(url)) {
     return { mode: "plate", url, slot, itemId };
   }

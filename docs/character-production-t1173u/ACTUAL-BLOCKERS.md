@@ -27,4 +27,6 @@
 - Eight APPROVED_MASTER visual refs + handoff package  
 - Plate/renderer contract docs (`PLATE-RENDERER-CONTRACT.md`)  
 - Look 2 acceptance checklist + catalog IDs / jacket-set / default layer wiring  
+- **t1178u renderer correctness:** all-or-nothing plate assembly; missing-asset reporting; docs masters never runtime; jacket/pants separate; board/goggles/backpack attrs  
+- Consolidated GB file: `GB-RENDERER-CORRECTNESS-HANDOFF.md` (paths + fail modes + Look 2 first)  
 - SVG fallback retained until real plates exist  

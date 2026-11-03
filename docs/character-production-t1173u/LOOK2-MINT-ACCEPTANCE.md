@@ -36,10 +36,13 @@ Optional masters: same paths with `@1024.webp`.
 - Docs masters mounted as runtime layers
 - Claiming success from desktop screenshot of SVG fallback only
 - Merged jacket+pants single bitmap
+- **Partial plate set** (only jacket or only some layers) — renderer must stay SVG / incomplete
+- `data-acceptance-eligible=false` while claiming pass
 - Enabling `gromFlowEnabled` or youth flows
 
 ## Engineering prep (done on this tip)
 
 - Catalog IDs + jacket-set coupling wired
 - `f-hana` default layers point at Look 2 mint itemIds (SVG tint until plates land)
-- `AvatarRenderer` plate probe → `data-render-mode=plates` when files exist; else `svg-fallback`
+- **All-or-nothing** assembly (t1178u): `data-render-mode=plates` **only** when every required layer WebP is present; else `svg-fallback` + missing-asset attrs
+- Required Look 2 runtime set includes jacket, pants, body, face, hair, headwear, goggles, gloves, boots, board (+ preview); backpack OFF omitted

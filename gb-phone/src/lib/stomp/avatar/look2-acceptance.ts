@@ -61,6 +61,11 @@ export const LOOK2_ANDROID_ACCEPTANCE_CHECKS = [
       "Mint jacket + matching pants exist as SEPARATE transparent WebP plates (distinct itemIds)",
   },
   {
+    id: "complete-required-set",
+    label:
+      "FULL required plate set present (body/face/hair/jacket/pants/headwear/goggles/gloves/boots/board) — no partial assemble",
+  },
+  {
     id: "real-selector-locker",
     label:
       "Plates layer in REAL character selector + Locker (not static still / UI mock / poster crop)",
@@ -78,8 +83,16 @@ export const LOOK2_ANDROID_ACCEPTANCE_CHECKS = [
     label: "Eyewear swap on goggles slot works (goggles-basic available)",
   },
   {
+    id: "board-layer",
+    label: "Snowboard/board plate loads as its own layer (board-basic or equipped board itemId)",
+  },
+  {
     id: "backpack-off-default",
     label: "Backpack OFF by default (backpack-none); optional daypack does not auto-equip",
+  },
+  {
+    id: "no-false-success",
+    label: "data-acceptance-eligible=true only when plate set complete (missing assets reported)",
   },
   {
     id: "name-persistence",
@@ -192,7 +205,7 @@ export function assertLook2AcceptanceContract(): {
   }
 
   if (LOOK2_MASTER_SHA256.length !== 64) throw new Error("Look 2 master sha invalid");
-  if (LOOK2_ANDROID_ACCEPTANCE_CHECKS.length < 8) {
+  if (LOOK2_ANDROID_ACCEPTANCE_CHECKS.length < 10) {
     throw new Error("Look 2 acceptance checklist incomplete");
   }
 
