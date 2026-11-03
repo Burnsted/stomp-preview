@@ -8,6 +8,7 @@ import { AvatarRenderer } from "@/components/stomp/avatar/avatar-renderer";
 import { ThemeToggle } from "@/components/stomp/avatar/theme-toggle";
 import { BACKGROUNDS, unlockedForSlot } from "@/lib/stomp/avatar/locker";
 import { isValidStomperDisplayName, lookOrdinalLabel } from "@/lib/stomp/avatar/identity";
+import { lookPlateSlotByStarterId } from "@/lib/stomp/avatar/plate-registry";
 import { ADULT_STARTERS, configFromStarter, starterById } from "@/lib/stomp/avatar/starters";
 import { useAvatar } from "@/lib/stomp/avatar/store";
 import {
@@ -125,14 +126,25 @@ function StarterCard({
 }) {
   const s = starterById(starterId)!;
   const lookLabel = lookOrdinalLabel(lookIndex, lookTotal);
+  // Look N of M is the selector label only — never Nova/Mira/Kai starter tags.
   const cfg = useMemo(
     () => configFromStarter(s, { stomperId: "preview", displayName: lookLabel }),
     [s, lookLabel],
   );
+  // Plate matrix attrs — Look 2 mint may be ingest-ready; others missing-plates.
+  const plateSlot = lookPlateSlotByStarterId(starterId);
+  const missingCount = plateSlot?.missingPaths.length ?? 0;
+  const acceptanceEligible =
+    plateSlot?.androidAcceptanceGate === true && plateSlot.status === "ingest-ready";
   return (
     <button
       type="button"
       data-testid={`starter-${starterId}`}
+      data-acceptance-eligible={acceptanceEligible ? "true" : "false"}
+      data-missing-plates={String(missingCount)}
+      data-plate-slot-status={plateSlot?.status ?? "missing-plates"}
+      data-android-acceptance-gate={plateSlot?.androidAcceptanceGate ? "true" : "false"}
+      data-look-of-m={lookLabel}
       onClick={onPick}
       className="flex flex-col items-center rounded-2xl bg-snow/10 p-2 ring-1 ring-line"
     >

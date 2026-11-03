@@ -1,9 +1,13 @@
 /**
- * Artwork plate URL + layering contract (t1170u foundation → t1171u v2.4).
+ * Artwork plate URL + layering contract (t1170u → t1171u v2.4 → t1173u).
  * Prefer plate WebP by layer itemId; AvatarRenderer falls back to SVG when
- * the plate is missing (until GB delivers modular transparent masters).
+ * the plate is missing (until GB delivers modular transparent plates).
  *
- * HARD: do not crop the Final Roster v2.4 composite poster into fake layers.
+ * HARD: do not crop composite posters or approved visual masters into fake
+ * layers. All eight owner visual masters live under
+ * docs/character-production-t1173u/masters/ (+ handoff-t1175u/) for QA only —
+ * they are NOT interchangeable with modular plates (see slot-readiness.ts).
+ * Runtime plates: /stomper/{ageBand}/{slot}/{itemId}@512.webp when GB delivers.
  */
 import type { AgeBand, AvatarSlot } from "@/lib/stomp/avatar/types";
 
@@ -80,6 +84,15 @@ export function resolveLayerPlate(opts: {
     return { mode: "svg-fallback", slot, itemId: BACKPACK_OFF_ITEM_ID, reason: "backpack-off" };
   }
   const url = buildPlateUrl(ageBand, slot, itemId, size);
+  // Docs masters / handoff refs are never runtime plates (t1178u).
+  if (
+    url.includes("/docs/") ||
+    url.includes("character-production") ||
+    url.includes("APPROVED_REFERENCES") ||
+    !url.startsWith("/stomper/")
+  ) {
+    return { mode: "svg-fallback", slot, itemId, reason: "missing-plate" };
+  }
   if (plateExists?.(url)) {
     return { mode: "plate", url, slot, itemId };
   }
