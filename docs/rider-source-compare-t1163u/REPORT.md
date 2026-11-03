@@ -14,7 +14,7 @@
 |---|---|
 | Draft PR | #17 (DRAFT / DO NOT MERGE) |
 | Branch | `cursor/release-blocker-closure-t1159u` |
-| HEAD | `add3ebbf437f057fd44340a779da72c2b8af2656` |
+| HEAD | `0ce772d8b31ba3307b6f508e910b58ea82a55ea8` (feature `add3ebb`) |
 | CI | pr-verify after push |
 
 ---
