@@ -56,4 +56,6 @@ Look 2 mint modular `@512.webp` plates **extracted from owner modular sheet** an
 
 ## Tip SHA / CI
 
-_(filled after push + both jobs green)_
+**Tip:** `78253d9d9d3e0e27ddccaf81a5fa7936e64f551c`  
+**CI:** both pr-verify **SUCCESS** — [run 41732596228](https://github.com/Burnsted/stomp-preview/actions/runs/41732596228)  
+(`batch1 typecheck + test` + `gb-phone typecheck + woz tests + build`)
