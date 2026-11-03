@@ -1,11 +1,15 @@
 /**
- * FICTIONAL SERVER AUTHORIZATION (t1165u) — TEST / DEMO DESIGN ONLY.
+ * FICTIONAL SERVER AUTHORIZATION (t1165u + t1170u + t1184u) — TEST / DEMO DESIGN ONLY.
  *
  * BANNER: Client permission checks (including Rider Hub social.ts flags) are
  * NEVER production security. This module is an in-process deny-by-default
  * envelope over existing batch1 guards. It does NOT activate live auth,
  * credentials, storage, or network. Production activation requires owner Go
- * via docs/core-completion-t1165u/SERVER-AUTHZ-PACKET.md.
+ * via docs/core-completion-t1165u/SERVER-AUTHZ-PACKET.md and
+ * docs/release-security-t1184u/PROD-AUTHZ-REQUIREMENTS.md.
+ *
+ * t1184u adds MediaRef / Trip Drop / G1–G4 / personal-export denial surfaces.
+ * G1–G4 LOCKED product rules are honored; SV-0 remains closed.
  */
 import { err, ok, type Result } from "../core/result.js";
 import type { DenyReason } from "../campfire/cf2-types.js";
@@ -24,12 +28,22 @@ import {
 } from "../campfire/share.js";
 import type {
   Campfire,
+  MediaAsset,
   Membership,
+  Message,
   ShareIntent,
   Squad,
   Stomper,
   StomperId,
 } from "../campfire/cf2-types.js";
+import {
+  assertShareDoesNotExtendMediaClock,
+  authorizeMediaAccess,
+  canElevateToOwner,
+  messageVisibleToMembership,
+  activeMembership,
+} from "../campfire/lifecycle-g1g4.js";
+import { mediaIsExpired } from "../campfire/retention.js";
 import {
   canDownloadViewer,
   canJoinAsRider,
@@ -61,9 +75,23 @@ export type AuthzAction =
   | "retain_after_expiry"
   /** t1170u — logical account / youth gate (fictional only; no live auth). */
   | "active_non_erased_account"
-  | "adult_campfire_enrollment";
+  | "adult_campfire_enrollment"
+  /** t1184u — MediaRef / Trip Drop / G1–G4 / export surfaces. */
+  | "access_media_ref"
+  | "access_trip_drop_media"
+  | "access_day_sesh_media"
+  | "read_campfire_history"
+  | "export_personal_json"
+  | "elevate_squad_owner";
 
-export type AuthzDenyCode = DenyReason | "account_mismatch" | "pass_inactive" | "not_host_or_cohost";
+export type AuthzDenyCode =
+  | DenyReason
+  | "account_mismatch"
+  | "pass_inactive"
+  | "not_host_or_cohost"
+  | "history_cutoff"
+  | "clock_extended"
+  | "export_actor_mismatch";
 
 export type AuthzDecision =
   | { allow: true; action: AuthzAction; code: "ok" }
@@ -188,13 +216,18 @@ export function authorizeViewerDownload(args: {
   return allow(action);
 }
 
-/** Quick Share prepare — exactly one Squad. */
+/** Quick Share prepare — exactly one Squad. Erased actors denied (G4). */
 export function authorizePrepareShare(args: {
   actorId: StomperId;
   squadIds: readonly string[];
   memberships: readonly Membership[];
+  /** Optional actor record — when present, erased accounts are denied. */
+  actor?: Stomper;
 }): AuthzDecision {
   const action: AuthzAction = "prepare_single_squad_share";
+  if (args.actor?.accountStatus === "erased") {
+    return deny(action, "account_erased", "Erased account cannot prepare share");
+  }
   const single = assertSingleSquad(args.squadIds);
   if (!single.ok) return deny(action, single.error);
   if (!isActiveMember(args.memberships, single.value, args.actorId)) {
@@ -299,6 +332,143 @@ export function authorizeAdultCampfireEnrollment(args: {
   }
   if (args.stomper.accountStatus === "erased") {
     return deny(action, "account_erased");
+  }
+  return allow(action);
+}
+
+/**
+ * t1184u — MediaRef access (membership + account + expiry).
+ * G1: Campfire share/link MUST NEVER extend expiresAt (caller may pass before/after).
+ */
+export function authorizeMediaRefAccess(args: {
+  stomper: Stomper;
+  campfire: Campfire;
+  memberships: readonly Membership[];
+  asset: MediaAsset;
+  nowIso: string;
+  /** Optional pair to assert share/link did not rewrite clock (G1). */
+  assetBeforeShare?: MediaAsset;
+}): AuthzDecision {
+  const action: AuthzAction = "access_media_ref";
+  if (args.assetBeforeShare) {
+    if (!assertShareDoesNotExtendMediaClock(args.assetBeforeShare, args.asset)) {
+      return deny(action, "clock_extended", "Campfire share must not extend MediaRef clock");
+    }
+  }
+  const gate = authorizeMediaAccess({
+    stomper: args.stomper,
+    campfireSquadId: args.campfire.squadId,
+    memberships: args.memberships,
+    asset: args.asset,
+    nowIso: args.nowIso,
+    campfire: args.campfire,
+  });
+  if (!gate.ok) return deny(action, gate.error, gate.message);
+  return allow(action);
+}
+
+/**
+ * t1184u — Trip Drop media: membership + not past Trip-bound expiresAt.
+ * Trip/Campfire retention unchanged; share never extends clock.
+ */
+export function authorizeTripDropMediaAccess(args: {
+  stomper: Stomper;
+  campfire: Campfire;
+  memberships: readonly Membership[];
+  asset: MediaAsset;
+  nowIso: string;
+  assetBeforeShare?: MediaAsset;
+}): AuthzDecision {
+  const action: AuthzAction = "access_trip_drop_media";
+  if (args.asset.origin !== "trip_drop") {
+    return deny(action, "intent_invalid", "Asset origin is not trip_drop");
+  }
+  const base = authorizeMediaRefAccess(args);
+  if (!base.allow) return deny(action, base.code, base.message);
+  return allow(action);
+}
+
+/**
+ * t1184u — Day Sesh media under G1 45d max after official end.
+ */
+export function authorizeDaySeshMediaAccess(args: {
+  stomper: Stomper;
+  campfire: Campfire;
+  memberships: readonly Membership[];
+  asset: MediaAsset;
+  nowIso: string;
+  assetBeforeShare?: MediaAsset;
+}): AuthzDecision {
+  const action: AuthzAction = "access_day_sesh_media";
+  if (args.asset.origin !== "day_sesh") {
+    return deny(action, "intent_invalid", "Asset origin is not day_sesh");
+  }
+  if (args.asset.flag !== "day_sesh_45d_max" && args.asset.flag !== undefined) {
+    return deny(action, "unresolved_policy", "Day Sesh media must carry day_sesh_45d_max");
+  }
+  const base = authorizeMediaRefAccess(args);
+  if (!base.allow) return deny(action, base.code, base.message);
+  if (mediaIsExpired(args.asset, args.nowIso)) {
+    return deny(action, "expired", "Day Sesh media past 45d maximum");
+  }
+  return allow(action);
+}
+
+/**
+ * t1184u / G2 — Campfire history read: leave ends access; rejoin is prospective only.
+ * Prior messages before membership.joinedAt / historyCutoffAt are denied.
+ */
+export function authorizeCampfireHistoryRead(args: {
+  stomper: Stomper;
+  campfire: Campfire;
+  memberships: readonly Membership[];
+  message: Message;
+}): AuthzDecision {
+  const action: AuthzAction = "read_campfire_history";
+  if (args.stomper.accountStatus === "erased") {
+    return deny(action, "account_erased");
+  }
+  const mem = activeMembership(args.memberships, args.campfire.squadId, args.stomper.id);
+  if (!mem) {
+    return deny(action, "not_member", "Leave ends Campfire history access");
+  }
+  if (!messageVisibleToMembership(args.message, mem)) {
+    return deny(action, "history_cutoff", "Rejoin is prospective-only; no auto history");
+  }
+  return allow(action);
+}
+
+/**
+ * t1184u / G3 — owner elevation blocked while unresolved / pending transfer.
+ */
+export function authorizeSquadOwnerElevation(args: {
+  squad: Squad;
+}): AuthzDecision {
+  const action: AuthzAction = "elevate_squad_owner";
+  const gate = canElevateToOwner(args.squad);
+  if (!gate.ok) return deny(action, gate.error, gate.message);
+  return allow(action);
+}
+
+/**
+ * t1184u — fictional personal JSON export gate.
+ * Actor must own the STOMPER; erased accounts denied; youth enrollment HELD
+ * does not block adult export of own fictional profile slice.
+ */
+export function authorizePersonalExport(args: {
+  actorId: string;
+  stomper: Stomper;
+}): AuthzDecision {
+  const action: AuthzAction = "export_personal_json";
+  const own = authorizeOwnStomper({
+    actorId: args.actorId,
+    accountOwnerId: args.stomper.id,
+  });
+  if (!own.allow) {
+    return deny(action, "export_actor_mismatch", own.message);
+  }
+  if (args.stomper.accountStatus === "erased") {
+    return deny(action, "account_erased", "Erased account cannot export");
   }
   return allow(action);
 }
