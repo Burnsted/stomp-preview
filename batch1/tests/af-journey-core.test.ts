@@ -285,4 +285,43 @@ describe("AF-JOURNEY denial / edge paths", () => {
     expect(Shared.adviceFor("confirm_share").batch1Surface).toBe("campfireCf2.sesh");
     expect(Shared.adviceFor("set_pass_expired").expectedAuthzCode).toBe("pass_inactive");
   });
+
+  it("session_locked confirm + youth enrollment deny (thin deny-path expansion)", () => {
+    let w = CF.createWorld();
+    w = v(
+      CF.uploadMedia(w, {
+        id: "j_lock",
+        ownerId: CF.IDS.ava,
+        origin: "campfire",
+      }),
+    );
+    w = v(
+      CF.beginQuickShare(w, {
+        intentId: "si_j_lock",
+        actorId: CF.IDS.ava,
+        mediaRefId: "j_lock",
+        squadIds: [CF.IDS.sunrise],
+      }),
+    );
+    const locked = Shared.authorizeConfirmShare({
+      intent: w.shareIntents.find((i) => i.id === "si_j_lock")!,
+      nowIso: w.nowIso,
+      recheck: {
+        actor: w.people.get(CF.IDS.ava)!,
+        memberships: w.memberships,
+        assets: w.assets,
+        nowIso: w.nowIso,
+        sessionUnlocked: false,
+      },
+    });
+    expect(locked.allow).toBe(false);
+    if (!locked.allow) expect(locked.code).toBe("session_locked");
+
+    expect(CF.YOUTH_CAMPFIRE_ENABLED).toBe(false);
+    const youth = {
+      ...w.people.get(CF.IDS.ben)!,
+      accountStatus: "youth" as const,
+    };
+    expect(Shared.authorizeAdultCampfireEnrollment({ stomper: youth }).allow).toBe(false);
+  });
 });

@@ -1,10 +1,11 @@
-# RELEASE-SECURITY-READINESS — consolidated (t1184u + t1187u Phase 2)
+# RELEASE-SECURITY-READINESS — consolidated (t1184u + t1187u Phase 2 + t1193u)
 
-**Draft PR:** https://github.com/Burnsted/stomp-preview/pull/22  
-**Branch:** `cursor/release-security-readiness-t1184u-ef28`  
+**Draft PR #22:** https://github.com/Burnsted/stomp-preview/pull/22 · tip `7917aa6`  
+**Branch #22:** `cursor/release-security-readiness-t1184u-ef28`  
 **Base:** #19 @ `9c6cc96`  
-**#21:** **UNTOUCHED** (`6735847`)  
-**#23:** side-lane artwork scaffold — **NOT in authz merge chain**  
+**#21 tip (honest):** `8b4b799` — **PROTECT** (advanced on artwork lane; not rewritten here)  
+**#23 / #24:** side-lanes — **NOT in authz merge chain** (#24 = Campfire CF-3 parallel agent)  
+**t1193u:** NEW DRAFT stacked after #22 — tests/docs/fixtures only · **no merge Go**  
 **Mode:** DRAFT additive readiness — fictional + docs only.
 
 ---
@@ -31,6 +32,14 @@
 | F | Android security smoke | `ANDROID-SECURITY-SMOKE.md` | **DONE** checklist · device **OPEN** |
 | G | Merge-order #22/#23 | script + `MERGE-ORDER-REHEARSAL.md` | **DONE** · zero merges |
 | H | Packet refresh | blockers / threat / readiness / REPORT | **DONE** |
+
+## t1193u follow-ups (safe · no Ted product decisions)
+
+| # | Stream | Deliverable | Status |
+|---|---|---|---|
+| I | Expand AF-RC / AF-JOURNEY / deny paths | `af-progress-t1193u.test.ts` | **DONE** (fictional) |
+| J | Authz matrix + export rehearsal fixtures | `exportRehearsalFixtures.ts` + tests | **DONE** |
+| K | Honest stack heads #12–#24 | MERGE-ORDER + RELEASE-BLOCKERS + STACK-HEADS | **DONE** · zero merges |
 
 ---
 
