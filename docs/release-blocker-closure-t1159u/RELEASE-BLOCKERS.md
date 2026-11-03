@@ -39,7 +39,7 @@
 | CI/test failures | A5 DENY map vs SV-0 reasons | Fixed here | Proceed | `session_locked`/`media_deleted`/`already_handled` |
 | Deployment prerequisites | Pages / production / payments | Blocker if asked | **Owner — do not** | Hard boundary |
 | Deployment prerequisites | DATABASE_URL for gb-phone migrate | Low for preview | Proceed | PGLite self-migrates when unset |
-| Deployment prerequisites | GB Rider transfer before UI accept | High | Blocked | zip/paste/push from Ted |
+| Deployment prerequisites | GB Rider transfer before UI accept | — | **Closed (t1163u)** | Transfer verified; merge acceptance still owner |
 
 ---
 
@@ -47,7 +47,7 @@
 
 1. Keep iterating fictional AF-RC / AF-XINT / AF-SV on throwaway tips  
 2. Contract-map handoff text for GB (no paste into GB until Ted Go)  
-3. Accept Ted Rider source when transferred; run compare-don’t-rebuild  
+3. ~~Accept Ted Rider source~~ → verified t1163u; continue compare-don’t-rebuild for residual deltas  
 4. CI green on this draft PR tip  
 
 ## Needs owner approval
@@ -67,23 +67,23 @@
 2. Land **#13** (retarget)  
 3. Rebase **#14** then **#16** (SV-0)  
 4. Land A1–A6 (+ A5 SV-0 deny entries) from rehearsal lineage  
-5. Transfer GB Rider → compare-don’t-rebuild vs contract map  
+5. ~~Transfer GB Rider~~ → **verified t1163u**; keep compare-don’t-rebuild  
 6. Implement **server** authz for asserted paths  
 7. Only then: integration acceptance beyond fictional matrix  
 
 ## Owner approvals only (necessary list)
 
 1. Merge-order Go  
-2. GB Rider source transfer acceptance  
+2. Accept Rider fold into release lineage (throwaway only today)  
 3. Explicit deploy/Pages Go (if ever)  
 4. Youth / payments / deletion-job Go (if ever)  
 5. Legal counsel G4 erasure  
 
 ---
 
-## t1160u fold-in notes
+## t1160u → t1163u fold-in notes
 
-- GB claimed 5 tests + typecheck on phone demo — **not** integration acceptance  
-- Preserve Home, five-tab nav, Crew Invite  
+- GB social.test 7/7 + typecheck on phone demo — **not** integration acceptance  
+- Preserve Home, five-tab nav, Crew Invite — **preserved** on selective fold  
 - Client restrictions = DEMO ONLY  
-- Exact GB file diff: **GB source unverified — awaiting transfer**
+- Exact GB file diff: **verified** — see `docs/rider-source-compare-t1163u/`

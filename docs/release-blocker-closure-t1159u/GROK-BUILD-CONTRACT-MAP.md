@@ -105,9 +105,9 @@ Exclusions: auth, live_data, push, upload, moderation_execution, legal_hold, del
 
 | Gap | Label |
 |---|---|
-| Wire CF-2/SV-0 into gb-phone UI | HELD |
+| Wire CF-2/SV-0 into gb-phone UI | HELD paste — additive `woz-bridge/cf2-share.ts` on throwaway only (t1165u) |
 | Rider Hub / social.ts / social-store | **GB source verified** — landed selective on throwaway; DEMO ONLY; server authz still missing |
-| Server authz for all table rows above | NOT IMPLEMENTED |
+| Server authz for all table rows above | **Fictional design** on tip (`shared/fictionalAuthz` + AF-AUTH); production **NOT ACTIVATED** |
 | Youth enrollment | HELD (A7 SPEC) |
 | Deletion jobs / live moderation | HELD |
 | Capture Studio / other sports / kiosks / Arcade | OUT OF SCOPE |
