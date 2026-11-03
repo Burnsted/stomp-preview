@@ -23,7 +23,8 @@ Twin docs: `docs/release-security-t1184u/`.
 |---|---|
 | Branch | `cursor/release-security-readiness-t1184u-ef28` |
 | Base | #19 `cursor/release-candidate-t1170u-8e36` @ `9c6cc96eae05c438e2a5c479e0e477034c60fdab` |
-| Tip commit | `c6e4d8c9846f299da9a276cbdd691935eb02e8b7` (feature `7252d5f`) |
+| Tip commit | `084d23becb61937eaf563a189b3aa3078ab0aa67` (feature `7252d5f`) |
+| Draft PR | https://github.com/Burnsted/stomp-preview/pull/22 |
 | #21 tip (untouched) | `67358475dfdd9c23307f5a9d8a8b669138ca076e` |
 
 ---
