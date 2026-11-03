@@ -24,8 +24,9 @@ Twin docs: `docs/release-security-t1184u/`.
 | Branch | `cursor/release-security-readiness-t1184u-ef28` |
 | Base | #19 `cursor/release-candidate-t1170u-8e36` @ `9c6cc96eae05c438e2a5c479e0e477034c60fdab` |
 | Feature commit | `7252d5f15c4b5e408d8512d0b01c631e841250c7` |
-| Draft PR / tip | https://github.com/Burnsted/stomp-preview/pull/22 — tip advances with docs pins; verify HEAD on branch |
-| CI | *(awaiting both pr-verify jobs SUCCESS)* |
+| Tip (CI green) | `950b93bd6b8e187a4bfe0c6bed7bca5956bc1ec1` |
+| Draft PR | https://github.com/Burnsted/stomp-preview/pull/22 |
+| CI | **BOTH SUCCESS** — run `41713226256` (`batch1 typecheck + test` · `gb-phone typecheck + woz tests + build`) |
 | #21 tip (untouched) | `67358475dfdd9c23307f5a9d8a8b669138ca076e` |
 
 ---

@@ -1,8 +1,12 @@
 # RELEASE-SECURITY-READINESS — consolidated report (t1184u / t1185u)
 
 **Branch:** `cursor/release-security-readiness-t1184u-ef28`  
+**Draft PR:** https://github.com/Burnsted/stomp-preview/pull/22  
+**Tip (CI green):** `950b93bd6b8e187a4bfe0c6bed7bca5956bc1ec1`  
+**Feature commit:** `7252d5f15c4b5e408d8512d0b01c631e841250c7`  
 **Base tip:** #19 `cursor/release-candidate-t1170u-8e36` @ `9c6cc96eae05c438e2a5c479e0e477034c60fdab`  
-**#21:** **UNTOUCHED** (`cursor/character-production-t1173u-e14a`)  
+**#21:** **UNTOUCHED** (`67358475dfdd9c23307f5a9d8a8b669138ca076e`)  
+**CI:** BOTH SUCCESS — actions run `41713226256`  
 **Mode:** DRAFT additive readiness — tests/docs/fictional authz only.
 
 ---
