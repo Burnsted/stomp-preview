@@ -3,7 +3,7 @@
 **Status:** DRAFT / DO NOT MERGE · throwaway #17 only  
 **PR:** https://github.com/Burnsted/stomp-preview/pull/17  
 **Branch:** `cursor/release-blocker-closure-t1159u`  
-**HEAD:** *(filled at push)*  
+**HEAD:** `2a8a0b58f8c467c029eba1bf26a70936bd3c7e05`  
 **No merge · no Pages · no payments · no youth · no live auth · SV-0 closed.**
 
 ---
