@@ -13,6 +13,7 @@ on:
     paths:
       - "gb-phone/**"
       - "arcade/**"
+      - "!arcade/**/.packed/**"
       - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
 
@@ -117,10 +118,8 @@ jobs:
           cp -a site-pages/index.html site-pages/404.html ./
           cp -a site-pages/favicon.svg site-pages/og.jpg ./
           cp -a site-pages/assets site-pages/__grok site-pages/stomp ./
-          if [ -d site-pages/arcade ]; then
-            mkdir -p arcade
-            cp -a site-pages/arcade/. arcade/
-          fi
+          # Arcade HTML is bundled into the Pages artifact above, but must NOT be
+          # copied back onto main — inflate-boulder-dodge owns arcade/**/index.html.
           : > .nojekyll
           rm -rf site-pages
           test -f index.html
@@ -134,7 +133,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A -- \
             index.html 404.html .nojekyll favicon.svg og.jpg \
-            assets __grok stomp arcade
+            assets __grok stomp
           if git diff --cached --quiet; then
             echo "No root site changes to publish."
             exit 0

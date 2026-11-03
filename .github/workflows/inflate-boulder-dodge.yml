@@ -33,5 +33,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add arcade/boulder-dodge/index.html
-          git diff --cached --quiet || git commit -m "feat: boulder-dodge v0.7.3 real hills + double-jump + SW network-first"
+          git diff --cached --quiet || git commit -m "feat: boulder-dodge v0.7.3 real hills + double-jump + SW network-first [skip ci]"
           git push
