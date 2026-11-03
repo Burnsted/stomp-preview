@@ -10,11 +10,13 @@
 import { err, ok, type Result } from "../core/result.js";
 import type { DenyReason } from "../campfire/cf2-types.js";
 import {
+  accountAllowsCampfire,
   canAccessCampfire,
   canInvite,
   canReact,
   isActiveMember,
 } from "../campfire/guards.js";
+import { YOUTH_CAMPFIRE_ENABLED } from "../campfire/policy.js";
 import {
   assertSingleSquad,
   confirmShare,
@@ -56,7 +58,10 @@ export type AuthzAction =
   | "prepare_single_squad_share"
   | "confirm_share_rechecked"
   | "join_day_sesh"
-  | "retain_after_expiry";
+  | "retain_after_expiry"
+  /** t1170u — logical account / youth gate (fictional only; no live auth). */
+  | "active_non_erased_account"
+  | "adult_campfire_enrollment";
 
 export type AuthzDenyCode = DenyReason | "account_mismatch" | "pass_inactive" | "not_host_or_cohost";
 
@@ -264,6 +269,38 @@ export function authorizeRiderAccessAt(args: {
     return deny(action, "pass_inactive");
   }
   return deny(action, "expired");
+}
+
+/**
+ * t1170u — deny when account is logically erased (G4). Fictional only.
+ * Does NOT activate deletion jobs or physical wipe.
+ */
+export function authorizeNonErasedAccount(args: {
+  stomper: Stomper;
+}): AuthzDecision {
+  const action: AuthzAction = "active_non_erased_account";
+  const gate = accountAllowsCampfire(args.stomper.accountStatus);
+  if (!gate.ok) return deny(action, gate.error);
+  return allow(action);
+}
+
+/**
+ * t1170u — youth Campfire enrollment remains HELD (flag false).
+ * Adult accounts still pass; youth always deny while flag is off.
+ */
+export function authorizeAdultCampfireEnrollment(args: {
+  stomper: Stomper;
+}): AuthzDecision {
+  const action: AuthzAction = "adult_campfire_enrollment";
+  if (args.stomper.accountStatus === "youth") {
+    if (!YOUTH_CAMPFIRE_ENABLED) {
+      return deny(action, "youth_disabled", "Youth Campfire enrollment HELD");
+    }
+  }
+  if (args.stomper.accountStatus === "erased") {
+    return deny(action, "account_erased");
+  }
+  return allow(action);
 }
 
 /** Result-shaped wrapper for callers that prefer Result. */
