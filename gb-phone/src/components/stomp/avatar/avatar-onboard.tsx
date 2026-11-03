@@ -21,9 +21,10 @@ import { useStomp } from "@/lib/stomp/store";
 const LOOK_SLOTS: { slot: AvatarSlot; label: string }[] = [
   { slot: "hair", label: "Hair" },
   { slot: "jacket", label: "Jacket" },
-  { slot: "pants", label: "Pants" },
-  { slot: "headwear", label: "Helmet" },
-  { slot: "goggles", label: "Goggles" },
+  { slot: "pants", label: "Pants / Bibs" },
+  { slot: "backpack", label: "Backpack" },
+  { slot: "headwear", label: "Helmet / Beanie" },
+  { slot: "goggles", label: "Goggles / Glasses" },
   { slot: "gloves", label: "Gloves" },
   { slot: "boots", label: "Boots" },
   { slot: "board", label: "Board" },

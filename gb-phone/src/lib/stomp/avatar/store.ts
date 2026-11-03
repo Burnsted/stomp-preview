@@ -12,6 +12,7 @@ import {
   unlockForActivity,
 } from "@/lib/stomp/avatar/locker";
 import { isValidStomperDisplayName } from "@/lib/stomp/avatar/identity";
+import { applyJacketSet } from "@/lib/stomp/avatar/jacket-sets";
 import { ADULT_STARTERS, GROM_STARTERS, configFromStarter, starterById } from "@/lib/stomp/avatar/starters";
 import type { PoseId as Pose } from "@/lib/stomp/avatar/locker";
 import type {
@@ -174,10 +175,14 @@ export const useAvatar = create<AvatarState>()(
         set((st) => {
           const layers = st.draft.layers ?? st.config?.layers;
           if (!layers) return st;
-          const next = {
-            ...layers,
-            [slot]: { itemId, color: color ?? layers[slot]?.color },
-          };
+          // Jacket selection coordinates pants/bibs; layers stay separate (t1171u).
+          const next =
+            slot === "jacket"
+              ? applyJacketSet(layers, itemId, color ?? layers.jacket?.color)
+              : {
+                  ...layers,
+                  [slot]: { itemId, color: color ?? layers[slot]?.color },
+                };
           return {
             draft: { ...st.draft, layers: next },
             config: st.config
@@ -256,6 +261,26 @@ export const useAvatar = create<AvatarState>()(
         if (!isUnlocked(itemId, get().unlocks) && !isSafetyItem(itemId)) return;
         set((st) => {
           if (!st.config) return st;
+          if (slot === "jacket") {
+            const nextLayers = applyJacketSet(
+              st.config.layers,
+              itemId,
+              color ?? st.config.layers.jacket?.color,
+            );
+            const pantsId = nextLayers.pants.itemId;
+            let unlocks = st.unlocks;
+            if (pantsId && !isUnlocked(pantsId, unlocks) && !isSafetyItem(pantsId)) {
+              unlocks = unlockForActivity(unlocks, pantsId, "activity");
+            }
+            return {
+              unlocks,
+              config: {
+                ...st.config,
+                layers: nextLayers,
+                updatedAtIso: new Date().toISOString(),
+              },
+            };
+          }
           return {
             config: {
               ...st.config,

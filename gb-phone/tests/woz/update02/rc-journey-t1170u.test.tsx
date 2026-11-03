@@ -111,6 +111,7 @@ describe("RC-AV-04 AvatarRenderer layer contract (technical)", () => {
     const slots = Object.keys(cfg.layers).sort();
     expect(slots).toEqual(
       [
+        "backpack",
         "body",
         "board",
         "boots",
@@ -123,6 +124,8 @@ describe("RC-AV-04 AvatarRenderer layer contract (technical)", () => {
         "pants",
       ].sort(),
     );
+    // t1171u — optional backpack accessory defaults OFF
+    expect(cfg.layers.backpack.itemId).toBe("backpack-none");
     expect(cfg.displayName).toBe("UserChosen");
     expect(cfg.displayName).not.toBe("Jade");
     expect(cfg.starterId).toBe("f-jade");
