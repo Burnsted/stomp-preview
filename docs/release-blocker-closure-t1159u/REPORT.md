@@ -29,7 +29,7 @@ Deps (Batch A): #13 bases #12 · #14 bases main (parallel) · #15 bases #13 + ch
 
 | Ref | SHA |
 |---|---|
-| This branch tip | `9ea63781ecfc86389ad123802f36c4ab76b2b17d` |
+| This branch tip | `cursor/release-blocker-closure-t1159u` (feature `9ea6378` + docs pins; see PR HEAD) |
 | Start (#15) | `16b61211f4caecc28ced981952a7171fc9659454` |
 | SV-0 cherry-pick (#16) | `e737b380af51b527d91a4e0a2a8e3da084d60fc9` |
 | #12–#16 protected tips | unchanged (table above) |
