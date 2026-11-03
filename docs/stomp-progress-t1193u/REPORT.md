@@ -1,6 +1,6 @@
 # AGENT REPORT — t1193u STOMP non-design progress (DRAFT)
 
-**Owner:** Ted Burns · **Continue on:** *(PR URL filled after open)*  
+**Owner:** Ted Burns · **Continue on:** https://github.com/Burnsted/stomp-preview/pull/25  
 **Branch:** `cursor/stomp-progress-t1193u-1e05`  
 **Base tip:** #22 `7917aa69f6249b18945c0f1123a58f11bc6be56a`  
 **DRAFT — do not merge · do not deploy · no Pages · no payments · no youth · no live authz · no storage deletion · no character plates**  
@@ -12,10 +12,12 @@
 
 | Field | Value |
 |---|---|
-| Tip SHA | *(filled after push)* |
-| Draft PR | `DRAFT t1193u — STOMP non-design progress (do not merge)` |
-| PR URL | *(filled after open)* |
-| CI URL | *(filled after run)* |
+| Feature tip (CI green) | `6f51683de45182a9ba201e50a304fcf8db3a04e0` |
+| Draft PR | [#25](https://github.com/Burnsted/stomp-preview/pull/25) `DRAFT t1193u — STOMP non-design progress (do not merge)` — **still draft · do not merge** |
+| PR URL | https://github.com/Burnsted/stomp-preview/pull/25 |
+| CI URL | https://github.com/Burnsted/stomp-preview/actions/runs/41741672288 |
+| CI result | **BOTH SUCCESS** on feature tip `6f51683` — `batch1 typecheck + test` · `gb-phone typecheck + woz tests + build` |
+| Docs pin | This commit records the SUCCESS above (branch tip advances; path-filtered CI does not re-run on docs-only) |
 | Local batch1 | **624 passed / 8 skipped** · typecheck PASS |
 | Local gb-phone | typecheck + typecheck:woz PASS · woz **891** · stock **66** · build PASS |
 
