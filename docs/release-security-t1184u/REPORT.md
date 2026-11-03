@@ -2,7 +2,10 @@
 
 **Owner:** Ted · **Continue on:** https://github.com/Burnsted/stomp-preview/pull/22  
 **Branch:** `cursor/release-security-readiness-t1184u-ef28`  
-**DRAFT — do not merge · do not deploy · #21 untouched**
+**Tip (frozen):** `7917aa69f6249b18945c0f1123a58f11bc6be56a`  
+**DRAFT — do not merge · do not deploy**  
+**Follow-on:** t1193u stacks a **new** DRAFT after this tip (`docs/stomp-progress-t1193u/REPORT.md`) — does not rewrite #22 tip.  
+**#21 tip (honest pin):** `8b4b799` PROTECT · **#24** Campfire shell side-lane (other agent)
 
 ---
 

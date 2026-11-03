@@ -48,12 +48,29 @@
 
 ---
 
+## Stack honesty note (t1193u — no merge Go)
+
+RC tip #19 remains `9c6cc96`. Downstream DRAFT heads (not folded into this tip):
+
+| PR | Tip | Note |
+|---:|---|---|
+| #22 | `7917aa6` | Release-security Phase 1+2 |
+| t1193u | *(new DRAFT after #22)* | Non-design tests/docs only |
+| #21 | `8b4b799` | Artwork PROTECT |
+| #23 | `455faed` | Franz side-lane |
+| #24 | `cc1f153` | Campfire CF-3 shell (other agent) |
+
+See `docs/stomp-progress-t1193u/STACK-HEADS.md` + `docs/release-security-t1184u/RELEASE-BLOCKERS.md`.
+
+---
+
 ## Readiness verdict
 
 | Gate | Verdict |
 |---|---|
 | Fictional RC tip for demo / CI | **Ready** (this DRAFT PR) |
-| Merge to main | **Blocked** — needs Merge-order Go |
+| Merge to main | **Blocked** — needs Merge-order Go (not claimed by t1193u) |
 | Production security | **Blocked** — see PROD-SECURITY-BLOCKERS |
-| Artwork handoff to GB | **Spec ready** — no art generated |
+| Artwork handoff to GB | **Spec ready** — plates continue on #20/#21; not this lane |
 | Actual-device acceptance | **Not claimed** — see TEST-RESULTS gaps |
+| Campfire CF-3 shell | **Parallel** on #24 — not owned here |
