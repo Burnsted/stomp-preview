@@ -1,5 +1,9 @@
 name: inflate-boulder-dodge
 on:
+  push:
+    paths:
+      - 'arcade/boulder-dodge/.packed/**'
+      - '.github/workflows/inflate-boulder-dodge.yml'
   workflow_dispatch:
 jobs:
   inflate:
