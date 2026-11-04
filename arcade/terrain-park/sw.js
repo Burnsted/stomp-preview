@@ -1,8 +1,9 @@
-/* terrain-park-v0-3-6 — network-first HTML; offline cache */
+/* terrain-park-v0-3-6 — network-first; tip cache only (leave tp-release-* alone) */
 const C='terrain-park-v0-3-6';
 const ASSETS=['./','./index.html','./sw.js'];
+const OWN=k=>k.indexOf('terrain-park-')===0;
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>OWN(k)&&k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',e=>{
   const req=e.request;
   if(req.method!=='GET')return;

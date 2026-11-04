@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1a0a30">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>STOMP Arcade Playtest</title>
+<style>
+:root{--bg0:#140828;--bg1:#2a1458;--card:#221040;--ink:#f8f4ff;--mute:#c9b8e8;--accent:#ffb84a;--bd:#38b6ff;--tp:#e85a2a;--ok:#3ecf9a;--line:#fff3}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:radial-gradient(1200px 600px at 20% -10%,#3a2080 0%,transparent 55%),linear-gradient(165deg,var(--bg1),var(--bg0) 60%);color:var(--ink);font:16px/1.4 system-ui,-apple-system,sans-serif}
+main{max-width:520px;margin:0 auto;padding:max(18px,env(safe-area-inset-top)) 18px max(28px,env(safe-area-inset-bottom))}
+h1{margin:8px 0 4px;font-size:clamp(26px,6vw,34px);letter-spacing:.04em;text-align:center}
+.sub{text-align:center;color:var(--mute);margin:0 0 18px;font-size:15px}
+.wifi{display:block;text-align:center;margin:0 0 18px;padding:10px 12px;border:2px solid var(--ok);border-radius:12px;background:#0d3a2a99;color:#b8ffe0;font:800 14px/1.3 system-ui,sans-serif}
+.games{display:flex;flex-direction:column;gap:14px}
+a.game{display:block;text-decoration:none;color:var(--ink);background:var(--card);border:3px solid var(--line);border-radius:18px;padding:18px 16px;min-height:92px;box-shadow:0 8px 0 #0005;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+a.game:active{transform:translateY(2px);box-shadow:0 4px 0 #0005}
+a.game.bd{border-color:var(--bd)}
+a.game.tp{border-color:var(--tp)}
+a.game .name{display:block;font:800 24px/1.1 system-ui,sans-serif;letter-spacing:.02em}
+a.game .ver{display:block;margin-top:6px;color:var(--accent);font:800 14px system-ui,sans-serif}
+a.game .hint{display:block;margin-top:4px;color:var(--mute);font-size:13px}
+.feedback{display:block;width:100%;margin-top:6px;min-height:56px;border-radius:14px;border:3px solid var(--accent);background:#2a1800;color:var(--accent);font:800 17px/1.1 system-ui,sans-serif;text-decoration:none;text-align:center;padding:16px 12px;touch-action:manipulation}
+.feedback:active{transform:scale(.98)}
+.note{margin:16px 0 10px;text-align:center;color:var(--mute);font-size:12px}
+.qrwrap{margin:18px auto 0;max-width:220px;text-align:center;background:#fff;border-radius:16px;padding:12px;border:3px solid #fff}
+.qrwrap img{display:block;width:100%;height:auto;image-rendering:pixelated}
+.qrwrap p{margin:8px 0 0;color:#140828;font:800 12px/1.3 system-ui,sans-serif}
+@media (orientation:landscape) and (max-height:520px){
+  main{max-width:900px;display:grid;grid-template-columns:1.2fr .8fr;gap:16px;align-items:start}
+  .head{grid-column:1/-1}
+  .qrwrap{margin-top:0;max-width:180px}
+}
+</style>
+</head>
+<body>
+<main>
+  <div class="head">
+    <h1>STOMP Arcade Playtest</h1>
+    <p class="sub">Ted’s games for Tucker’s friends — stable share builds</p>
+    <span class="wifi">Wi‑Fi OK — no app install</span>
+  </div>
+  <div class="games">
+    <a class="game bd" href="../release/boulder-dodge/">
+      <span class="name">Boulder Dodge</span>
+      <span class="ver">Release v0.7.10</span>
+      <span class="hint">Jump · flip · board speed ladder</span>
+    </a>
+    <a class="game tp" href="../release/terrain-park/">
+      <span class="name">Terrain Park</span>
+      <span class="ver">Release v0.3.6</span>
+      <span class="hint">Rails · ramps · hearts · boards</span>
+    </a>
+    <a class="feedback" href="mailto:coachted14@gmail.com?subject=STOMP%20Arcade%20feedback%20%E2%80%94%20%5Bgame%5D%20release%20%5Bversion%5D&body=Game%3A%20%5BBoulder%20Dodge%20v0.7.10%20%2F%20Terrain%20Park%20v0.3.6%5D%0ADevice%3A%20%0ALevel%20%2F%20spot%3A%20%0AWhat%20felt%20off%20%28or%20great%29%3A%20%0A%0A%0A">Send feedback</a>
+  </div>
+  <p class="note">Tip/dev builds at /arcade/boulder-dodge/ and /arcade/terrain-park/ keep moving. This page is the friend share link.</p>
+  <div class="qrwrap">
+    <img src="qr-hub.png" width="196" height="196" alt="QR code for this playtest hub">
+    <p>Scan to open this hub on another iPad</p>
+  </div>
+</main>
+</body>
+</html>
