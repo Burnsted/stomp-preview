@@ -1,13 +1,13 @@
-# Terrain Park v0.3.2 — size vs budget
+# Terrain Park v0.3.3 — size vs budget
 
 | File | Raw | Gzip |
 |------|-----|------|
-| `arcade/terrain-park/index.html` | 65684 | 22078 |
+| `arcade/terrain-park/index.html` | 68869 | 23086 |
 | `arcade/terrain-park/sw.js` | 1116 | 543 |
-| **Total** | **66800** | **22621** |
+| **Total** | **69985** | **23629** |
 
-Soft budget: **~70KB raw**. Usage: **95.4%**.
+Soft budget: **~70KB raw**. Usage: **100.0%**.
 
-Cache bust: `terrain-park-v0-3-2`
+Cache bust: `terrain-park-v0-3-3`
 
-v0.3.2: finish always CLEARs (no trick-fail wipeout) · 3 lives same-level retry · 0 lives → L1
+v0.3.3: life-loss heart flash + pause · long rails · grind→flip / on-rail / tabletop combos · white wedge ramps · LOG decoy-only
