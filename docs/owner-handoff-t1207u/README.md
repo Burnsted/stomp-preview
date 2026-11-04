@@ -3,7 +3,7 @@
 **Status:** Approved **product direction** only — **NOT** implementation or release authorization.  
 **Gates CLOSED:** no merge · no Pages/deploy · no prod auth/payments · no youth activation · no CrewLink/`greet.tsx` edits · no app-shell rebuild · no Capture Studio restart · no additional sports · no purchases.
 
-**Package tip (this PR):** `f7fccfa54a987a138ba9301ef6d6ea4f2d5c4fbb` (draft PR **#45**).  
+**Package tip (this PR):** `5a213e8867ce7f49e93d487fd2d8b33e278c9bd3` (draft PR **#45**).  
 **Base tip:** `59344235ed9fe6a411d03e2810ea709b6eeb3776` (draft PR **#43** = t1206u docs on **#39** tip `7ee43f46cbcb891a81bd57d70ffadc50e1999661`).  
 **Live main / Pages:** `d53b0657cc963d36d6463d29f4dee65d1e4bdcc9` (arcade **#42** MERGED — **separate** from snowboard journey).
 

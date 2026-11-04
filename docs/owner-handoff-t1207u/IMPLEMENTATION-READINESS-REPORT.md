@@ -23,7 +23,7 @@ Owner Nov 4 decisions **D1–D7** are now the product north star. The biggest po
 | **Arcade playtest** | PR **#42** MERGED | tip `b23e48a4…` (merge lineage on main) | **Separate** from snowboard rider journey |
 | **Farthest snowboard draft tip** (avatar + journey fiction) | PR **#39** `cursor/multi-rider-t1205u-2bc0` | `7ee43f46cbcb891a81bd57d70ffadc50e1999661` | Stack: #12→#13→#17→…→#27→#39 |
 | **Prior readiness docs tip** | PR **#43** (draft, on #39) | `59344235ed9fe6a411d03e2810ea709b6eeb3776` | t1206u docs-only — **base of this package** |
-| **This package** | Draft PR **#45** | `f7fccfa54a987a138ba9301ef6d6ea4f2d5c4fbb` | Docs-only; does **not** reopen/merge #39/#43 |
+| **This package** | Draft PR **#45** | `5a213e8867ce7f49e93d487fd2d8b33e278c9bd3` | Docs-only; does **not** reopen/merge #39/#43 |
 
 **Sibling (not ancestor of #39):** security readiness **#22** `7917aa69…` — restack later as draft only.
 
