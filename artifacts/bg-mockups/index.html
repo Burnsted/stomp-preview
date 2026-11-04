@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BG mockups — BD + TP (samples only)</title>
+<style>
+html,body{margin:0;background:#0b1220;color:#e8eef8;font:14px/1.4 system-ui,sans-serif}
+header{padding:16px 18px 8px;max-width:1280px;margin:0 auto}
+header h1{margin:0 0 4px;font-size:22px}
+header p{margin:0;opacity:.75;max-width:720px}
+.grid{display:grid;grid-template-columns:1fr;gap:18px;padding:12px 18px 40px;max-width:1280px;margin:0 auto}
+@media(min-width:900px){.grid{grid-template-columns:1fr 1fr}}
+.card{background:#121a2a;border:1px solid #fff2;border-radius:12px;overflow:hidden}
+.card h2{margin:0;padding:10px 12px;font-size:15px;background:#1a2438;border-bottom:1px solid #fff1}
+.card h2 small{display:block;font-weight:500;opacity:.7;margin-top:2px}
+canvas{display:block;width:100%;height:auto;background:#000}
+.now{outline:2px dashed #ffd84a55}
+.tag{display:inline-block;margin-left:8px;padding:2px 7px;border-radius:6px;background:#2bd17e33;color:#9dffc8;font:800 11px system-ui}
+</style>
+</head><body>
+<header>
+  <h1>Background mockups — samples only</h1>
+  <p>Frozen in-run frames. Tip games untouched. Each option = layered mountains + varied tree scales + snow on trees, vector canvas, palette-matched.</p>
+</header>
+<div class="grid" id="grid"></div>
+<script>
+(function(){
+"use strict";
+var VH=360, GROUND=300, W=640, H=360;
+
+function terr(x, seed){
+  return 18*(0.55*Math.sin(x/380+seed)+0.3*Math.sin(x/170+seed*1.7)+0.15*Math.sin(x/88+seed*2.3));
+}
+function gY(x, seed){return GROUND+terr(x, seed||0.4);}
+
+/* ---- shared vector helpers (byte-cheap when ported) ---- */
+function mtRidge(cx,W,pts,col,snowCol,snowAmt){
+  cx.fillStyle=col;cx.beginPath();cx.moveTo(-20,VH+40);
+  for(var i=0;i<pts.length;i++)cx.lineTo(pts[i][0],pts[i][1]);
+  cx.lineTo(W+20,VH+40);cx.closePath();cx.fill();
+  if(snowAmt>0){
+    cx.fillStyle=snowCol;cx.beginPath();
+    for(var j=0;j<pts.length-1;j++){
+      var a=pts[j],b=pts[j+1],mx=(a[0]+b[0])/2,my=Math.min(a[1],b[1]);
+      var peak=a[1]<b[1]?a:b;
+      if(peak[1]<my+8) continue;
+      var hw=(Math.abs(b[0]-a[0]))*0.22*snowAmt;
+      cx.moveTo(peak[0]-hw, peak[1]+6);
+      cx.lineTo(peak[0], peak[1]-1);
+      cx.lineTo(peak[0]+hw, peak[1]+6);
+      cx.lineTo(peak[0], peak[1]+10+4*snowAmt);
+      cx.closePath();
+    }
+    cx.fill();
+  }
+}
+function pine(cx,x,baseY,scale,body,snow,trunk){
+  var s=scale, h=42*s, w=18*s;
+  cx.fillStyle=trunk||'#3a2a18';
+  cx.fillRect(x-1.5*s, baseY-h*0.22, 3*s, h*0.22);
+  cx.fillStyle=body;
+  // 3 tier triangle canopy
+  for(var t=0;t<3;t++){
+    var ty=baseY-h*(0.28+t*0.24), tw=w*(1-t*0.22), th=h*(0.34-t*0.04);
+    cx.beginPath();
+    cx.moveTo(x-tw, ty);
+    cx.lineTo(x, ty-th);
+    cx.lineTo(x+tw, ty);
+    cx.closePath();cx.fill();
+  }
+  // snow tips — few white wedges, phone-readable
+  if(snow){
+    cx.fillStyle=snow;
+    for(var u=0;u<3;u++){
+      var uy=baseY-h*(0.38+u*0.22), uw=w*(0.55-u*0.12), uh=5*s;
+      cx.beginPath();
+      cx.moveTo(x-uw*0.55, uy-uh*0.2);
+      cx.lineTo(x, uy-uh*1.6);
+      cx.lineTo(x+uw*0.45, uy);
+      cx.lineTo(x, uy+uh*0.3);
+      cx.closePath();cx.fill();
+    }
+  }
+}
+
+function snowGround(cx,W,H,seed,col,edge){
+  cx.fillStyle=col;
+  cx.beginPath();cx.moveTo(-20,H+40);
+  for(var x=-20;x<=W+24;x+=8)cx.lineTo(x,gY(x+seed*40,seed));
+  cx.lineTo(W+24,H+40);cx.closePath();cx.fill();
+  if(edge){cx.strokeStyle=edge;cx.lineWidth=2.5;cx.beginPath();
+    for(var gx=-20;gx<=W+24;gx+=8){var gy=gY(gx+seed*40,seed)+1;if(gx===-20)cx.moveTo(gx,gy);else cx.lineTo(gx,gy);}
+    cx.stroke();}
+}
+
+function drawSlopeHint(cx,W,seed){
+  // subtle tabletop shade so frame reads "in-run"
+  var bx=W*0.55, ap=36, dk=50, ex=40, a=22;
+  var d0=bx-dk,d1=bx+dk,y0=gY(d0,seed)-a,y1=gY(d1,seed)-a;
+  cx.fillStyle='rgba(160,190,220,0.28)';
+  cx.beginPath();cx.moveTo(bx-ap-dk,gY(bx-ap-dk,seed));cx.lineTo(d0,y0);cx.lineTo(d1,y1);cx.lineTo(bx+dk+ex,gY(bx+dk+ex,seed));
+  cx.lineTo(bx+dk+ex,gY(bx+dk+ex,seed)+10);cx.lineTo(bx-ap-dk,gY(bx-ap-dk,seed)+10);cx.closePath();cx.fill();
+  cx.strokeStyle='#3a5a7a';cx.lineWidth=2;cx.beginPath();
+  cx.moveTo(bx-ap-dk,gY(bx-ap-dk,seed)+1);cx.lineTo(d0,y0+1);cx.lineTo(d1,y1+1);cx.lineTo(bx+dk+ex,gY(bx+dk+ex,seed)+1);cx.stroke();
+}
+
+function riderHint(cx,x,y,boardC,boardS){
+  cx.save();cx.translate(x,y);cx.rotate(-0.12);
+  cx.fillStyle=boardC;cx.fillRect(-18,-4,36,5);cx.fillStyle=boardS;cx.fillRect(-10,-3,20,2);
+  cx.fillStyle='#1d3b8a';cx.fillRect(-7,-16,6,12);cx.fillRect(1,-16,6,12);
+  cx.fillStyle='#ffcc00';cx.fillRect(-8,-28,16,12);
+  cx.fillStyle='#f2c9a0';cx.beginPath();cx.arc(0,-33,5,0,7);cx.fill();
+  cx.restore();
+}
+
+/* ============== BD OPTIONS ============== */
+function bdSky(cx,W,H){
+  var g=cx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#2c4a7a');g.addColorStop(1,'#a9c8ec');
+  cx.fillStyle=g;cx.fillRect(0,0,W,H);
+}
+
+function bdCurrent(cx,W,H){
+  bdSky(cx,W,H);
+  // current jagged ridges
+  function ridge(col,amp,base,per){
+    cx.fillStyle=col;cx.beginPath();cx.moveTo(-20,H);
+    for(var x=-per;x<W+per;x+=per/2)cx.lineTo(x,base-amp*((Math.floor(x/(per/2))%2)?0.4:1));
+    cx.lineTo(W+20,H);cx.fill();
+  }
+  ridge('#5a77a3',90,230,260);ridge('#7f9cc4',55,260,180);
+  for(var x=-10;x<W+90;x+=90){cx.fillStyle='#2f5d50';cx.beginPath();cx.moveTo(x,gY(x,0.4)-6);cx.lineTo(x+8,gY(x,0.4)-46);cx.lineTo(x+16,gY(x,0.4)-6);cx.fill();}
+  snowGround(cx,W,H,0.4,'#e9f2fb','#bcd3ec');
+  drawSlopeHint(cx,W,0.4);
+  riderHint(cx,110,gY(110,0.4),'#ff6a1a','#ffffff');
+}
+
+function bdA(cx,W,H){ // Ridge + snow caps
+  bdSky(cx,W,H);
+  // far soft range
+  mtRidge(cx,W,[[-40,250],[80,168],[160,210],[260,145],[360,195],[480,155],[580,200],[700,170]],'#4a658c','#dfeaf6',0.85);
+  // mid sharper
+  mtRidge(cx,W,[[-30,270],[70,205],[150,240],[240,185],[340,230],[450,190],[560,225],[700,200]],'#5f7ea6','#e8f1fa',1.0);
+  // far tiny pines
+  for(var i=0;i<14;i++){var x=20+i*48+(i%3)*7;pine(cx,x,gY(x,0.4)-2,0.35+((i*5)%3)*0.08,'#3a5a4a','#d9e8f2');}
+  // mid pines varied
+  var mid=[[55,0.7],[130,0.95],[200,0.55],[280,1.05],[355,0.65],[430,0.9],[510,0.5],[575,1.0]];
+  mid.forEach(function(t){pine(cx,t[0],gY(t[0],0.4)-4,t[1],'#2f5d50','#e9f2fb');});
+  // near sparse big
+  [[95,1.35],[310,1.2],[520,1.45]].forEach(function(t){pine(cx,t[0],gY(t[0],0.4)-2,t[1],'#244a3e','#f2f7fc');});
+  snowGround(cx,W,H,0.4,'#e9f2fb','#bcd3ec');
+  drawSlopeHint(cx,W,0.4);
+  riderHint(cx,110,gY(110,0.4),'#ff6a1a','#ffffff');
+}
+
+function bdB(cx,W,H){ // Soft Alps
+  bdSky(cx,W,H);
+  mtRidge(cx,W,[[-50,255],[100,175],[220,205],[340,150],[470,190],[620,160],[720,195]],'#55749c','#e4eef8',1.1);
+  mtRidge(cx,W,[[-20,275],[90,220],[200,250],[310,200],[420,245],[540,210],[680,235]],'#6b8ab0','#eef5fb',0.7);
+  // denser mid band, more short trees
+  for(var i=0;i<18;i++){
+    var x=10+i*36+(i%2?8:0), sc=0.4+((i*7)%5)*0.09;
+    pine(cx,x,gY(x,0.55)-3,sc, i%4===0?'#355848':'#2f5d50', i%3? '#e9f2fb':null);
+  }
+  [[150,1.25],[400,1.4],[580,1.15]].forEach(function(t){pine(cx,t[0],gY(t[0],0.55)-2,t[1],'#1f4036','#f4f8fc');});
+  snowGround(cx,W,H,0.55,'#e9f2fb','#bcd3ec');
+  drawSlopeHint(cx,W,0.55);
+  riderHint(cx,120,gY(120,0.55),'#ff6a1a','#ffffff');
+}
+
+function bdC(cx,W,H){ // Sparse alpine
+  bdSky(cx,W,H);
+  mtRidge(cx,W,[[-60,240],[60,150],[140,185],[250,125],[360,170],[480,135],[600,180],[720,145]],'#445f88','#d8e6f4',1.2);
+  mtRidge(cx,W,[[-40,265],[120,200],[230,235],[370,175],[500,220],[650,190]],'#5a789e','#e6f0f9',0.9);
+  // few far dots
+  for(var i=0;i<8;i++){var x=40+i*80;pine(cx,x,gY(x,0.2)-2,0.32,'#3a5548',null);}
+  // sparse mid/near — tall statement trees
+  [[70,0.85],[180,1.5],[340,0.7],[460,1.55],[600,1.1]].forEach(function(t){
+    pine(cx,t[0],gY(t[0],0.2)-3,t[1],'#2a4e42','#eef5fb');
+  });
+  snowGround(cx,W,H,0.2,'#e9f2fb','#bcd3ec');
+  drawSlopeHint(cx,W,0.2);
+  riderHint(cx,110,gY(110,0.2),'#ff6a1a','#ffffff');
+}
+
+/* ============== TP OPTIONS ============== */
+function tpSky(cx,W,H){
+  var g=cx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#351868');g.addColorStop(0.45,'#6a3a9a');g.addColorStop(0.75,'#a878c8');g.addColorStop(1,'#e8c8b0');
+  cx.fillStyle=g;cx.fillRect(0,0,W,H);
+}
+
+function tpCurrent(cx,W,H){
+  tpSky(cx,W,H);
+  function ridge(col,amp,base,per){
+    cx.fillStyle=col;cx.beginPath();cx.moveTo(-20,H);
+    for(var x=-per;x<W+per;x+=per/2)cx.lineTo(x,base-amp*((Math.floor(x/(per/2))%2)?0.4:1));
+    cx.lineTo(W+20,H);cx.fill();
+  }
+  ridge('#3a2468',90,230,260);ridge('#5a3a88',55,260,180);
+  for(var x=0;x<W+100;x+=100){cx.fillStyle='#2a1848';cx.beginPath();cx.moveTo(x,gY(x,0.7)-4);cx.lineTo(x+10,gY(x,0.7)-36);cx.lineTo(x+20,gY(x,0.7)-4);cx.fill();}
+  snowGround(cx,W,H,0.7,'#f4f0f8',null);
+  // park box hint
+  var bx=W*0.5,y=gY(bx,0.7);cx.fillStyle='#e8f2ee';cx.fillRect(bx-40,y-16,80,5);cx.fillStyle='#6a9088';cx.fillRect(bx-40,y-11,80,11);
+  riderHint(cx,110,gY(110,0.7),'#e85a2a','#ffe8d0');
+}
+
+function tpA(cx,W,H){ // Ridge + snow caps (purple)
+  tpSky(cx,W,H);
+  mtRidge(cx,W,[[-40,250],[80,168],[160,210],[260,145],[360,195],[480,155],[580,200],[700,170]],'#2e1a58','#e8dff2',0.85);
+  mtRidge(cx,W,[[-30,270],[70,205],[150,240],[240,185],[340,230],[450,190],[560,225],[700,200]],'#452870','#f0e8f8',1.0);
+  for(var i=0;i<14;i++){var x=20+i*48+(i%3)*7;pine(cx,x,gY(x,0.7)-2,0.35+((i*5)%3)*0.08,'#2a1848','#e8dff2');}
+  var mid=[[55,0.7],[130,0.95],[200,0.55],[280,1.05],[355,0.65],[430,0.9],[510,0.5],[575,1.0]];
+  mid.forEach(function(t){pine(cx,t[0],gY(t[0],0.7)-4,t[1],'#241440','#f4f0f8');});
+  [[95,1.35],[310,1.2],[520,1.45]].forEach(function(t){pine(cx,t[0],gY(t[0],0.7)-2,t[1],'#1a0e30','#faf6fc');});
+  snowGround(cx,W,H,0.7,'#f4f0f8',null);
+  var bx=W*0.55,y=gY(bx,0.7);cx.fillStyle='#e8f2ee';cx.fillRect(bx-40,y-16,80,5);cx.fillStyle='#6a9088';cx.fillRect(bx-40,y-11,80,11);
+  riderHint(cx,110,gY(110,0.7),'#e85a2a','#ffe8d0');
+}
+
+function tpB(cx,W,H){ // Soft Alps dusk
+  tpSky(cx,W,H);
+  mtRidge(cx,W,[[-50,255],[100,175],[220,205],[340,150],[470,190],[620,160],[720,195]],'#3a2468','#ebe2f4',1.1);
+  mtRidge(cx,W,[[-20,275],[90,220],[200,250],[310,200],[420,245],[540,210],[680,235]],'#5a3a88','#f2eaf8',0.7);
+  for(var i=0;i<18;i++){
+    var x=10+i*36+(i%2?8:0), sc=0.4+((i*7)%5)*0.09;
+    pine(cx,x,gY(x,0.9)-3,sc, i%4===0?'#2e1a50':'#2a1848', i%3? '#f0e8f8':null);
+  }
+  [[150,1.25],[400,1.4],[580,1.15]].forEach(function(t){pine(cx,t[0],gY(t[0],0.9)-2,t[1],'#180c2c','#faf6fc');});
+  snowGround(cx,W,H,0.9,'#f4f0f8',null);
+  var bx=W*0.5,y=gY(bx,0.9);cx.fillStyle='#e8f2ee';cx.fillRect(bx-40,y-16,80,5);cx.fillStyle='#6a9088';cx.fillRect(bx-40,y-11,80,11);
+  riderHint(cx,120,gY(120,0.9),'#e85a2a','#ffe8d0');
+}
+
+function tpC(cx,W,H){ // Sparse alpine dusk
+  tpSky(cx,W,H);
+  mtRidge(cx,W,[[-60,240],[60,150],[140,185],[250,125],[360,170],[480,135],[600,180],[720,145]],'#281650','#e4daf0',1.2);
+  mtRidge(cx,W,[[-40,265],[120,200],[230,235],[370,175],[500,220],[650,190]],'#4a2e78','#eee6f6',0.9);
+  for(var i=0;i<8;i++){var x=40+i*80;pine(cx,x,gY(x,0.35)-2,0.32,'#2a1848',null);}
+  [[70,0.85],[180,1.5],[340,0.7],[460,1.55],[600,1.1]].forEach(function(t){
+    pine(cx,t[0],gY(t[0],0.35)-3,t[1],'#1c1038','#f6f0fa');
+  });
+  snowGround(cx,W,H,0.35,'#f4f0f8',null);
+  var bx=W*0.52,y=gY(bx,0.35);cx.fillStyle='#e8f2ee';cx.fillRect(bx-40,y-16,80,5);cx.fillStyle='#6a9088';cx.fillRect(bx-40,y-11,80,11);
+  riderHint(cx,110,gY(110,0.35),'#e85a2a','#ffe8d0');
+}
+
+var OPTS=[
+  {id:'bd-now', game:'BD', name:'Current (control)', fn:bdCurrent, now:1},
+  {id:'bd-opt-a', game:'BD', name:'A · Ridge + snow caps', fn:bdA},
+  {id:'bd-opt-b', game:'BD', name:'B · Soft Alps', fn:bdB},
+  {id:'bd-opt-c', game:'BD', name:'C · Sparse alpine', fn:bdC},
+  {id:'tp-now', game:'TP', name:'Current (control)', fn:tpCurrent, now:1},
+  {id:'tp-opt-a', game:'TP', name:'A · Ridge + snow caps', fn:tpA},
+  {id:'tp-opt-b', game:'TP', name:'B · Soft Alps dusk', fn:tpB},
+  {id:'tp-opt-c', game:'TP', name:'C · Sparse alpine dusk', fn:tpC}
+];
+
+var grid=document.getElementById('grid');
+var dpr=2;
+OPTS.forEach(function(o){
+  var card=document.createElement('div');card.className='card'+(o.now?' now':'');card.id=o.id;
+  card.innerHTML='<h2>'+o.game+' — '+o.name+(o.now?' <span class="tag">NOW</span>':'')+'</h2>';
+  var cv=document.createElement('canvas');
+  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+  cv.style.width=W+'px';cv.style.height=H+'px';
+  cv.dataset.id=o.id;
+  card.appendChild(cv);grid.appendChild(card);
+  var cx=cv.getContext('2d');cx.setTransform(dpr,0,0,dpr,0,0);
+  o.fn(cx,W,H);
+});
+
+window.__OPTS=OPTS;
+window.__exportCanvas=function(id){
+  var cv=document.querySelector('canvas[data-id="'+id+'"]');
+  return cv?cv.toDataURL('image/png'):null;
+};
+})();
+</script>
+</body></html>
