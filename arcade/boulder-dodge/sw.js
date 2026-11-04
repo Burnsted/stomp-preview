@@ -1,5 +1,5 @@
-/* boulder-dodge-v7-3 — network-first for navigations/HTML; cache fallback offline */
-const C='boulder-dodge-v7-3';
+/* boulder-dodge-v7-4 — network-first for navigations/HTML; cache fallback offline */
+const C='boulder-dodge-v7-4';
 const ASSETS=['./','./index.html','./sw.js'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
