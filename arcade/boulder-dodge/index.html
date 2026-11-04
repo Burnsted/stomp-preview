@@ -55,6 +55,13 @@ var VH=360, GROUND=300, G=3600, JV=-950, DT=1/120;
 var AIR=2*-JV/G;               // single-jump airtime (s) ~0.53
 var MAXH=JV*JV/(2*G);          // single-jump apex ~125
 var BASE=320, MAXSPD=760, RAMP=9;
+// ---- v0.7.6 knobs (GD-like speed + fairness + juice) ----
+var SPD_BASE=1.0;              // level speed mult base
+var SPD_PER_2LV=0.10;          // +0.10 every 2 levels → ~+0.30 by L6–7
+var SPD_CAP=1.35;
+var POST_LIP=0.45;             // min seconds after feature lip before next hazard
+var COMBO_NEED=3, COMBO_BOOST=1.12, COMBO_T=1.55;
+var DIFFS={easy:{id:'easy',name:'Easy',spd:0.88,storm:0.75,gap:1.18},normal:{id:'normal',name:'Normal',spd:1,storm:1,gap:1},hard:{id:'hard',name:'Hard',spd:1.12,storm:1.28,gap:0.86}};
 var BCOL={brown:['#7a4b26','#a06a3c'],grey:['#6e7178','#9a9ea6'],dark:['#2e3036','#4c5058']};
 var KINDS={
  boulderS:{w:20,h:16,t:0,wt:3},boulderM:{w:34,h:28,t:0,wt:3},boulderL:{w:48,h:40,t:6,wt:2},
@@ -91,13 +98,16 @@ var BOARDS=[
  {id:'cat',name:'Snowcat Orange',c:'#ff9f1a',s:'#14213d',spd:1.18,ach:'dj7'},
  {id:'full',name:'Full Send',c:'#e0245e',s:'#ffd84a',spd:1.24,ach:'l8'}];
 var PK='boulderDodge.progress',PR;try{PR=JSON.parse(localStorage.getItem(PK))}catch(e){}
-PR=PR||{};PR.done=PR.done||[];PR.board=PR.board||'first';PR.best=PR.best||{};PR.ach=PR.ach||[];
+PR=PR||{};PR.done=PR.done||[];PR.board=PR.board||'first';PR.best=PR.best||{};PR.ach=PR.ach||[];PR.diff=PR.diff||'normal';
 function saveP(){try{localStorage.setItem(PK,JSON.stringify(PR))}catch(e){}}
 function unlocked(n){return n===1||PR.done.indexOf(n-1)>=0||(n===9&&endlessOpen())}
 function endlessOpen(){for(var i=1;i<=8;i++)if(PR.done.indexOf(i)<0)return false;return true}
 function boardOpen(b){return !b.ach||PR.ach.indexOf(b.ach)>=0}
 function board(){var b=BOARDS.filter(function(x){return x.id===PR.board&&boardOpen(x)})[0];return b||BOARDS[0];}
 function boardSpd(){return board().spd||1;}
+function diffM(){return DIFFS[PR.diff]||DIFFS.normal;}
+function levelSpd(){return Math.min(SPD_CAP,SPD_BASE+Math.floor((LV.n-1)/2)*SPD_PER_2LV);}
+function runSpd(){return boardSpd()*levelSpd()*diffM().spd*((S&&S.boostT>0)?COMBO_BOOST:1)*((S&&S.landBad>0)?0.92:1);}
 function boardForAch(id){for(var i=0;i<BOARDS.length;i++)if(BOARDS[i].ach===id)return BOARDS[i];return null;}
 function earnAch(id,silent){if(!ACH[id]||PR.ach.indexOf(id)>=0)return false;PR.ach.push(id);saveP();
  if(!silent){var bb=boardForAch(id);announce((ACH[id].name)+(bb?' → '+bb.name+' +'+Math.round((bb.spd-1)*100)+'%':''));S.flash=0.2;S.achToast=ACH[id].name+(bb?' · '+bb.name:'');S.achT=2.4;}
@@ -114,107 +124,127 @@ var S;
 function mk(s){return function(){s=(s*1664525+1013904223)>>>0;return s/4294967296}}
 var rng,rngW,rngP,rngB,TER;function seed(s){rng=mk(s);rngW=mk((s^0x9e3779b9)>>>0);rngP=mk((s^0x85ebca6b)>>>0);rngB=mk((s^0xc2b2ae35)>>>0);
  var rt=mk((s^0x27d4eb2f)>>>0);TER=[rt()*6.283,rt()*6.283,rt()*6.283];}
-// Terrain authority: hills + mogul bumps share one height fn (draw + physics). Positive = dip (↓Y), negative = crest (↑Y).
-var HILL=[0,32,52,64,72,84,84,58,98,98]; // ~2.2× v0.6.1 — Hill Climber feel; L7 tempered for decks
-// Mogul peak raise (world px) + half-width — early modest launch, late/endless biggest. L7 tempered for snowcats.
-var BUMP_A=[0,26,34,44,54,64,72,56,82,88];
-var BUMP_W=[0,42,48,54,60,66,72,62,80,86];
+// Terrain authority: hills + tabletops share one height fn (draw + physics). Positive = dip (↓Y), negative = raise (↑Y).
+var HILL=[0,28,44,56,64,74,74,52,88,88];
+// Snowboard TABLETOPS (not twin-mound moguls): amp capped · takeoff / flat deck / landing. L7 tempered.
+// Kicker = short deck; Table = long plateau you can ride.
+// Steep takeoff + longer flat deck so silhouette reads as tabletop, not twin mounds
+var KICK_A=[0,12,14,16,18,20,22,16,24,26],KICK_AP=[0,22,24,26,28,30,32,26,34,36],KICK_DK=[0,20,22,24,26,28,30,24,32,34],KICK_EX=[0,30,32,34,36,38,40,34,42,44];
+var TAB_A=[0,16,18,20,22,24,26,20,28,30],TAB_AP=[0,28,30,32,34,36,38,32,40,42],TAB_DK=[0,70,76,82,88,94,100,84,108,114],TAB_EX=[0,36,38,40,42,44,46,40,48,50];
 function terr(wx){var A=HILL[LV.n]||12;return A*(0.55*Math.sin(wx/380+TER[0])+0.3*Math.sin(wx/170+TER[1])+0.15*Math.sin(wx/88+TER[2]));}
-function bumpH(wx){if(!S||!S.bumps)return 0;var h=0;for(var i=0;i<S.bumps.length;i++){var bm=S.bumps[i],dx=wx-bm.wx,hw=bm.hw;if(dx>-hw&&dx<hw){var u=dx/hw;h-=bm.amp*(1-u*u);}}return h;}
+// Tabletop profile: linear takeoff → flat deck → linear landing (no parabolic "twin hills").
+function bumpH(wx){if(!S||!S.bumps)return 0;var h=0;for(var i=0;i<S.bumps.length;i++){var bm=S.bumps[i],dx=wx-bm.wx,ap=bm.ap,dk=bm.deck,ex=bm.ex,a=bm.amp,L=-(ap+dk),R=dk+ex;
+ if(dx<=L||dx>=R)continue;if(dx<-dk)h-=a*((dx-L)/ap);else if(dx<=dk)h-=a;else h-=a*(1-(dx-dk)/ex);}return h;}
 function H(sx){var wx=S.dist+sx-S.p.x;return terr(wx)+bumpH(wx);}
 function gY(sx){return GROUND+H(sx);} // absolute snow surface Y at screen x — AUTHORITY for draw + physics
 function slopeAt(sx){return Math.atan2(H(sx+6)-H(sx-6),12);}
-function airStats(){ // double-jump levels get longer air / higher apex for fairness gating
- if(LV.doubleJump)return {air:AIR*1.42,maxh:MAXH*1.55,dj:true};
- return {air:AIR,maxh:MAXH,dj:false};}
-function hillPad(){return (HILL[LV.n]||12)*0.38+(BUMP_A[LV.n]||0)*0.22;} // clearance for hills + mogul rise
+function airStats(){if(LV.doubleJump)return {air:AIR*1.42,maxh:MAXH*1.55,dj:true};return {air:AIR,maxh:MAXH,dj:false};}
+function hillPad(){return (HILL[LV.n]||12)*0.38+(TAB_A[LV.n]||KICK_A[LV.n]||0)*0.28;}
 var SPAWN_AHEAD=2000,WARN_T=2.0;
 function reset(sd,lv){if(lv)LV=lv;seed(sd==null?(LV.endless?(Date.now()>>>0):1000+LV.n):sd);
- var gy0=GROUND+terr(0);
- S={pops:[],blog:[],bumps:[],bumpN:0,hop:0,climbVy:0,log:[],wlog:[],warnLog:[],arrGapMin:1e9,lastTail:null,lv:LV,seen:{},bonus:0,pick:0,pickups:[],pickT:2,clearPts:0,storm:LV.storm[0],stormT:LV.storm[0],stormClock:3,parts:[],flash:0,land:0,mode:'ready',t:0,dist:0,cleared:0,spd:LV.base*boardSpd(),p:{x:110,y:gy0,vy:0,on:true,airUsed:0},obs:[],nextX:900,flakes:[],shake:0,minGapT:1e9,done:false,newBest:false,playAt:0,achToast:'',achT:0,rodeCat:false};
- for(var i=0;i<90;i++)S.flakes.push({x:Math.random()*1000,y:Math.random()*VH,r:1+Math.random()*2,z:Math.random(),vx:(Math.random()-.5)*12});}
+ var gy0=GROUND+terr(0),m0=boardSpd()*levelSpd()*diffM().spd;
+ S={pops:[],blog:[],bumps:[],bumpN:0,hop:0,climbVy:0,log:[],wlog:[],warnLog:[],arrGapMin:1e9,lastTail:null,lv:LV,seen:{},bonus:0,pick:0,pickups:[],pickT:2,clearPts:0,storm:LV.storm[0]*diffM().storm,stormT:LV.storm[0]*diffM().storm,stormClock:3,parts:[],flash:0,land:0,mode:'ready',t:0,dist:0,cleared:0,spd:LV.base*m0,p:{x:110,y:gy0,vy:0,on:true,airUsed:0},obs:[],nextX:900,flakes:[],shake:0,minGapT:1e9,done:false,newBest:false,playAt:0,achToast:'',achT:0,rodeCat:false,flip:0,holding:false,combo:0,boostT:0,nearPts:0,flipPts:0,landBad:0};
+ for(var i=0;i<160;i++)S.flakes.push({x:Math.random()*1000,y:Math.random()*VH,r:1.4+Math.random()*2.8,z:Math.random(),vx:(Math.random()-.5)*18});}
 function threatPts(k){var d=KINDS[k];if(!d)return 20;if(d.deck)return 42;if(d.vx)return 48;return 12+Math.round(d.h*0.7)+Math.round(d.w*0.12);}
-function score(){return Math.floor(S.dist/10)+S.clearPts+S.bonus+S.pick*30+S.bumpN*10}
+function score(){return Math.floor(S.dist/10)+S.clearPts+S.bonus+S.pick*30+S.bumpN*10+S.nearPts+S.flipPts}
 function clearPx(k,v){var d=KINDS[k],a=airStats();if(d.deck)return 1e9;
  var he=d.h+hillPad();return (v+(d.vx||0))*a.air*Math.sqrt(Math.max(0,1-(he-4)/a.maxh));}
 function fits(k,v){var d=KINDS[k];return d.deck||(d.w+14)<=0.85*clearPx(k,v);}
-function pickKind(){var tot=0,k,ks=Object.keys(LV.k);ks.forEach(function(n){tot+=LV.k[n]});
+function pickKind(){var tot=0,k,ks=Object.keys(LV.k),cap=LV.max*runSpd();ks.forEach(function(n){tot+=LV.k[n]});
  for(var tries=0;tries<12;tries++){var rr=rng()*tot;k=ks[ks.length-1];for(var i=0;i<ks.length;i++){rr-=LV.k[ks[i]];if(rr<=0){k=ks[i];break;}}
-  if(fits(k,S.spd)&&fits(k,LV.max*boardSpd()))return k;}
+  if(fits(k,S.spd)&&fits(k,cap))return k;}
  return 'boulderS';}
+function mkFeat(kind,wx,A,AP,DK,EX){return {wx:wx,hit:false,kind:kind,amp:A*(0.92+rngB()*0.12),ap:AP*(0.94+rngB()*0.1),deck:DK*(0.94+rngB()*0.1),ex:EX*(0.94+rngB()*0.1)};}
 function spawn(){
- var p=S.p,ahead=S.nextX-p.x,a=airStats(),bM=boardSpd();
+ var p=S.p,ahead=S.nextX-p.x,a=airStats(),m=runSpd(),dg=diffM().gap;
  if(S.dist+ahead>LV.len-250){S.nextX+=1e6;return;}
  var k=pickKind(),d=KINDS[k],cols=Object.keys(BCOL);
- var vArr=Math.min(LV.max*bM,S.spd+LV.ramp*bM*ahead/Math.max(1,S.spd));
+ var vArr=Math.min(LV.max*m,S.spd+LV.ramp*m*ahead/Math.max(1,S.spd));
  var lead=d.vx?d.vx*ahead/S.spd*1.1:0;
- var o={k:k,x:S.nextX+lead,w:d.w,h:d.h,vx:d.vx||0,deck:!!d.deck,passed:false,c:cols[Math.floor(rng()*3)],ph:rng()*6};
+ var o={k:k,x:S.nextX+lead,w:d.w,h:d.h,vx:d.vx||0,deck:!!d.deck,passed:false,near:false,c:cols[Math.floor(rng()*3)],ph:rng()*6};
  S.obs.push(o);S.log.push(k+'@'+Math.round(S.dist+o.x-S.p.x));var end=o.x+o.w-S.nextX;
  if(!d.vx&&!d.deck&&LV.pair&&rng()<LV.pair){var w2=KINDS.boulderM;
-  if(d.w+60+w2.w-8+22<0.8*clearPx('boulderM',vArr)){var o2={k:'boulderM',x:o.x+d.w+60,w:w2.w,h:w2.h,vx:0,passed:false,pair:true,c:'brown',ph:0};S.obs.push(o2);S.log.push('pair@'+Math.round(S.dist+o2.x-S.p.x));end=o2.x+o2.w-S.nextX;}}
- var need=vArr*(REACT+a.air+(d.deck?0.2:0))+30+hillPad()*0.5;
- var g=need+rng()*vArr*LV.gapX;
+  if(d.w+60+w2.w-8+22<0.8*clearPx('boulderM',vArr)){var o2={k:'boulderM',x:o.x+d.w+60,w:w2.w,h:w2.h,vx:0,passed:false,near:false,pair:true,c:'brown',ph:0};S.obs.push(o2);S.log.push('pair@'+Math.round(S.dist+o2.x-S.p.x));end=o2.x+o2.w-S.nextX;}}
+ // Fairness: reaction + air + POST_LIP after any feature lip before next hazard
+ var need=vArr*(REACT+a.air+POST_LIP+(d.deck?0.2:0))+40+hillPad()*0.5;
+ var g=need+rng()*vArr*LV.gapX*dg;
  S.lastGapT=g/vArr;
- var ba=S.nextX+end+100,bb=S.nextX+end+g-100;
- if(bb-ba>40){var nb=Math.floor(rngB()*3),A0=BUMP_A[LV.n]||26,W0=BUMP_W[LV.n]||42;
-  for(var q=0;q<nb;q++){var bx=ba+rngB()*(bb-ba),wx=Math.round(S.dist+bx-S.p.x);
-   S.bumps.push({wx:wx,hit:false,amp:A0*(0.88+rngB()*0.28),hw:W0*(0.9+rngB()*0.22)});S.blog.push(wx);}}
+ var lipClear=vArr*POST_LIP,ba=S.nextX+end+90,bb=S.nextX+end+g-lipClear-50;
+ // ONE feature per gap only (no twin side-by-side mounds). Prefer tabletop on wider gaps.
+ if(bb-ba>100){var n=LV.n,wantTab=(bb-ba>TAB_AP[n]+TAB_DK[n]*2+TAB_EX[n]+60)&&rngB()<0.34;
+  if(wantTab){var tw=TAB_AP[n]+TAB_DK[n]*2+TAB_EX[n],bx=ba+rngB()*Math.max(10,bb-ba-tw),cx0=bx+TAB_AP[n]+TAB_DK[n];
+   var feat=mkFeat('table',Math.round(S.dist+cx0-S.p.x),TAB_A[n]||20,TAB_AP[n]||40,TAB_DK[n]||56,TAB_EX[n]||44);S.bumps.push(feat);S.blog.push(feat.wx);}
+  else{var kw=KICK_AP[n]+KICK_DK[n]*2+KICK_EX[n],bx2=ba+rngB()*Math.max(10,bb-ba-kw),cx2=bx2+KICK_AP[n]+KICK_DK[n];
+   var kf=mkFeat('kicker',Math.round(S.dist+cx2-S.p.x),KICK_A[n]||16,KICK_AP[n]||32,KICK_DK[n]||14,KICK_EX[n]||36);S.bumps.push(kf);S.blog.push(kf.wx);}}
  S.nextX+=end+g;
 }
 function jump(){if(S.mode!=='play')return;
- if(S.p.on){S.p.vy=JV;S.p.on=false;S.p.airUsed=0;jumpBoing();return;}
- if(LV.doubleJump&&S.p.airUsed<1){S.p.vy=JV*0.92;S.p.airUsed=1;jumpBoing();}}
+ if(S.p.on){S.p.vy=JV;S.p.on=false;S.p.airUsed=0;S.flip=0;S.holding=true;jumpBoing();return;}
+ if(LV.doubleJump&&S.p.airUsed<1){S.p.vy=JV*0.92;S.p.airUsed=1;S.holding=true;jumpBoing();}}
+function holdSet(v){S.holding=!!v;if(!v&&S.p&&!S.p.on){/* release mid-air keeps current flip angle */}}
+function comboAdd(n){S.combo+=n;if(S.combo>=COMBO_NEED){S.combo=0;S.boostT=COMBO_T;beep(990,0.06,'square',0.1);S.flash=0.1;S.pops.push({x:S.p.x,y:S.p.y-60,l:0.7,txt:'SPEED!'});}}
 function puff(x,y,n,c,v){var R=Math.random;for(var i=0;i<n;i++)S.parts.push({x:x,y:y,vx:(R()-.5)*2*v,vy:-R()*v,l:0.4+R()*0.3,c:c,s:2+R()*2});}
 function deckUnder(){var p=S.p;for(var i=0;i<S.obs.length;i++){var o=S.obs[i];if(o.deck&&p.x+9>o.x&&p.x-9<o.x+o.w)return o;}return null;}
-function step(dt){S.land=Math.max(0,S.land-dt*6);S.flash=Math.max(0,S.flash-dt);
+function step(dt){S.land=Math.max(0,S.land-dt*6);S.flash=Math.max(0,S.flash-dt);S.landBad=Math.max(0,S.landBad-dt);S.boostT=Math.max(0,S.boostT-dt);
  for(var q=S.parts.length-1;q>=0;q--){var P=S.parts[q];P.x+=P.vx*dt;P.y+=P.vy*dt;P.vy+=600*dt;P.l-=dt;if(P.l<=0)S.parts.splice(q,1);}
  if(S.parts.length>150)S.parts.splice(0,S.parts.length-150);
- S.t+=dt; var bM=boardSpd();S.spd=Math.min(LV.max*bM,(LV.base+LV.ramp*S.t)*bM);S.achT=Math.max(0,S.achT-dt);
+ S.t+=dt; var m=runSpd();S.spd=Math.min(LV.max*m,(LV.base+LV.ramp*S.t)*m);S.achT=Math.max(0,S.achT-dt);
  var dx=S.spd*dt; S.dist+=dx;
  var p=S.p,py0=p.y;
  S.nextX-=dx; while(S.nextX<SPAWN_AHEAD)spawn();
  for(var i=S.obs.length-1;i>=0;i--){var o=S.obs[i];o.x-=dx+o.vx*dt;if(o.x+o.w<-80)S.obs.splice(i,1);}
  var dk=deckUnder(),snow=gY(p.x),floor=dk?gY(p.x)-dk.h:snow,surfVy=(snow-py0)/dt;
- if(p.on&&dk){p.y=floor;S.climbVy=0;if(dk.k==='snowcat'&&!S.rodeCat){S.rodeCat=true;earnAch('catride');}}
+ if(p.on&&dk){p.y=floor;S.climbVy=0;S.flip=0;S.holding=false;if(dk.k==='snowcat'&&!S.rodeCat){S.rodeCat=true;earnAch('catride');}}
  else if(p.on&&!dk){
-  // Keep peak climb (don't let the flattening crest overwrite the launch pop)
   if(surfVy<S.climbVy)S.climbVy=surfVy;
-  // Crest launch: surface falls away after a real climb — bumps/ramps feel like jumps (capped ≤ ~jump)
-  if(S.climbVy<-140&&surfVy>30){
-   p.on=false;p.vy=Math.max(JV*0.88,S.climbVy*0.92);p.airUsed=0;S.hop=1;S.climbVy=0;
+  // Launch off tabletop far lip / kicker when surface drops after climb
+  if(S.climbVy<-110&&surfVy>28){
+   p.on=false;p.vy=Math.max(JV*0.85,S.climbVy*0.9);p.airUsed=0;S.hop=1;S.climbVy=0;S.flip=0;
    puff(p.x,p.y-2,8,'#ffffff',110);beep(260+Math.random()*60,0.05,'square',0.07);
-   for(var bi=0;bi<S.bumps.length;bi++){var bm=S.bumps[bi],bxs=bm.wx-S.dist+p.x;if(!bm.hit&&Math.abs(bxs-p.x)<bm.hw){bm.hit=true;S.bumpN++;S.pops.push({x:p.x,y:p.y-50,l:0.6});}}}
-  else{p.y=snow;if(surfVy>-40&&surfVy<40)S.climbVy*=0.91;}} // decay on flats — no stale false launch
+   for(var bi=0;bi<S.bumps.length;bi++){var bm=S.bumps[bi],bxs=bm.wx-S.dist+p.x;if(!bm.hit&&bxs>-bm.deck&&bxs<bm.deck+bm.ex){bm.hit=true;S.bumpN++;S.pops.push({x:p.x,y:p.y-50,l:0.6,txt:bm.kind==='table'?'+10 TABLE':'+10 KICK'});}}}
+  else{p.y=snow;if(surfVy>-40&&surfVy<40)S.climbVy*=0.91;}}
  if(p.on&&p.y<floor-0.5)p.on=false;
- if(!p.on){p.vy+=G*dt;p.y+=p.vy*dt;
-  if(p.vy>=0&&p.y>=floor&&py0<=floor+1){p.y=floor;p.vy=0;p.on=true;p.airUsed=0;S.land=1;S.climbVy=0;puff(p.x,floor,8,'#ffffff',120);}
-  else if(p.y>=snow+40){p.y=snow;p.vy=0;p.on=true;p.airUsed=0;S.land=1;S.climbVy=0;}}
+ if(!p.on){
+  if(S.holding)S.flip+=dt*9.5; // hold-to-flip (Alto-style)
+  p.vy+=G*dt;p.y+=p.vy*dt;
+  if(p.vy>=0&&p.y>=floor&&py0<=floor+1){
+   // Clean land = upright-ish after flips; messy = score ding + brief wobble (not soft-fail)
+   var twopi=Math.PI*2,rem=((S.flip%twopi)+twopi)%twopi,up=rem<0.85||rem>twopi-0.85,flips=Math.floor(S.flip/twopi+0.001);
+   p.y=floor;p.vy=0;p.on=true;p.airUsed=0;S.land=1;S.climbVy=0;S.holding=false;
+   if(S.flip>1.2){if(up){var fp=15+flips*25;S.flipPts+=fp;comboAdd(1+flips);S.pops.push({x:p.x,y:p.y-55,l:0.7,txt:flips?('+'+fp+' FLIP×'+flips):('+'+fp+' CLEAN')});beep(720,0.05,'triangle',0.09);puff(p.x,floor,10,'#ffd84a',140);}
+    else{S.landBad=0.55;S.bonus=Math.max(0,S.bonus-4);S.combo=0;S.pops.push({x:p.x,y:p.y-50,l:0.55,txt:'MESSY'});beep(180,0.08,'sawtooth',0.08);}}
+   else puff(p.x,floor,8,'#ffffff',120);
+   S.flip=0;}
+  else if(p.y>=snow+40){p.y=snow;p.vy=0;p.on=true;p.airUsed=0;S.land=1;S.climbVy=0;S.flip=0;S.holding=false;}}
  else if(Math.random()<0.25)S.parts.push({x:p.x-16,y:p.y-2,vx:-60-Math.random()*60,vy:-30*Math.random(),l:0.3,c:'#ffffff',s:2});
  var px1=p.x-11,px2=p.x+11,py1=p.y-30,py2=p.y;
  for(i=0;i<S.obs.length;i++){o=S.obs[i];
   var base=gY(o.x+o.w/2),top=base-o.h;
   if(px2>o.x+4&&px1<o.x+o.w-4&&py2>top+(o.deck?6:4)&&py1<base){if(!GOD){crash();return;}}
+  // Near-miss: skimmed over / beside hazard
+  if(!o.near&&!o.deck&&px2>o.x-6&&px1<o.x+o.w+6){var vc=top-py2;if(vc>2&&vc<26){o.near=true;S.nearPts+=12;comboAdd(1);S.pops.push({x:p.x,y:p.y-48,l:0.55,txt:'+12 NEAR'});beep(1100,0.04,'square',0.07);}}
   if((o.vx||o.deck)&&o.warnT==null&&(o.x-px2)/(S.spd+o.vx)<=WARN_T)o.warnT=S.t;
   if(o.visT==null&&o.x<=W)o.visT=S.t;
   if(o.arrT==null&&o.x<=px2){o.arrT=S.t;if(!o.pair&&S.lastTail!=null)S.arrGapMin=Math.min(S.arrGapMin,o.arrT-S.lastTail);
    if(o.vx||o.deck)S.warnLog.push({k:o.k,spd:Math.round(S.spd),warn:+(o.arrT-(o.warnT==null?o.arrT:o.warnT)).toFixed(3),vis:+(o.arrT-o.visT).toFixed(3)});}
   if(!o.passed&&o.x+o.w<px1){o.passed=true;S.lastTail=S.t;S.cleared++;S.clearPts+=threatPts(o.k);if(!S.seen[o.k]){S.seen[o.k]=1;S.bonus+=5;}if(o.k==='moose')earnAch('moose');S.flash=0.12;puff(p.x,p.y-20,6,'#ffd84a',160);beep(880,0.05,'triangle',0.08);}}
  if(S.lastGapT<S.minGapT)S.minGapT=S.lastGapT;
- S.stormClock-=dt;if(S.stormClock<=0){var lo=LV.storm[0],hi=LV.storm[1];S.stormT=rngW()<LV.spike?Math.min(0.7,hi+0.1):lo+rngW()*(hi-lo)*Math.min(1,0.4+S.t/40);S.stormClock=3+rngW()*6;S.wlog.push('s'+S.stormT.toFixed(3));}
+ var dStorm=diffM().storm;
+ S.stormClock-=dt;if(S.stormClock<=0){var lo=LV.storm[0]*dStorm,hi=Math.min(0.85,LV.storm[1]*dStorm);S.stormT=rngW()<LV.spike?Math.min(0.85,hi+0.12):lo+rngW()*(hi-lo)*Math.min(1,0.35+S.t/40);S.stormClock=2.6+rngW()*5.5;S.wlog.push('s'+S.stormT.toFixed(3));}
  S.storm+=(S.stormT-S.storm)*Math.min(1,dt*0.8);
- // Gentle snowfall (capped) — drift + fall, not blizzard spam
- var nf=Math.min(70,Math.floor(18+55*S.storm)),wind=18+90*S.storm;
- for(i=0;i<nf;i++){var f=S.flakes[i];f.x-=dx*(0.15+0.25*f.z)+wind*dt*(0.35+f.z*0.4)+(f.vx||0)*dt;f.y+=(22+45*S.storm)*dt*(0.45+f.z*0.5);if(f.y>VH){f.y=-5;f.x=Math.random()*W;}if(f.x<0)f.x+=W;if(f.x>W)f.x-=W;}
+ // Dense progressive snowfall (level + storm + difficulty) — readable, not hitbox-hiding
+ var stormVis=Math.min(1,S.storm*(0.55+0.07*LV.n)*dStorm),nf=Math.min(150,Math.floor(36+110*stormVis)),wind=28+120*stormVis;
+ for(i=0;i<nf;i++){var f=S.flakes[i]||(S.flakes[i]={x:Math.random()*W,y:Math.random()*VH,r:1.5+Math.random()*3,z:Math.random(),vx:(Math.random()-.5)*18});
+  f.x-=dx*(0.18+0.3*f.z)+wind*dt*(0.4+f.z*0.45)+f.vx*dt;f.y+=(28+70*stormVis)*dt*(0.5+f.z*0.55);if(f.y>VH+10){f.y=-8;f.x=Math.random()*W;}if(f.x<0)f.x+=W;if(f.x>W)f.x-=W;}
  S.pickT-=dt;if(S.pickT<=0&&S.dist<LV.len-600){S.pickT=1/LV.pick*(0.6+rngP()*0.8);var T=1.1+rngP()*0.6,hy=gY(p.x)-(55+rngP()*60);
   S.pickups.push({x:p.x+S.spd*T,y:hy-50*T,vy:50,a:0});S.wlog.push('p'+Math.round(S.dist)+':'+Math.round(hy));}
  for(i=S.pickups.length-1;i>=0;i--){var u=S.pickups[i];u.x-=dx;u.y+=u.vy*dt;u.a+=dt*5;
   if(Math.abs(u.x-p.x)<20&&u.y>py1-10&&u.y<py2+6){S.pick++;S.pickups.splice(i,1);puff(u.x,u.y,10,'#ffd84a',180);beep(1320,0.07,'square',0.08);S.flash=0.15;continue;}
   if(u.x<-20||u.y>gY(u.x)+20)S.pickups.splice(i,1);}
  S.hop=Math.max(0,S.hop-dt*4);
- for(i=S.bumps.length-1;i>=0;i--){var bm=S.bumps[i],bxs=bm.wx-S.dist+p.x;
-  // Score lip rides that didn't full-launch (early modest bumps)
-  if(!bm.hit&&Math.abs(bxs-p.x)<Math.max(14,bm.hw*0.35)&&p.on&&!dk){bm.hit=true;S.bumpN++;S.hop=1;S.pops.push({x:p.x,y:p.y-50,l:0.6});puff(p.x,p.y-2,6,'#ffffff',90);beep(300+Math.random()*80,0.04,'square',0.06);}
-  if(bxs<-bm.hw-20)S.bumps.splice(i,1);}
+ for(i=S.bumps.length-1;i>=0;i--){var bm=S.bumps[i],bxs=bm.wx-S.dist+p.x,half=bm.ap+bm.deck;
+  if(!bm.hit&&Math.abs(bxs-p.x)<Math.max(16,bm.deck+8)&&p.on&&!dk){bm.hit=true;S.bumpN++;S.hop=1;S.pops.push({x:p.x,y:p.y-50,l:0.6,txt:bm.kind==='table'?'+10 TABLE':'+10 KICK'});puff(p.x,p.y-2,6,'#ffffff',90);beep(300+Math.random()*80,0.04,'square',0.06);}
+  if(bxs<-half-bm.ex-30)S.bumps.splice(i,1);}
  for(i=S.pops.length-1;i>=0;i--){S.pops[i].l-=dt;S.pops[i].y-=30*dt;if(S.pops[i].l<=0)S.pops.splice(i,1);}
  if(S.dist>=LV.len)finish();
 }
@@ -283,15 +313,22 @@ function draw(){
  var po=(S.dist*0.4)%90;for(var x=-po;x<W+90;x+=90){cx.fillStyle='#2f5d50';tri(x,gY(x+8)-6,16,40);}
  cx.fillStyle='#e9f2fb';cx.beginPath();cx.moveTo(-20,worldH-OY+400);for(var gx=-20;gx<=W+24;gx+=8)cx.lineTo(gx,gY(gx));cx.lineTo(W+24,worldH-OY+400);cx.closePath();cx.fill();
  cx.strokeStyle='#bcd3ec';cx.lineWidth=3;cx.beginPath();for(gx=-20;gx<=W+24;gx+=8){var gy=gY(gx)+1.5;if(gx===-20)cx.moveTo(gx,gy);else cx.lineTo(gx,gy);}cx.stroke();
- // Moguls are already in gY snow fill — peak tick marks readable launch lips
- S.bumps.forEach(function(bm){var bx=bm.wx-S.dist+S.p.x;if(bx<-bm.hw||bx>W+bm.hw)return;var by=gY(bx);
-  cx.strokeStyle=bm.hit?'#9fbfe0':'#7aa3c8';cx.lineWidth=2;cx.beginPath();cx.moveTo(bx-bm.hw*0.55,gY(bx-bm.hw*0.55)+1);cx.quadraticCurveTo(bx,by-2,bx+bm.hw*0.55,gY(bx+bm.hw*0.55)+1);cx.stroke();
-  cx.fillStyle=bm.hit?'#c5d8ec':'#ffffff';cx.beginPath();cx.arc(bx,by-1,3.2,0,7);cx.fill();});
+ // Tabletop deck shade + lips (no crest dots — those read as twin-mound nipples)
+ S.bumps.forEach(function(bm){var bx=bm.wx-S.dist+S.p.x,L=bx-(bm.ap+bm.deck),R=bx+(bm.deck+bm.ex);if(R<-20||L>W+20)return;
+  var d0=bx-bm.deck,d1=bx+bm.deck,y0=gY(d0),y1=gY(d1);
+  // flat deck under-shade so plateau reads vs rounded hills
+  cx.fillStyle=bm.kind==='table'?'rgba(160,190,220,0.35)':'rgba(170,195,220,0.22)';
+  cx.beginPath();cx.moveTo(d0,y0);cx.lineTo(d1,y1);cx.lineTo(d1,y1+10);cx.lineTo(d0,y0+10);cx.closePath();cx.fill();
+  cx.strokeStyle=bm.hit?'#6a8aaa':'#3a5a7a';cx.lineWidth=bm.kind==='table'?3:2.2;cx.beginPath();
+  cx.moveTo(L,gY(L)+1);cx.lineTo(d0,y0+1);cx.lineTo(d1,y1+1);cx.lineTo(R,gY(R)+1);cx.stroke();
+  cx.fillStyle='#2a4a68';cx.fillRect(d0-3,y0-8,5,8); // takeoff lip block
+  if(bm.kind==='table')cx.fillRect(d1-2,y1-5,4,5);});
  if(isFinite(LV.len)){var fx=S.p.x+(LV.len-S.dist);if(fx<W+40){var fgy=gY(fx+8);for(var j=0;j<8;j++){cx.fillStyle=j%2?'#111':'#fff';cx.fillRect(fx,fgy-8-j*8,8,8);cx.fillStyle=j%2?'#fff':'#111';cx.fillRect(fx+8,fgy-8-j*8,8,8);}
   cx.fillStyle='#2bd17e';cx.font='bold 14px sans-serif';cx.textAlign='center';cx.fillText('FINISH',fx+8,fgy-74);}}
  S.pickups.forEach(function(u){cx.save();cx.translate(u.x,u.y);cx.rotate(u.a*.3);cx.fillStyle='#ffd84a';cx.strokeStyle='#b8860b';cx.lineWidth=2;cx.beginPath();
   for(var j=0;j<10;j++){var rr=j%2?4:10,an=j*Math.PI/5;cx.lineTo(Math.cos(an)*rr,Math.sin(an)*rr);}cx.closePath();cx.fill();cx.stroke();cx.restore();});
- cx.fillStyle='#fff';var nfl=Math.min(70,Math.floor(18+55*S.storm));for(var fi=0;fi<nfl;fi++){var f=S.flakes[fi];if(f.z<0.75)cx.fillRect(f.x,f.y,f.r,f.r);}
+ var stormVis=Math.min(1,S.storm*(0.55+0.07*LV.n)*diffM().storm),nfl=Math.min(150,Math.floor(36+110*stormVis));
+ cx.fillStyle='rgba(255,255,255,0.55)';for(var fi=0;fi<nfl;fi++){var f=S.flakes[fi];if(f&&f.z<0.55)cx.fillRect(f.x,f.y,f.r,f.r);}
  // hazards — planted on terrain; light red hint early, quieter later
  var hintA=LV.n<=3?0.28:LV.n<=5?0.14:0.05;
  S.obs.forEach(function(o){var mid=o.x+o.w/2,base=gY(mid),follow=planted(o);cx.save();
@@ -306,10 +343,12 @@ function draw(){
  if(wn){var bl=Math.floor(S.t*6)%2;cx.fillStyle=bl?'#ffd84a':'#ff3b30';cx.beginPath();cx.moveTo(W-30,gY(W-30)-70);cx.lineTo(W-8,gY(W-8)-30);cx.lineTo(W-52,gY(W-52)-30);cx.closePath();cx.fill();
   cx.fillStyle='#000';cx.font='bold 20px sans-serif';cx.textAlign='center';cx.fillText('!',W-30,gY(W-30)-36);cx.fillStyle='#fff';cx.strokeStyle='#000';cx.lineWidth=3;cx.lineJoin='round';cx.font='bold 12px sans-serif';cx.textAlign='right';
   var tx=wn.deck?'SNOWCAT AHEAD: JUMP ON DECK':'SNOWMOBILE INCOMING';cx.strokeText(tx,W-8,gY(W-8)-80);cx.fillText(tx,W-8,gY(W-8)-80);cx.textAlign='left';}
- // rider — p.y is absolute terrain-space
+ // rider — p.y is absolute terrain-space; hold-flip rotates in air
  var p=S.p,slope=slopeAt(p.x),hopY=-Math.sin(S.hop*Math.PI)*12,snow=gY(p.x);
  cx.save();cx.fillStyle='rgba(30,50,90,0.18)';var sh=Math.max(.3,1-(snow-p.y)/140);cx.beginPath();cx.ellipse(p.x,snow+2,20*sh,3*sh,0,0,7);cx.fill();
- cx.translate(p.x,p.y+hopY);cx.rotate(p.on?slope+Math.sin(S.hop*12)*0.12*S.hop:Math.max(-.5,Math.min(.5,p.vy/1600)));
+ cx.translate(p.x,p.y+hopY);
+ var spin=p.on?(slope+Math.sin(S.hop*12)*0.12*S.hop+(S.landBad>0?Math.sin(S.t*28)*0.18:0)):(S.flip||Math.max(-.5,Math.min(.5,p.vy/1600)));
+ cx.rotate(spin);
  if(S.mode==='over'){cx.translate(0,4);cx.rotate(1.3);}
  var sq=S.land*0.25;cx.scale(1+sq,1-sq);
  cx.lineWidth=2;cx.strokeStyle='#14213d';
@@ -321,13 +360,15 @@ function draw(){
  cx.fillStyle='#14213d';cx.fillRect(-1,-37,8,4);
  cx.fillStyle='#e0245e';cx.fillRect(-7,-42,14,5);
  cx.restore();
- S.pops.forEach(function(q){cx.globalAlpha=Math.min(1,q.l*2);cx.fillStyle='#ffffff';cx.strokeStyle='#1d3b66';cx.lineWidth=3;cx.lineJoin='round';cx.font='bold 13px sans-serif';cx.textAlign='center';cx.strokeText('+10 BUMP',q.x,q.y);cx.fillText('+10 BUMP',q.x,q.y);});cx.globalAlpha=1;
+ S.pops.forEach(function(q){cx.globalAlpha=Math.min(1,q.l*2);cx.fillStyle='#ffffff';cx.strokeStyle='#1d3b66';cx.lineWidth=3;cx.lineJoin='round';cx.font='bold 13px sans-serif';cx.textAlign='center';var tt=q.txt||'+10';cx.strokeText(tt,q.x,q.y);cx.fillText(tt,q.x,q.y);});cx.globalAlpha=1;
  S.parts.forEach(function(P){cx.globalAlpha=Math.min(1,P.l*2.5);cx.fillStyle=P.c;cx.fillRect(P.x,P.y,P.s,P.s)});cx.globalAlpha=1;
- cx.fillStyle='rgba(255,255,255,0.75)';for(fi=0;fi<nfl;fi++){f=S.flakes[fi];if(f.z>=0.75)cx.fillRect(f.x,f.y,f.r,f.r);}
+ cx.fillStyle='rgba(255,255,255,'+(0.65+0.25*stormVis)+')';for(fi=0;fi<nfl;fi++){f=S.flakes[fi];if(f&&f.z>=0.55)cx.fillRect(f.x,f.y,f.r*(1+0.4*stormVis),f.r*(1+0.4*stormVis));}
+ if(stormVis>0.45){cx.fillStyle='rgba(220,235,250,'+(stormVis*0.12)+')';cx.fillRect(-20,-OY-20,W+40,worldH+40);}
  if(S.flash>0&&!reduceMotion){cx.fillStyle='rgba(255,230,120,'+(S.flash*1.5)+')';cx.fillRect(0,-OY,W,cv.height/scale);}
  if(S.flash<0){cx.fillStyle='rgba(190,225,255,'+(-S.flash)+')';cx.fillRect(0,-OY,W,cv.height/scale);S.flash=Math.min(0,S.flash+0.012);}
  cx.fillStyle='#fff';cx.font='bold 20px sans-serif';cx.textAlign='left';cx.fillText('Score '+score(),12,28-OY+(OY>20?40:0));
- cx.font='13px sans-serif';var hy=-OY+(OY>20?40:0),bSp=boardSpd();cx.fillText((LV.endless?'Endless':'L'+LV.n+' '+LV.name)+'   Best '+(PR.best[LV.n]||0)+'   ★'+S.pick+(bSp>1?'   ✈'+Math.round(bSp*100)+'%':'')+(LV.doubleJump?'   2×':'')+(S.storm>0.55?'   ❄':''),12,46+hy);
+ cx.font='13px sans-serif';var hy=-OY+(OY>20?40:0),bSp=runSpd(),ls=levelSpd();cx.fillText((LV.endless?'Endless':'L'+LV.n+' '+LV.name)+'   Best '+(PR.best[LV.n]||0)+'   ★'+S.pick+(ls>1?'   GD'+Math.round(ls*100)+'%':'')+(boardSpd()>1?'   ✈'+Math.round(boardSpd()*100)+'%':'')+(LV.doubleJump?'   2×':'')+(S.storm>0.45?'   ❄':''),12,46+hy);
+ if(S.combo>0||S.boostT>0){cx.fillStyle='#0007';cx.fillRect(12,64+hy,120,8);cx.fillStyle=S.boostT>0?'#ffd84a':'#9fd3ff';cx.fillRect(12,64+hy,120*(S.boostT>0?Math.min(1,S.boostT/COMBO_T):S.combo/COMBO_NEED),8);}
  if(S.achT>0){cx.fillStyle='rgba(11,24,48,'+(Math.min(1,S.achT)*0.85)+')';cx.fillRect(W/2-130,58+hy,260,28);cx.fillStyle='#ffd84a';cx.font='bold 13px sans-serif';cx.textAlign='center';cx.fillText(S.achToast||'Board unlocked!',W/2,78+hy);cx.textAlign='left';}
  if(isFinite(LV.len)){cx.fillStyle='#0005';cx.fillRect(12,54+hy,160,6);cx.fillStyle='#2bd17e';cx.fillRect(12,54+hy,160*Math.min(1,S.dist/LV.len),6);}
  cx.textAlign='center';
@@ -353,17 +394,26 @@ function drawObs(o,y,base){var X=o.x,G0=base,w=o.w,h=o.h;
   cx.fillStyle='#ffd84a';for(i=0;i<w-12;i+=20)cx.fillRect(X+6+i,gY(X+6+i)-h,10,4);
   cx.fillStyle='#2bd17e';band(X+6,X+w-6,function(x){return gY(x)-h-3;},function(x){return gY(x)-h;});cx.fill();
   cx.fillStyle='#ddd';cx.fillRect(X,gY(X)-22,8,22);cx.strokeRect(X,gY(X)-22,8,22);return;}
- if(o.k.indexOf('boulder')===0){ // jagged rock; polygons kept inside AABB (rr<=0.92)
-  var c=BCOL[o.c]||BCOL.grey,cx0=X+w/2,cy0=G0-h/2,seed=((o.ph||0)*17+w)|0;
-  cx.fillStyle=c[0];cx.beginPath();
-  for(var i=0;i<9;i++){var ang=-Math.PI/2+i*(Math.PI*2/9),j=(Math.sin(seed*1.7+i*2.3)*0.5+0.5),rr=0.62+0.28*j; // max ~0.90 < 1
-   var px=cx0+Math.cos(ang)*w/2*rr,py=cy0+Math.sin(ang)*h/2*(0.72+0.22*((i%3)/2));if(i===0)cx.moveTo(px,py);else cx.lineTo(px,py);}
-  cx.closePath();cx.fill();cx.stroke();cx.fillStyle=c[1];cx.beginPath();cx.moveTo(cx0-w*.16,cy0-h*.18);cx.lineTo(cx0-w*.02,cy0-h*.32);cx.lineTo(cx0+w*.1,cy0-h*.14);cx.lineTo(cx0-w*.04,cy0-h*.06);cx.closePath();cx.fill();
-  cx.fillStyle='#fff';cx.fillRect(X+w*.28,G0-h+2,w*.3,2);return;}
- if(o.k==='log'||o.k==='logLong'){cx.fillStyle='#4a2a12';band(X,X+w,function(x){return gY(x)-h;},gY);cx.fill();cx.stroke();
-  cx.fillStyle='#7a4a24';for(var i=8;i<w;i+=14)cx.fillRect(X+i,gY(X+i)-h+4,3,h-8);cx.fillStyle='#c79a5e';el(X+4,gY(X+4)-h/2,4,h/2-2);
-  cx.fillStyle='#fff';band(X+6,X+w-6,function(x){return gY(x)-h-2;},function(x){return gY(x)-h+1;});cx.fill();
-  cx.fillStyle='#1f5a2c';cx.beginPath();cx.moveTo(X+w-18,gY(X+w-18)-h);cx.lineTo(X+w,gY(X+w)-h-12);cx.lineTo(X+w,gY(X+w)-h);cx.fill();return;}
+ if(o.k.indexOf('boulder')===0){ // jagged rock shards — angular, uneven; stay inside AABB
+  var c=BCOL[o.c]||BCOL.grey,cx0=X+w/2,cy0=G0-h*0.45,seed=((o.ph||0)*23+w*5)|0,n=6;
+  cx.strokeStyle='#0e0a06';cx.lineWidth=2.4;cx.fillStyle=c[0];cx.beginPath();
+  for(var i=0;i<n;i++){var ang=-Math.PI/2+i*(Math.PI*2/n)+Math.sin(seed*1.3+i*2.1)*0.22,j=(Math.sin(seed*3.1+i*1.7)*0.5+0.5),rr=(i%2?0.48:0.88)+0.1*j;
+   var px=cx0+Math.cos(ang)*(w/2)*Math.min(0.95,rr),py=cy0+Math.sin(ang)*(h/2)*Math.min(0.95,(i%2?0.55:0.92));if(i===0)cx.moveTo(px,py);else cx.lineTo(px,py);}
+  cx.closePath();cx.fill();cx.stroke();
+  cx.fillStyle=c[1];cx.beginPath();cx.moveTo(cx0-w*.25,cy0);cx.lineTo(cx0-w*.08,cy0-h*.38);cx.lineTo(cx0+w*.12,cy0-h*.12);cx.lineTo(cx0+w*.05,cy0+h*.1);cx.closePath();cx.fill();
+  cx.strokeStyle='#1a1008';cx.lineWidth=1.8;cx.beginPath();cx.moveTo(cx0-w*.15,cy0-h*.25);cx.lineTo(cx0+w*.2,cy0+h*.08);cx.moveTo(cx0+w*.08,cy0-h*.3);cx.lineTo(cx0-w*.05,cy0+h*.15);cx.stroke();
+  cx.fillStyle='#dbe6f0';cx.fillRect(X+w*.15,G0-h+1,w*.18,2);return;}
+ if(o.k==='log'||o.k==='logLong'){ // fallen timber: bark stripes, cut ends, snow cap
+  var yTop=function(x){return gY(x)-h;},yBot=gY;
+  cx.fillStyle='#3a2210';band(X,X+w,yTop,yBot);cx.fill();cx.strokeStyle='#1a1008';cx.lineWidth=2;cx.stroke();
+  cx.fillStyle='#5a3820';for(var i=6;i<w-4;i+=11){var gy=gY(X+i);cx.beginPath();cx.moveTo(X+i,gy-h+2);cx.quadraticCurveTo(X+i+3,gy-h/2,X+i,gy-2);cx.lineWidth=2.5;cx.strokeStyle='#2a180c';cx.stroke();}
+  // cut ends (rings)
+  cx.fillStyle='#c4a06a';cx.beginPath();cx.ellipse(X+3,gY(X+3)-h/2,3.5,h/2-1,0,0,7);cx.fill();cx.strokeStyle='#6a4428';cx.lineWidth=1.5;cx.stroke();
+  cx.beginPath();cx.ellipse(X+3,gY(X+3)-h/2,1.6,h/4,0,0,7);cx.stroke();
+  cx.fillStyle='#b8955e';cx.beginPath();cx.ellipse(X+w-3,gY(X+w-3)-h/2,3.5,h/2-1,0,0,7);cx.fill();cx.stroke();
+  cx.fillStyle='#dfeaf4';band(X+8,X+w-8,function(x){return gY(x)-h-2;},function(x){return gY(x)-h+2;});cx.fill();
+  if(o.k==='logLong'){cx.fillStyle='#1f5a2c';cx.beginPath();cx.moveTo(X+w-22,gY(X+w-22)-h);cx.lineTo(X+w-4,gY(X+w-4)-h-14);cx.lineTo(X+w,gY(X+w)-h);cx.fill();}
+  return;}
  if(o.k==='ice'){cx.fillStyle='#38b6ff';cx.beginPath();cx.moveTo(X,G0);cx.lineTo(X+w*.22,y+2);cx.lineTo(X+w*.45,y);cx.lineTo(X+w*.72,y+10);cx.lineTo(X+w,G0);cx.closePath();cx.fill();cx.stroke();cx.fillStyle='#d9f3ff';cx.fillRect(X+w*.32,y+8,3,h-14);return;}
  if(o.k==='coyote'){ // lean desert-canine read: pointed muzzle, bushy tail, ear tufts
   cx.strokeStyle='#3a2414';cx.lineWidth=2;
@@ -438,7 +488,7 @@ function syncUI(){
  djBadge.style.display=(showJ&&m==='play'&&LV.doubleJump)?'block':'none';
  var lab=m==='ready'?'PLAY':(m==='over'?'RETRY':(m==='clear'?'NEXT':'JUMP'));
  setPrimaryLabel(lab,m==='play'||m==='ready');
- hintEl.textContent=m==='ready'?'Tap PLAY to start — then JUMP':(LV.doubleJump?'Double-jump ready · tap JUMP':'Tap JUMP');
+ hintEl.textContent=m==='ready'?'Tap PLAY — JUMP, hold in air to flip':(LV.doubleJump?'2× JUMP · hold in air to flip':'JUMP · hold in air to flip');
  hintEl.style.display=(!menuOpen&&m==='ready'&&!hintSeen)?'block':'none';
  if(!menuOpen&&m==='play'&&LV.doubleJump&&!djToastSeen){hintEl.textContent='Double-jump unlocked! Tap again in air';hintEl.style.display='block';djToastSeen=true;try{localStorage.setItem('boulderDodge.djToast','1')}catch(e){}setTimeout(function(){if(S.mode==='play')hintEl.style.display='none';},2800);}
  resumeOv.style.display=(!menuOpen&&m==='pause')?'flex':'none';
@@ -450,39 +500,45 @@ function press(){ ensureAC();
  else if(S.mode==='over'&&performance.now()-overAt>250){API.restart();}
  else if(S.mode==='clear'&&performance.now()-overAt>400){if(LV.n<8)API.startLevel(LV.n+1);else openMenu();}
  syncUI();}
-function openMenu(){if(S.mode==='play')S.mode='pause';S.prevMode=S.mode;S.mode='menu';var h='<button id="close" aria-label="Close menu">✕</button><h1>BOULDER DODGE</h1><div>PLAY → JUMP · moguls launch · achievements unlock faster boards</div><h2>LEVELS</h2><div class="grid">';
+function openMenu(){if(S.mode==='play')S.mode='pause';S.prevMode=S.mode;S.mode='menu';var h='<button id="close" aria-label="Close menu">✕</button><h1>BOULDER DODGE</h1><div>JUMP · hold in air to flip · tabletops · difficulty in menu</div><h2>DIFFICULTY</h2><div class="boards">';
+ ['easy','normal','hard'].forEach(function(id){var D=DIFFS[id];h+='<button class="bd'+(PR.diff===id?' sel':'')+'" data-d="'+id+'"><span class="t">'+D.name+'<small>speed ×'+D.spd+' · storm ×'+D.storm+' · gaps ×'+D.gap+'</small></span></button>';});
+ h+='</div><h2>LEVELS</h2><div class="grid">';
  LEVELS.concat([ENDLESS]).forEach(function(L){var u=unlocked(L.n),d=PR.done.indexOf(L.n)>=0;h+='<button class="lv'+(d?' done':'')+'" data-l="'+L.n+'"'+(u?'':' disabled')+' aria-label="'+L.name+(u?'':' locked')+'"><b class="n">'+(u?(d?'✓':(L.endless?'∞':L.n)):'🔒')+'</b><span class="t">'+(L.endless?'Endless':L.n+'. '+L.name)+'<small>'+(u?L.sub+(L.doubleJump?' · 2× jump':'')+(PR.best[L.n]?' · Best '+PR.best[L.n]:''):(L.endless?'Clear levels 1–8 to unlock':'Clear level '+(L.n-1)+' to unlock'))+'</small></span></button>';});
  h+='</div><h2>BOARD LOCKER · speed</h2><div class="boards">';
  BOARDS.forEach(function(b){var o=boardOpen(b),pct=Math.round((b.spd-1)*100),tag=pct?(' +'+pct+'%'):' stock';
   if(o)h+='<button class="bd'+(board().id===b.id?' sel':'')+'" data-b="'+b.id+'"><span class="sw" style="background:linear-gradient('+b.c+' 0 55%,'+b.s+' 55% 75%,'+b.c+' 75%)"></span><span class="t">'+b.name+tag+(board().id===b.id?' ★':'')+'</span></button>';
   else{var a=ACH[b.ach];h+='<button class="bd" disabled aria-label="'+b.name+' locked"><span class="sw" style="background:#333"></span><span class="t">🔒 '+b.name+tag+'<small>'+(a?a.how:'Locked')+'</small></span></button>';}});
  h+='</div>';
- menu.innerHTML=h+'<p style="opacity:.7;font-size:12px;margin:14px 0 8px">Offline · achievements + boards on this device · v0.7.5</p><button id="resetP" style="min-height:48px;padding:10px 16px;border-radius:10px;border:2px solid #fff5;background:#5a1d1d;color:#fff;font:bold 14px sans-serif">Reset progress</button>';menu.style.display='block';syncUI();}
+ menu.innerHTML=h+'<p style="opacity:.7;font-size:12px;margin:14px 0 8px">Offline · progress on this device · v0.7.6</p><button id="resetP" style="min-height:48px;padding:10px 16px;border-radius:10px;border:2px solid #fff5;background:#5a1d1d;color:#fff;font:bold 14px sans-serif">Reset progress</button>';menu.style.display='block';syncUI();}
 function closeMenu(){menu.style.display='none';syncUI();}
-function resetProgress(force){if(!force&&!confirm('Reset all unlocks, achievements, best scores and selected board on this device? Mute stays.'))return false;
- PR={done:[],board:'first',best:{},ach:[]};saveP();pb=0;try{localStorage.removeItem(LS)}catch(e){}openMenu();return true;}
+function resetProgress(force){if(!force&&!confirm('Reset all unlocks, achievements, best scores and selected board on this device? Mute + difficulty stay.'))return false;
+ var keepDiff=PR.diff||'normal';PR={done:[],board:'first',best:{},ach:[],diff:keepDiff};saveP();pb=0;try{localStorage.removeItem(LS)}catch(e){}openMenu();return true;}
 menu.addEventListener('click',function(e){var b=e.target.closest('button');if(!b||b.disabled)return;if(b.id==='close'){document.getElementById('menuB').onclick.call(document.getElementById('menuB'));return;}
  if(b.id==='resetP'){resetProgress();return;}
+ if(b.dataset.d){PR.diff=b.dataset.d;saveP();openMenu();announce('Difficulty '+diffM().name);return;}
  if(b.dataset.l){closeMenu();API.startLevel(+b.dataset.l);}else if(b.dataset.b){PR.board=b.dataset.b;saveP();openMenu();}});
 document.getElementById('menuB').onclick=function(){if(S.mode==='menu'){closeMenu();S.mode=S.prevMode||'ready';if(S.mode==='play')S.mode='pause';syncUI();}else openMenu();this.blur();};
 function togglePause(){if(S.mode==='play'){S.mode='pause';pausedByHide=false;scrapeStop();announce('Paused');}else if(S.mode==='pause'){S.mode='play';pausedByHide=false;announce('Resumed');}syncUI();}
 var _crash=crash;crash=function(){_crash();overAt=performance.now();announce('Wipeout '+score());syncUI();};
 var _finish=finish;finish=function(){_finish();announce('Level clear '+score());syncUI();};
 function canvasPress(e){
- // HUD top chrome dead-zone — ignore taps near pause/mute/menu
  var y=e.clientY!=null?e.clientY:(e.touches&&e.touches[0]?e.touches[0].clientY:0);
  if(y<56)return;
  e.preventDefault();press();
 }
+function onHoldEnd(){holdSet(false);}
 cv.addEventListener('pointerdown',canvasPress);
+cv.addEventListener('pointerup',onHoldEnd);cv.addEventListener('pointercancel',onHoldEnd);
 jumpB.addEventListener('pointerdown',function(e){e.preventDefault();e.stopPropagation();press();});
+jumpB.addEventListener('pointerup',onHoldEnd);jumpB.addEventListener('pointerleave',onHoldEnd);jumpB.addEventListener('pointercancel',onHoldEnd);
 document.getElementById('resumeB').addEventListener('pointerdown',function(e){e.preventDefault();e.stopPropagation();if(S.mode==='pause'){S.mode='play';pausedByHide=false;announce('Resumed');syncUI();}});
 addEventListener('keydown',function(e){var k=e.key;
- if(S.mode==='menu')return;if(k===' '||k==='ArrowUp'||k==='w'||k==='W'){e.preventDefault();if(!e.repeat)press();}
+ if(S.mode==='menu')return;if(k===' '||k==='ArrowUp'||k==='w'||k==='W'){e.preventDefault();if(!e.repeat)press();holdSet(true);}
  else if(k==='p'||k==='P'||k==='Escape')togglePause();
  else if((k==='r'||k==='R')&&S.mode!=='menu'){API.restart();}
  else if(k==='l'||k==='L')document.getElementById('menuB').onclick.call(document.getElementById('menuB'));
  else if(k==='m'||k==='M')toggleMute();});
+addEventListener('keyup',function(e){var k=e.key;if(k===' '||k==='ArrowUp'||k==='w'||k==='W')holdSet(false);});
 document.getElementById('pause').onclick=function(e){e.stopPropagation();togglePause();this.blur();};
 function toggleMute(){muted=!muted;try{localStorage.setItem('boulderDodge.mute',muted?'1':'0')}catch(e){};document.getElementById('mute').textContent=muted?'Muted':'Sound';document.getElementById('mute').setAttribute('aria-label',muted?'Unmute sound':'Mute sound');if(muted)scrapeStop();}
 document.getElementById('mute').onclick=function(){toggleMute();this.blur();};
@@ -495,14 +551,16 @@ document.addEventListener('visibilitychange',function(){
 if(window.matchMedia){try{window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',function(ev){reduceMotion=ev.matches;});}catch(e){}}
 // ---- STOMP future contract (arcade preview only) ----
 var API=window.BoulderDodge={
- version:'0.7.5',
+ version:'0.7.6',
  start:function(){if(S.mode==='menu'){closeMenu();reset(null,LV);}if(S.mode==='ready'||S.mode==='over'||S.mode==='clear'){if(S.mode!=='ready')reset(null,LV);S.mode='play';S.playAt=performance.now();}syncUI();},
  startLevel:function(n){var L=n===9?ENDLESS:LEVELS[n-1];if(!L||(!unlocked(n)&&!TEST))return false;closeMenu();reset(null,L);S.mode='ready';pausedByHide=false;syncUI();announce(L.name+(L.doubleJump?' double-jump on':''));return true;},
  startEndless:function(){return API.startLevel(9);},
  openMenu:function(){openMenu();},
  getLevels:function(){return LEVELS.concat([ENDLESS]).map(function(L){return {n:L.n,name:L.name,unlocked:unlocked(L.n),completed:PR.done.indexOf(L.n)>=0,best:PR.best[L.n]||0,endless:!!L.endless,doubleJump:!!L.doubleJump};});},
  getCurrentLevel:function(){return {n:LV.n,name:LV.name,progress:isFinite(LV.len)?Math.min(1,S.dist/LV.len):null,doubleJump:!!LV.doubleJump};},
- getProgress:function(){return JSON.parse(JSON.stringify({completed:PR.done,best:PR.best,board:board().id,achievements:PR.ach.slice(),endlessUnlocked:endlessOpen()}));},
+ getProgress:function(){return JSON.parse(JSON.stringify({completed:PR.done,best:PR.best,board:board().id,achievements:PR.ach.slice(),difficulty:PR.diff,endlessUnlocked:endlessOpen()}));},
+ setDifficulty:function(id){if(!DIFFS[id])return false;PR.diff=id;saveP();return true;},
+ getDifficulty:function(){return {id:diffM().id,name:diffM().name,options:Object.keys(DIFFS).map(function(k){return DIFFS[k];})};},
  getBoards:function(){return BOARDS.map(function(b){var a=b.ach&&ACH[b.ach];return {id:b.id,name:b.name,spd:b.spd,unlocked:boardOpen(b),selected:board().id===b.id,achievement:b.ach||null,how:a?a.how:null};});},
  getAchievements:function(){return Object.keys(ACH).map(function(id){var a=ACH[id],bb=boardForAch(id);return {id:id,name:a.name,how:a.how,earned:PR.ach.indexOf(id)>=0,board:bb?bb.id:null,spd:bb?bb.spd:null};});},
  selectBoard:function(id){var b=BOARDS.filter(function(x){return x.id===id})[0];if(!b||!boardOpen(b))return false;PR.board=id;saveP();return true;},
@@ -512,16 +570,16 @@ var API=window.BoulderDodge={
  getState:function(){return S.mode;},
  getScore:function(){return score();},
  getPersonalBest:function(){return pb;},
- exportScoreSummary:function(){return {game:'boulder-dodge',version:API.version,score:score(),distance:Math.floor(S.dist/10),cleared:S.cleared,varietyBonus:S.bonus,kindsCleared:Object.keys(S.seen),durationSec:+S.t.toFixed(2),personalBest:pb,finished:S.mode==='over'||S.mode==='clear',levelCompleted:S.done,level:LV.n,levelName:LV.name,pickups:S.pick,bumps:S.bumpN,board:board().id,boardSpd:boardSpd(),achievements:PR.ach.slice(),doubleJump:!!LV.doubleJump,arcadeOnly:true,verifiedAchievement:false,timestamp:new Date().toISOString()};},
- _t:{step:step,jump:jump,state:function(){return S},consts:{AIR:AIR,MAXH:MAXH,KINDS:KINDS,DT:DT,REACT:REACT,LEVELS:LEVELS,ENDLESS:ENDLESS,BOARDS:BOARDS,ACH:ACH,HILL:HILL,BUMP_A:BUMP_A,BUMP_W:BUMP_W},reset:reset,fits:fits,terr:function(x){return terr(x)},bumpH:function(x){return bumpH(x)},gY:gY,planted:planted,visOff:function(o,sx){return H(sx);},resetProgress:function(){return resetProgress(true);},syncUI:syncUI,setGod:function(g){GOD=!!g},tick:tick,draw:function(){draw()},setW:function(w){W=w},getW:function(){return W},ctx:function(){return cx},scale:function(){return [scale,OY]},wipe:function(){PR.done=[];PR.best={};PR.board='first';PR.ach=[];saveP();},earnAch:earnAch,boardSpd:boardSpd,airStats:airStats}
+ exportScoreSummary:function(){return {game:'boulder-dodge',version:API.version,score:score(),distance:Math.floor(S.dist/10),cleared:S.cleared,varietyBonus:S.bonus,kindsCleared:Object.keys(S.seen),durationSec:+S.t.toFixed(2),personalBest:pb,finished:S.mode==='over'||S.mode==='clear',levelCompleted:S.done,level:LV.n,levelName:LV.name,pickups:S.pick,bumps:S.bumpN,nearPts:S.nearPts,flipPts:S.flipPts,board:board().id,boardSpd:boardSpd(),levelSpd:levelSpd(),difficulty:PR.diff,achievements:PR.ach.slice(),doubleJump:!!LV.doubleJump,arcadeOnly:true,verifiedAchievement:false,timestamp:new Date().toISOString()};},
+ _t:{step:step,jump:jump,holdSet:holdSet,state:function(){return S},consts:{AIR:AIR,MAXH:MAXH,KINDS:KINDS,DT:DT,REACT:REACT,POST_LIP:POST_LIP,SPD_BASE:SPD_BASE,SPD_PER_2LV:SPD_PER_2LV,LEVELS:LEVELS,ENDLESS:ENDLESS,BOARDS:BOARDS,ACH:ACH,DIFFS:DIFFS,HILL:HILL,KICK_A:KICK_A,TAB_A:TAB_A},reset:reset,fits:fits,terr:function(x){return terr(x)},bumpH:function(x){return bumpH(x)},gY:gY,planted:planted,visOff:function(o,sx){return H(sx);},resetProgress:function(){return resetProgress(true);},syncUI:syncUI,setGod:function(g){GOD=!!g},tick:tick,draw:function(){draw()},setW:function(w){W=w},getW:function(){return W},ctx:function(){return cx},scale:function(){return [scale,OY]},wipe:function(){PR.done=[];PR.best={};PR.board='first';PR.ach=[];saveP();},earnAch:earnAch,boardSpd:boardSpd,levelSpd:levelSpd,runSpd:runSpd,airStats:airStats}
 };
 if(/[?&]test=1/.test(location.search)){Object.defineProperty(API,'_test',{value:API._t,enumerable:false});}delete API._t;Object.freeze(API);
 addEventListener('resize',resize);resize();
 reset(null,LEVELS[0]);S.mode='ready';requestAnimationFrame(function(ts){last=ts;frame(ts);});syncUI();announce('Boulder Dodge ready. Tap PLAY.');
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
- var swUrl='sw.js?v=7-5',swScope='./';
+ var swUrl='sw.js?v=7-6',swScope='./';
  navigator.serviceWorker.register(swUrl,{scope:swScope}).then(function(reg){if(reg.update)reg.update();}).catch(function(){});
- if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){if(k.indexOf('boulder-dodge-')===0&&k!=='boulder-dodge-v7-5')caches.delete(k);});});
+ if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){if(k.indexOf('boulder-dodge-')===0&&k!=='boulder-dodge-v7-6')caches.delete(k);});});
 }
 addEventListener('orientationchange',function(){setTimeout(resize,50);});
 })();
