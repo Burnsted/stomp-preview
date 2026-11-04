@@ -7,6 +7,7 @@
 import {
   ARTWORK_LAYER_ORDER,
   BACKPACK_OFF_ITEM_ID,
+  PLATE_SKIP_ITEM_IDS,
   buildPlateUrl,
   type ArtworkSize,
 } from "@/lib/stomp/avatar/artwork";
@@ -79,7 +80,8 @@ export function requiredPlateRefs(
   for (const slot of ARTWORK_LAYER_ORDER) {
     const ref = layers[slot];
     if (!ref?.itemId) continue;
-    if (slot === "backpack" && ref.itemId === BACKPACK_OFF_ITEM_ID) continue;
+    // Intentional no-draw sentinels (backpack/jacket/board off; locked-head includes).
+    if (PLATE_SKIP_ITEM_IDS.has(ref.itemId)) continue;
     const url = buildPlateUrl(config.ageBand as AgeBand, slot, ref.itemId, size);
     out.push({ slot, itemId: ref.itemId, url });
   }

@@ -1,0 +1,104 @@
+{
+  "status": "REGISTERED_VISUAL_PROTOTYPE_ONLY",
+  "claim": "NOT Android-accepted; not complete production plate set",
+  "source_photo": "1000100043.png",
+  "source_sha256": "a2e735a787254d414ccf0e48fc47508944390c9bc7333c6376c8f7c944d8ee97",
+  "source_was_provided_by": "Ted / Franz first approved studio-pose image in conversation",
+  "source_foreground": "_look2_grabcut_test.png",
+  "registration": {
+    "source_width": 1229,
+    "source_height": 1536,
+    "source_crop": [
+      310,
+      0,
+      890,
+      1536
+    ],
+    "scale": 0.63,
+    "canvas": 1024,
+    "origin": [
+      329,
+      28
+    ],
+    "runtime_scale": 0.5,
+    "all_layers_same_canvas": true,
+    "independent_per_layer_resize": false
+  },
+  "artistic_methods": {
+    "body": "ART PASS 2026-11-04: repainted fitted dark athletic base layer (torso, both arms, collar fill, wrist/waist overlaps); clipped inside jacket silhouette; no construction lines. Not original anatomy.",
+    "mint_clothing": "exact visible photo pixels partitioned by region",
+    "ink_clothing": "charcoal/black full desaturation of mint photo geometry; mint halos removed 2026-11-04 (max G-excess <=1)",
+    "head": "exact locked source photo pixels. Combined head/helmet/hair; NOT interchangeable eyewear yet"
+  },
+  "tests": {
+    "head_photo_identical_between_mint_and_ink": true,
+    "plate_canvas_dimensions_all_1024": true,
+    "all_plate_alpha_transparent": true,
+    "subject_all_pixels_partitioned_once": true
+  },
+  "files": [
+    {
+      "slot": "body",
+      "path": "gb-phone/public/stomper/adult/body/body-athletic@512.webp",
+      "sha256": "451ae7edb3e21019def97bb5661ae68aa693727944fa243f33b30eac0eeabe8a",
+      "bytes": 13010
+    },
+    {
+      "slot": "jacket_mint",
+      "path": "gb-phone/public/stomper/adult/jacket/jacket-look2-mint@512.webp",
+      "sha256": "66dea635583a966453a2c6db8bf825edf5bcf1651e7a487ad3035cd5d56b2e35",
+      "bytes": 34246
+    },
+    {
+      "slot": "jacket_ink",
+      "path": "gb-phone/public/stomper/adult/jacket/jacket-look2-ink@512.webp",
+      "sha256": "d22534a9e700cf29b0b45a2c0106c6848136288ecc8e3b9c23bdbb3e33ce5206",
+      "bytes": 16204
+    },
+    {
+      "slot": "pants_mint",
+      "path": "gb-phone/public/stomper/adult/pants/pants-look2-mint@512.webp",
+      "sha256": "0946a9546913a9aa402d1348f9710c4930679e181d2a947ad31ece1eb353f8b7",
+      "bytes": 33322
+    },
+    {
+      "slot": "pants_ink",
+      "path": "gb-phone/public/stomper/adult/pants/pants-look2-ink@512.webp",
+      "sha256": "6fe342fea91bc14086a3d9d2006e256d5cf1f81c0ad4b2103cc49e893adf9279",
+      "bytes": 18846
+    },
+    {
+      "slot": "head_locked",
+      "path": "gb-phone/public/stomper/adult/face/face-f-hana-locked-composite@512.webp",
+      "sha256": "0cf18191bcfa75af6e1714a98ec3bb72ee8e374bc37f617a2eb1a60c42372b16",
+      "bytes": 11770
+    },
+    {
+      "slot": "gloves",
+      "path": "gb-phone/public/stomper/adult/gloves/gloves-look2-photo@512.webp",
+      "sha256": "abf6339e2190b6c520308d5ac64f371673eb6e79c475c0b1b4bb362ee42a3a92",
+      "bytes": 3994
+    },
+    {
+      "slot": "boots",
+      "path": "gb-phone/public/stomper/adult/boots/boots-look2-photo@512.webp",
+      "sha256": "449eee37cdd51a416d99683c4a2a0ccf942077016f9f97737f30708fd148be59",
+      "bytes": 7672
+    }
+  ],
+  "proofs": [
+    "A_jacket_OFF",
+    "B_mint_APPROVED",
+    "C_ink_charcoal"
+  ],
+  "missing": [
+    "Independent alternate helmet/goggles/hair assets with underlying painted pixels",
+    "Board with real bindings",
+    "Physical Android proof + Woz renderer verification",
+    "Franz/owner visual acceptance of underbody fit"
+  ],
+  "art_pass": {
+    "date": "2026-11-04",
+    "android_proof": "PENDING (Woz)"
+  }
+}

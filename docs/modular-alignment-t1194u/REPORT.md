@@ -7,14 +7,17 @@
 **PR:** draft [#27](https://github.com/Burnsted/stomp-preview/pull/27) (stacked on #21)  
 **Hard nos:** no merge · no Home/five-tab/Crew Invite · no payments/youth/live/Pages · no face/pose redesign · tips #12–#20/#22–#26 untouched
 
+> **Supersession (t1197u):** Franz art-pass body + ink staged — see `docs/modular-prototype-t1197u/REPORT.md`.  
+> Status is now **REGISTERED_VISUAL_PROTOTYPE_ONLY** (not Android PASS). Head leftovers remain OPEN.
+
 ## Verdict
 
 Engineering registration pipeline **corrected** (canonical 1024×1024 → common 512 scale; banned independent per-piece fit).  
-Under-jacket body **AWAITING_FRANZ_BODY** (Franz: blank Drive stack; Runway auto FAIL; will not invent).  
-Overall visualRegistrationGate **BLOCKED_UNDERLAYER** — **no fake PASS**.  
-Composite **A BLOCKED** · **B EXTRACTED_REGISTERED** · **C BLOCKED** (ink ABSENT).  
+Under-jacket body **superseded by t1197u art-pass** (`PROTOTYPE_PRESENT`) — historical t1194 evidence retained below as audit trail (`AWAITING_FRANZ_BODY` at time of t1194).  
+Overall visualRegistrationGate **PROTOTYPE_AWAITING_ACCEPTANCE** on current tip — **no fake PASS**.  
+Composite **A/B/C PROTOTYPE_RENDERED** (t1197u); ink **PRESENT**.  
 Android Batch E **OPEN_DEVICE** — no physical-device PASS claimed.  
-**CI receipt:** `T1194U-VERIFICATION-RECEIPT.md` · tip `8d07687…` · [run 41771221510](https://github.com/Burnsted/stomp-preview/actions/runs/41771221510) **SUCCESS**.
+**CI receipt (t1194 era):** `T1194U-VERIFICATION-RECEIPT.md` · tip `8d07687…` · [run 41771221510](https://github.com/Burnsted/stomp-preview/actions/runs/41771221510) **SUCCESS**.
 
 ## Corrected pipeline
 

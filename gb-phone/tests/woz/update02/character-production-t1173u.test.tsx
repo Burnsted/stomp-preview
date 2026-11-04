@@ -184,13 +184,17 @@ describe("t1177u — Look 2 mint acceptance / plate-renderer contract", () => {
     expect(c.pantsPlateUrl).toBe("/stomper/adult/pants/pants-look2-mint@512.webp");
     expect(c.masterSha256).toBe(LOOK2_MASTER_SHA256);
     expect(c.checkCount).toBe(LOOK2_ANDROID_ACCEPTANCE_CHECKS.length);
-    expect(LOOK2_GATE_STATUS.modularPlates).toBe("PRESENT");
+    expect(LOOK2_GATE_STATUS.modularPlates).toBe("PROTOTYPE_8_OF_11");
     expect(LOOK2_GATE_STATUS.androidQa).toBe("OPEN_DEVICE");
-    expect(LOOK2_GATE_STATUS.inkVariants).toBe("ABSENT");
+    expect(LOOK2_GATE_STATUS.inkVariants).toBe("PRESENT");
+    expect(LOOK2_GATE_STATUS.androidAccepted).toBe(false);
+    expect(LOOK2_GATE_STATUS.status).toBe("REGISTERED_VISUAL_PROTOTYPE_ONLY");
     expect(LOOK2_GATE_STATUS.inventingPlatesForbidden).toBe(true);
     expect(look2ExpectedRuntimePlatePaths()).toEqual([
       look2JacketPlateUrl(),
       look2PantsPlateUrl(),
+      "/stomper/adult/jacket/jacket-look2-ink@512.webp",
+      "/stomper/adult/pants/pants-look2-ink@512.webp",
       "/stomper/adult/starter/f-hana/preview@512.webp",
     ]);
     expect(GB_FIRST_ACCEPTANCE.jacketItemId).toBe("jacket-look2-mint");

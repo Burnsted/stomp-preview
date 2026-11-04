@@ -1,7 +1,7 @@
 /**
- * Look 2 mint plate ship manifest (t1188u/t1189u → t1194u registration fix).
- * Generated from owner modular sheet via fixed 1024→512 registration extract.
- * Do not invent paths / ink / Franz body.
+ * Look 2 plate ship manifest (t1188u → t1194u registration → t1197u art-pass).
+ * Prototype 8-of-11 registered; production 11-slot Android gate stays fail-closed.
+ * Do not invent separated face/hair/goggles/board or claim Android PASS.
  */
 import manifestJson from "@/lib/stomp/avatar/look2-plate-manifest.json";
 
@@ -11,18 +11,36 @@ export type Look2PlateManifestEntry = {
   sha256: string;
   bytes: number;
   size: number[];
+  slot?: string;
 };
 
-export type Look2UnderJacketBodyStatus = "AWAITING_FRANZ_BODY" | "PRESENT_APPROVED";
+export type Look2UnderJacketBodyStatus =
+  | "AWAITING_FRANZ_BODY"
+  | "PRESENT_APPROVED"
+  | "PROTOTYPE_PRESENT";
+
 export type Look2VisualRegistrationGate =
   | "BLOCKED_UNDERLAYER"
   | "PASS"
-  | "ENGINEERING_ONLY";
+  | "ENGINEERING_ONLY"
+  | "PROTOTYPE_AWAITING_ACCEPTANCE";
+
+export type Look2CompositeStatus =
+  | "BLOCKED"
+  | "PASS"
+  | "EXTRACTED_REGISTERED"
+  | "PROTOTYPE_RENDERED";
 
 export type Look2PlateManifest = {
-  sourceSheet: string;
-  sourceSha256: string;
-  sourceSize: number[];
+  task?: string;
+  status?: "REGISTERED_VISUAL_PROTOTYPE_ONLY" | string;
+  artPass?: string;
+  sourceZipSha256?: string;
+  priorMorningZipSha256?: string;
+  preferredPack?: string;
+  sourceSheet?: string;
+  sourceSha256?: string;
+  sourceSize?: number[];
   approvedMaster?: string;
   approvedMasterSha256?: string;
   registrationContract?: string;
@@ -30,18 +48,25 @@ export type Look2PlateManifest = {
   runtimeCanvas?: number;
   commonScale?: number;
   inkVariants: "ABSENT" | "PRESENT";
+  inkColorway?: string;
   underJacketBody?: Look2UnderJacketBodyStatus;
   visualRegistrationGate?: Look2VisualRegistrationGate;
-  compositeA?: "BLOCKED" | "PASS";
-  compositeB?: "EXTRACTED_REGISTERED" | "BLOCKED";
-  compositeC?: "BLOCKED" | "PASS";
+  compositeA?: Look2CompositeStatus;
+  compositeB?: Look2CompositeStatus;
+  compositeC?: Look2CompositeStatus;
+  androidAccepted?: boolean;
   editableMasterOra?: string;
   look2MintRequiredPresent: boolean;
+  look2InkRequiredPresent?: boolean;
+  prototypePlateCount?: number;
+  productionSlotCount?: number;
+  missingProductionSlots?: string[];
+  openArtRepairs?: string[];
   optionalBackpackPresent: boolean;
   plates: Look2PlateManifestEntry[];
   requiredUrls: string[];
+  prototypeRequiredUrls?: string[];
   extractScript?: string;
-  task?: string;
 };
 
 export const LOOK2_PLATE_MANIFEST = manifestJson as Look2PlateManifest;
@@ -50,7 +75,7 @@ export const LOOK2_SHIPPED_PLATE_URLS: ReadonlySet<string> = new Set(
   LOOK2_PLATE_MANIFEST.plates.map((p) => p.url),
 );
 
-/** Sync existence for shipped Look 2 mint URLs (fail-closed for all other looks). */
+/** Sync existence for shipped Look 2 URLs (fail-closed for all other looks). */
 export function shippedPlatePathExists(url: string): boolean {
   return LOOK2_SHIPPED_PLATE_URLS.has(url);
 }
@@ -62,15 +87,23 @@ export function look2MintRequiredAllShipped(): boolean {
   );
 }
 
+export function look2PrototypeRequiredAllShipped(): boolean {
+  const urls = LOOK2_PLATE_MANIFEST.prototypeRequiredUrls ?? [];
+  return (
+    urls.length > 0 && urls.every((u) => LOOK2_SHIPPED_PLATE_URLS.has(u))
+  );
+}
+
 /** Honest visual / artwork gate — never equate file presence with PASS. */
 export function look2VisualRegistrationStatus(): {
   underJacketBody: Look2UnderJacketBodyStatus;
   visualRegistrationGate: Look2VisualRegistrationGate;
-  compositeA: "BLOCKED" | "PASS";
-  compositeB: "EXTRACTED_REGISTERED" | "BLOCKED";
-  compositeC: "BLOCKED" | "PASS";
+  compositeA: Look2CompositeStatus;
+  compositeB: Look2CompositeStatus;
+  compositeC: Look2CompositeStatus;
   inkVariants: "ABSENT" | "PRESENT";
   androidDevicePassClaimed: false;
+  status: "REGISTERED_VISUAL_PROTOTYPE_ONLY" | string;
 } {
   return {
     underJacketBody: LOOK2_PLATE_MANIFEST.underJacketBody ?? "AWAITING_FRANZ_BODY",
@@ -81,5 +114,6 @@ export function look2VisualRegistrationStatus(): {
     compositeC: LOOK2_PLATE_MANIFEST.compositeC ?? "BLOCKED",
     inkVariants: LOOK2_PLATE_MANIFEST.inkVariants,
     androidDevicePassClaimed: false,
+    status: LOOK2_PLATE_MANIFEST.status ?? "REGISTERED_VISUAL_PROTOTYPE_ONLY",
   };
 }

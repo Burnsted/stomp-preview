@@ -50,6 +50,12 @@ export const JACKET_SETS: readonly JacketSet[] = [
     label: "Look 2 mint shell + matching mint pants",
   },
   {
+    jacketId: "jacket-look2-ink",
+    pantsId: "pants-look2-ink",
+    pantsColor: "#111827",
+    label: "Look 2 ink charcoal shell + matching charcoal pants",
+  },
+  {
     jacketId: "jacket-look5-pink",
     pantsId: "pants-basic",
     pantsColor: "#1e293b",

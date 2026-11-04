@@ -66,6 +66,30 @@ export function buildMasterPlateUrl(ageBand: AgeBand, slot: AvatarSlot, itemId: 
 /** Sentinel: backpack OFF by default — no plate, no draw. */
 export const BACKPACK_OFF_ITEM_ID = "backpack-none";
 
+/** Jacket OFF — show body underlayer (t1197u prototype). */
+export const JACKET_OFF_ITEM_ID = "jacket-none";
+
+/** Board OFF — Franz prototype proofs have no board; do not invent one. */
+export const BOARD_OFF_ITEM_ID = "board-none";
+
+/**
+ * Slots covered by Look 2 locked head composite (`face-f-hana-locked-composite`).
+ * No separate plate; skipped in required assembly (not a fake PASS for production).
+ */
+export const LOOK2_LOCKED_HEAD_INCLUDED_ITEM_IDS = [
+  "hair-locked-included",
+  "headwear-locked-included",
+  "goggles-locked-included",
+] as const;
+
+/** ItemIds that intentionally omit a plate draw (like backpack-none). */
+export const PLATE_SKIP_ITEM_IDS: ReadonlySet<string> = new Set([
+  BACKPACK_OFF_ITEM_ID,
+  JACKET_OFF_ITEM_ID,
+  BOARD_OFF_ITEM_ID,
+  ...LOOK2_LOCKED_HEAD_INCLUDED_ITEM_IDS,
+]);
+
 /**
  * Resolve how a slot should render. Without real assets on disk we always
  * report svg-fallback (contract for AvatarRenderer). When GB drops plates

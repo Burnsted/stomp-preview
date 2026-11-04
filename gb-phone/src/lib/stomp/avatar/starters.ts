@@ -287,21 +287,31 @@ export function starterById(id: string): StarterDef | undefined {
 
 export function layersFromStarter(s: StarterDef): AvatarLayers {
   const bodyId = `body-${s.silhouette}`;
-  // Look 2 (f-hana) first-gate plate IDs — SVG tint fallback until GB WebPs land (t1177u).
+  // Look 2 (f-hana) t1197u registered prototype: 8 photo-aligned plates.
+  // Locked head composite covers hair/helmet/goggles — not separate production plates.
+  // Board OFF (no invented board). Android 11-slot gate remains fail-closed.
   const isLook2 = s.id === "f-hana";
+  if (isLook2) {
+    return {
+      body: { itemId: "body-athletic", color: s.skinTone },
+      face: { itemId: "face-f-hana-locked-composite", color: s.skinTone },
+      hair: { itemId: "hair-locked-included", color: s.hairColor },
+      pants: { itemId: "pants-look2-mint", color: "#0d9488" },
+      jacket: { itemId: "jacket-look2-mint", color: s.jacketFill },
+      backpack: { itemId: "backpack-none" },
+      gloves: { itemId: "gloves-look2-photo", color: "#1e293b" },
+      headwear: { itemId: "headwear-locked-included", color: "#0f172a" },
+      goggles: { itemId: "goggles-locked-included", color: s.goggleTint },
+      boots: { itemId: "boots-look2-photo", color: "#334155" },
+      board: { itemId: "board-none", color: s.boardFill },
+    };
+  }
   return {
     body: { itemId: bodyId, color: s.skinTone },
     face: { itemId: `face-${s.presenting}`, color: s.skinTone },
     hair: { itemId: `hair-${s.hairStyle}`, color: s.hairColor },
-    pants: {
-      itemId: isLook2 ? "pants-look2-mint" : "pants-basic",
-      color: isLook2 ? "#0d9488" : s.pantsFill,
-    },
-    jacket: {
-      itemId: isLook2 ? "jacket-look2-mint" : "jacket-basic",
-      color: s.jacketFill,
-    },
-    // Optional jacket accessory — OFF by default (t1171u).
+    pants: { itemId: "pants-basic", color: s.pantsFill },
+    jacket: { itemId: "jacket-basic", color: s.jacketFill },
     backpack: { itemId: "backpack-none" },
     gloves: { itemId: "gloves-basic", color: "#1e293b" },
     headwear: { itemId: "helmet-basic", color: "#0f172a" },

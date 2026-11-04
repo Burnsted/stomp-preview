@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 /**
- * t1194u — TRUE modular Look 2 registration gate (visual honesty).
- * File presence ≠ visual PASS. Underlayer AWAITING_FRANZ_BODY.
+ * t1194u → t1197u — TRUE modular Look 2 registration gate (visual honesty).
+ * File presence ≠ Android PASS. Art-pass body/ink = REGISTERED_VISUAL_PROTOTYPE_ONLY.
  */
 import { cleanup, render, screen } from "@testing-library/react";
 import { createHash } from "node:crypto";
@@ -12,10 +12,12 @@ import { AvatarRenderer } from "@/components/stomp/avatar/avatar-renderer";
 import {
   LOOK2_GATE_STATUS,
   LOOK2_STARTER_ID,
+  look2PrototypeConfig,
 } from "@/lib/stomp/avatar/look2-acceptance";
 import {
   LOOK2_PLATE_MANIFEST,
   look2MintRequiredAllShipped,
+  look2PrototypeRequiredAllShipped,
   look2VisualRegistrationStatus,
 } from "@/lib/stomp/avatar/look2-plate-manifest";
 import { evaluateLook2MintGate } from "@/lib/stomp/avatar/plate-registry";
@@ -28,8 +30,9 @@ afterEach(() => {
 const REPO_ROOT = resolve(__dirname, "../../../../");
 const PUBLIC_ROOT = resolve(__dirname, "../../../public");
 const T1194 = resolve(REPO_ROOT, "docs/modular-alignment-t1194u");
+const T1197 = resolve(REPO_ROOT, "docs/modular-prototype-t1197u");
 
-describe("t1194u — Look 2 fixed registration (honest visual gate)", () => {
+describe("t1194u/t1197u — Look 2 fixed registration (honest visual gate)", () => {
   it("registration contract: 1024→512 common scale; banned independent fit", () => {
     const regPath = resolve(T1194, "registration-transform.json");
     expect(existsSync(regPath)).toBe(true);
@@ -55,90 +58,110 @@ describe("t1194u — Look 2 fixed registration (honest visual gate)", () => {
     expect(LOOK2_PLATE_MANIFEST.commonScale).toBe(0.5);
   });
 
-  it("manifest + gate status: AWAITING_FRANZ_BODY; A/C BLOCKED; B EXTRACTED; no fake PASS", () => {
-    expect(LOOK2_PLATE_MANIFEST.underJacketBody).toBe("AWAITING_FRANZ_BODY");
-    expect(LOOK2_PLATE_MANIFEST.visualRegistrationGate).toBe("BLOCKED_UNDERLAYER");
-    expect(LOOK2_PLATE_MANIFEST.compositeA).toBe("BLOCKED");
-    expect(LOOK2_PLATE_MANIFEST.compositeB).toBe("EXTRACTED_REGISTERED");
-    expect(LOOK2_PLATE_MANIFEST.compositeC).toBe("BLOCKED");
-    expect(LOOK2_PLATE_MANIFEST.inkVariants).toBe("ABSENT");
-    expect(LOOK2_GATE_STATUS.underJacketBody).toBe("AWAITING_FRANZ_BODY");
-    expect(LOOK2_GATE_STATUS.visualRegistrationGate).toBe("BLOCKED_UNDERLAYER");
+  it("manifest + gate: art-pass PROTOTYPE; no fake Android PASS", () => {
+    expect(LOOK2_PLATE_MANIFEST.status).toBe("REGISTERED_VISUAL_PROTOTYPE_ONLY");
+    expect(LOOK2_PLATE_MANIFEST.underJacketBody).toBe("PROTOTYPE_PRESENT");
+    expect(LOOK2_PLATE_MANIFEST.visualRegistrationGate).toBe(
+      "PROTOTYPE_AWAITING_ACCEPTANCE",
+    );
+    expect(LOOK2_PLATE_MANIFEST.compositeA).toBe("PROTOTYPE_RENDERED");
+    expect(LOOK2_PLATE_MANIFEST.compositeB).toBe("PROTOTYPE_RENDERED");
+    expect(LOOK2_PLATE_MANIFEST.compositeC).toBe("PROTOTYPE_RENDERED");
+    expect(LOOK2_PLATE_MANIFEST.inkVariants).toBe("PRESENT");
+    expect(LOOK2_PLATE_MANIFEST.androidAccepted).toBe(false);
+    expect(LOOK2_GATE_STATUS.underJacketBody).toBe("PROTOTYPE_PRESENT");
+    expect(LOOK2_GATE_STATUS.visualRegistrationGate).toBe(
+      "PROTOTYPE_AWAITING_ACCEPTANCE",
+    );
+    expect(LOOK2_GATE_STATUS.modularPlates).toBe("PROTOTYPE_8_OF_11");
+    expect(LOOK2_GATE_STATUS.androidAccepted).toBe(false);
     expect(LOOK2_GATE_STATUS.androidQa).toBe("OPEN_DEVICE");
+    expect(LOOK2_GATE_STATUS.status).toBe("REGISTERED_VISUAL_PROTOTYPE_ONLY");
 
     const visual = look2VisualRegistrationStatus();
-    expect(visual.underJacketBody).toBe("AWAITING_FRANZ_BODY");
-    expect(visual.visualRegistrationGate).toBe("BLOCKED_UNDERLAYER");
-    expect(visual.compositeA).toBe("BLOCKED");
-    expect(visual.compositeC).toBe("BLOCKED");
+    expect(visual.underJacketBody).toBe("PROTOTYPE_PRESENT");
+    expect(visual.visualRegistrationGate).toBe("PROTOTYPE_AWAITING_ACCEPTANCE");
+    expect(visual.compositeA).toBe("PROTOTYPE_RENDERED");
+    expect(visual.compositeC).toBe("PROTOTYPE_RENDERED");
+    expect(visual.inkVariants).toBe("PRESENT");
     expect(visual.androidDevicePassClaimed).toBe(false);
     expect(visual.visualRegistrationGate).not.toBe("PASS");
   });
 
-  it("ink plates absent; editable ORA + evidence composites present", () => {
+  it("art-pass ink + body present; verified hashes; Franz open repairs listed", () => {
     expect(
       existsSync(resolve(PUBLIC_ROOT, "stomper/adult/jacket/jacket-look2-ink@512.webp")),
-    ).toBe(false);
+    ).toBe(true);
     expect(
       existsSync(resolve(PUBLIC_ROOT, "stomper/adult/pants/pants-look2-ink@512.webp")),
-    ).toBe(false);
-    expect(
-      existsSync(
-        resolve(
-          REPO_ROOT,
-          "docs/character-production-t1173u/masters/editable-look2/look2-f-hana-REGISTERED-MASTER.ora",
-        ),
-      ),
     ).toBe(true);
-    expect(existsSync(resolve(T1194, "composites/A-STATUS.txt"))).toBe(true);
-    expect(readFileSync(resolve(T1194, "composites/A-STATUS.txt"), "utf8")).toMatch(/BLOCKED/);
-    expect(existsSync(resolve(T1194, "composites/B-STATUS.txt"))).toBe(true);
-    expect(readFileSync(resolve(T1194, "composites/B-STATUS.txt"), "utf8")).toMatch(
-      /EXTRACTED/,
+    expect(
+      existsSync(resolve(PUBLIC_ROOT, "stomper/adult/body/body-athletic@512.webp")),
+    ).toBe(true);
+    const body = LOOK2_PLATE_MANIFEST.plates.find((p) => p.url.includes("body-athletic"))!;
+    const inkJ = LOOK2_PLATE_MANIFEST.plates.find((p) =>
+      p.url.includes("jacket-look2-ink"),
+    )!;
+    const inkP = LOOK2_PLATE_MANIFEST.plates.find((p) =>
+      p.url.includes("pants-look2-ink"),
+    )!;
+    expect(body.sha256).toBe(
+      "451ae7edb3e21019def97bb5661ae68aa693727944fa243f33b30eac0eeabe8a",
     );
-    expect(existsSync(resolve(T1194, "composites/C-STATUS.txt"))).toBe(true);
-    expect(readFileSync(resolve(T1194, "composites/C-STATUS.txt"), "utf8")).toMatch(/BLOCKED/);
-    expect(existsSync(resolve(T1194, "evidence/A-BLOCKED-underjacket-holes.png"))).toBe(true);
-    expect(existsSync(resolve(T1194, "evidence/B-master-vs-layered-registered.png"))).toBe(true);
+    expect(inkJ.sha256).toBe(
+      "d22534a9e700cf29b0b45a2c0106c6848136288ecc8e3b9c23bdbb3e33ce5206",
+    );
+    expect(inkP.sha256).toBe(
+      "6fe342fea91bc14086a3d9d2006e256d5cf1f81c0ad4b2103cc49e893adf9279",
+    );
+    expect(LOOK2_PLATE_MANIFEST.sourceZipSha256).toBe(
+      "75d1dd0377bd9f4223631e25661e97831e23a563f8735ecaa3829a991b326762",
+    );
+    expect(LOOK2_GATE_STATUS.openArtRepairs.join(" ")).toMatch(/chin notch/);
+    expect(LOOK2_GATE_STATUS.openArtRepairs.join(" ")).toMatch(/braid wisp/);
+    expect(LOOK2_GATE_STATUS.openArtRepairs.join(" ")).toMatch(/chest slashes/);
+    expect(existsSync(resolve(T1197, "art-pass/ARTWORK-STATUS.md"))).toBe(true);
+    expect(existsSync(resolve(T1197, "evidence/ABC-artpass-side-by-side.png"))).toBe(true);
+    // Historical t1194u underlayer evidence retained for audit trail
     expect(existsSync(resolve(T1194, "evidence/validation-summary.json"))).toBe(true);
     const summary = JSON.parse(
       readFileSync(resolve(T1194, "evidence/validation-summary.json"), "utf8"),
-    ) as {
-      engineeringRegistrationChecks: { ok: boolean };
-      artworkUnderlayer: { ok: boolean; honest: boolean; status: string };
-      overallVisualRegistrationGate: string;
-      androidDevicePass: string;
-    };
-    expect(summary.engineeringRegistrationChecks.ok).toBe(true);
-    expect(summary.artworkUnderlayer.ok).toBe(false);
-    expect(summary.artworkUnderlayer.honest).toBe(true);
+    ) as { artworkUnderlayer: { status: string }; androidDevicePass: string };
     expect(summary.artworkUnderlayer.status).toBe("AWAITING_FRANZ_BODY");
-    expect(summary.overallVisualRegistrationGate).toBe("BLOCKED_UNDERLAYER");
     expect(summary.androidDevicePass).toBe("NOT_CLAIMED");
   });
 
-  it("registered plates still satisfy #21 file contracts; sha matches manifest", () => {
+  it("prototype plates render; Android gate stays fail-closed", () => {
     expect(look2MintRequiredAllShipped()).toBe(true);
-    for (const entry of LOOK2_PLATE_MANIFEST.plates) {
+    expect(look2PrototypeRequiredAllShipped()).toBe(true);
+    for (const url of LOOK2_PLATE_MANIFEST.prototypeRequiredUrls ?? []) {
+      const entry = LOOK2_PLATE_MANIFEST.plates.find((p) => p.url === url)!;
       const disk = resolve(PUBLIC_ROOT, entry.url.replace(/^\//, ""));
       expect(existsSync(disk)).toBe(true);
       const sha = createHash("sha256").update(readFileSync(disk)).digest("hex");
       expect(sha).toBe(entry.sha256);
       expect(entry.size).toEqual([512, 512]);
     }
+
     const cfg = configFromStarter(starterById(LOOK2_STARTER_ID)!, {
-      stomperId: "t1194",
-      displayName: "RegRider",
+      stomperId: "t1197",
+      displayName: "ProtoRider",
     });
     const gate = evaluateLook2MintGate({ config: cfg });
-    expect(gate.plateComplete).toBe(true);
-    // File/outfit gate may be eligible; visual underlayer remains blocked separately.
-    expect(gate.acceptanceEligible).toBe(true);
-    expect(LOOK2_GATE_STATUS.visualRegistrationGate).toBe("BLOCKED_UNDERLAYER");
+    expect(gate.prototypeOnly).toBe(true);
+    expect(gate.acceptanceEligible).toBe(false);
+    expect(gate.failReasons).toContain("prototype-outfit");
+    expect(LOOK2_GATE_STATUS.visualRegistrationGate).toBe(
+      "PROTOTYPE_AWAITING_ACCEPTANCE",
+    );
 
-    render(<AvatarRenderer config={cfg} testId="t1194-look2" />);
-    const el = screen.getByTestId("t1194-look2");
-    expect(el.getAttribute("data-render-mode")).toBe("plates");
-    expect(el.getAttribute("data-missing-plates")).toBe("0");
+    for (const variant of ["A", "B", "C"] as const) {
+      const proto = look2PrototypeConfig(variant);
+      render(<AvatarRenderer config={proto} testId={`t1197-${variant}`} />);
+      const el = screen.getByTestId(`t1197-${variant}`);
+      expect(el.getAttribute("data-render-mode")).toBe("plates");
+      expect(el.getAttribute("data-plate-complete")).toBe("true");
+      cleanup();
+    }
   });
 });

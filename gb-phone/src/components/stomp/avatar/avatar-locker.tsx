@@ -104,9 +104,11 @@ export function AvatarLocker() {
         >
           {look2Gate?.acceptanceEligible
             ? "Look 2 plates ready — Android acceptance eligible"
-            : plateSlot?.androidAcceptanceGate
-              ? `Look 2 mint plates missing (${look2Gate?.dataMissingPlates ?? 0}) — not acceptance-eligible`
-              : "Modular plates pending for this look"}
+            : look2Gate?.prototypeOnly
+              ? "Look 2 registered visual prototype (8 of 11) — not Android-accepted"
+              : plateSlot?.androidAcceptanceGate
+                ? `Look 2 mint plates missing (${look2Gate?.dataMissingPlates ?? 0}) — not acceptance-eligible`
+                : "Modular plates pending for this look"}
         </p>
 
         <div className="mt-4 grid w-full grid-cols-2 gap-2">
