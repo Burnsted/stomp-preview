@@ -79,6 +79,7 @@ var AIR=2*-JV/GRAVITY, MAXH=JV*JV/(2*GRAVITY);
 var GRIND_FRIC=0.88, LIP_WIN=0.20, POST_LIP=0.40;
 var SPD_BASE=1.0, SPD_PER_2LV=0.12, SPD_CAP=1.55;
 var COMBO_NEED=3, COMBO_BOOST=1.14, COMBO_T=1.55;
+var LIVES_MAX=3,lives=LIVES_MAX; // wipeout spends a life; 0 → back to L1
 var DIFFS={easy:{id:'easy',name:'Easy',spd:0.86,gap:1.22,lip:1.28},normal:{id:'normal',name:'Normal',spd:1,gap:1,lip:1},hard:{id:'hard',name:'Hard',spd:1.18,gap:0.78,lip:0.72}};
 // Feature catalog — S jibs → M jumps → L transitions
 var FEAT={
@@ -237,6 +238,8 @@ function step(dt){S.land=Math.max(0,S.land-dt*6);S.flash=Math.max(0,S.flash-dt);
  if(S.parts.length>120)S.parts.splice(0,S.parts.length-120);
  S.t+=dt;var m=runSpd();S.spd=Math.min(LV.max*m,(LV.base+LV.ramp*S.t)*m);
  var dx=S.spd*dt;S.dist+=dx;S.nextX-=dx;while(S.nextX<2000)spawn();
+ // Finish wins first — never treat crossing the line as a wipeout/hazard
+ if(isFinite(LV.len)&&S.dist>=LV.len){finish();return;}
  var p=S.p,py0=p.y,snow=gY(p.x),surfVy=(snow-py0)/dt,gap=inGap(p.x),gnd=grindAt(p.x);
  // Grind lock — decoy logs look grindable but scrape/fall
  if((p.on||S.grindOn)&&gnd){
@@ -300,11 +303,15 @@ function step(dt){S.land=Math.max(0,S.land-dt*6);S.flash=Math.max(0,S.flash-dt);
  for(i=S.feats.length-1;i>=0;i--){var ft=S.feats[i],sx=ft.wx-S.dist+p.x;if(sx<-featSpan(ft)-80)S.feats.splice(i,1);}
  for(i=S.pops.length-1;i>=0;i--){S.pops[i].l-=dt;S.pops[i].y-=28*dt;if(S.pops[i].l<=0)S.pops.splice(i,1);}
  S.hop=Math.max(0,S.hop-dt*4);
- if(S.dist>=LV.len){if(trickGoal()&&!S.trickDone){S.mode='over';S.shake=8;S.pops.push({x:p.x,y:p.y-60,l:1.2,txt:'TRICK FAIL'});announce('Missed trick goal');scrapeStop();overAt=performance.now();beep(180,0.3,'sawtooth',0.18);syncUI();}else finish();}
 }
-function fall(){S.mode='over';if(!reduceMotion){S.shake=10;S.flash=-0.3;}puff(S.p.x,S.p.y-10,22,'#ffffff',220);var sc=score();if(sc>pb){pb=sc;try{localStorage.setItem(LS,pb)}catch(e){}}if(!(PR.best[LV.n]>=sc)){PR.best[LV.n]=sc;saveP();}
- scrapeStop();beep(160,0.35,'sawtooth',0.2);}
-function finish(){S.mode='clear';S.done=true;scrapeStop();var sc=score();if(LV.n<=9&&PR.done.indexOf(LV.n)<0)PR.done.push(LV.n);
+function livesStr(){var s='',i=0;for(;i<LIVES_MAX;i++)s+=i<lives?'♥':'♡';return s;}
+function fall(){if(S.mode!=='play')return;lives=Math.max(0,lives-1);S.mode='over';S.gameOver=lives<=0;
+ if(!reduceMotion){S.shake=10;S.flash=-0.3;}puff(S.p.x,S.p.y-10,22,'#ffffff',220);var sc=score();if(sc>pb){pb=sc;try{localStorage.setItem(LS,pb)}catch(e){}}if(!(PR.best[LV.n]>=sc)){PR.best[LV.n]=sc;saveP();}
+ scrapeStop();beep(160,0.35,'sawtooth',0.2);overAt=performance.now();
+ S.pops.push({x:S.p.x,y:S.p.y-70,l:1.1,txt:S.gameOver?'GAME OVER':(lives+' LEFT')});}
+function finish(){if(S.mode!=='play'&&S.mode!=='ready')return;S.mode='clear';S.done=true;S.gameOver=false;scrapeStop();
+ if(trickGoal()&&!S.trickDone)S.pops.push({x:S.p.x,y:S.p.y-60,l:1.0,txt:'CLEAR'});
+ var sc=score();if(LV.n<=9&&PR.done.indexOf(LV.n)<0)PR.done.push(LV.n);
  if(!(PR.best[LV.n]>=sc))PR.best[LV.n]=sc;if(sc>pb){pb=sc;try{localStorage.setItem(LS,pb)}catch(e){}}
  saveP();overAt=performance.now();
  [660,880,1100].forEach(function(f,i){setTimeout(function(){beep(f,0.12,'square',0.12)},i*110)});}
@@ -483,8 +490,9 @@ function draw(){
  if(S.flash>0&&!reduceMotion){cx.fillStyle='rgba(255,230,120,'+(S.flash*1.5)+')';cx.fillRect(0,-OY,W,cv.height/scale);}
  if(S.flash<0){cx.fillStyle='rgba(190,225,255,'+(-S.flash)+')';cx.fillRect(0,-OY,W,cv.height/scale);S.flash=Math.min(0,S.flash+0.012);}
  var hy=-OY+(OY>20?40:0);
- cx.fillStyle='#fff';cx.font='bold 20px sans-serif';cx.textAlign='left';cx.fillText('Score '+score(),12,28+hy);
- cx.font='13px sans-serif';var ls=levelSpd();
+ cx.fillStyle='#fff';cx.font='bold 20px sans-serif';cx.textAlign='left';var scLab='Score '+score();cx.fillText(scLab,12,28+hy);
+ cx.fillStyle='#ff5a7a';cx.font='bold 18px sans-serif';cx.fillText(livesStr(),18+cx.measureText(scLab).width,28+hy);
+ cx.font='13px sans-serif';cx.fillStyle='#fff';var ls=levelSpd();
  wrapText((LV.endless?'Endless':'L'+LV.n+' '+LV.name)+' · Best '+(PR.best[LV.n]||0)+' · ★'+S.stars+(ls>1?' · GD'+Math.round(ls*100)+'%':'')+(S.grindOn?' · GRIND':''),12,46+hy,Math.min(W-24,420),14);
  if(isFinite(LV.len)){cx.fillStyle='#0005';cx.fillRect(12,64+hy,160,6);cx.fillStyle='#3ecf9a';cx.fillRect(12,64+hy,160*Math.min(1,S.dist/LV.len),6);}
  if(S.combo>0||S.boostT>0){cx.fillStyle='#0007';cx.fillRect(12,74+hy,120,8);cx.fillStyle=S.boostT>0?'#ffb84a':'#7fe0d0';cx.fillRect(12,74+hy,120*(S.boostT>0?Math.min(1,S.boostT/COMBO_T):S.combo/COMBO_NEED),8);}
@@ -501,7 +509,8 @@ function draw(){
   var nx=LV.n<9?'tap for Level '+(LV.n+1):(endlessOpen()?'Endless unlocked! ☰':'☰ menu');
   var st=starsFor(score(),LV.len),stars='';for(var si=0;si<3;si++)stars+=si<st?'★':'☆';
   var tip=tg?('Goal: '+tg.lab+(S.trickDone?' ✓':'')):'';
-  var T={ready:['PLAY · '+LV.name,LV.sub+(tip?' · '+tip:'')],pause:['PAUSED','Tap RESUME'],over:['WIPEOUT! '+score(),tip&&!S.trickDone?'Missed trick · RETRY':'Tap RETRY · ☰ levels'],clear:['CLEAR! '+score()+'  '+stars,nx]}[S.mode]||['',''];
+  var overSub=S.gameOver?('Out of lives · back to L1 · '+livesStr()):(lives+' left · same line · '+livesStr());
+  var T={ready:['PLAY · '+LV.name,LV.sub+(tip?' · '+tip:'')+' · '+livesStr()],pause:['PAUSED','Tap RESUME'],over:[S.gameOver?('GAME OVER '+score()):('WIPEOUT! '+score()),overSub],clear:['CLEAR! '+score()+'  '+stars,nx+' · '+livesStr()]}[S.mode]||['',''];
   cx.font='bold 24px sans-serif';wrapText(T[0],W/2,148,320,26);cx.font='14px sans-serif';wrapText(T[1],W/2,180,320,16);}
 }
 // ---- loop ----
@@ -538,11 +547,13 @@ function press(){ensureAC();
  if(S.mode==='ready'){if(!hintSeen){hintSeen=true;try{localStorage.setItem('terrainPark.hint','1')}catch(e){}}S.mode='play';S.playAt=performance.now();setPrimaryLabel('JUMP',true);announce('Playing '+LV.name);pausedByHide=false;}
  else if(S.mode==='play'){if(performance.now()-(S.playAt||0)<160)return;jump();}
  else if(S.mode==='pause'){S.mode='play';pausedByHide=false;announce('Resumed');}
- else if(S.mode==='over'&&performance.now()-overAt>250){API.restart();}
- else if(S.mode==='clear'&&performance.now()-overAt>400){if(LV.n<9)API.startLevel(LV.n+1);else openMenu();}
+ else if(S.mode==='over'&&performance.now()-overAt>250){
+  if(lives>0){API.restart();}
+  else{lives=LIVES_MAX;API.startLevel(1);S.mode='play';S.playAt=performance.now();announce('New run · 3 lives');syncUI();}}
+ else if(S.mode==='clear'&&performance.now()-overAt>400){if(LV.n<9)API.startLevel(LV.n+1,{keepLives:true});else openMenu();}
  syncUI();}
-function legendHTML(){return '<div class="lg-inner"><h1>TERRAIN PARK</h1><div class="hi">HIGH SCORE · '+pb+' · ★ '+(PR.stars||0)+'</div>'+
- '<h2>Goal · stars</h2><div class="row"><canvas class="lg-ico" data-ico="star" width="56" height="40"></canvas><div><span class="tag g">★ SCORE</span><p>Grind, lip/ramp timing, flips, combos, ★ stars. Each line has a trick Goal — finish it before CLEAR.</p></div></div>'+
+function legendHTML(){return '<div class="lg-inner"><h1>TERRAIN PARK</h1><div class="hi">HIGH SCORE · '+pb+' · ★ '+(PR.stars||0)+' · '+livesStr()+' '+LIVES_MAX+' lives</div>'+
+ '<h2>Goal · stars</h2><div class="row"><canvas class="lg-ico" data-ico="star" width="56" height="40"></canvas><div><span class="tag g">★ SCORE</span><p>Grind, lips/ramps, flips, combos, ★. Cross FINISH to CLEAR the line (trick Goal is bonus). '+LIVES_MAX+' lives — wipeout retries the same line.</p></div></div>'+
  '<h2>Ramps</h2><div class="row"><canvas class="lg-ico" data-ico="ramp" width="56" height="40"></canvas><div><span class="tag c">RAMP</span><p>Coral takeoff kickers pop you into air toward tables, gaps, and rails.</p></div></div>'+
  '<h2>Rails vs logs</h2><div class="row"><canvas class="lg-ico" data-ico="rail" width="56" height="40"></canvas><div><span class="tag">RAIL</span><p>Metal edge + shine — jump on and grind.</p></div></div>'+
  '<div class="row"><canvas class="lg-ico" data-ico="log" width="56" height="40"></canvas><div><span class="tag r">LOG ≠ RAIL</span><p>Bark + cut ends look grindable but scrape — fall if you mistime.</p></div></div>'+
@@ -551,8 +562,9 @@ function legendHTML(){return '<div class="lg-inner"><h1>TERRAIN PARK</h1><div cl
  '<div class="row"><canvas class="lg-ico" data-ico="gap" width="56" height="40"></canvas><div><span class="tag r">GAP</span><p>Commit air — miss the landing = fall in the pit.</p></div></div>'+
  '<h2>Groms</h2><div class="row"><canvas class="lg-ico" data-ico="grom" width="56" height="40"></canvas><div><span class="tag">GROM</span><p>Slow kids in the line — dodge or time around (not wildlife).</p></div></div>'+
  '<h2>Tricks</h2><div class="row txt"><span class="tag g">GOAL</span><p>HUD shows Goal (grind time, hold-flip, ramp air, combo). Must initiate before clear/star. Progressive: early easy → late combo.</p></div>'+
+ '<h2>Lives</h2><div class="row txt"><span class="tag r">'+livesStr()+' ×'+LIVES_MAX+'</span><p>Wipeout restarts the same park line and spends a life. At 0 lives → game over, back to Box Park with a fresh '+LIVES_MAX+'. Clearing a line keeps remaining lives.</p></div>'+
  '<h2>Controls</h2><div class="ctrl"><div class="chip"><b>TAP</b>Jump / PLAY</div><div class="chip"><b>HOLD</b>Flip in air · land upright</div><div class="chip"><b>DOUBLE-TAP</b>Small air pop</div></div>'+
- '<button type="button" id="legendPlay">PLAY</button><p class="foot">Offline · this device · v0.3.1 · scroll for full legend</p></div>';}
+ '<button type="button" id="legendPlay">PLAY</button><p class="foot">Offline · this device · v0.3.2 · scroll for full legend</p></div>';}
 function paintLegendIcons(){var dpr=Math.min(2,window.devicePixelRatio||1);
  legendEl.querySelectorAll('canvas.lg-ico').forEach(function(cv){var k=cv.dataset.ico,w=+cv.getAttribute('width')||56,h=+cv.getAttribute('height')||40;
   cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);cv.style.width=w+'px';cv.style.height=h+'px';
@@ -576,16 +588,16 @@ function paintLegendIcons(){var dpr=Math.min(2,window.devicePixelRatio||1);
 function openLegend(){S.prevMode=S.mode==='legend'?'ready':S.mode;if(S.mode==='play')S.mode='pause';S.mode='legend';legendEl.innerHTML=legendHTML();legendEl.style.display='flex';menu.style.display='none';paintLegendIcons();syncUI();announce('Legend');}
 function dismissLegend(){legendSeen=true;try{localStorage.setItem('terrainPark.legend','1')}catch(e){}legendEl.style.display='none';S.mode=(S.prevMode&&S.prevMode!=='legend')?S.prevMode:'ready';if(S.mode==='play')S.mode='ready';syncUI();announce('Ready');}
 function openMenu(){if(S.mode==='play')S.mode='pause';S.prevMode=S.mode;S.mode='menu';legendEl.style.display='none';
- var h='<button id="close" aria-label="Close menu">✕</button><h1>TERRAIN PARK</h1><div>v0.3.1 · purple dusk · <button id="showLeg" style="display:inline;border:0;background:0;color:#ffb84a;font:bold 14px sans-serif;text-decoration:underline;padding:0;cursor:pointer">Legend</button></div>';
+ var h='<button id="close" aria-label="Close menu">✕</button><h1>TERRAIN PARK</h1><div>v0.3.2 · purple dusk · '+livesStr()+' · <button id="showLeg" style="display:inline;border:0;background:0;color:#ffb84a;font:bold 14px sans-serif;text-decoration:underline;padding:0;cursor:pointer">Legend</button></div>';
  h+='<div class="leg"><b>LEGEND</b> — park features & scoring<div class="row">';
  [['Ramp','takeoff kicker'],['Box','ride-on grind'],['Rail','metal grind'],['Log ≠ rail','bark trap'],['Grom','slow kid'],['Rainbow','arched jib'],['Table','ramp→deck→land'],['Gap','miss=fall'],['Hip','corner land'],['QP','wallride']].forEach(function(c){h+='<span class="chip"><b>'+c[0]+'</b> '+c[1]+'</span>';});
- h+='</div><div style="margin-top:8px"><b>Score:</b> grind · lip/ramp · flips · combos · ★.<br><b>Trick goals:</b> each line requires a trick before clear (HUD Goal).<br><b>Controls:</b> tap JUMP · hold air to flip · double-tap pop.</div></div>';
+ h+='</div><div style="margin-top:8px"><b>Score:</b> grind · lip/ramp · flips · combos · ★.<br><b>Finish:</b> cross FINISH to CLEAR (trick Goal is bonus).<br><b>Lives:</b> '+LIVES_MAX+' · wipeout retries same line · 0 → L1.<br><b>Controls:</b> tap JUMP · hold air to flip · double-tap pop.</div></div>';
  h+='<h2>DIFFICULTY</h2><div class="boards">';
  ['easy','normal','hard'].forEach(function(id){var D=DIFFS[id];h+='<button class="bd'+(PR.diff===id?' sel':'')+'" data-d="'+id+'"><span class="t">'+D.name+'<small>speed ×'+D.spd+' · gaps ×'+D.gap+' · lip ×'+D.lip+'</small></span></button>';});
  h+='</div><h2>PARK LINES</h2><div class="grid">';
  LEVELS.concat([ENDLESS]).forEach(function(L){var u=unlocked(L.n),d=PR.done.indexOf(L.n)>=0,st=starsFor(PR.best[L.n]||0,L.len),ss='';for(var i=0;i<3;i++)ss+=i<st?'★':'☆';
   h+='<button class="lv'+(d?' done':'')+'" data-l="'+L.n+'"'+(u?'':' disabled')+'><b class="n">'+(u?(d?'✓':(L.endless?'∞':L.n)):'🔒')+'</b><span class="t">'+(L.endless?'Endless':L.n+'. '+L.name)+'<small>'+(u?(L.trick?'Goal: '+L.trick.lab+' · ':'')+L.sub+(PR.best[L.n]?' · Best '+PR.best[L.n]+' '+ss:''):(L.endless?'Clear 1–9':'Clear L'+(L.n-1)))+'</small></span></button>';});
- h+='</div><p style="opacity:.75;font-size:12px;margin:14px 0 8px">Offline · ★ lifetime '+ (PR.stars||0) +' · PB '+pb+' · terrain-park-v0-3-1</p>';
+ h+='</div><p style="opacity:.75;font-size:12px;margin:14px 0 8px">Offline · ★ lifetime '+ (PR.stars||0) +' · PB '+pb+' · terrain-park-v0-3-2</p>';
  h+='<button id="resetP" style="min-height:48px;padding:10px 16px;border-radius:10px;border:2px solid #fff5;background:#5a1d1d;color:#fff;font:bold 14px sans-serif">Reset progress</button>';
  menu.innerHTML=h;menu.style.display='block';syncUI();}
 function closeMenu(){menu.style.display='none';syncUI();}
@@ -599,7 +611,7 @@ menu.addEventListener('click',function(e){var b=e.target.closest('button');if(!b
 legendEl.addEventListener('click',function(e){var b=e.target.closest('button');if(b&&b.id==='legendPlay'){e.preventDefault();dismissLegend();}});
 document.getElementById('menuB').onclick=function(){if(S.mode==='legend'){dismissLegend();this.blur();return;}if(S.mode==='menu'){closeMenu();S.mode=S.prevMode||'ready';if(S.mode==='play')S.mode='pause';syncUI();}else openMenu();this.blur();};
 function togglePause(){if(S.mode==='play'){S.mode='pause';pausedByHide=false;scrapeStop();announce('Paused');}else if(S.mode==='pause'){S.mode='play';pausedByHide=false;announce('Resumed');}syncUI();}
-var _fall=fall;fall=function(){_fall();overAt=performance.now();announce('Wipeout '+score());syncUI();};
+var _fall=fall;fall=function(){_fall();announce(S.gameOver?('Game over '+score()):('Wipeout '+score()+' · '+lives+' left'));syncUI();};
 var _finish=finish;finish=function(){_finish();announce('Line clear '+score());syncUI();};
 function canvasPress(e){var y=e.clientY!=null?e.clientY:(e.touches&&e.touches[0]?e.touches[0].clientY:0);if(y<56)return;e.preventDefault();press();}
 function onHoldEnd(){holdSet(false);}
@@ -621,28 +633,30 @@ document.getElementById('mute').onclick=function(){toggleMute();this.blur();};
 document.getElementById('mute').textContent=muted?'Muted':'Sound';
 document.addEventListener('visibilitychange',function(){if(document.hidden){if(S.mode==='play'){S.mode='pause';pausedByHide=true;syncUI();}}else if(pausedByHide&&S.mode==='pause')syncUI();});
 var API=window.TerrainPark={
- version:'0.3.1',
+ version:'0.3.2',
  start:function(){if(S.mode==='menu'){closeMenu();reset(null,LV);}if(S.mode==='ready'||S.mode==='over'||S.mode==='clear'){if(S.mode!=='ready')reset(null,LV);S.mode='play';S.playAt=performance.now();}syncUI();},
- startLevel:function(n){var L=n===10?ENDLESS:LEVELS[n-1];if(!L||(!unlocked(n)&&!TEST))return false;closeMenu();if(legendEl)legendEl.style.display='none';reset(null,L);S.mode='ready';pausedByHide=false;syncUI();announce(L.name);return true;},
+ startLevel:function(n,opts){var L=n===10?ENDLESS:LEVELS[n-1];if(!L||(!unlocked(n)&&!TEST))return false;closeMenu();if(legendEl)legendEl.style.display='none';
+  if(!(opts&&opts.keepLives)){lives=LIVES_MAX;S.gameOver=false;}reset(null,L);S.mode='ready';pausedByHide=false;syncUI();announce(L.name+' · '+livesStr());return true;},
  openMenu:function(){openMenu();},openLegend:function(){openLegend();},
  getLevels:function(){return LEVELS.concat([ENDLESS]).map(function(L){return {n:L.n,name:L.name,unlocked:unlocked(L.n),completed:PR.done.indexOf(L.n)>=0,best:PR.best[L.n]||0,endless:!!L.endless};});},
- getProgress:function(){return JSON.parse(JSON.stringify({completed:PR.done,best:PR.best,stars:PR.stars,difficulty:PR.diff,endlessUnlocked:endlessOpen()}));},
+ getProgress:function(){return JSON.parse(JSON.stringify({completed:PR.done,best:PR.best,stars:PR.stars,difficulty:PR.diff,endlessUnlocked:endlessOpen(),lives:lives,livesMax:LIVES_MAX}));},
  setDifficulty:function(id){if(!DIFFS[id])return false;PR.diff=id;saveP();return true;},
  pause:function(){if(S.mode==='play'){S.mode='pause';pausedByHide=false;syncUI();}},
  resume:function(){if(S.mode==='pause'){S.mode='play';pausedByHide=false;syncUI();}},
- restart:function(sd){closeMenu();reset(sd,LV);S.mode='play';S.playAt=performance.now();pausedByHide=false;syncUI();},
+ restart:function(sd){closeMenu();reset(sd,LV);S.mode='play';S.playAt=performance.now();pausedByHide=false;S.gameOver=false;syncUI();},
  getState:function(){return S.mode;},
+ getLives:function(){return lives;},
  getScore:function(){return score();},
  getPersonalBest:function(){return pb;},
- exportScoreSummary:function(){return {game:'terrain-park',version:API.version,score:score(),grindPts:S.grindPts,lipPts:S.lipPts,flipPts:S.flipPts,stars:S.stars,distance:Math.floor(S.dist/12),durationSec:+S.t.toFixed(2),personalBest:pb,level:LV.n,levelName:LV.name,difficulty:PR.diff,arcadeOnly:true,timestamp:new Date().toISOString()};},
- _t:{step:step,jump:jump,holdSet:holdSet,state:function(){return S},consts:{GRAVITY:GRAVITY,LIP_WIN:LIP_WIN,GRIND_FRIC:GRIND_FRIC,POST_LIP:POST_LIP,SPD_BASE:SPD_BASE,SPD_PER_2LV:SPD_PER_2LV,LEVELS:LEVELS,FEAT:FEAT,DIFFS:DIFFS},reset:reset,gY:gY,featH:featH,grindAt:grindAt,inGap:inGap,setGod:function(g){GOD=!!g}}
+ exportScoreSummary:function(){return {game:'terrain-park',version:API.version,score:score(),grindPts:S.grindPts,lipPts:S.lipPts,flipPts:S.flipPts,stars:S.stars,distance:Math.floor(S.dist/12),durationSec:+S.t.toFixed(2),personalBest:pb,level:LV.n,levelName:LV.name,difficulty:PR.diff,lives:lives,arcadeOnly:true,timestamp:new Date().toISOString()};},
+ _t:{step:step,jump:jump,holdSet:holdSet,state:function(){return S},consts:{GRAVITY:GRAVITY,LIP_WIN:LIP_WIN,GRIND_FRIC:GRIND_FRIC,POST_LIP:POST_LIP,SPD_BASE:SPD_BASE,SPD_PER_2LV:SPD_PER_2LV,LEVELS:LEVELS,FEAT:FEAT,DIFFS:DIFFS,LIVES_MAX:LIVES_MAX},reset:reset,gY:gY,featH:featH,grindAt:grindAt,inGap:inGap,setGod:function(g){GOD=!!g},getLives:function(){return lives},setLives:function(n){lives=Math.max(0,Math.min(LIVES_MAX,n|0));},finish:finish,fall:fall}
 };
 if(TEST){Object.defineProperty(API,'_test',{value:API._t,enumerable:false});}delete API._t;Object.freeze(API);
 addEventListener('resize',resize);resize();
 reset(null,LEVELS[0]);S.mode='ready';requestAnimationFrame(function(ts){last=ts;frame(ts);});if(!legendSeen)openLegend();else syncUI();announce('Terrain Park ready.');
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
- navigator.serviceWorker.register('sw.js?v=0-3-1',{scope:'./'}).then(function(reg){if(reg.update)reg.update();}).catch(function(){});
- if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){if(k.indexOf('terrain-park-')===0&&k!=='terrain-park-v0-3-1')caches.delete(k);});});
+ navigator.serviceWorker.register('sw.js?v=0-3-2',{scope:'./'}).then(function(reg){if(reg.update)reg.update();}).catch(function(){});
+ if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){if(k.indexOf('terrain-park-')===0&&k!=='terrain-park-v0-3-2')caches.delete(k);});});
 }
 addEventListener('orientationchange',function(){setTimeout(resize,50);});
 })();
