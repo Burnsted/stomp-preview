@@ -94,4 +94,10 @@ Vitest also mounts real `AvatarRenderer` for A/B/C (`look2PrototypeConfig`) — 
 
 ## CI
 
-See `T1197U-VERIFICATION-RECEIPT.md` (tip SHA + both pr-verify jobs after push).
+| Field | Value |
+|---|---|
+| CI green tip | `7a49db1c64d2ea74f0c599de543d1be7afdc9536` |
+| CI | both pr-verify **SUCCESS** — [run 41839026551](https://github.com/Burnsted/stomp-preview/actions/runs/41839026551) |
+| Jobs | `batch1 typecheck + test` · `gb-phone typecheck + woz tests + build` |
+| Receipt | `T1197U-VERIFICATION-RECEIPT.md` |
+| Status | **REGISTERED_VISUAL_PROTOTYPE_ONLY** — no Android / Pages / merge PASS |
