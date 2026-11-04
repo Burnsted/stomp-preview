@@ -331,25 +331,45 @@ function drawObs(o,y,base){var X=o.x,G0=base,w=o.w,h=o.h;
   cx.fillStyle='#fff';band(X+6,X+w-6,function(x){return gY(x)-h-2;},function(x){return gY(x)-h+1;});cx.fill();
   cx.fillStyle='#1f5a2c';cx.beginPath();cx.moveTo(X+w-18,gY(X+w-18)-h);cx.lineTo(X+w,gY(X+w)-h-12);cx.lineTo(X+w,gY(X+w)-h);cx.fill();return;}
  if(o.k==='ice'){cx.fillStyle='#38b6ff';cx.beginPath();cx.moveTo(X,G0);cx.lineTo(X+w*.22,y+2);cx.lineTo(X+w*.45,y);cx.lineTo(X+w*.72,y+10);cx.lineTo(X+w,G0);cx.closePath();cx.fill();cx.stroke();cx.fillStyle='#d9f3ff';cx.fillRect(X+w*.32,y+8,3,h-14);return;}
- if(o.k==='coyote'){cx.fillStyle='#b5824a';legs(X+8,G0-10,4,8,10,3,o.ph);el(X+w*.45,G0-15,w*.32,7);el(X+w*.82,G0-20,7,5);
-  cx.beginPath();cx.moveTo(X+w*.78,G0-24);cx.lineTo(X+w*.82,G0-h);cx.lineTo(X+w*.88,G0-24);cx.fill();cx.beginPath();cx.moveTo(X+w*.15,G0-16);cx.lineTo(X,G0-22);cx.lineTo(X+w*.12,G0-12);cx.fill();cx.fillStyle='#000';cx.fillRect(X+w*.86,G0-21,2,2);return;}
- if(o.k==='bear'){ // warmer cream + dark underbelly / stronger outline for snow contrast
-  cx.strokeStyle='#3a2a18';cx.lineWidth=2.5;
-  cx.fillStyle='#c9a882';legs(X+6,G0-14,4,12,14,7,o.ph);
-  cx.fillStyle='#f0e0c8';el(X+w*.45,G0-26,w*.4,15);el(X+w*.85,G0-30,9,8);el(X+w*.78,G0-h+4,4,4);el(X+w*.92,G0-h+4,4,4);
-  cx.fillStyle='#8a6a48';cx.beginPath();cx.ellipse(X+w*.42,G0-18,w*.28,7,0,0,7);cx.fill(); // underbelly
-  cx.fillStyle='#fff6e8';cx.beginPath();cx.ellipse(X+w*.42,G0-30,w*.2,6,0,0,7);cx.fill();
-  cx.fillStyle='#111';cx.fillRect(X+w*.9,G0-32,2,2);cx.beginPath();cx.arc(X+w*.96,G0-28,2.2,0,7);cx.fill();
-  cx.strokeStyle='#d7191c';cx.lineWidth=2;cx.stroke();return;}
- if(o.k==='moose'){ // bulk torso/shoulders + palmate antlers
-  cx.fillStyle='#5a3a1e';legs(X+8,G0-34,4,12,34,5,o.ph);
-  el(X+w*.40,G0-40,w*.40,16); // bulkier body
-  cx.fillRect(X+w*.58,G0-56,14,22); // thick neck/shoulder
-  el(X+w*.86,G0-54,10,7);
-  cx.fillStyle='#4a2e16';cx.beginPath();cx.ellipse(X+w*.38,G0-34,w*.28,9,0,0,7);cx.fill();
-  cx.fillStyle='#c4a574';cx.strokeStyle='#d7191c';cx.lineWidth=2;
-  function antler(sx,flip){var f=flip?-1:1;cx.beginPath();cx.moveTo(sx,G0-58);cx.lineTo(sx+f*4,G0-h+8);cx.lineTo(sx+f*14,G0-h);cx.lineTo(sx+f*18,G0-h+14);cx.lineTo(sx+f*10,G0-h+18);cx.lineTo(sx+f*16,G0-h+28);cx.lineTo(sx+f*6,G0-h+26);cx.lineTo(sx+f*2,G0-60);cx.closePath();cx.fill();cx.stroke();}
-  antler(X+w*.72,1);antler(X+w*.72,-1);cx.fillStyle='#000';cx.fillRect(X+w*.92,G0-56,2,2);return;}
+ if(o.k==='coyote'){ // lean desert-canine read: pointed muzzle, bushy tail, ear tufts
+  cx.strokeStyle='#3a2414';cx.lineWidth=2;
+  cx.fillStyle='#8a5a32';legs(X+6,G0-11,4,9,11,3.5,o.ph);
+  cx.fillStyle='#c4925a';cx.beginPath();cx.ellipse(X+w*.48,G0-16,w*.34,8,0,0,7);cx.fill();cx.stroke(); // torso
+  cx.fillStyle='#a87848';cx.beginPath();cx.ellipse(X+w*.48,G0-12,w*.26,5,0,0,7);cx.fill(); // belly
+  cx.fillStyle='#d4a878';cx.beginPath();cx.moveTo(X+w*.72,G0-18);cx.lineTo(X+w*.98,G0-22);cx.lineTo(X+w*.92,G0-14);cx.lineTo(X+w*.78,G0-12);cx.closePath();cx.fill();cx.stroke(); // muzzle
+  cx.fillStyle='#b5824a';cx.beginPath();cx.moveTo(X+w*.82,G0-24);cx.lineTo(X+w*.86,G0-h+2);cx.lineTo(X+w*.94,G0-24);cx.closePath();cx.fill(); // ear
+  cx.beginPath();cx.moveTo(X+w*.76,G0-23);cx.lineTo(X+w*.80,G0-h+6);cx.lineTo(X+w*.86,G0-22);cx.closePath();cx.fill();
+  cx.fillStyle='#6a3a1a';cx.beginPath();cx.moveTo(X+w*.12,G0-14);cx.quadraticCurveTo(X-6,G0-28,X+2,G0-8);cx.quadraticCurveTo(X+w*.08,G0-6,X+w*.18,G0-12);cx.closePath();cx.fill();cx.stroke(); // bushy tail
+  cx.fillStyle='#111';cx.fillRect(X+w*.94,G0-22,2,2);cx.fillRect(X+w*.96,G0-16,3,2); // eye + nose
+  cx.strokeStyle='#d7191c';cx.lineWidth=1.5;return;}
+ if(o.k==='bear'){ // polar: high-contrast cream on snow — dark pads/outline, snout, small ears
+  cx.strokeStyle='#2a1a0e';cx.lineWidth=2.8;
+  cx.fillStyle='#b8956a';legs(X+5,G0-15,4,12,15,7.5,o.ph); // tawny legs peek under cream
+  cx.fillStyle='#1a120c';cx.fillRect(X+8,G0-3,8,3);cx.fillRect(X+22,G0-3,8,3);cx.fillRect(X+36,G0-3,8,3);cx.fillRect(X+48,G0-3,6,3); // dark paw pads
+  cx.fillStyle='#efe0c4';cx.beginPath();cx.ellipse(X+w*.46,G0-24,w*.42,17,0,0,7);cx.fill();cx.stroke(); // big torso
+  cx.fillStyle='#8a6848';cx.beginPath();cx.ellipse(X+w*.44,G0-16,w*.30,8,0,0,7);cx.fill(); // underbelly shadow
+  cx.fillStyle='#fff4dc';cx.beginPath();cx.ellipse(X+w*.46,G0-30,w*.28,9,0,0,7);cx.fill(); // back highlight
+  cx.fillStyle='#f5e6c8';cx.beginPath();cx.ellipse(X+w*.88,G0-28,11,9,0,0,7);cx.fill();cx.stroke(); // head
+  cx.fillStyle='#e8d4a8';cx.beginPath();cx.ellipse(X+w*.96,G0-24,7,5,0.2,0,7);cx.fill(); // snout
+  cx.fillStyle='#efe0c4';el(X+w*.78,G0-h+5,5,5);el(X+w*.94,G0-h+5,5,5); // ears
+  cx.fillStyle='#3a2a18';cx.beginPath();cx.ellipse(X+w*.78,G0-h+5,2.5,2.5,0,0,7);cx.fill();cx.beginPath();cx.ellipse(X+w*.94,G0-h+5,2.5,2.5,0,0,7);cx.fill();
+  cx.fillStyle='#111';cx.beginPath();cx.arc(X+w*.92,G0-30,2.4,0,7);cx.fill(); // eye
+  cx.beginPath();cx.arc(X+w*.99,G0-24,2.8,0,7);cx.fill(); // black nose
+  cx.strokeStyle='#c01820';cx.lineWidth=2;cx.beginPath();cx.ellipse(X+w*.46,G0-24,w*.42,17,0,0,7);cx.stroke();return;}
+ if(o.k==='moose'){ // heavy shoulder hump, dewlap, thick legs, palmate antlers
+  cx.strokeStyle='#2a180c';cx.lineWidth=2.2;
+  cx.fillStyle='#4a2e16';legs(X+6,G0-36,4,12,36,6,o.ph); // thicker stilts
+  cx.fillStyle='#3a2210';cx.fillRect(X+8,G0-4,7,4);cx.fillRect(X+20,G0-4,7,4);cx.fillRect(X+34,G0-4,7,4);cx.fillRect(X+46,G0-4,6,4); // hooves
+  cx.fillStyle='#6a4428';cx.beginPath();cx.ellipse(X+w*.38,G0-38,w*.42,18,0,0,7);cx.fill();cx.stroke(); // massive torso
+  cx.fillStyle='#5a341c';cx.beginPath();cx.ellipse(X+w*.28,G0-48,w*.22,12,0,0,7);cx.fill(); // shoulder hump
+  cx.fillStyle='#4a2a14';cx.fillRect(X+w*.55,G0-58,16,26); // thick neck
+  cx.fillStyle='#6a4428';cx.beginPath();cx.ellipse(X+w*.88,G0-52,12,8,0,0,7);cx.fill();cx.stroke(); // head
+  cx.fillStyle='#5a341c';cx.beginPath();cx.moveTo(X+w*.78,G0-46);cx.lineTo(X+w*.70,G0-34);cx.lineTo(X+w*.82,G0-36);cx.closePath();cx.fill(); // dewlap
+  cx.fillStyle='#3a2210';cx.beginPath();cx.ellipse(X+w*.96,G0-48,6,3.5,0.3,0,7);cx.fill(); // long snout
+  cx.fillStyle='#d2b48c';cx.strokeStyle='#b01018';cx.lineWidth=2;
+  function antler(sx,flip){var f=flip?-1:1;cx.beginPath();cx.moveTo(sx,G0-56);cx.lineTo(sx+f*3,G0-h+6);cx.lineTo(sx+f*16,G0-h-2);cx.lineTo(sx+f*20,G0-h+10);cx.lineTo(sx+f*12,G0-h+14);cx.lineTo(sx+f*18,G0-h+22);cx.lineTo(sx+f*22,G0-h+28);cx.lineTo(sx+f*10,G0-h+24);cx.lineTo(sx+f*6,G0-h+18);cx.lineTo(sx+f*2,G0-58);cx.closePath();cx.fill();cx.stroke();}
+  antler(X+w*.70,1);antler(X+w*.70,-1);
+  cx.fillStyle='#111';cx.fillRect(X+w*.94,G0-54,2.5,2.5);return;}
  if(o.k==='skier'){var bob=Math.sin(S.t*8+o.ph)*1.5;cx.fillStyle='#7d3cff';cx.fillRect(X+2,G0-3,w-4,3);cx.strokeRect(X+2,G0-3,w-4,3);
   cx.fillStyle='#222';cx.fillRect(X+8,G0-18+bob,4,15);cx.fillRect(X+14,G0-18+bob,4,15);cx.fillStyle='#e8173b';cx.fillRect(X+6,G0-36+bob,14,18);cx.strokeRect(X+6,G0-36+bob,14,18);
   cx.fillStyle='#f2c9a0';cx.beginPath();cx.arc(X+13,G0-42+bob,5,0,7);cx.fill();cx.fillStyle='#2bd17e';cx.fillRect(X+8,G0-h+bob,10,5);
