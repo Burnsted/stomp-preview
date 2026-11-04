@@ -42,21 +42,53 @@ beforeEach(() => {
   });
 });
 
+/** Production-shaped Look 2 config for Android-gate positive cases (not Franz prototype). */
 function look2Config(overrides?: {
   jacket?: string;
   pants?: string;
   goggles?: string;
   backpack?: string;
+  board?: string;
+  face?: string;
+  hair?: string;
+  headwear?: string;
+  gloves?: string;
+  boots?: string;
   displayName?: string;
+  /** When true, keep Franz prototype layers from starter (fail-closed for Android). */
+  prototype?: boolean;
 }) {
   const base = configFromStarter(starterById(LOOK2_STARTER_ID)!, {
     stomperId: "t1182",
     displayName: overrides?.displayName ?? "TedRider",
   });
+  if (overrides?.prototype) {
+    return {
+      ...base,
+      layers: {
+        ...base.layers,
+        jacket: {
+          ...base.layers.jacket,
+          itemId: overrides?.jacket ?? LOOK2_JACKET_ITEM_ID,
+        },
+        pants: {
+          ...base.layers.pants,
+          itemId: overrides?.pants ?? LOOK2_PANTS_ITEM_ID,
+        },
+        backpack: {
+          ...base.layers.backpack,
+          itemId: overrides?.backpack ?? BACKPACK_OFF_ITEM_ID,
+        },
+      },
+    };
+  }
   return {
     ...base,
     layers: {
       ...base.layers,
+      body: { ...base.layers.body, itemId: "body-athletic" },
+      face: { ...base.layers.face, itemId: overrides?.face ?? "face-female" },
+      hair: { ...base.layers.hair, itemId: overrides?.hair ?? "hair-straight" },
       jacket: {
         ...base.layers.jacket,
         itemId: overrides?.jacket ?? LOOK2_JACKET_ITEM_ID,
@@ -65,14 +97,21 @@ function look2Config(overrides?: {
         ...base.layers.pants,
         itemId: overrides?.pants ?? LOOK2_PANTS_ITEM_ID,
       },
-      goggles: {
-        ...base.layers.goggles,
-        itemId: overrides?.goggles ?? EYEWEAR_ITEM_IDS.goggles,
-      },
       backpack: {
         ...base.layers.backpack,
         itemId: overrides?.backpack ?? BACKPACK_OFF_ITEM_ID,
       },
+      gloves: { ...base.layers.gloves, itemId: overrides?.gloves ?? "gloves-basic" },
+      headwear: {
+        ...base.layers.headwear,
+        itemId: overrides?.headwear ?? "helmet-basic",
+      },
+      goggles: {
+        ...base.layers.goggles,
+        itemId: overrides?.goggles ?? EYEWEAR_ITEM_IDS.goggles,
+      },
+      boots: { ...base.layers.boots, itemId: overrides?.boots ?? "boots-basic" },
+      board: { ...base.layers.board, itemId: overrides?.board ?? "board-basic" },
     },
   };
 }
@@ -170,7 +209,7 @@ describe("t1182u — plate ingest + Look-2 mint gate", () => {
     expect(gate.failReasons).toContain("backpack-on");
   });
 
-  it("eligible only when full set present + mint jacket/pants + goggles-basic + backpack OFF", () => {
+  it("eligible only when full production outfit + mint jacket/pants + goggles-basic + backpack OFF", () => {
     const cfg = look2Config();
     const gate = evaluateLook2MintGate({
       config: cfg,
@@ -179,11 +218,24 @@ describe("t1182u — plate ingest + Look-2 mint gate", () => {
     });
     expect(gate.failReasons).toEqual([]);
     expect(gate.plateComplete).toBe(true);
+    expect(gate.prototypeOnly).toBe(false);
     expect(gate.acceptanceEligible).toBe(true);
     expect(gate.dataMissingPlates).toBe(0);
   });
 
-  it("AvatarRenderer uses plates mode when Look 2 mint set is shipped", () => {
+  it("FAIL CLOSED: Franz prototype outfit never Android-acceptance-eligible", () => {
+    const cfg = look2Config({ prototype: true });
+    const gate = evaluateLook2MintGate({
+      config: cfg,
+      pathExists: () => true,
+      plateProbe: () => "present",
+    });
+    expect(gate.prototypeOnly).toBe(true);
+    expect(gate.acceptanceEligible).toBe(false);
+    expect(gate.failReasons).toContain("prototype-outfit");
+  });
+
+  it("AvatarRenderer uses plates mode when Look 2 production mint set is shipped", () => {
     const cfg = look2Config();
     render(<AvatarRenderer config={cfg} testId="t1182-renderer" />);
     const el = screen.getByTestId("t1182-renderer");
@@ -195,7 +247,7 @@ describe("t1182u — plate ingest + Look-2 mint gate", () => {
     expect(el.getAttribute("data-backpack")).toBe("off");
   });
 
-  it("Locker surfaces acceptance-eligible when Look 2 mint plates shipped", () => {
+  it("Locker: prototype starter not Android-eligible; plates ingest-ready", () => {
     act(() => {
       useAvatar.getState().startOnboarding("adult");
       useAvatar.getState().selectStarter(LOOK2_STARTER_ID);
@@ -206,17 +258,19 @@ describe("t1182u — plate ingest + Look-2 mint gate", () => {
     expect(useAvatar.getState().config!.displayName).toBe("LockerRider");
     render(<AvatarLocker />);
     const locker = screen.getByTestId("avatar-locker");
-    expect(locker.getAttribute("data-acceptance-eligible")).toBe("true");
+    // Franz prototype 8-of-11 — honest fail-closed for Android acceptance
+    expect(locker.getAttribute("data-acceptance-eligible")).toBe("false");
     expect(locker.getAttribute("data-missing-plates")).toBe("0");
     expect(locker.getAttribute("data-android-acceptance-gate")).toBe("true");
     expect(locker.getAttribute("data-plate-slot-status")).toBe("ingest-ready");
     const gate = screen.getByTestId("locker-plate-gate");
-    expect(gate.getAttribute("data-acceptance-eligible")).toBe("true");
+    expect(gate.getAttribute("data-acceptance-eligible")).toBe("false");
+    expect(screen.getByText(/registered visual prototype/i)).toBeTruthy();
     // Name preserved — no silent Nova/Mira/Kai
     expect(screen.getByText("LockerRider")).toBeTruthy();
   });
 
-  it("Look N of M selector: Look 2 eligible; others missing-plates", () => {
+  it("Look N of M selector: Look 2 gate open but prototype not acceptance-eligible", () => {
     act(() => {
       useAvatar.getState().startOnboarding("adult");
       useStomp.getState().setScreen("avatar-onboard");
@@ -224,7 +278,8 @@ describe("t1182u — plate ingest + Look-2 mint gate", () => {
     render(<AvatarOnboard />);
     const hana = screen.getByTestId("starter-f-hana");
     expect(hana.getAttribute("data-android-acceptance-gate")).toBe("true");
-    expect(hana.getAttribute("data-acceptance-eligible")).toBe("true");
+    expect(hana.getAttribute("data-acceptance-eligible")).toBe("false");
+    expect(hana.getAttribute("data-prototype-only")).toBe("true");
     expect(hana.getAttribute("data-missing-plates")).toBe("0");
     expect(hana.getAttribute("data-plate-slot-status")).toBe("ingest-ready");
     expect(hana.getAttribute("data-look-of-m")).toMatch(/^Look \d+ of \d+$/);

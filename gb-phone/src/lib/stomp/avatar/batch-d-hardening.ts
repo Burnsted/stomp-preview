@@ -181,14 +181,24 @@ export function assertBatchDHardening(): {
   }
 
   // D4 eyewear / board / backpack
+  // t1197u Franz prototype: locked-head includes + board-none are intentional skips
+  // (not production 11-slot). Production Android gate stays fail-closed separately.
   const req = requiredPlateRefs(look2);
-  if (!req.some((r) => r.slot === "goggles" && r.itemId === EYEWEAR_ITEM_IDS.goggles)) {
+  if (look2.layers.goggles.itemId === "goggles-locked-included") {
+    if (req.some((r) => r.slot === "goggles")) {
+      throw new Error("locked goggles include must skip plate draw");
+    }
+  } else if (!req.some((r) => r.slot === "goggles" && r.itemId === EYEWEAR_ITEM_IDS.goggles)) {
     throw new Error("goggles required in plate set");
   }
   const boardRef = req.find((r) => r.slot === "board");
-  if (!boardRef) throw new Error("board required in plate set");
-  if (!(STOMP_BOARD_ITEM_IDS as readonly string[]).includes(boardRef.itemId)) {
-    throw new Error(`board itemId ${boardRef.itemId} not in STOMP board catalog`);
+  if (look2.layers.board.itemId === "board-none") {
+    if (boardRef) throw new Error("board-none must skip plate draw");
+  } else {
+    if (!boardRef) throw new Error("board required in plate set");
+    if (!(STOMP_BOARD_ITEM_IDS as readonly string[]).includes(boardRef.itemId)) {
+      throw new Error(`board itemId ${boardRef.itemId} not in STOMP board catalog`);
+    }
   }
   if (req.some((r) => r.slot === "backpack")) {
     throw new Error("backpack OFF must omit plate from required set");

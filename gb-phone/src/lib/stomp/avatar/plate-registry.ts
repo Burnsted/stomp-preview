@@ -1,22 +1,26 @@
 /**
- * Plate ingest registry + eight-look slot matrix (t1182u → t1189u).
+ * Plate ingest registry + eight-look slot matrix (t1182u → t1189u → t1197u).
  *
- * Look 2 mint plates are shipped from owner modular sheet under public/stomper.
- * Other looks stay fail-closed (missing-plates) until real assets land.
- * Does NOT invent WebP/PNG / ink variants.
+ * Look 2 mint production scaffolding remains under public/stomper.
+ * Franz art-pass adds prototype 8-of-11 plates (ink + locked head + photo gloves/boots).
+ * Android acceptance stays fail-closed until full separated 11-slot production outfit.
+ * Does NOT invent WebP/PNG / separated face/hair/goggles/board.
  *
  * Look 2 (f-hana) is the ONLY Android acceptance gate.
  */
 import {
   BACKPACK_OFF_ITEM_ID,
+  BOARD_OFF_ITEM_ID,
   EYEWEAR_ITEM_IDS,
   buildPlateUrl,
   buildStarterPreviewUrl,
 } from "@/lib/stomp/avatar/artwork";
 import {
+  LOOK2_FACE_LOCKED_ITEM_ID,
   LOOK2_JACKET_ITEM_ID,
   LOOK2_PANTS_ITEM_ID,
   LOOK2_STARTER_ID,
+  look2IsPrototypeOutfit,
 } from "@/lib/stomp/avatar/look2-acceptance";
 import {
   look2MintRequiredAllShipped,
@@ -33,7 +37,7 @@ import {
 import { configFromStarter, starterById } from "@/lib/stomp/avatar/starters";
 import type { AgeBand, AvatarConfig, AvatarSlot } from "@/lib/stomp/avatar/types";
 
-/** Exact Look 2 mint paths from GB-RENDERER-CORRECTNESS-HANDOFF (served from public/). */
+/** Exact Look 2 mint production paths (11-slot Android gate). */
 export const LOOK2_MINT_REQUIRED_PATHS: readonly string[] = [
   "/stomper/adult/jacket/jacket-look2-mint@512.webp",
   "/stomper/adult/pants/pants-look2-mint@512.webp",
@@ -67,7 +71,7 @@ export type LookPlateSlot = {
 
 export type Look2MintGateResult = {
   starterId: typeof LOOK2_STARTER_ID;
-  /** True only when full plate set present AND acceptance outfit constraints hold. */
+  /** True only when full production plate set + production outfit constraints hold. */
   acceptanceEligible: boolean;
   plateComplete: boolean;
   missingPaths: readonly string[];
@@ -75,6 +79,8 @@ export type Look2MintGateResult = {
   requiredCount: number;
   failReasons: readonly Look2MintFailReason[];
   dataMissingPlates: number;
+  /** Honest prototype flag — never equals Android PASS. */
+  prototypeOnly: boolean;
 };
 
 export type Look2MintFailReason =
@@ -83,7 +89,9 @@ export type Look2MintFailReason =
   | "wrong-pants-id"
   | "eyewear-on"
   | "backpack-on"
-  | "plates-absent";
+  | "plates-absent"
+  | "prototype-outfit"
+  | "board-off";
 
 function defaultRequiredPathsForEntry(entry: RosterV24Entry): string[] {
   const s = starterById(entry.starterId);
@@ -133,9 +141,10 @@ export function lookPlateSlotByStarterId(
 }
 
 /**
- * Look 2 mint gate — fail-closed.
+ * Look 2 mint / Android gate — fail-closed.
+ * Production requires separated 11-slot outfit (not locked-head prototype).
  * Plates must exist; jacket/pants IDs must be mint pair; backpack OFF;
- * eyewear must be goggles-basic (not Meta Oakley / “eyewear-on” for acceptance).
+ * eyewear must be goggles-basic; board must be on (board-basic).
  */
 export function evaluateLook2MintGate(opts: {
   config: AvatarConfig;
@@ -152,6 +161,7 @@ export function evaluateLook2MintGate(opts: {
   const missingPaths = LOOK2_MINT_REQUIRED_PATHS.filter((p) => !pathExists(p));
   const presentCount = LOOK2_MINT_REQUIRED_PATHS.length - missingPaths.length;
   const failReasons: Look2MintFailReason[] = [];
+  const prototypeOnly = look2IsPrototypeOutfit(config);
 
   if (missingPaths.length > 0) {
     failReasons.push("plates-absent");
@@ -172,6 +182,26 @@ export function evaluateLook2MintGate(opts: {
   if (config.layers.goggles.itemId !== EYEWEAR_ITEM_IDS.goggles) {
     failReasons.push("eyewear-on");
   }
+  // Production board required — prototype board-none is not Android-eligible
+  if (config.layers.board.itemId === BOARD_OFF_ITEM_ID) {
+    failReasons.push("board-off");
+  }
+  // Locked-head / photo-gloves prototype outfit ≠ production 11
+  if (prototypeOnly) {
+    failReasons.push("prototype-outfit");
+    if (!failReasons.includes("incomplete-set")) {
+      failReasons.push("incomplete-set");
+    }
+  }
+  // Locked composite face is never a production face plate
+  if (config.layers.face.itemId === LOOK2_FACE_LOCKED_ITEM_ID) {
+    if (!failReasons.includes("prototype-outfit")) {
+      failReasons.push("prototype-outfit");
+    }
+    if (!failReasons.includes("incomplete-set")) {
+      failReasons.push("incomplete-set");
+    }
+  }
 
   const assembly = evaluatePlateAssembly(config, plateProbe);
   const plateComplete = assembly.complete && missingPaths.length === 0;
@@ -183,7 +213,8 @@ export function evaluateLook2MintGate(opts: {
     plateComplete &&
     failReasons.length === 0 &&
     config.starterId === LOOK2_STARTER_ID &&
-    assembly.acceptanceEligible;
+    assembly.acceptanceEligible &&
+    !prototypeOnly;
 
   return {
     starterId: LOOK2_STARTER_ID,
@@ -194,6 +225,7 @@ export function evaluateLook2MintGate(opts: {
     requiredCount: LOOK2_MINT_REQUIRED_PATHS.length,
     failReasons: [...new Set(failReasons)],
     dataMissingPlates: missingPaths.length,
+    prototypeOnly,
   };
 }
 
@@ -231,7 +263,7 @@ export function ingestLook2MintReceipt(
     readyPaths,
     blocked: !ingested,
     note: ingested
-      ? "Look 2 mint plate set PRESENT under public/stomper — acceptanceEligible when outfit constraints hold"
+      ? "Look 2 mint scaffolding PRESENT (t1197u art-pass) — file ingest ready; Android acceptanceEligible remains false for prototype 8-of-11 outfit (REGISTERED_VISUAL_PROTOTYPE_ONLY)"
       : "Look 2 mint plates incomplete — fail-closed; do not invent assets",
   };
 }

@@ -42,12 +42,18 @@ describe("t1178u — plate assembly all-or-nothing", () => {
     );
   });
 
-  it("requires full set including board + goggles; backpack OFF omitted", () => {
+  it("prototype skips board/goggles locked includes; backpack OFF omitted; jacket/pants required", () => {
     const cfg = configFromStarter(starterById(LOOK2_STARTER_ID)!, { stomperId: "x" });
     const req = requiredPlateRefs(cfg);
     expect(req.some((r) => r.slot === "backpack")).toBe(false);
-    expect(req.some((r) => r.slot === "board")).toBe(true);
-    expect(req.some((r) => r.slot === "goggles")).toBe(true);
+    // Franz prototype: board-none + locked head includes are intentional skips
+    expect(req.some((r) => r.slot === "board")).toBe(false);
+    expect(req.some((r) => r.slot === "goggles")).toBe(false);
+    expect(req.some((r) => r.slot === "hair")).toBe(false);
+    expect(req.some((r) => r.slot === "headwear")).toBe(false);
+    expect(req.some((r) => r.slot === "face" && r.itemId === "face-f-hana-locked-composite")).toBe(
+      true,
+    );
     expect(req.some((r) => r.slot === "jacket" && r.itemId === LOOK2_JACKET_ITEM_ID)).toBe(true);
     expect(req.some((r) => r.slot === "pants" && r.itemId === LOOK2_PANTS_ITEM_ID)).toBe(true);
   });
@@ -104,12 +110,14 @@ describe("t1178u — plate assembly all-or-nothing", () => {
     expect(el.getAttribute("data-starter")).toBe("f-hana");
     expect(el.getAttribute("data-render-mode")).toBe("plates");
     expect(el.getAttribute("data-plate-complete")).toBe("true");
-    expect(el.getAttribute("data-acceptance-eligible")).toBe("true");
+    // Plate-assembly complete for prototype stack; Android eligibility fail-closed
+    expect(el.getAttribute("data-acceptance-eligible")).toBe("false");
+    expect(el.getAttribute("data-prototype-only")).toBe("true");
     expect(el.getAttribute("data-backpack")).toBe("off");
     expect(el.getAttribute("data-jacket")).toBe(LOOK2_JACKET_ITEM_ID);
     expect(el.getAttribute("data-pants")).toBe(LOOK2_PANTS_ITEM_ID);
-    expect(el.getAttribute("data-board")).toBeTruthy();
-    expect(el.getAttribute("data-goggles")).toBeTruthy();
+    expect(el.getAttribute("data-board")).toBe("board-none");
+    expect(el.getAttribute("data-goggles")).toBe("goggles-locked-included");
 
     const wrongJacket = {
       ...cfg,

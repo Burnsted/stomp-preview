@@ -6,8 +6,10 @@
 **Modular source sheet:** `masters/look2-f-hana-MODULAR-SHEET.png`  
 **sheet sha256:** `e273e6c13142cf068d25fc1c18503d1d59e947e8af52fee54b9c8e2abda93322`  
 **Code contract:** `gb-phone/src/lib/stomp/avatar/look2-acceptance.ts`  
-**Status:** Visual **APPROVED_MASTER** · Modular plates **PRESENT** · Android QA **OPEN_DEVICE**  
-**Ink variants:** **ABSENT** (not on sheet — not invented)
+**Status:** Visual **APPROVED_MASTER** · Modular plates **PRESENT** (t1194u registered 1024→512) · Android QA **OPEN_DEVICE**  
+**Under-jacket body:** **AWAITING_FRANZ_BODY** · visualRegistrationGate **BLOCKED_UNDERLAYER**  
+**Ink variants:** **ABSENT** (not on sheet — not invented)  
+**Contract:** `docs/modular-alignment-t1194u/REGISTRATION-CONTRACT.md`
 
 ## Pass criteria (ALL required — physical Android only)
 
@@ -54,5 +56,7 @@ Optional: `/stomper/adult/backpack/backpack-daypack@512.webp` (not required for 
 
 - Catalog IDs + jacket-set coupling  
 - All-or-nothing assembly + missing-asset attrs  
-- Plate extract from owner modular sheet (`scripts/extract-look2-mint-plates.py`)  
-- Selector/Locker use real plates when mint set complete; `acceptanceEligible` honest  
+- Plate extract from owner modular sheet (`scripts/extract-look2-mint-plates.py`) — **rewritten** for fixed registration  
+- Selector/Locker use real plates when mint set complete; file `acceptanceEligible` ≠ visual underlayer PASS  
+- Validate: `scripts/validate-look2-registration.py` (engineering OK + honest underlayer FAIL)  
+
