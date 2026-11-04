@@ -22,7 +22,7 @@ jobs:
           pathlib.Path('arcade/boulder-dodge/index.html').write_bytes(raw)
           text = raw.decode('utf-8')
           assert text.startswith('<!DOCTYPE html')
-          assert "version:'0.7.7'" in text
+          assert "version:'0.7.8'" in text
           assert 'TAB_DK' in text
           assert 'POST_LIP' in text
           assert 'holdSet' in text
@@ -33,6 +33,7 @@ jobs:
           assert 'jumpBoing' in text
           assert 'doubleJump' in text
           assert 'legendPlay' in text
+          assert 'paintLegendIcons' in text
           assert 'Black Diamond' in text
           print('bytes', len(raw))
           PY
@@ -41,5 +42,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add arcade/boulder-dodge/index.html
-          git diff --cached --quiet || git commit -m "feat: boulder-dodge v0.7.7 GD curve legend double-tap [skip ci]"
+          git diff --cached --quiet || git commit -m "feat: boulder-dodge v0.7.8 visual legend icons [skip ci]"
           git push
