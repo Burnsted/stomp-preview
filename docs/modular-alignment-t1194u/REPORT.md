@@ -13,7 +13,8 @@ Engineering registration pipeline **corrected** (canonical 1024×1024 → common
 Under-jacket body **AWAITING_FRANZ_BODY** (Franz: blank Drive stack; Runway auto FAIL; will not invent).  
 Overall visualRegistrationGate **BLOCKED_UNDERLAYER** — **no fake PASS**.  
 Composite **A BLOCKED** · **B EXTRACTED_REGISTERED** · **C BLOCKED** (ink ABSENT).  
-Android Batch E **OPEN_DEVICE** — no physical-device PASS claimed.
+Android Batch E **OPEN_DEVICE** — no physical-device PASS claimed.  
+**CI receipt:** `T1194U-VERIFICATION-RECEIPT.md` · tip `8d07687…` · [run 41771221510](https://github.com/Burnsted/stomp-preview/actions/runs/41771221510) **SUCCESS**.
 
 ## Corrected pipeline
 
