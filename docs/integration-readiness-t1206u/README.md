@@ -6,6 +6,8 @@
 **Main (live Pages after arcade):** `d53b0657cc963d36d6463d29f4dee65d1e4bdcc9`  
 **Arcade (#42 MERGED):** out of scope for the snowboard rider journey — keep separate.
 
+**Owner D1–D7 reconciliation (Nov 4):** see successor package [`../owner-handoff-t1207u/`](../owner-handoff-t1207u/) — product direction locked; **12-month** Pass export-only supersedes earlier **6-month** retention notes in this audit; Form #7 remains REVIEW REQUIRED.
+
 ## How to read
 
 Start with **[INTEGRATION-READINESS-REPORT.md](./INTEGRATION-READINESS-REPORT.md)** — the one owner report (plain English).
