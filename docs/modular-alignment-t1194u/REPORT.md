@@ -60,7 +60,7 @@ Required LOOK2_MINT paths rewritten with matching manifest sha256 (see JSON). Op
 
 | Field | Value |
 |---|---|
-| Tip SHA | `ca356e0df374bb912b80cd2215446147ef4e2c71` (work tip `d05b3a9`; docs tip follows) |
+| Tip SHA | `c6d4454d25f22cf307e9c1ba861578ce3f909954` |
 | CI | both pr-verify jobs must be green before claiming engineering done |
 | AF tests | existing Look 2 plate tests + `look2-registration-t1194u.test.tsx` |
 
