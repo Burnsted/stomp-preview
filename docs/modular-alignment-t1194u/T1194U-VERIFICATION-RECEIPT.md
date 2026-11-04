@@ -4,6 +4,8 @@
 **PR:** draft [#27](https://github.com/Burnsted/stomp-preview/pull/27) only  
 **CI green tip:** `8d0768735a73e1938449e7d135fe360962eb5b68`  
 **CI:** both pr-verify **SUCCESS** — [run 41771221510](https://github.com/Burnsted/stomp-preview/actions/runs/41771221510)  
+**Receipt tip:** `00728f2bea3ff1445ca53a877b0127d6d02268f5` — also both jobs **SUCCESS** ([run 41771430249](https://github.com/Burnsted/stomp-preview/actions/runs/41771430249))  
+
 **Base tip:** #21 `8b4b799`  
 **Protected:** #12–#20 / #22–#26 tips · no merge · no Pages · no youth · no payments · no Home/five-tab/Crew Invite
 

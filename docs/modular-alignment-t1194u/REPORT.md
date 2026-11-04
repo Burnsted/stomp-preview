@@ -63,6 +63,7 @@ Required LOOK2_MINT paths rewritten with matching manifest sha256 (see JSON). Op
 |---|---|
 | Tip SHA (CI green) | `8d0768735a73e1938449e7d135fe360962eb5b68` |
 | CI | both pr-verify **SUCCESS** — [run 41771221510](https://github.com/Burnsted/stomp-preview/actions/runs/41771221510) (`batch1 typecheck + test` + `gb-phone typecheck + woz tests + build`) |
+| Receipt tip | `00728f2bea3ff1445ca53a877b0127d6d02268f5` — also both jobs **SUCCESS** ([run 41771430249](https://github.com/Burnsted/stomp-preview/actions/runs/41771430249)) |
 | AF tests | existing Look 2 plate tests + `look2-registration-t1194u.test.tsx` |
 | Engineering done | **yes** (CI green) — visual underlayer / ink C / Android device still **not** PASS |
 
