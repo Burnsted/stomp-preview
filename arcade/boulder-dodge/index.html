@@ -132,9 +132,15 @@ var HILL=[0,28,44,56,64,74,74,52,88,88];
 var KICK_A=[0,12,14,16,18,20,22,16,24,26],KICK_AP=[0,22,24,26,28,30,32,26,34,36],KICK_DK=[0,20,22,24,26,28,30,24,32,34],KICK_EX=[0,30,32,34,36,38,40,34,42,44];
 var TAB_A=[0,16,18,20,22,24,26,20,28,30],TAB_AP=[0,28,30,32,34,36,38,32,40,42],TAB_DK=[0,70,76,82,88,94,100,84,108,114],TAB_EX=[0,36,38,40,42,44,46,40,48,50];
 function terr(wx){var A=HILL[LV.n]||12;return A*(0.55*Math.sin(wx/380+TER[0])+0.3*Math.sin(wx/170+TER[1])+0.15*Math.sin(wx/88+TER[2]));}
-// Tabletop profile: linear takeoff → flat deck → linear landing (no parabolic "twin hills").
+// Tabletop: absolute-flat deck in gY (compensates terr so plateaus don't undulate into twin mounds).
 function bumpH(wx){if(!S||!S.bumps)return 0;var h=0;for(var i=0;i<S.bumps.length;i++){var bm=S.bumps[i],dx=wx-bm.wx,ap=bm.ap,dk=bm.deck,ex=bm.ex,a=bm.amp,L=-(ap+dk),R=dk+ex;
- if(dx<=L||dx>=R)continue;if(dx<-dk)h-=a*((dx-L)/ap);else if(dx<=dk)h-=a;else h-=a*(1-(dx-dk)/ex);}return h;}
+ if(dx<=L||dx>=R)continue;
+ // Desired raise so GROUND+terr(wx)+bump = GROUND+terr(center)-amp  ⇒ bump = terr(c)-amp-terr(wx)
+ var flat=terr(bm.wx)-a-terr(wx);
+ if(dx<-dk){var t=(dx-L)/ap,e=terr(bm.wx)-a-terr(bm.wx-dk);h+=e*t;}
+ else if(dx<=dk)h+=flat;
+ else{var u=1-(dx-dk)/ex,e2=terr(bm.wx)-a-terr(bm.wx+dk);h+=e2*u;}}
+ return h;}
 function H(sx){var wx=S.dist+sx-S.p.x;return terr(wx)+bumpH(wx);}
 function gY(sx){return GROUND+H(sx);} // absolute snow surface Y at screen x — AUTHORITY for draw + physics
 function slopeAt(sx){return Math.atan2(H(sx+6)-H(sx-6),12);}
