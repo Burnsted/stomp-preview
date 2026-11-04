@@ -1,38 +1,32 @@
-# ACTUAL-BLOCKERS — t1189u (real blockers only)
+# ACTUAL-BLOCKERS — t1194u (real blockers only)
 
 **Visual approval:** CLOSED for all eight looks.  
-**Look 2 mint modular plates:** **PRESENT** (from owner modular sheet — see `ARTWORK-STATUS.md`).  
-**Android Batch E:** **OPEN_DEVICE** — plates ready; physical evidence not auto-PASS.
+**Look 2 registered mint plates:** **PRESENT** (fixed 1024→512).  
+**Look 2 under-jacket body:** **AWAITING_FRANZ_BODY**.  
+**Android Batch E:** **OPEN_DEVICE**.
 
 ## OPEN
 
 | # | Blocker | Owner | Notes |
 |---|---|---|---|
-| 1 | **Look 2 Android QA** (Batch E E1–E10 on physical device) | QA / Ted | Plates on disk; run checklist when ready — no fake desktop PASS |
-| 2 | Modular transparent plates for remaining Looks 1,3–6 + Grom | Art / GB | **AFTER Look 2** — do not invent |
-| 3 | Starter preview WebPs for non–Look-2 IDs | Art / GB | URL contract ready |
-| 4 | Device QA for remaining looks after Look 2 | QA | After #2 |
+| 1 | **Under-jacket body paint** for Look 2 | Franz / Design | Blank Drive stack; Runway auto FAIL (face/pose drift); will not invent. Blocks composite A + visualRegistrationGate PASS |
+| 2 | **Look 2 Android QA** (Batch E E1–E10) | QA / Ted | Plates on disk; no fake desktop PASS |
+| 3 | Modular plates Looks 1,3–8 + Grom | Art / GB | **AFTER** Look 2 visual gate — do not invent |
+| 4 | Ink outfit C (`jacket-look2-ink` / `pants-look2-ink`) | Art | **ABSENT** — Franz will not invent |
 
-## CLEARED this tip
+## CLEARED this tip (engineering)
 
 | Item | Note |
 |---|---|
-| Look 2 mint WebPs under `/stomper/adult/…` | Extracted from `look2-f-hana-MODULAR-SHEET.png` |
-| Ingest / registry / Locker acceptanceEligible for Look 2 mint defaults | Wired + AF green |
-| Plate-missing blocker for Look 2 gate scaffolding | Cleared |
+| Independent per-piece fit extract | Rewritten — common registration contract |
+| Look 2 mint WebPs under shared canvas | Re-extracted from master in-place masks |
+| Registration / AF tests | `validate-look2-registration.py` + `look2-registration-t1194u.test.tsx` |
 
-## HELD (intentional)
+## HELD
 
 | Item | Status |
 |---|---|
-| `gromFlowEnabled=false` | **HELD** — Grom masters preview-only |
-| Look 2 ink variants | **ABSENT** — sheet has none; not invented |
-| Payments / wallet / production authz | **HELD** |
-| Pages / prod deploy / merge | **HELD** — DRAFT PR only |
-| Messaging Grok Build | **HELD** unless docs-only handoff |
-
-## CLOSED / prepared
-
-- Eight APPROVED_MASTER visual refs  
-- t1178u all-or-nothing · t1179u Batch D · t1182u ingest scaffolding  
-- **t1188u/t1189u** Look 2 plate extract + selector wiring + AF  
+| `gromFlowEnabled=false` | **HELD** |
+| Pages / prod deploy / merge | **HELD** — DRAFT only |
+| Payments / youth / live accounts | **HELD** |
+| Home / five-tab / Crew Invite | **untouched** |

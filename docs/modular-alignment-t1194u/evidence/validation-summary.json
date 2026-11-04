@@ -1,0 +1,159 @@
+{
+  "engineeringRegistrationChecks": {
+    "ok": true,
+    "checks": [
+      {
+        "id": "common-scale-0.5",
+        "ok": true,
+        "detail": "prod=1024 runtime=512 scale=0.5",
+        "severity": "gate"
+      },
+      {
+        "id": "banned-independent-fit",
+        "ok": true,
+        "detail": "banned=['aligned_stack_canvas', 'enrich_with_iso_reposition', 'fit_to_canvas_per_piece', 'per_piece_aspect_fit', 'tight_crop_center']",
+        "severity": "gate"
+      },
+      {
+        "id": "canvas-512-jacket",
+        "ok": true,
+        "detail": "size=(512, 512)",
+        "severity": "gate"
+      },
+      {
+        "id": "canvas-512-pants",
+        "ok": true,
+        "detail": "size=(512, 512)",
+        "severity": "gate"
+      },
+      {
+        "id": "canvas-512-body",
+        "ok": true,
+        "detail": "size=(512, 512)",
+        "severity": "gate"
+      },
+      {
+        "id": "canvas-512-face",
+        "ok": true,
+        "detail": "size=(512, 512)",
+        "severity": "gate"
+      },
+      {
+        "id": "canvas-512-hair",
+        "ok": true,
+        "detail": "size=(512, 512)",
+        "severity": "gate"
+      },
+      {
+        "id": "canvas-512-preview",
+        "ok": true,
+        "detail": "size=(512, 512)",
+        "severity": "gate"
+      },
+      {
+        "id": "face-upper-half",
+        "ok": true,
+        "detail": "face_centroid=(253.68924302788844, 71.92544109277178)",
+        "severity": "gate"
+      },
+      {
+        "id": "jacket-below-face",
+        "ok": true,
+        "detail": "jacket_c=(252.83553516335732, 190.17498615615852) face_c=(253.68924302788844, 71.92544109277178)",
+        "severity": "gate"
+      },
+      {
+        "id": "pants-below-jacket-center",
+        "ok": true,
+        "detail": "pants_c=(252.14550509731234, 348.7832869941304) jacket_c=(252.83553516335732, 190.17498615615852)",
+        "severity": "gate"
+      },
+      {
+        "id": "jacket-near-master-x",
+        "ok": true,
+        "detail": "jacket_x=252.8 master_x=253.1",
+        "severity": "gate"
+      },
+      {
+        "id": "pants-near-master-x",
+        "ok": true,
+        "detail": "pants_x=252.1 master_x=253.1",
+        "severity": "gate"
+      },
+      {
+        "id": "alpha-cutout-jacket",
+        "ok": true,
+        "detail": "opaque_px=12641 full_frac=0.030",
+        "severity": "gate"
+      },
+      {
+        "id": "alpha-cutout-pants",
+        "ok": true,
+        "detail": "opaque_px=12948 full_frac=0.031",
+        "severity": "gate"
+      },
+      {
+        "id": "jacket-not-body-plate",
+        "ok": true,
+        "detail": "skin_frac=0.014",
+        "severity": "gate"
+      },
+      {
+        "id": "pants-not-body-plate",
+        "ok": true,
+        "detail": "skin_frac=0.000",
+        "severity": "gate"
+      },
+      {
+        "id": "manifest-awaiting-franz-body",
+        "ok": true,
+        "detail": "underJacketBody=AWAITING_FRANZ_BODY",
+        "severity": "gate"
+      },
+      {
+        "id": "manifest-gate-blocked-underlayer",
+        "ok": true,
+        "detail": "visualRegistrationGate=BLOCKED_UNDERLAYER",
+        "severity": "gate"
+      },
+      {
+        "id": "manifest-composite-a-blocked",
+        "ok": true,
+        "detail": "compositeA=BLOCKED",
+        "severity": "gate"
+      },
+      {
+        "id": "manifest-composite-c-blocked",
+        "ok": true,
+        "detail": "compositeC=BLOCKED",
+        "severity": "gate"
+      },
+      {
+        "id": "ink-absent-on-disk",
+        "ok": true,
+        "detail": "ink plates must not be invented",
+        "severity": "gate"
+      },
+      {
+        "id": "no-fake-overall-pass",
+        "ok": true,
+        "detail": "overall visual registration must not claim PASS without Franz body",
+        "severity": "gate"
+      }
+    ]
+  },
+  "artworkUnderlayer": {
+    "ok": false,
+    "expectedFail": true,
+    "honest": true,
+    "coverage": 0.8535717110988055,
+    "status": "AWAITING_FRANZ_BODY"
+  },
+  "overallVisualRegistrationGate": "BLOCKED_UNDERLAYER",
+  "androidDevicePass": "NOT_CLAIMED",
+  "composites": {
+    "A": "BLOCKED",
+    "B": "EXTRACTED_REGISTERED",
+    "C": "BLOCKED"
+  }
+}

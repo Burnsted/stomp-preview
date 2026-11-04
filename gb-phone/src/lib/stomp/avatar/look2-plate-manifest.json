@@ -5,15 +5,27 @@
     1448,
     1086
   ],
+  "approvedMaster": "docs/character-production-t1173u/masters/look2-f-hana-APPROVED.png",
+  "approvedMasterSha256": "b92ba262a516b29c3512a5e63371b30797dcaf5d6b93f47163588c04659a80da",
+  "registrationContract": "docs/modular-alignment-t1194u/REGISTRATION-CONTRACT.md",
+  "productionCanvas": 1024,
+  "runtimeCanvas": 512,
+  "commonScale": 0.5,
   "inkVariants": "ABSENT",
+  "underJacketBody": "AWAITING_FRANZ_BODY",
+  "visualRegistrationGate": "BLOCKED_UNDERLAYER",
+  "compositeA": "BLOCKED",
+  "compositeB": "EXTRACTED_REGISTERED",
+  "compositeC": "BLOCKED",
+  "editableMasterOra": "docs/character-production-t1173u/masters/editable-look2/look2-f-hana-REGISTERED-MASTER.ora",
   "look2MintRequiredPresent": true,
   "optionalBackpackPresent": true,
   "plates": [
     {
       "path": "gb-phone/public/stomper/adult/starter/f-hana/preview@512.webp",
       "url": "/stomper/adult/starter/f-hana/preview@512.webp",
-      "sha256": "88ac50a6b1244259eb2acd40f394323227ff2c0d2e7953651f35b7071832ed02",
-      "bytes": 84988,
+      "sha256": "282bca1f4ac39e89a1729f870e7fd2c85a064ba5054a1091d01e4a31814824cc",
+      "bytes": 86724,
       "size": [
         512,
         512
@@ -22,8 +34,8 @@
     {
       "path": "gb-phone/public/stomper/adult/jacket/jacket-look2-mint@512.webp",
       "url": "/stomper/adult/jacket/jacket-look2-mint@512.webp",
-      "sha256": "56904a59aeb3d5f937722e0b14423eb43193cf43f70ecb4bf971371535537202",
-      "bytes": 37286,
+      "sha256": "6c081edab013ad02169a7432b03d001e9d40c0219aee6492c69d5c5c9867d8ec",
+      "bytes": 40406,
       "size": [
         512,
         512
@@ -32,8 +44,8 @@
     {
       "path": "gb-phone/public/stomper/adult/pants/pants-look2-mint@512.webp",
       "url": "/stomper/adult/pants/pants-look2-mint@512.webp",
-      "sha256": "9ba3c7443f48f45dc20e03afed5133ec69f2cc229b40471d4c0d7bec5bf94d68",
-      "bytes": 40936,
+      "sha256": "d9552b2e3943fe0572757eb6abf7b3851d035d294ddf3945285fd18bc57c0898",
+      "bytes": 38910,
       "size": [
         512,
         512
@@ -42,8 +54,8 @@
     {
       "path": "gb-phone/public/stomper/adult/body/body-athletic@512.webp",
       "url": "/stomper/adult/body/body-athletic@512.webp",
-      "sha256": "9fb70d1a8a578010f85df9c40e424cc785b7e7281420e32c4943266856160353",
-      "bytes": 53998,
+      "sha256": "b187d5f01f91916652df50912681a7ce0c9ad7f4e7012c37d38f419d2d3bc5b4",
+      "bytes": 56394,
       "size": [
         512,
         512
@@ -52,8 +64,8 @@
     {
       "path": "gb-phone/public/stomper/adult/face/face-female@512.webp",
       "url": "/stomper/adult/face/face-female@512.webp",
-      "sha256": "5e3417919819725ae91d660d616695792490d03ac5cd1c2cfb34f395dfa7dbea",
-      "bytes": 13734,
+      "sha256": "7a5ec54a01b6fa30a22785b111aa608290d9f61d11e32bd161d8b0a5e505c55f",
+      "bytes": 8696,
       "size": [
         512,
         512
@@ -62,8 +74,8 @@
     {
       "path": "gb-phone/public/stomper/adult/hair/hair-straight@512.webp",
       "url": "/stomper/adult/hair/hair-straight@512.webp",
-      "sha256": "0d5280b80eaa81b91f5e421e167d6e47872dca4c447357f93aa1f5ec305bed36",
-      "bytes": 23946,
+      "sha256": "77f0e70ef8af69407514d8272a78faec5775298b2cd9221d3f3d76b2168e0db3",
+      "bytes": 11070,
       "size": [
         512,
         512
@@ -72,8 +84,8 @@
     {
       "path": "gb-phone/public/stomper/adult/headwear/helmet-basic@512.webp",
       "url": "/stomper/adult/headwear/helmet-basic@512.webp",
-      "sha256": "07ddd228fcc1ce8c98ae7a5d0fa066caf841fb690f6cee4a162276e1eff92d71",
-      "bytes": 11754,
+      "sha256": "88912939f88508c9bb7915fe1adf5339ff686e5e90ef551d9953fb0c1cb9a84c",
+      "bytes": 7480,
       "size": [
         512,
         512
@@ -82,8 +94,8 @@
     {
       "path": "gb-phone/public/stomper/adult/goggles/goggles-basic@512.webp",
       "url": "/stomper/adult/goggles/goggles-basic@512.webp",
-      "sha256": "5e1d3464d8a85fbeaabab93397c43b459a8057a7e638b9f0f7a090b0c894f11d",
-      "bytes": 5770,
+      "sha256": "b6e7a9c50bc416ce331d85c9361ef15ab8cf260afc153bca08b507923cce7394",
+      "bytes": 5108,
       "size": [
         512,
         512
@@ -92,8 +104,8 @@
     {
       "path": "gb-phone/public/stomper/adult/gloves/gloves-basic@512.webp",
       "url": "/stomper/adult/gloves/gloves-basic@512.webp",
-      "sha256": "9827b823faac3f1cebf47f18e8db227b806438a606efed3e77cdd5441086ee90",
-      "bytes": 21916,
+      "sha256": "3c60f9c418f8ec4ac40590f82f8253aefce509a2e2752bfcee4739013be31bf9",
+      "bytes": 11852,
       "size": [
         512,
         512
@@ -102,8 +114,8 @@
     {
       "path": "gb-phone/public/stomper/adult/boots/boots-basic@512.webp",
       "url": "/stomper/adult/boots/boots-basic@512.webp",
-      "sha256": "d11a8a9b456243bad908ca231f9ae8ffd2790e855d190a314b9100b742ce7f9a",
-      "bytes": 11392,
+      "sha256": "571067d00f84a5a8a6a3fe8e0ec0e9feaa5ea072700a2474f848c17fcf91988d",
+      "bytes": 11212,
       "size": [
         512,
         512
@@ -112,8 +124,8 @@
     {
       "path": "gb-phone/public/stomper/adult/board/board-basic@512.webp",
       "url": "/stomper/adult/board/board-basic@512.webp",
-      "sha256": "0b37732fc0dec8e1de6a916304afd5b794b7aefcf4c0d654a8a04f09ccc6e9fd",
-      "bytes": 70176,
+      "sha256": "326652882e2dfe68a0d1259c43f6086fece0315803206fe4ee534752f104b6e5",
+      "bytes": 48596,
       "size": [
         512,
         512
@@ -122,8 +134,8 @@
     {
       "path": "gb-phone/public/stomper/adult/backpack/backpack-daypack@512.webp",
       "url": "/stomper/adult/backpack/backpack-daypack@512.webp",
-      "sha256": "275cade084de17b1ce3bf14bae9c0af43ffbdef28beded87597fc9119cf7fb27",
-      "bytes": 143814,
+      "sha256": "200f23ed9bd75df73e3e101f081428ea4e5f02e0d336b4632e33c2297bddcf95",
+      "bytes": 22566,
       "size": [
         512,
         512
@@ -142,5 +154,7 @@
     "/stomper/adult/boots/boots-basic@512.webp",
     "/stomper/adult/board/board-basic@512.webp",
     "/stomper/adult/starter/f-hana/preview@512.webp"
-  ]
+  ],
+  "extractScript": "scripts/extract-look2-mint-plates.py",
+  "task": "t1194u"
 }

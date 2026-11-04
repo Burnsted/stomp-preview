@@ -231,7 +231,7 @@ export function ingestLook2MintReceipt(
     readyPaths,
     blocked: !ingested,
     note: ingested
-      ? "Look 2 mint plate set PRESENT under public/stomper — acceptanceEligible when outfit constraints hold"
+      ? "Look 2 mint plate set PRESENT (t1194u registered 1024→512) — file acceptanceEligible when outfit constraints hold; visualRegistrationGate=BLOCKED_UNDERLAYER until Franz body"
       : "Look 2 mint plates incomplete — fail-closed; do not invent assets",
   };
 }

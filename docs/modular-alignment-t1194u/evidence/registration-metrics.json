@@ -1,0 +1,80 @@
+{
+  "transform": {
+    "prod_canvas": 1024,
+    "runtime_canvas": 512,
+    "common_scale": 0.5,
+    "src_box": [
+      18,
+      66,
+      323,
+      984
+    ],
+    "content_bbox_src": [
+      3,
+      0,
+      305,
+      917
+    ],
+    "scale": 1.027350054525627,
+    "offset_x": 353.78809160305343,
+    "offset_y": 40.95999999999998,
+    "banned": [
+      "tight_crop_center",
+      "fit_to_canvas_per_piece",
+      "aligned_stack_canvas",
+      "enrich_with_iso_reposition",
+      "per_piece_aspect_fit"
+    ]
+  },
+  "centroids_512": {
+    "master": [
+      253.12002244620464,
+      270.76627889409275
+    ],
+    "face": [
+      253.68924302788844,
+      71.92544109277178
+    ],
+    "hair": [
+      252.09890572390572,
+      99.35816498316498
+    ],
+    "jacket": [
+      252.83553516335732,
+      190.17498615615852
+    ],
+    "pants": [
+      252.14550509731234,
+      348.7832869941304
+    ]
+  },
+  "compositeA": {
+    "status": "BLOCKED",
+    "reason": "AWAITING_FRANZ_BODY",
+    "jacket_footprint_coverage_by_provisional_body": 0.8535717110988055
+  },
+  "compositeB": {
+    "status": "EXTRACTED_REGISTERED"
+  },
+  "compositeC": {
+    "status": "BLOCKED",
+    "reason": "ink_ABSENT"
+  },
+  "underJacketBody": "AWAITING_FRANZ_BODY",
+  "visualRegistrationGate": "BLOCKED_UNDERLAYER",
+  "filePlatesPresent": true,
+  "alpha_px": {
+    "master_lock": 46333,
+    "body_provisional": 35002,
+    "jacket": 12641,
+    "pants": 12948,
+    "boots": 3339,
+    "face": 1757,
+    "hair": 2376,
+    "headwear": 1738,
+    "goggles": 756,
+    "gloves": 3190,
+    "board": 27115,
+    "backpack": 13458
+  }
+}

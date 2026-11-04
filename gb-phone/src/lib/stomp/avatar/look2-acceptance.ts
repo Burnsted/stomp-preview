@@ -110,7 +110,7 @@ export const LOOK2_ANDROID_ACCEPTANCE_CHECKS = [
 
 export type Look2AcceptanceCheckId = (typeof LOOK2_ANDROID_ACCEPTANCE_CHECKS)[number]["id"];
 
-/** Look 2 mint plates shipped from owner modular sheet (t1188u/t1189u). */
+/** Look 2 mint plates — t1194u registered extract (1024→512 common scale). */
 export const LOOK2_GATE_STATUS = {
   visualMaster: "APPROVED_MASTER" as const,
   /** Required mint WebPs present under public/stomper — not invented. */
@@ -121,9 +121,20 @@ export const LOOK2_GATE_STATUS = {
   inventingPlatesForbidden: true as const,
   posterCropForbidden: true as const,
   inkVariants: "ABSENT" as const,
+  /** Franz under-jacket paint blocked — provisional body only. */
+  underJacketBody: "AWAITING_FRANZ_BODY" as const,
+  /** File registration engineering OK; jacket-off visual gate blocked. */
+  visualRegistrationGate: "BLOCKED_UNDERLAYER" as const,
+  compositeA: "BLOCKED" as const,
+  compositeB: "EXTRACTED_REGISTERED" as const,
+  compositeC: "BLOCKED" as const,
+  productionCanvas: 1024 as const,
+  runtimeCanvas: 512 as const,
+  commonScale: 0.5 as const,
   sourceSheet: "docs/character-production-t1173u/masters/look2-f-hana-MODULAR-SHEET.png" as const,
   sourceSheetSha256:
     "e273e6c13142cf068d25fc1c18503d1d59e947e8af52fee54b9c8e2abda93322" as const,
+  registrationContract: "docs/modular-alignment-t1194u/REGISTRATION-CONTRACT.md" as const,
 };
 
 export function look2DefaultLayerItemIds(): {

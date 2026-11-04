@@ -1,0 +1,27 @@
+{
+  "prod_canvas": 1024,
+  "runtime_canvas": 512,
+  "common_scale": 0.5,
+  "src_box": [
+    18,
+    66,
+    323,
+    984
+  ],
+  "content_bbox_src": [
+    3,
+    0,
+    305,
+    917
+  ],
+  "scale": 1.027350054525627,
+  "offset_x": 353.78809160305343,
+  "offset_y": 40.95999999999998,
+  "banned": [
+    "tight_crop_center",
+    "fit_to_canvas_per_piece",
+    "aligned_stack_canvas",
+    "enrich_with_iso_reposition",
+    "per_piece_aspect_fit"
+  ]
+}
