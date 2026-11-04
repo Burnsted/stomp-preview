@@ -1,19 +1,28 @@
 # Franz Look 2 artwork — handoff manifest
 
 **Branch:** `cursor/franz-look2-modular-artwork` (docs-only DRAFT · PR #23)  
-**Updated:** 2026-11-04 (HEAD_CLEAN)  
+**Updated:** 2026-11-04 (FINISHING)  
 **Art pass:** **PARTIAL** · **REGISTERED_VISUAL_PROTOTYPE_ONLY**  
 **Scope:** Briefs + contracts + art-pass status. **No** runtime WebPs under `gb-phone/public/stomper/` on this PR. Woz integrates / re-ingests plates on draft [#27](https://github.com/Burnsted/stomp-preview/pull/27). Youth OFF. Do not merge / deploy / wire catalog here.
 
-## Drive — HEAD CLEAN + under-chin collar fill 2026-11-04 (current)
+## Drive — FINISHING 2026-11-04 (current)
+
+| Asset | URL |
+|---|---|
+| Zip ART_PASS (FINISHING) | https://drive.google.com/file/d/1Tg0OG-9poiaLKscqx8jdrpXGicMIxTby/view |
+| Zip sha256 | `2118bdc84855f2aae526fdaf6111d014e5d990dd0705a1354113988b67bdbd84` |
+| Proof A/B/C (FINISHING) | https://drive.google.com/file/d/1V2UBJKg7aKyEsZ2CK1E85cBAAsZBPBpX/view |
+| Status md (Drive, FINISHING) | https://drive.google.com/file/d/1nBoJAz5vZG7NBra5K8KgavdrSLNBKpRO/view |
+| Editable masters folder | https://drive.google.com/drive/folders/1swuEBtojhgvtRnalvgMcwm9VCWm6i5fH |
+
+Woz #27 owns plate ingest / re-ingest (`face@512` sha `c2ffcbd9…`, `body@512` sha `85ecf364…`). Crotch CLEARED. This PR documents only.
+
+## Drive — HEAD CLEAN + under-chin collar fill 2026-11-04
 
 | Asset | URL |
 |---|---|
 | Zip ART_PASS (HEAD_CLEAN) | https://drive.google.com/file/d/1PqLFxVx4o8q6oSQ1iWkU08AnGmR4nFhG/view |
 | Status md (Drive, HEAD_CLEAN) | https://drive.google.com/file/d/1ZalFs1cZG8nSDkd7cGgpoyCeRBHUs3dI/view |
-| Editable masters folder | https://drive.google.com/drive/folders/1swuEBtojhgvtRnalvgMcwm9VCWm6i5fH |
-
-Woz #27 owns plate ingest / re-ingest (`face@512` sha `1b962229…`, `body@512` sha `21a12aca…`). Crotch CLEARED on #27 tip `e0fb4b2`. This PR documents only.
 
 ## Drive — crotch-clip pass 2026-11-04
 
@@ -37,7 +46,7 @@ All under `docs/character-production-t1173u/franz-artwork/`:
 
 | File | Role |
 |---|---|
-| `ARTWORK-STATUS.md` | HEAD_CLEAN + crotch-clip + art-pass status; `REGISTERED_VISUAL_PROTOTYPE_ONLY` |
+| `ARTWORK-STATUS.md` | FINISHING + HEAD_CLEAN + crotch-clip + art-pass status; `REGISTERED_VISUAL_PROTOTYPE_ONLY` |
 | `ARTIST-BRIEF.md` | Character artist deliverable brief (Look 2 mint) |
 | `SECOND-OUTFIT-INK-LOCKED.md` | Woz-locked ink jacket/pants itemIds |
 | `LIMITATION.md` | Franz tool limitation receipt (no fake plates) |
