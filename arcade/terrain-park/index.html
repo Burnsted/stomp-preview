@@ -56,6 +56,8 @@ canvas{display:block;width:100vw;height:100vh}
 #legendPlay{width:100%;min-height:56px;margin-top:10px;border-radius:14px;border:4px solid #fff;background:#3ecf9a;color:#140828;font:800 22px/1 system-ui,sans-serif;letter-spacing:.06em;box-shadow:0 6px 0 #1a6b4a;touch-action:manipulation}
 #legendPlay:active{transform:scale(.97)}
 #legend .foot{text-align:center;opacity:.65;font-size:11px;margin-top:10px}
+.sw{flex:none;width:64px;height:14px;border-radius:7px;border:2px solid #1a0a30;box-shadow:0 2px 0 #0006}
+.lk{max-width:720px;margin:8px auto;padding:8px;border:2px solid #ffb84a;border-radius:10px;background:#2a1800;text-align:left}.lk .lkrow{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}.lk .card{flex:1 1 130px;padding:6px 8px;border-radius:8px;border:2px solid #fff3;background:#221040}.lk .card.lock{opacity:.55;border-style:dashed}.lk .card .sw{display:block;width:100%;height:12px;border-radius:6px;margin:4px 0;border:2px solid #1a0a30}.lk .lab{font:800 10px system-ui,sans-serif;color:#d4b0ff;letter-spacing:.06em}.lk .card b{display:block;font-size:13px}.lk .card small{display:block;opacity:.9;font:12px system-ui,sans-serif}.lk .goal{margin-top:6px;font:12px/1.35 system-ui,sans-serif;color:#ffb84a;text-align:center}
 #close{position:sticky;top:0;float:right;width:44px;height:44px;border-radius:10px;border:2px solid #fff8;background:#0006;color:#fff;font:bold 18px sans-serif}
 @media (max-width:540px){#menu{padding:10px 12px}.grid{flex-direction:column;align-items:stretch}.lv{min-width:0;width:100%;min-height:56px;font-size:16px}#menu h1{font-size:24px;margin-top:10px}#jumpB{width:100px;height:100px}#legend{padding:12px 10px 22px}#legend h1{font-size:24px}}
 </style></head><body>
@@ -77,7 +79,7 @@ var TEST=/[?&]test=1/.test(location.search),GOD=false;
 var VH=360, GROUND=300, GRAVITY=3600, JV=-950, DT=1/120;
 var AIR=2*-JV/GRAVITY, MAXH=JV*JV/(2*GRAVITY);
 var GRIND_FRIC=0.88, LIP_WIN=0.20, POST_LIP=0.40;
-var SPD_BASE=1.25, SPD_PER_2LV=0.055, SPD_CAP=1.63;
+var SPD_BASE=1.0, SPD_PER_2LV=0.02, SPD_CAP=1.10;
 var COMBO_NEED=3, COMBO_BOOST=1.14, COMBO_T=1.55;
 var LIVES_MAX=3,lives=LIVES_MAX,LIFE_PAUSE=1.25,HEART_SCORE=380,LIP_PTS=35,RAMP_PTS=45,HEART_SKY=.22;
 var HEART_MIN_LV=5; // ♥: L5+ & lives<=1 only
@@ -112,15 +114,35 @@ var LEVELS=[
  {n:10,name:'Pro Line',sub:'Peak park',pool:['kicker','table','gap','hip','qp','rainbow','rail','rock','fence','grom'],base:440,ramp:7.2,max:720,len:14800,gapX:.72,pick:.52,dense:0.62,trick:{t:'flip',n:2,lab:'Hold flip ×2'}}
 ];
 var ENDLESS={n:11,name:'Endless',sub:'Full park forever',pool:LEVELS[9].pool,base:360,ramp:8,max:780,len:Infinity,gapX:.68,pick:.52,dense:0.58,endless:true,trick:{t:'combo',n:2,lab:'COMBO ×2'}};
+var BOARDS=[
+ {id:'grom',name:'Grom Deck',c:'#e85a2a',s:'#ffe8d0',spd:1.18,need:0,how:'Starter'},
+ {id:'box',name:'Box Cruiser',c:'#6a9088',s:'#e8f2ee',spd:1.32,need:2,how:'Clear 2 lines'},
+ {id:'rail',name:'Rail Steel',c:'#8a94a4',s:'#e8eef8',spd:1.46,need:4,how:'Clear 4 lines'},
+ {id:'kick',name:'Kicker Pop',c:'#e8772e',s:'#f7f4fb',spd:1.60,need:7,how:'Clear 7 lines'},
+ {id:'pro',name:'Pro Park',c:'#ff2d55',s:'#ffd84a',spd:1.78,need:10,how:'Clear all 10'}
+];
 var PK='terrainPark.progress',PR;try{PR=JSON.parse(localStorage.getItem(PK))}catch(e){}
-PR=PR||{};PR.done=PR.done||[];PR.best=PR.best||{};PR.stars=PR.stars||0;PR.diff=PR.diff||'normal';
+PR=PR||{};PR.done=PR.done||[];PR.best=PR.best||{};PR.stars=PR.stars||0;PR.diff=PR.diff||'normal';PR.board=PR.board||'grom';
 function saveP(){try{localStorage.setItem(PK,JSON.stringify(PR))}catch(e){}}
 function unlocked(n){return n===1||PR.done.indexOf(n-1)>=0||(n===STORY+1&&endlessOpen())}
 function endlessOpen(){for(var i=1;i<=STORY;i++)if(PR.done.indexOf(i)<0)return false;return true}
+function clearedN(){return PR.done.filter(function(n){return n>=1&&n<=STORY}).length;}
+function boardOpen(b){return !b.need||clearedN()>=b.need;}
+function board(){var b=BOARDS.filter(function(x){return x.id===PR.board&&boardOpen(x)})[0];return b||BOARDS[0];}
+function boardSpd(){return board().spd||1;}
+function boardPct(b){return Math.round(((b&&b.spd)||boardSpd())*100);}
+function boardTag(b){return 'SPD '+boardPct(b)+'%';}
+function boardNext(){var c=board();for(var i=0;i<BOARDS.length-1;i++)if(BOARDS[i].id===c.id)return BOARDS[i+1];return null;}
+function boardSw(b,lock){return '<span class="sw" style="background:'+(lock?'#333':'linear-gradient('+b.c+' 0 55%,'+b.s+' 55% 75%,'+b.c+' 75%)')+'"></span>';}
+function boardPanelHTML(){var cur=board(),nx=boardNext(),h='<div class="lk"><div class="lkrow"><div class="card"><span class="lab">NOW</span>'+boardSw(cur,0)+'<b>'+cur.name+'</b><small>'+boardTag(cur)+' · start</small></div>';
+ if(nx){var o=boardOpen(nx),d=boardPct(nx)-boardPct(cur);
+  h+='<div class="card'+(o?'':' lock')+'"><span class="lab">NEXT</span>'+boardSw(nx,!o)+'<b>'+(o?'':'🔒 ')+nx.name+'</b><small>'+boardTag(nx)+(d?' · +'+d:'')+'</small></div></div><div class="goal"><b>GOAL</b> '+nx.how+' → <b>REWARD</b> '+boardTag(nx)+(d?' (+'+d+'% speed)':'')+'</div>';}
+ else h+='</div><div class="goal">Max board · Pro Park peaks the speed ladder</div>';
+ return h+'</div>';}
 function diffM(){return DIFFS[PR.diff]||DIFFS.normal;}
 function levelSpd(){return Math.min(SPD_CAP,SPD_BASE+Math.floor((Math.min(LV.n,STORY)-1)/2)*SPD_PER_2LV);}
 function levelLen(){return isFinite(LV.len)?LV.len*LEN_MUL:LV.len;}
-function runSpd(){return levelSpd()*diffM().spd*((S&&S.boostT>0)?COMBO_BOOST:1)*((S&&S.landBad>0)?0.93:1);}
+function runSpd(){return boardSpd()*levelSpd()*diffM().spd*((S&&S.boostT>0)?COMBO_BOOST:1)*((S&&S.landBad>0)?0.93:1);}
 var LV=LEVELS[0];
 var cv=document.getElementById('c'),cx=cv.getContext('2d'),W=640,scale=1,OY=0,worldH=VH;
 var LS='terrainPark.pb', pb=+(localStorage.getItem(LS)||0);
@@ -181,8 +203,8 @@ function score(){return Math.floor(S.dist/12)+S.grindPts+S.lipPts+S.flipPts+S.st
 function starsFor(sc,len){if(!isFinite(len))return sc>8000?3:sc>4000?2:sc>1500?1:0;var r=sc/(len/12+200);
  return r>1.35?3:r>0.95?2:r>0.55?1:0;}
 function reset(sd,lv){if(lv)LV=lv;seed(sd==null?(LV.endless?(Date.now()>>>0):2000+LV.n):sd);
- var gy0=GROUND+terr(0),m0=levelSpd()*diffM().spd;
- S={feats:[],parts:[],pops:[],flakes:[],pickups:[],pickT:1.8,stars:0,starPts:0,grindPts:0,lipPts:0,flipPts:0,comboPts:0,combo:0,boostT:0,grindT:0,grindOn:null,lipHit:{},flash:0,land:0,landBad:0,hop:0,climbVy:0,mode:'ready',t:0,dist:0,spd:LV.base*m0,p:{x:110,y:gy0,vy:0,on:true},nextX:780,shake:0,done:false,flip:0,holding:false,lastTap:0,playAt:0,trickProg:0,trickDone:false,trickFlips:0,trickRamps:0,trickCombos:0,introT:2.6,airFrom:null,grindExit:false,heartFlashT:0,heartGainT:0,heartAt:0,lostHeart:-1,autoRetry:false};
+ var gy0=GROUND+terr(0),m0=boardSpd()*levelSpd()*diffM().spd;
+ S={feats:[],parts:[],pops:[],flakes:[],pickups:[],pickT:1.8,achToast:'',achT:0,stars:0,starPts:0,grindPts:0,lipPts:0,flipPts:0,comboPts:0,combo:0,boostT:0,grindT:0,grindOn:null,lipHit:{},flash:0,land:0,landBad:0,hop:0,climbVy:0,mode:'ready',t:0,dist:0,spd:LV.base*m0,p:{x:110,y:gy0,vy:0,on:true},nextX:780,shake:0,done:false,flip:0,holding:false,lastTap:0,playAt:0,trickProg:0,trickDone:false,trickFlips:0,trickRamps:0,trickCombos:0,introT:2.6,airFrom:null,grindExit:false,heartFlashT:0,heartGainT:0,heartAt:0,lostHeart:-1,autoRetry:false};
  for(var i=0;i<120;i++)S.flakes.push({x:Math.random()*1000,y:Math.random()*VH,r:1.2+Math.random()*2.4,z:Math.random(),vx:(Math.random()-.5)*16});
 
  if(LV.pool.indexOf('rock')>=0){var rk=mkFeat('rock',0);rk.wx=Math.round(S.dist+920-S.p.x);S.feats.push(rk);}
@@ -254,7 +276,7 @@ function wrapText(str,x,y,maxW,lineH){var words=String(str).split(/\s+/),line=''
   else line=test;}
  if(line){cx.fillText(line,x,yy);yy+=lineH;}return yy;}
 function puff(x,y,n,c,v){var R=Math.random;for(var i=0;i<n;i++)S.parts.push({x:x,y:y,vx:(R()-.5)*2*v,vy:-R()*v,l:0.35+R()*0.3,c:c,s:2+R()*2});}
-function step(dt){S.land=Math.max(0,S.land-dt*6);S.flash=Math.max(0,S.flash-dt);S.landBad=Math.max(0,S.landBad-dt);S.boostT=Math.max(0,S.boostT-dt);S.heartFlashT=Math.max(0,S.heartFlashT-dt);S.heartGainT=Math.max(0,S.heartGainT-dt);
+function step(dt){S.land=Math.max(0,S.land-dt*6);S.flash=Math.max(0,S.flash-dt);S.achT=Math.max(0,S.achT-dt);S.landBad=Math.max(0,S.landBad-dt);S.boostT=Math.max(0,S.boostT-dt);S.heartFlashT=Math.max(0,S.heartFlashT-dt);S.heartGainT=Math.max(0,S.heartGainT-dt);
  for(var q=S.parts.length-1;q>=0;q--){var P=S.parts[q];P.x+=P.vx*dt;P.y+=P.vy*dt;P.vy+=600*dt;P.l-=dt;if(P.l<=0)S.parts.splice(q,1);}
  if(S.parts.length>120)S.parts.splice(0,S.parts.length-120);
  S.t+=dt;var m=runSpd();S.spd=Math.min(LV.max*m,(LV.base+LV.ramp*S.t)*m);
@@ -346,6 +368,7 @@ function finish(){if(S.mode!=='play'&&S.mode!=='ready')return;S.mode='clear';S.d
  if(trickGoal()&&!S.trickDone)S.pops.push({x:S.p.x,y:S.p.y-60,l:1.0,txt:'CLEAR'});
  var sc=score();if(LV.n<=STORY&&PR.done.indexOf(LV.n)<0)PR.done.push(LV.n);
  if(!(PR.best[LV.n]>=sc))PR.best[LV.n]=sc;if(sc>pb){pb=sc;try{localStorage.setItem(LS,pb)}catch(e){}}
+ var cn=clearedN();for(var bi=0;bi<BOARDS.length;bi++){var bb=BOARDS[bi];if(bb.need&&bb.need===cn){S.achToast=bb.name+' '+boardTag(bb);S.achT=2.4;}}
  saveP();overAt=performance.now();
  [660,880,1100].forEach(function(f,i){setTimeout(function(){beep(f,0.12,'square',0.12)},i*110)});}
 // ---- audio ----
@@ -495,7 +518,7 @@ function draw(){
  if(S.mode==='over'){cx.translate(0,4);cx.rotate(1.2);}
  var sq=S.land*0.22;cx.scale(1+sq,1-sq);
  cx.lineWidth=2;cx.strokeStyle='#14213d';
- cx.fillStyle='#e85a2a';cx.beginPath();cx.roundRect?cx.roundRect(-20,-5,40,6,3):cx.rect(-20,-5,40,6);cx.fill();cx.stroke();cx.fillStyle='#ffe8d0';cx.fillRect(-12,-4,24,2);
+ var BB=board();cx.fillStyle=BB.c;cx.beginPath();cx.roundRect?cx.roundRect(-20,-5,40,6,3):cx.rect(-20,-5,40,6);cx.fill();cx.stroke();cx.fillStyle=BB.s;cx.fillRect(-12,-4,24,2);
  cx.fillStyle='#0d4a48';cx.fillRect(-8,-17,7,12);cx.fillRect(1,-17,7,12);
  cx.fillStyle='#2a9a88';cx.fillRect(-9,-30,18,14);cx.strokeRect(-9,-30,18,14);
  var armY=S.grindOn?-18:-22,armX=S.grindOn?20:16;
@@ -516,8 +539,9 @@ function draw(){
   cx.fillStyle=lost?(pulse?'#fff':'#ff2d55'):(got&&gain?'#fff':(filled?'#ff5a7a':'#ffffff55'));
   cx.fillText(filled||lost?'♥':'♡',hx0+hi*18,28+hy+((lost&&pulse)||(got&&gain)?-3:0));}
  if(S.heartGainT>0){cx.fillStyle=gain?'#ffd84a':'#ff5a7a';cx.font='bold 12px sans-serif';cx.fillText('+♥',hx0+LIVES_MAX*18+4,28+hy);}
- cx.font='13px sans-serif';cx.fillStyle='#fff';var ls=levelSpd();
- wrapText((LV.endless?'Endless':'L'+LV.n+' '+LV.name)+' · Best '+(PR.best[LV.n]||0)+' · ★'+S.stars+(ls>1?' · GD'+Math.round(ls*100)+'%':'')+(S.grindOn?' · GRIND':''),12,46+hy,Math.min(W-24,420),14);
+ cx.font='13px sans-serif';cx.fillStyle='#fff';var ls=levelSpd(),bp=boardPct();
+ wrapText((LV.endless?'Endless':'L'+LV.n+' '+LV.name)+' · Best '+(PR.best[LV.n]||0)+' · ★'+S.stars+' · ✈'+bp+'%'+(ls>1.04?' · LV'+Math.round(ls*100)+'%':'')+(S.grindOn?' · GRIND':''),12,46+hy,Math.min(W-24,420),14);
+ if(S.achT>0){cx.fillStyle='rgba(26,10,48,'+(Math.min(1,S.achT)*0.88)+')';cx.fillRect(W/2-130,58+hy,260,28);cx.fillStyle='#ffb84a';cx.font='bold 13px sans-serif';cx.textAlign='center';cx.fillText(S.achToast||'Board unlocked!',W/2,78+hy);cx.textAlign='left';}
  if(isFinite(LV.len)){cx.fillStyle='#0005';cx.fillRect(12,64+hy,160,6);cx.fillStyle='#3ecf9a';cx.fillRect(12,64+hy,160*Math.min(1,S.dist/levelLen()),6);}
  if(S.combo>0||S.boostT>0){cx.fillStyle='#0007';cx.fillRect(12,74+hy,120,8);cx.fillStyle=S.boostT>0?'#ffb84a':'#7fe0d0';cx.fillRect(12,74+hy,120*(S.boostT>0?Math.min(1,S.boostT/COMBO_T):S.combo/COMBO_NEED),8);}
  var tg=trickGoal();
@@ -579,7 +603,7 @@ function press(){ensureAC();
  else if(S.mode==='clear'&&performance.now()-overAt>400){if(LV.n<STORY)API.startLevel(LV.n+1,{keepLives:true});else openMenu();}
  syncUI();}
 function legendHTML(){return '<div class="lg-inner"><h1>TERRAIN PARK</h1><div class="hi">HIGH SCORE · '+pb+' · ★ '+(PR.stars||0)+' · '+livesStr()+' '+LIVES_MAX+' lives</div>'+
- '<h2>Goal · stars</h2><div class="row"><canvas class="lg-ico" data-ico="star" width="56" height="40"></canvas><div><span class="tag g">★ 15/30/50</span><p>Bigger ★ = more pts. Grind · lip/ramp (+pts on feature) · flips · combos. FINISH=CLEAR. Trick Goal bonus.</p></div></div>'+
+ '<h2>Goal · stars</h2><div class="row"><canvas class="lg-ico" data-ico="star" width="56" height="40"></canvas><div><span class="tag g">★ 15/30/50</span><p>Bigger ★ = more pts. Grind · lip/ramp · flips · combos. FINISH=CLEAR. Trick Goal bonus.</p></div></div>'+'<h2>Board Locker</h2><div class="row txt"><span class="tag">✈ SPD</span><p>☰ NOW → GOAL → NEXT. Clear lines unlock boards — board SPD is the speed ladder.</p></div>'+
  '<h2>Ramps</h2><div class="row"><canvas class="lg-ico" data-ico="ramp" width="56" height="40"></canvas><div><span class="tag c">RAMP</span><p>White snow wedge takeoffs — pop into air toward tables, gaps, and long rails.</p></div></div>'+
  '<h2>Rails</h2><div class="row"><canvas class="lg-ico" data-ico="rail" width="56" height="40"></canvas><div><span class="tag">RAIL</span><p>Long metal grind line — ride it, hold to spin on-rail, jump off into a flip.</p></div></div>'+
  '<h2>Hazards</h2><div class="row"><canvas class="lg-ico" data-ico="rock" width="56" height="40"></canvas><div><span class="tag r">ROCK</span><p>Snow-capped boulder — jump or dodge. Never grindable.</p></div></div>'+
@@ -591,7 +615,7 @@ function legendHTML(){return '<div class="lg-inner"><h1>TERRAIN PARK</h1><div cl
  '<h2>Tricks</h2><div class="row txt"><span class="tag g">COMBO</span><p>Hold on a rail to spin · jump off into flips · tabletop air tricks. Chains score RAIL→FLIP / TABLE TRICK.</p></div>'+
  '<h2>Lives · hearts</h2><div class="row txt"><span class="tag r">'+livesStr()+' ×'+LIVES_MAX+'</span><p>Wipeout −1♥ · retry. Restore only L'+HEART_MIN_LV+'+ at ≤1 life. 0→L1 resets gate.</p></div>'+
  '<h2>Controls</h2><div class="ctrl"><div class="chip"><b>TAP</b>Jump / PLAY</div><div class="chip"><b>HOLD</b>Flip in air or on-rail</div><div class="chip"><b>DOUBLE-TAP</b>Small air pop</div></div>'+
- '<button type="button" id="legendPlay">PLAY</button><p class="foot">Offline · this device · v0.3.5 · scroll for full legend</p></div>';}
+ '<button type="button" id="legendPlay">PLAY</button><p class="foot">Offline · this device · v0.3.6 · scroll for full legend</p></div>';}
 function paintLegendIcons(){var dpr=Math.min(2,window.devicePixelRatio||1);
  legendEl.querySelectorAll('canvas.lg-ico').forEach(function(cv){var k=cv.dataset.ico,w=+cv.getAttribute('width')||56,h=+cv.getAttribute('height')||40;
   cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);cv.style.width=w+'px';cv.style.height=h+'px';
@@ -610,26 +634,29 @@ function paintLegendIcons(){var dpr=Math.min(2,window.devicePixelRatio||1);
 function openLegend(){S.prevMode=S.mode==='legend'?'ready':S.mode;if(S.mode==='play')S.mode='pause';S.mode='legend';legendEl.innerHTML=legendHTML();legendEl.style.display='flex';menu.style.display='none';paintLegendIcons();syncUI();announce('Legend');}
 function dismissLegend(){legendSeen=true;try{localStorage.setItem('terrainPark.legend','1')}catch(e){}legendEl.style.display='none';S.mode=(S.prevMode&&S.prevMode!=='legend')?S.prevMode:'ready';if(S.mode==='play')S.mode='ready';syncUI();announce('Ready');}
 function openMenu(){if(S.mode==='play')S.mode='pause';S.prevMode=S.mode;S.mode='menu';legendEl.style.display='none';
- var h='<button id="close" aria-label="Close menu">✕</button><h1>TERRAIN PARK</h1><div>v0.3.5 · purple dusk · '+livesStr()+' · <button id="showLeg" style="display:inline;border:0;background:0;color:#ffb84a;font:bold 14px sans-serif;text-decoration:underline;padding:0;cursor:pointer">Legend</button></div>';
- h+='<div class="leg"><b>LEGEND</b> — park features & scoring<div class="row">';
- [['Ramp','white wedge'],['Box','short grind'],['Rail','long metal'],['Rock','boulder haz'],['Fence','safety haz'],['Grom','slow kid'],['Rainbow','arched jib'],['Table','ramp→deck→land'],['Gap','miss=fall'],['Hip','corner land'],['QP','wallride']].forEach(function(c){h+='<span class="chip"><b>'+c[0]+'</b> '+c[1]+'</span>';});
- h+='</div><div style="margin-top:8px"><b>Score:</b> grind · lip/ramp (+pts markers) · flips · chains · ★15/30/50.<br><b>Hearts:</b> L'+HEART_MIN_LV+'+ only, and only at ≤1 life · sky ♥ or +'+HEART_SCORE+' score. Wipeout retries; 0→L1.<br><b>Controls:</b> tap JUMP · hold flip · double-tap pop.</div></div>';
+ var h='<button id="close" aria-label="Close menu">✕</button><h1>TERRAIN PARK</h1><div>v0.3.6 · '+livesStr()+' · ✈'+boardPct()+'% · <button id="showLeg" style="display:inline;border:0;background:0;color:#ffb84a;font:bold 14px sans-serif;text-decoration:underline;padding:0;cursor:pointer">Legend</button></div>';
+ h+=boardPanelHTML();
+ h+='<div class="leg"><b>TIP</b> Board SPD is the speed ladder. Open <b>Legend</b> for features · hearts · controls.</div>';
  h+='<h2>DIFFICULTY</h2><div class="boards">';
  ['easy','normal','hard'].forEach(function(id){var D=DIFFS[id];h+='<button class="bd'+(PR.diff===id?' sel':'')+'" data-d="'+id+'"><span class="t">'+D.name+'<small>speed ×'+D.spd+' · gaps ×'+D.gap+' · lip ×'+D.lip+'</small></span></button>';});
  h+='</div><h2>PARK LINES</h2><div class="grid">';
  LEVELS.concat([ENDLESS]).forEach(function(L){var u=unlocked(L.n),d=PR.done.indexOf(L.n)>=0,st=starsFor(PR.best[L.n]||0,L.len),ss='';for(var i=0;i<3;i++)ss+=i<st?'★':'☆';
   h+='<button class="lv'+(d?' done':'')+'" data-l="'+L.n+'"'+(u?'':' disabled')+'><b class="n">'+(u?(d?'✓':(L.endless?'∞':L.n)):'🔒')+'</b><span class="t">'+(L.endless?'Endless':L.n+'. '+L.name)+'<small>'+(u?(L.trick?'Goal: '+L.trick.lab+' · ':'')+L.sub+(PR.best[L.n]?' · Best '+PR.best[L.n]+' '+ss:''):(L.endless?'Clear 1–'+STORY:'Clear L'+(L.n-1)))+'</small></span></button>';});
- h+='</div><p style="opacity:.75;font-size:12px;margin:14px 0 8px">Offline · ★ lifetime '+ (PR.stars||0) +' · PB '+pb+' · terrain-park-v0-3-5</p>';
+ h+='</div><h2>EQUIP BOARD</h2><div class="boards">';
+ BOARDS.forEach(function(b){var o=boardOpen(b),tag=boardTag(b);
+  if(o)h+='<button class="bd'+(board().id===b.id?' sel':'')+'" data-b="'+b.id+'"><span class="sw" style="background:linear-gradient('+b.c+' 0 55%,'+b.s+' 55% 75%,'+b.c+' 75%)"></span><span class="t">'+b.name+' · '+tag+(board().id===b.id?' ★':'')+'</span></button>';
+  else h+='<button class="bd" disabled aria-label="'+b.name+' locked"><span class="sw" style="background:#333"></span><span class="t">🔒 '+b.name+' · '+tag+'<small>'+b.how+'</small></span></button>';});
+ h+='</div><p style="opacity:.75;font-size:12px;margin:14px 0 8px">Offline · ★ '+ (PR.stars||0) +' · PB '+pb+' · v0.3.6</p>';
  h+='<button id="resetP" style="min-height:48px;padding:10px 16px;border-radius:10px;border:2px solid #fff5;background:#5a1d1d;color:#fff;font:bold 14px sans-serif">Reset progress</button>';
  menu.innerHTML=h;menu.style.display='block';syncUI();}
 function closeMenu(){menu.style.display='none';syncUI();}
 function resetProgress(force){if(!force&&!confirm('Reset unlocks, stars, and best scores? Mute + difficulty stay.'))return false;
- var keepDiff=PR.diff||'normal';PR={done:[],best:{},stars:0,diff:keepDiff};saveP();pb=0;try{localStorage.removeItem(LS)}catch(e){}openMenu();return true;}
+ var keepDiff=PR.diff||'normal';PR={done:[],best:{},stars:0,diff:keepDiff,board:'grom'};saveP();pb=0;try{localStorage.removeItem(LS)}catch(e){}openMenu();return true;}
 menu.addEventListener('click',function(e){var b=e.target.closest('button');if(!b||b.disabled)return;if(b.id==='close'){document.getElementById('menuB').onclick.call(document.getElementById('menuB'));return;}
  if(b.id==='showLeg'){closeMenu();openLegend();return;}
  if(b.id==='resetP'){resetProgress();return;}
  if(b.dataset.d){PR.diff=b.dataset.d;saveP();openMenu();announce('Difficulty '+diffM().name);return;}
- if(b.dataset.l){closeMenu();API.startLevel(+b.dataset.l);}});
+ if(b.dataset.l){closeMenu();API.startLevel(+b.dataset.l);}else if(b.dataset.b){PR.board=b.dataset.b;saveP();openMenu();}});
 legendEl.addEventListener('click',function(e){var b=e.target.closest('button');if(b&&b.id==='legendPlay'){e.preventDefault();dismissLegend();}});
 document.getElementById('menuB').onclick=function(){if(S.mode==='legend'){dismissLegend();this.blur();return;}if(S.mode==='menu'){closeMenu();S.mode=S.prevMode||'ready';if(S.mode==='play')S.mode='pause';syncUI();}else openMenu();this.blur();};
 function togglePause(){if(S.mode==='play'){S.mode='pause';pausedByHide=false;scrapeStop();announce('Paused');}else if(S.mode==='pause'){S.mode='play';pausedByHide=false;announce('Resumed');}syncUI();}
@@ -655,13 +682,13 @@ document.getElementById('mute').onclick=function(){toggleMute();this.blur();};
 document.getElementById('mute').textContent=muted?'Muted':'Sound';
 document.addEventListener('visibilitychange',function(){if(document.hidden){if(S.mode==='play'){S.mode='pause';pausedByHide=true;syncUI();}}else if(pausedByHide&&S.mode==='pause')syncUI();});
 var API=window.TerrainPark={
- version:'0.3.5',
+ version:'0.3.6',
  start:function(){if(S.mode==='menu'){closeMenu();reset(null,LV);}if(S.mode==='ready'||S.mode==='over'||S.mode==='clear'){if(S.mode!=='ready')reset(null,LV);S.mode='play';S.playAt=performance.now();}syncUI();},
  startLevel:function(n,opts){var L=n===STORY+1?ENDLESS:LEVELS[n-1];if(!L||(!unlocked(n)&&!TEST))return false;closeMenu();if(legendEl)legendEl.style.display='none';
   if(!(opts&&opts.keepLives)){lives=LIVES_MAX;S.gameOver=false;}reset(null,L);S.mode='ready';pausedByHide=false;syncUI();announce(L.name+' · '+livesStr());return true;},
  openMenu:function(){openMenu();},openLegend:function(){openLegend();},
  getLevels:function(){return LEVELS.concat([ENDLESS]).map(function(L){return {n:L.n,name:L.name,unlocked:unlocked(L.n),completed:PR.done.indexOf(L.n)>=0,best:PR.best[L.n]||0,endless:!!L.endless};});},
- getProgress:function(){return JSON.parse(JSON.stringify({completed:PR.done,best:PR.best,stars:PR.stars,difficulty:PR.diff,endlessUnlocked:endlessOpen(),lives:lives,livesMax:LIVES_MAX}));},
+ getProgress:function(){return JSON.parse(JSON.stringify({completed:PR.done,best:PR.best,stars:PR.stars,board:board().id,difficulty:PR.diff,endlessUnlocked:endlessOpen(),lives:lives,livesMax:LIVES_MAX}));},getBoards:function(){return BOARDS.map(function(b){return {id:b.id,name:b.name,spd:b.spd,unlocked:boardOpen(b),selected:board().id===b.id,need:b.need,how:b.how};});},selectBoard:function(id){var b=BOARDS.filter(function(x){return x.id===id})[0];if(!b||!boardOpen(b))return false;PR.board=id;saveP();return true;},
  setDifficulty:function(id){if(!DIFFS[id])return false;PR.diff=id;saveP();return true;},
  pause:function(){if(S.mode==='play'){S.mode='pause';pausedByHide=false;syncUI();}},
  resume:function(){if(S.mode==='pause'){S.mode='play';pausedByHide=false;syncUI();}},
@@ -671,14 +698,14 @@ var API=window.TerrainPark={
  getScore:function(){return score();},
  getPersonalBest:function(){return pb;},
  exportScoreSummary:function(){return {game:'terrain-park',version:API.version,score:score(),grindPts:S.grindPts,lipPts:S.lipPts,flipPts:S.flipPts,stars:S.stars,distance:Math.floor(S.dist/12),durationSec:+S.t.toFixed(2),personalBest:pb,level:LV.n,levelName:LV.name,difficulty:PR.diff,lives:lives,arcadeOnly:true,timestamp:new Date().toISOString()};},
- _t:{step:step,jump:jump,holdSet:holdSet,state:function(){return S},consts:{GRAVITY:GRAVITY,LIP_WIN:LIP_WIN,GRIND_FRIC:GRIND_FRIC,POST_LIP:POST_LIP,SPD_BASE:SPD_BASE,SPD_PER_2LV:SPD_PER_2LV,SPD_CAP:SPD_CAP,LEN_MUL:LEN_MUL,STAR_PICK:STAR_PICK,HEART_MIN_LV:HEART_MIN_LV,LEVELS:LEVELS,FEAT:FEAT,DIFFS:DIFFS,LIVES_MAX:LIVES_MAX},reset:reset,gY:gY,featH:featH,grindAt:grindAt,inGap:inGap,setGod:function(g){GOD=!!g},getLives:function(){return lives},setLives:function(n){lives=Math.max(0,Math.min(LIVES_MAX,n|0));},heartsOk:heartsOk,levelLen:levelLen,finish:finish,fall:fall}
+ _t:{step:step,jump:jump,holdSet:holdSet,state:function(){return S},consts:{GRAVITY:GRAVITY,LIP_WIN:LIP_WIN,GRIND_FRIC:GRIND_FRIC,POST_LIP:POST_LIP,SPD_BASE:SPD_BASE,SPD_PER_2LV:SPD_PER_2LV,SPD_CAP:SPD_CAP,LEN_MUL:LEN_MUL,STAR_PICK:STAR_PICK,HEART_MIN_LV:HEART_MIN_LV,LEVELS:LEVELS,FEAT:FEAT,DIFFS:DIFFS,BOARDS:BOARDS,LIVES_MAX:LIVES_MAX},reset:reset,gY:gY,featH:featH,grindAt:grindAt,inGap:inGap,setGod:function(g){GOD=!!g},getLives:function(){return lives},setLives:function(n){lives=Math.max(0,Math.min(LIVES_MAX,n|0));},heartsOk:heartsOk,levelLen:levelLen,finish:finish,fall:fall}
 };
 if(TEST){Object.defineProperty(API,'_test',{value:API._t,enumerable:false});}delete API._t;Object.freeze(API);
 addEventListener('resize',resize);resize();
-reset(null,LEVELS[0]);S.mode='ready';requestAnimationFrame(function(ts){last=ts;frame(ts);});if(!legendSeen)openLegend();else syncUI();announce('Terrain Park ready.');
+reset(null,LEVELS[0]);S.mode='ready';requestAnimationFrame(function(ts){last=ts;frame(ts);});if(!legendSeen)openLegend();else syncUI();announce('Terrain Park v0.3.6 — board locker');
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
- navigator.serviceWorker.register('sw.js?v=0-3-5',{scope:'./'}).then(function(reg){if(reg.update)reg.update();}).catch(function(){});
- if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){if(k.indexOf('terrain-park-')===0&&k!=='terrain-park-v0-3-5')caches.delete(k);});});
+ navigator.serviceWorker.register('sw.js?v=0-3-6',{scope:'./'}).then(function(reg){if(reg.update)reg.update();}).catch(function(){});
+ if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){if(k.indexOf('terrain-park-')===0&&k!=='terrain-park-v0-3-6')caches.delete(k);});});
 }
 addEventListener('orientationchange',function(){setTimeout(resize,50);});
 })();
