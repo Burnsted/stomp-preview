@@ -1,56 +1,25 @@
-# STOMP Artwork Status — shared Franz + Woz
+# STOMP Look 2 f-hana — ARTWORK STATUS (ART PASS 2026-11-04)
 
-**Updated:** 2026-11-03 ~4:05 PM ET (America/New_York)  
-**Repo:** [Burnsted/stomp-preview](https://github.com/Burnsted/stomp-preview)  
-**Integration PR (do not merge / do not modify as plate dump):** draft [#21](https://github.com/Burnsted/stomp-preview/pull/21)  
-**Art draft branch:** `cursor/franz-look2-modular-artwork` (opening via Cursor cloud)  
-**Editable masters (Drive):** [STOMP — Editable layered masters (Franz)](https://drive.google.com/drive/folders/1swuEBtojhgvtRnalvgMcwm9VCWm6i5fH)  
-**Local brief pack:** `docs/character-production-t1173u/franz-artwork/`
+Status: **PARTIAL** · **REGISTERED_VISUAL_PROTOTYPE_ONLY** — NOT Android-accepted. Awaiting Woz integration + Android proof (PR #21/#23 not merged by art). Woz integrates registered prototype plates on draft [#27](https://github.com/Burnsted/stomp-preview/pull/27). This PR (#23) stays docs + art-pass status only — **no** runtime WebPs under `gb-phone/public/stomper/`. Youth OFF.
 
-## Boundaries (Ted)
-No redesign · no unapproved merges · no deploy/publish · no payments · Grom preview only / youth OFF.
+## Drive (registered masters + proof)
 
-## Character matrix
+- Zip ART_PASS: https://drive.google.com/file/d/1tOR6LXbrij589gCDOQqsAkyOJBFVSqCh/view
+- Proof A/B/C: https://drive.google.com/file/d/1LgBlWWApzeNRPU6iK2rg4h2Yl00gQWFe/view
+- Status md (Drive): https://drive.google.com/file/d/1Rtm4DnjGN0vy6v1c01x6CMZHAq_610Fg/view
+- Editable masters folder: https://drive.google.com/drive/folders/1swuEBtojhgvtRnalvgMcwm9VCWm6i5fH
+- Local proof (reference only): `docs/character-production-t1173u/franz-artwork/proofs/A_B_C_ART_PASS_2026-11-04.png`
 
-| Look | Starter | Visual ref | Editable master | Transparent layers | Runtime WebPs | Woz integrate | Test | Open issues |
-|---|---|---|---|---|---|---|---|---|
-| 2 (FIRST) | `f-hana` | `look2-f-hana-APPROVED.png` sha `b92ba262…80da` | [Drive folder](https://drive.google.com/drive/folders/1swuEBtojhgvtRnalvgMcwm9VCWm6i5fH) + local `refs/` | **NOT STARTED** (Canva FAIL — subject/bg only) | **ABSENT** — no fake plates | Blocked on plates | Android Batch E BLOCKED | Need character artist / real layered PSD·Krita |
-| 1 | `m-samir` | approved | — | — | — | — | — | After Look 2 |
-| 3 | `f-priya` | approved | — | — | — | — | — | After Look 2 |
-| 4 | `m-devon` | approved | — | — | — | — | — | After Look 2 |
-| 5 | `f-nova` | approved | — | — | — | — | — | After Look 2 |
-| 6 | `m-leo` | approved | — | — | — | — | — | After Look 2 |
-| Grom1 | `g-milo` | approved | — | — | — | — | preview only | Youth OFF |
-| Grom2 | `g-aria` | approved | — | — | — | — | preview only | Youth OFF |
+## Repaired 2026-11-04
+- body@1024: old navy jacket-silhouette underlayer with white construction lines replaced by a repainted fitted dark athletic base layer (slender torso, both arms tapering to wrists), soft shading, no lines. Clipped inside jacket_mint silhouette so it never peeks when jacket is on. Same 1024 canvas/origin; no shift.
+- Collar: neck/collar fill under head_locked — no transparent gap between head and body with jacket off.
+- Wrists: sleeves run under glove cuffs (overlap, no hole).
+- Waist: body overlaps ~40px under pants_mint top (no gap).
+- jacket_ink / pants_ink: fully desaturated to charcoal/black; mint halos removed (max green excess ≤1/255); partial-alpha edge pixels forced dark.
+- All 8 runtime WebPs re-exported from masters at common 0.5 scale (lossless), no recenter. .ora layers + mergedimage rebuilt; manifest sha256 updated.
+- Untouched geometry: head_locked, gloves, boots, jacket_mint, pants_mint (re-encoded only).
 
-## Look 2 required runtime paths (mint — all-or-nothing)
-
-```
-gb-phone/public/stomper/adult/jacket/jacket-look2-mint@512.webp
-gb-phone/public/stomper/adult/pants/pants-look2-mint@512.webp
-gb-phone/public/stomper/adult/body/body-athletic@512.webp
-gb-phone/public/stomper/adult/face/face-female@512.webp
-gb-phone/public/stomper/adult/hair/hair-straight@512.webp
-gb-phone/public/stomper/adult/headwear/helmet-basic@512.webp
-gb-phone/public/stomper/adult/goggles/goggles-basic@512.webp
-gb-phone/public/stomper/adult/gloves/gloves-basic@512.webp
-gb-phone/public/stomper/adult/boots/boots-basic@512.webp
-gb-phone/public/stomper/adult/board/board-basic@512.webp
-gb-phone/public/stomper/adult/starter/f-hana/preview@512.webp
-```
-
-## Look 2 second outfit (Woz LOCKED)
-
-```
-jacket-look2-ink → gb-phone/public/stomper/adult/jacket/jacket-look2-ink@512.webp
-pants-look2-ink  → gb-phone/public/stomper/adult/pants/pants-look2-ink@512.webp
-jacket-set: look2-ink
-```
-
-## Ownership
-- **Franz:** modular layered artwork (editable master + transparent plates + full preview). Visual compare to owner + ChatGPT before Woz claims pass.
-- **Woz:** catalog/wiring on #21, AvatarRenderer verify, Android Batch E, commit SHAs in this doc.
-- **Steve:** product bar on composites + renderer evidence before Look 2 PASS.
-
-## Latest consolidated note
-2026-11-03: Canva layer-sep = subject vs background only (FAIL). Artist pack ready with contracts + ink IDs. Scaffolding draft branch + Drive + this status. **No plates under public/stomper until real layered source exists.**
+## Still open
+- head_locked plate carries baked collar/braid fragments (small hard-edged notch right of chin, stray wisps, small dark slashes on chest) visible when jacket off — needs head-plate mask cleanup decision (face lock; not edited).
+- Body is a painted stylized underlayer, not real anatomy; 3/4 pose shoulder line is approximate.
+- Await Woz seam notes / Android device proof.
