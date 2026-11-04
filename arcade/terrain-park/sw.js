@@ -1,4 +1,4 @@
-/* terrain-park-v0-3-4 — network-first for navigations/HTML; cache fallback offline */
+/* terrain-park-v0-3-4 — network-first for navigations/HTML; cache fallback offline; redeploy nudge */
 const C='terrain-park-v0-3-4';
 const ASSETS=['./','./index.html','./sw.js'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));});
