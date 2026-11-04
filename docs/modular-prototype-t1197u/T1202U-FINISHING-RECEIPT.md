@@ -13,8 +13,9 @@
 **Crotch clip:** **CLEARED** (retained)  
 **Finishing paint:** sleeve/wrist · soft collar/jaw feather · waist body-over-pants clip — **staged; no owner visual PASS**
 
-**CI green tip:** _(pending pin)_  
-**CI:** _(pending)_
+**CI green tip:** `409e53db1cc34c414f718af00aa326b7c6b01b64`  
+**CI:** both pr-verify **SUCCESS** — [run 41856680066](https://github.com/Burnsted/stomp-preview/actions/runs/41856680066)  
+(`batch1 typecheck + test` + `gb-phone typecheck + woz tests + build`)
 
 **Protected:** #12–#26 / #21 tips · no merge · no Pages · no youth · no payments · no Home/five-tab/Crew Invite · no Android PASS claim · no owner visual PASS claim
 

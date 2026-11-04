@@ -91,6 +91,8 @@ Franz paint-from notes kept in matrix for any owner residual finds.
 
 | Field | Value |
 |---|---|
-| Tip SHA | _(pinned after green CI)_ |
+| CI green tip | `409e53db1cc34c414f718af00aa326b7c6b01b64` |
+| CI | both pr-verify **SUCCESS** — [run 41856680066](https://github.com/Burnsted/stomp-preview/actions/runs/41856680066) |
+| Jobs | `batch1 typecheck + test` · `gb-phone typecheck + woz tests + build` |
 | Receipt | `T1202U-FINISHING-RECEIPT.md` |
 | Status | **REGISTERED_VISUAL_PROTOTYPE_ONLY** — no Android / Pages / merge / owner visual PASS |
