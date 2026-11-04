@@ -1,20 +1,28 @@
 # Franz Look 2 artwork — handoff manifest
 
 **Branch:** `cursor/franz-look2-modular-artwork` (docs-only DRAFT · PR #23)  
-**Updated:** 2026-11-04  
+**Updated:** 2026-11-04 (crotch-clip)  
 **Art pass:** **PARTIAL** · **REGISTERED_VISUAL_PROTOTYPE_ONLY**  
-**Scope:** Briefs + contracts + art-pass status. **No** runtime WebPs under `gb-phone/public/stomper/` on this PR. Woz integrates plates on draft [#27](https://github.com/Burnsted/stomp-preview/pull/27). Youth OFF. Do not merge / deploy / wire catalog here.
+**Scope:** Briefs + contracts + art-pass status. **No** runtime WebPs under `gb-phone/public/stomper/` on this PR. Woz integrates / re-ingests plates on draft [#27](https://github.com/Burnsted/stomp-preview/pull/27). Youth OFF. Do not merge / deploy / wire catalog here.
 
-## Drive — ART PASS 2026-11-04
+## Drive — crotch-clip pass 2026-11-04 (current)
+
+| Asset | URL |
+|---|---|
+| Zip ART_PASS (crotch-clip) | https://drive.google.com/file/d/1p6dYRr-5QXr9baMAsR7pT8bDkzIMCtNU/view |
+| Proof A/B/C (crotch-clip) | https://drive.google.com/file/d/1sbS-QccSfyCqc9Phj_EFMLpXZ4JvhQwY/view |
+| Status md (Drive, crotch-clip) | https://drive.google.com/file/d/1gTgZr7_ExIrvpKenVTZ69eHmvymv8Kek/view |
+| Editable masters folder | https://drive.google.com/drive/folders/1swuEBtojhgvtRnalvgMcwm9VCWm6i5fH |
+
+Woz #27 owns plate ingest (including new `body@512.webp` sha `c69f7d87…`). This PR documents only.
+
+## Drive — prior ART PASS 2026-11-04
 
 | Asset | URL |
 |---|---|
 | Zip ART_PASS | https://drive.google.com/file/d/1tOR6LXbrij589gCDOQqsAkyOJBFVSqCh/view |
 | Proof A/B/C | https://drive.google.com/file/d/1LgBlWWApzeNRPU6iK2rg4h2Yl00gQWFe/view |
 | Status md (Drive) | https://drive.google.com/file/d/1Rtm4DnjGN0vy6v1c01x6CMZHAq_610Fg/view |
-| Editable masters folder | https://drive.google.com/drive/folders/1swuEBtojhgvtRnalvgMcwm9VCWm6i5fH |
-
-Registered prototype plates live in Franz Drive (not this repo). Residual: head-plate leftovers on jacket-off + await Woz seam notes.
 
 ## Local / repo brief paths
 
@@ -22,15 +30,17 @@ All under `docs/character-production-t1173u/franz-artwork/`:
 
 | File | Role |
 |---|---|
-| `ARTWORK-STATUS.md` | ART PASS 2026-11-04 PARTIAL status + Drive links |
+| `ARTWORK-STATUS.md` | ART PASS + crotch-clip status; `REGISTERED_VISUAL_PROTOTYPE_ONLY` |
 | `ARTIST-BRIEF.md` | Character artist deliverable brief (Look 2 mint) |
 | `SECOND-OUTFIT-INK-LOCKED.md` | Woz-locked ink jacket/pants itemIds |
 | `LIMITATION.md` | Franz tool limitation receipt (no fake plates) |
 | `CANVA-TRIAL-2026-11-03.md` | Canva layer-sep trial = FAIL (subject/bg only) |
 | `LOOK2-MINT-ACCEPTANCE.md` | Physical Android acceptance gate (t1177u) |
 | `PLATE-RENDERER-CONTRACT.md` | Runtime layering / all-or-nothing probe contract |
-| `proofs/A_B_C_ART_PASS_2026-11-04.png` | A/B/C visual proof (reference only — not a runtime plate) |
+| `proofs/A_B_C_ART_PASS_2026-11-04.png` | Prior A/B/C proof (reference only — not a runtime plate) |
 | `HANDOFF-MANIFEST.md` | This index |
+
+Crotch-clip A/B/C proof PNG not stored locally (no attached source; do not invent pixels) — use Drive proof above.
 
 ## Look 2 mint — expected runtime paths (ABSENT on #23; Woz #27 integrates)
 
@@ -59,6 +69,6 @@ jacket-set id: `look2-ink` (two itemIds, never merged).
 
 ## Intentionally ABSENT on this PR
 
-- **No** `gb-phone/public/stomper/**` runtime plate trees or assets (Woz #27 owns integration).
-- **No** invented / cropped / generated runtime WebPs here.
+- **No** `gb-phone/public/stomper/**` runtime plate trees or assets (Woz #27 owns integration / re-ingest).
+- **No** invented / cropped / generated runtime WebPs or proof PNGs without source.
 - **No** merge, deploy, youth enable, catalog wiring, or payments changes.
