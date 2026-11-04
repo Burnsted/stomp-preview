@@ -163,14 +163,17 @@ describe("t1179u Batch D — verify + harden", () => {
     expect(el.getAttribute("data-plate-complete")).toBe("true");
     expect(Number(el.getAttribute("data-required-plates"))).toBeGreaterThan(5);
 
-    // Non–Look-2 starter still incomplete / svg-fallback (no invented plates)
+    // Man 1 (t1205u) ships registered prototype plates — still not acceptance-eligible.
     const other = configFromStarter(starterById("m-samir")!, { stomperId: "d6b" });
     render(<AvatarRenderer config={other} testId="batch-d-other" />);
     expect(screen.getByTestId("batch-d-other").getAttribute("data-render-mode")).toBe(
-      "svg-fallback",
+      "plates",
     );
     expect(screen.getByTestId("batch-d-other").getAttribute("data-acceptance-eligible")).toBe(
       "false",
+    );
+    expect(screen.getByTestId("batch-d-other").getAttribute("data-prototype-only")).toBe(
+      "true",
     );
   });
 

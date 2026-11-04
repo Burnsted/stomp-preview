@@ -1,5 +1,7 @@
 /**
  * Avatar Locker + onboarding persistence — canonical AvatarConfig.
+ * t1205u: modular riders persist under per-starter keys so multi-rider
+ * selections never overwrite each other.
  */
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -13,6 +15,10 @@ import {
 } from "@/lib/stomp/avatar/locker";
 import { isValidStomperDisplayName } from "@/lib/stomp/avatar/identity";
 import { applyJacketSet } from "@/lib/stomp/avatar/jacket-sets";
+import {
+  isModularPrototypeStarter,
+  riderLockerStorageKey,
+} from "@/lib/stomp/avatar/modular-riders";
 import { ADULT_STARTERS, GROM_STARTERS, configFromStarter, starterById } from "@/lib/stomp/avatar/starters";
 import type { PoseId as Pose } from "@/lib/stomp/avatar/locker";
 import type {
@@ -24,6 +30,47 @@ import type {
   UnlockRecord,
 } from "@/lib/stomp/avatar/types";
 import { EMPTY_PERSONALIZE } from "@/lib/stomp/avatar/types";
+
+type RiderPersistedSlice = {
+  config: AvatarConfig;
+  unlocks: UnlockRecord[];
+};
+
+const memory = new Map<string, string>();
+
+function readRiderSlice(starterId: string): RiderPersistedSlice | null {
+  if (typeof window === "undefined") {
+    const raw = memory.get(riderLockerStorageKey(starterId));
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw) as RiderPersistedSlice;
+    } catch {
+      return null;
+    }
+  }
+  try {
+    const raw = localStorage.getItem(riderLockerStorageKey(starterId));
+    if (!raw) return null;
+    return JSON.parse(raw) as RiderPersistedSlice;
+  } catch {
+    return null;
+  }
+}
+
+function writeRiderSlice(starterId: string, slice: RiderPersistedSlice): void {
+  const raw = JSON.stringify(slice);
+  if (typeof window === "undefined") {
+    memory.set(riderLockerStorageKey(starterId), raw);
+    return;
+  }
+  localStorage.setItem(riderLockerStorageKey(starterId), raw);
+}
+
+function persistActiveRiderConfig(config: AvatarConfig | null, unlocks: UnlockRecord[]): void {
+  if (!config?.starterId) return;
+  if (!isModularPrototypeStarter(config.starterId)) return;
+  writeRiderSlice(config.starterId, { config, unlocks });
+}
 
 type Draft = {
   starterId: string | null;
@@ -38,6 +85,8 @@ type Draft = {
 type AvatarState = {
   config: AvatarConfig | null;
   unlocks: UnlockRecord[];
+  /** Per-modular-rider configs — never share one overwrite slot across riders. */
+  riderConfigs: Record<string, AvatarConfig>;
   draft: Draft;
   activePose: Pose;
   reducedMotion: boolean;
@@ -50,6 +99,8 @@ type AvatarState = {
   tapAnimate: () => Pose;
   startOnboarding: (ageBand?: "adult" | "grom") => void;
   selectStarter: (starterId: string) => void;
+  /** Switch active modular rider without clobbering another rider's saved look. */
+  activateModularRider: (starterId: string) => void;
   setStylePath: (style: StylePath) => void;
   patchLayer: (slot: AvatarSlot, itemId: string, color?: string) => void;
   setDisplayName: (name: string) => void;
@@ -89,7 +140,6 @@ function emptyDraft(): Draft {
   };
 }
 
-const memory = new Map<string, string>();
 const storage = createJSONStorage(() =>
   typeof window === "undefined"
     ? {
@@ -111,6 +161,7 @@ export const useAvatar = create<AvatarState>()(
     (set, get) => ({
       config: null,
       unlocks: starterUnlocks(),
+      riderConfigs: {},
       draft: emptyDraft(),
       activePose: "idle",
       reducedMotion: false,
@@ -142,10 +193,16 @@ export const useAvatar = create<AvatarState>()(
         const s = starterById(starterId);
         if (!s) return;
         if (s.ageBand === "grom" && !isAvatarFlagOn("gromFlowEnabled")) return;
-        const cfg = configFromStarter(s, {
-          stomperId: "draft",
-          stylePath: s.styleHint,
-        });
+        // Prefer previously saved per-rider layers when switching modular starters.
+        const saved = isModularPrototypeStarter(starterId)
+          ? get().riderConfigs[starterId] ?? readRiderSlice(starterId)?.config
+          : undefined;
+        const cfg =
+          saved ??
+          configFromStarter(s, {
+            stomperId: "draft",
+            stylePath: s.styleHint,
+          });
         set((st) => ({
           draft: {
             ...st.draft,
@@ -158,6 +215,38 @@ export const useAvatar = create<AvatarState>()(
             step: 2,
           },
         }));
+      },
+      activateModularRider: (starterId) => {
+        if (!isModularPrototypeStarter(starterId)) return;
+        const s = starterById(starterId);
+        if (!s) return;
+        const st = get();
+        // Flush current modular rider before switching.
+        if (st.config && isModularPrototypeStarter(st.config.starterId)) {
+          persistActiveRiderConfig(st.config, st.unlocks);
+        }
+        const fromMap = st.riderConfigs[starterId];
+        const fromKey = readRiderSlice(starterId)?.config;
+        const next =
+          fromMap ??
+          fromKey ??
+          configFromStarter(s, {
+            stomperId: st.config?.stomperId ?? `rider-${starterId}`,
+            displayName: st.config?.displayName ?? "",
+          });
+        const riderConfigs = {
+          ...st.riderConfigs,
+          ...(st.config && isModularPrototypeStarter(st.config.starterId)
+            ? { [st.config.starterId]: st.config }
+            : {}),
+          [starterId]: next,
+        };
+        set({
+          config: next,
+          riderConfigs,
+          onboardComplete: true,
+        });
+        persistActiveRiderConfig(next, st.unlocks);
       },
       setStylePath: (stylePath) =>
         set((st) => ({
@@ -183,11 +272,19 @@ export const useAvatar = create<AvatarState>()(
                   ...layers,
                   [slot]: { itemId, color: color ?? layers[slot]?.color },
                 };
+          const config = st.config
+            ? { ...st.config, layers: next, updatedAtIso: new Date().toISOString() }
+            : st.config;
+          if (config && isModularPrototypeStarter(config.starterId)) {
+            persistActiveRiderConfig(config, st.unlocks);
+          }
           return {
             draft: { ...st.draft, layers: next },
-            config: st.config
-              ? { ...st.config, layers: next, updatedAtIso: new Date().toISOString() }
-              : st.config,
+            config,
+            riderConfigs:
+              config && isModularPrototypeStarter(config.starterId)
+                ? { ...st.riderConfigs, [config.starterId]: config }
+                : st.riderConfigs,
           };
         });
       },
@@ -216,7 +313,7 @@ export const useAvatar = create<AvatarState>()(
         })),
       goStep: (step) => set((st) => ({ draft: { ...st.draft, step } })),
       commitOnboarding: (stomperId) => {
-        const { draft } = get();
+        const { draft, unlocks, riderConfigs } = get();
         if (!draft.starterId || !draft.layers) return null;
         if (!isValidStomperDisplayName(draft.displayName)) return null;
         const s = starterById(draft.starterId);
@@ -238,21 +335,33 @@ export const useAvatar = create<AvatarState>()(
           createdAtIso: now,
           updatedAtIso: now,
         };
+        const nextRiderConfigs = isModularPrototypeStarter(config.starterId)
+          ? { ...riderConfigs, [config.starterId]: config }
+          : riderConfigs;
         set({
           config,
+          riderConfigs: nextRiderConfigs,
           onboardComplete: true,
           draft: { ...draft, step: "done" },
           idToken: newIdToken(),
           idRevoked: false,
           activePose: "idle",
         });
+        persistActiveRiderConfig(config, unlocks);
         return config;
       },
       updateConfig: (patch) =>
         set((st) => {
           if (!st.config) return st;
+          const config = { ...st.config, ...patch, updatedAtIso: new Date().toISOString() };
+          if (isModularPrototypeStarter(config.starterId)) {
+            persistActiveRiderConfig(config, st.unlocks);
+          }
           return {
-            config: { ...st.config, ...patch, updatedAtIso: new Date().toISOString() },
+            config,
+            riderConfigs: isModularPrototypeStarter(config.starterId)
+              ? { ...st.riderConfigs, [config.starterId]: config }
+              : st.riderConfigs,
           };
         }),
       unlockItem: (itemId, source = "activity") =>
@@ -272,24 +381,38 @@ export const useAvatar = create<AvatarState>()(
             if (pantsId && !isUnlocked(pantsId, unlocks) && !isSafetyItem(pantsId)) {
               unlocks = unlockForActivity(unlocks, pantsId, "activity");
             }
+            const config = {
+              ...st.config,
+              layers: nextLayers,
+              updatedAtIso: new Date().toISOString(),
+            };
+            if (isModularPrototypeStarter(config.starterId)) {
+              persistActiveRiderConfig(config, unlocks);
+            }
             return {
               unlocks,
-              config: {
-                ...st.config,
-                layers: nextLayers,
-                updatedAtIso: new Date().toISOString(),
-              },
+              config,
+              riderConfigs: isModularPrototypeStarter(config.starterId)
+                ? { ...st.riderConfigs, [config.starterId]: config }
+                : st.riderConfigs,
             };
           }
-          return {
-            config: {
-              ...st.config,
-              layers: {
-                ...st.config.layers,
-                [slot]: { itemId, color: color ?? st.config.layers[slot]?.color },
-              },
-              updatedAtIso: new Date().toISOString(),
+          const config = {
+            ...st.config,
+            layers: {
+              ...st.config.layers,
+              [slot]: { itemId, color: color ?? st.config.layers[slot]?.color },
             },
+            updatedAtIso: new Date().toISOString(),
+          };
+          if (isModularPrototypeStarter(config.starterId)) {
+            persistActiveRiderConfig(config, st.unlocks);
+          }
+          return {
+            config,
+            riderConfigs: isModularPrototypeStarter(config.starterId)
+              ? { ...st.riderConfigs, [config.starterId]: config }
+              : st.riderConfigs,
           };
         });
       },
@@ -303,6 +426,7 @@ export const useAvatar = create<AvatarState>()(
         set({
           config: null,
           unlocks: starterUnlocks(),
+          riderConfigs: {},
           draft: emptyDraft(),
           activePose: "idle",
           onboardComplete: false,
@@ -323,6 +447,7 @@ export const useAvatar = create<AvatarState>()(
       partialize: (s) => ({
         config: s.config,
         unlocks: s.unlocks,
+        riderConfigs: s.riderConfigs,
         onboardComplete: s.onboardComplete,
         idToken: s.idToken,
         idRevoked: s.idRevoked,

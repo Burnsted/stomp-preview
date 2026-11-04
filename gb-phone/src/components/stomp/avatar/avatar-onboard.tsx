@@ -141,9 +141,14 @@ function StarterCard({
           config: configFromStarter(s, { stomperId: "gate", displayName: lookLabel }),
         })
       : null;
+  // Modular registered prototypes never claim acceptanceEligible.
   const acceptanceEligible = look2Gate
     ? look2Gate.acceptanceEligible
-    : plateSlot?.androidAcceptanceGate === true && plateSlot.status === "ingest-ready";
+    : false;
+  const prototypeOnly =
+    look2Gate?.prototypeOnly === true ||
+    plateSlot?.prototypeOnly === true ||
+    plateSlot?.status === "prototype-ingest-ready";
   return (
     <button
       type="button"
@@ -152,7 +157,7 @@ function StarterCard({
       data-missing-plates={String(missingCount)}
       data-plate-slot-status={plateSlot?.status ?? "missing-plates"}
       data-android-acceptance-gate={plateSlot?.androidAcceptanceGate ? "true" : "false"}
-      data-prototype-only={look2Gate?.prototypeOnly ? "true" : "false"}
+      data-prototype-only={prototypeOnly ? "true" : "false"}
       data-look-of-m={lookLabel}
       onClick={onPick}
       className="flex flex-col items-center rounded-2xl bg-snow/10 p-2 ring-1 ring-line"

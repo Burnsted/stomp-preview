@@ -119,7 +119,7 @@ describe("t1189u/t1197u — Look 2 modular prototype plates PRESENT", () => {
     expect(bad.failReasons).toContain("wrong-jacket-id");
   });
 
-  it("AvatarRenderer composites A/B/C prototype; other looks stay missing-plates", () => {
+  it("AvatarRenderer composites A/B/C prototype; Look2 ingest-ready; Man1 prototype-ingest-ready", () => {
     for (const variant of ["A", "B", "C"] as const) {
       const cfg = look2PrototypeConfig(variant, { displayName: `Proto${variant}` });
       render(<AvatarRenderer config={cfg} testId={`t1189-${variant}`} />);
@@ -141,7 +141,10 @@ describe("t1189u/t1197u — Look 2 modular prototype plates PRESENT", () => {
     }
 
     const matrix = eightLookPlateMatrix();
-    expect(matrix.find((s) => s.starterId === "m-samir")!.status).toBe("missing-plates");
+    // t1205u: Man 1 registered prototype plates shipped — not production ingest-ready.
+    expect(matrix.find((s) => s.starterId === "m-samir")!.status).toBe(
+      "prototype-ingest-ready",
+    );
     expect(matrix.find((s) => s.starterId === LOOK2_STARTER_ID)!.status).toBe(
       "ingest-ready",
     );

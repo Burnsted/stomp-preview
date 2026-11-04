@@ -19,6 +19,11 @@ import {
   type PlateProbeStatus,
 } from "@/lib/stomp/avatar/plate-assembly";
 import { LOOK2_STARTER_ID } from "@/lib/stomp/avatar/look2-acceptance";
+import {
+  isModularPrototypeStarter,
+  modularIsPrototypeOutfit,
+  modularRiderByStarterId,
+} from "@/lib/stomp/avatar/modular-riders";
 import { evaluateLook2MintGate } from "@/lib/stomp/avatar/plate-registry";
 import { starterById } from "@/lib/stomp/avatar/starters";
 import { useAvatar } from "@/lib/stomp/avatar/store";
@@ -178,7 +183,7 @@ export function AvatarRenderer({
   const usePlates = assembly.renderMode === "plates" && assembly.complete;
   const backpackOff = backpackLayer.itemId === BACKPACK_OFF_ITEM_ID;
   // Look 2 Android eligibility is gate-owned (prototype 8-of-11 stays fail-closed).
-  // Non-Look2 keeps assembly.acceptanceEligible (complete plate set only).
+  // Other modular prototypes (Man 1 / Woman 3 / Man 2) also stay fail-closed.
   const look2Gate =
     config.starterId === LOOK2_STARTER_ID
       ? evaluateLook2MintGate({
@@ -186,9 +191,17 @@ export function AvatarRenderer({
           plateProbe: (url) => probeMap[url] ?? "pending",
         })
       : null;
+  const modularRider = modularRiderByStarterId(config.starterId);
+  const modularPrototype =
+    isModularPrototypeStarter(config.starterId) &&
+    modularIsPrototypeOutfit(configWithBackpack);
   const acceptanceEligible = look2Gate
     ? look2Gate.acceptanceEligible
-    : assembly.acceptanceEligible;
+    : modularPrototype
+      ? false
+      : assembly.acceptanceEligible;
+  const prototypeOnly =
+    look2Gate?.prototypeOnly === true || modularPrototype || modularRider != null;
 
   useEffect(() => {
     if (!flash || reducedMotion) return;
@@ -228,7 +241,10 @@ export function AvatarRenderer({
     "data-present-plates": String(assembly.presentUrls.length),
     "data-required-plates": String(assembly.required.length),
     "data-acceptance-eligible": acceptanceEligible ? "true" : "false",
-    "data-prototype-only": look2Gate?.prototypeOnly ? "true" : "false",
+    "data-prototype-only": prototypeOnly ? "true" : "false",
+    "data-slot-label": modularRider?.slotLabel ?? "",
+    "data-owner-visual-review": modularRider?.ownerVisualReview ?? "",
+    "data-status": modularRider?.status ?? "",
     "data-backpack": backpackOff ? "off" : backpackLayer.itemId,
     "data-board": config.layers.board.itemId,
     "data-goggles": config.layers.goggles.itemId,

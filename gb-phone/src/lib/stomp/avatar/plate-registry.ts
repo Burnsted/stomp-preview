@@ -27,6 +27,11 @@ import {
   shippedPlatePathExists,
 } from "@/lib/stomp/avatar/look2-plate-manifest";
 import {
+  isModularPrototypeStarter,
+  modularPrototypePlateUrls,
+  modularRiderByStarterId,
+} from "@/lib/stomp/avatar/modular-riders";
+import {
   evaluatePlateAssembly,
   type PlateProbeStatus,
 } from "@/lib/stomp/avatar/plate-assembly";
@@ -52,7 +57,10 @@ export const LOOK2_MINT_REQUIRED_PATHS: readonly string[] = [
   "/stomper/adult/starter/f-hana/preview@512.webp",
 ] as const;
 
-export type PlateSlotStatus = "missing-plates" | "ingest-ready";
+export type PlateSlotStatus =
+  | "missing-plates"
+  | "ingest-ready"
+  | "prototype-ingest-ready";
 
 export type LookPlateSlot = {
   lookKey: RosterV24Entry["lookKey"];
@@ -67,6 +75,9 @@ export type LookPlateSlot = {
   requiredPaths: readonly string[];
   status: PlateSlotStatus;
   missingPaths: readonly string[];
+  /** Honest prototype flag — never Android PASS. */
+  prototypeOnly?: boolean;
+  ownerVisualReview?: string;
 };
 
 export type Look2MintGateResult = {
@@ -104,20 +115,27 @@ function defaultRequiredPathsForEntry(entry: RosterV24Entry): string[] {
 }
 
 /**
- * Eight-look plate slot matrix — Look 2 uses shipped mint set; Looks 1 & 3–8
- * stay missing-plates until real assets (fail-closed). Look 2 is the gate.
+ * Eight-look plate slot matrix — Look 2 mint production paths remain the
+ * Android gate. Man 1 / Woman 3 / Man 2 use prototype 8-of-11 paths when
+ * shipped (prototype-ingest-ready). Looks without plates stay missing-plates.
  */
 export function eightLookPlateMatrix(
   pathExists: (url: string) => boolean = shippedPlatePathExists,
 ): LookPlateSlot[] {
   return ROSTER_V24.map((entry) => {
+    const modular = modularRiderByStarterId(entry.starterId);
     const requiredPaths =
       entry.starterId === LOOK2_STARTER_ID
         ? LOOK2_MINT_REQUIRED_PATHS
-        : defaultRequiredPathsForEntry(entry);
+        : modular
+          ? modularPrototypePlateUrls(entry.starterId)
+          : defaultRequiredPathsForEntry(entry);
     const missingPaths = requiredPaths.filter((p) => !pathExists(p));
-    const status: PlateSlotStatus =
+    let status: PlateSlotStatus =
       missingPaths.length === 0 ? "ingest-ready" : "missing-plates";
+    if (modular && entry.starterId !== LOOK2_STARTER_ID && missingPaths.length === 0) {
+      status = "prototype-ingest-ready";
+    }
     return {
       lookKey: entry.lookKey,
       starterId: entry.starterId,
@@ -129,6 +147,8 @@ export function eightLookPlateMatrix(
       requiredPaths,
       status,
       missingPaths,
+      prototypeOnly: modular ? true : undefined,
+      ownerVisualReview: modular?.ownerVisualReview,
     };
   });
 }

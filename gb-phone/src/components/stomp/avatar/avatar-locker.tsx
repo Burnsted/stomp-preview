@@ -14,6 +14,10 @@ import {
 } from "@/lib/stomp/avatar/locker";
 import { LOOK2_STARTER_ID } from "@/lib/stomp/avatar/look2-acceptance";
 import {
+  isModularPrototypeStarter,
+  modularRiderByStarterId,
+} from "@/lib/stomp/avatar/modular-riders";
+import {
   evaluateLook2MintGate,
   lookPlateSlotByStarterId,
 } from "@/lib/stomp/avatar/plate-registry";
@@ -66,23 +70,38 @@ export function AvatarLocker() {
   // Fail-closed: no invented plates. When GB drops WebPs under public/stomper,
   // AvatarRenderer Image probe flips; gate strip stays honest until then.
   const plateSlot = lookPlateSlotByStarterId(config.starterId);
+  const modularRider = modularRiderByStarterId(config.starterId);
   const look2Gate =
     config.starterId === LOOK2_STARTER_ID
       ? evaluateLook2MintGate({ config })
       : null;
+  const acceptanceEligible = look2Gate?.acceptanceEligible === true;
+  const gateCopy = look2Gate?.acceptanceEligible
+    ? "Woman 2 plates ready — Android acceptance eligible"
+    : look2Gate?.prototypeOnly
+      ? "Woman 2 registered visual prototype (8 of 11) — not Android-accepted"
+      : modularRider
+        ? `${modularRider.slotLabel} registered visual prototype (8 of 11) — REGISTERED_VISUAL_PROTOTYPE_ONLY; Android NOT RUN`
+        : plateSlot?.androidAcceptanceGate
+          ? `Woman 2 mint plates missing (${look2Gate?.dataMissingPlates ?? 0}) — not acceptance-eligible`
+          : "Modular plates pending for this look";
 
   return (
     <div
       className="pb-28"
       data-testid="avatar-locker"
-      data-acceptance-eligible={
-        look2Gate ? (look2Gate.acceptanceEligible ? "true" : "false") : "false"
-      }
+      data-acceptance-eligible={acceptanceEligible ? "true" : "false"}
       data-missing-plates={String(
         look2Gate?.dataMissingPlates ?? plateSlot?.missingPaths.length ?? 0,
       )}
       data-plate-slot-status={plateSlot?.status ?? "missing-plates"}
       data-android-acceptance-gate={plateSlot?.androidAcceptanceGate ? "true" : "false"}
+      data-slot-label={modularRider?.slotLabel ?? ""}
+      data-prototype-only={
+        look2Gate?.prototypeOnly || isModularPrototypeStarter(config.starterId)
+          ? "true"
+          : "false"
+      }
     >
       <AlpineTopBar title="Locker" showBack onBack={() => setScreen("greet")} right={<ThemeToggle />} />
       <div className="flex flex-col items-center px-5 pt-2">
@@ -94,21 +113,13 @@ export function AvatarLocker() {
         <p
           className="mt-1 text-xs text-muted"
           data-testid="locker-plate-gate"
-          data-acceptance-eligible={
-            look2Gate ? (look2Gate.acceptanceEligible ? "true" : "false") : "false"
-          }
+          data-acceptance-eligible={acceptanceEligible ? "true" : "false"}
           data-missing-plates={String(
             look2Gate?.dataMissingPlates ?? plateSlot?.missingPaths.length ?? 0,
           )}
           data-plate-slot-status={plateSlot?.status ?? "missing-plates"}
         >
-          {look2Gate?.acceptanceEligible
-            ? "Look 2 plates ready — Android acceptance eligible"
-            : look2Gate?.prototypeOnly
-              ? "Look 2 registered visual prototype (8 of 11) — not Android-accepted"
-              : plateSlot?.androidAcceptanceGate
-                ? `Look 2 mint plates missing (${look2Gate?.dataMissingPlates ?? 0}) — not acceptance-eligible`
-                : "Modular plates pending for this look"}
+          {gateCopy}
         </p>
 
         <div className="mt-4 grid w-full grid-cols-2 gap-2">

@@ -4,6 +4,7 @@
  * Do not invent separated face/hair/goggles/board or claim Android PASS.
  */
 import manifestJson from "@/lib/stomp/avatar/look2-plate-manifest.json";
+import modularManifestJson from "@/lib/stomp/avatar/modular-plate-manifest.json";
 
 export type Look2PlateManifestEntry = {
   path: string;
@@ -104,9 +105,16 @@ export const LOOK2_SHIPPED_PLATE_URLS: ReadonlySet<string> = new Set(
   LOOK2_PLATE_MANIFEST.plates.map((p) => p.url),
 );
 
-/** Sync existence for shipped Look 2 URLs (fail-closed for all other looks). */
+/** Man 1 / Woman 3 / Man 2 registered prototype URLs (t1205u). */
+const MODULAR_SHIPPED_PLATE_URLS: ReadonlySet<string> = new Set(
+  ((modularManifestJson as { plates?: { url: string }[] }).plates ?? []).map(
+    (p) => p.url,
+  ),
+);
+
+/** Sync existence for shipped Look 2 + multi-rider prototype URLs (fail-closed else). */
 export function shippedPlatePathExists(url: string): boolean {
-  return LOOK2_SHIPPED_PLATE_URLS.has(url);
+  return LOOK2_SHIPPED_PLATE_URLS.has(url) || MODULAR_SHIPPED_PLATE_URLS.has(url);
 }
 
 export function look2MintRequiredAllShipped(): boolean {
