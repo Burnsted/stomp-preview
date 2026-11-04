@@ -150,7 +150,7 @@ describe("t1182u — plate ingest + Look-2 mint gate", () => {
     expect(receipt.note).toMatch(/PRESENT/i);
   });
 
-  it("eight-look matrix: Look 2 ingest-ready; others missing-plates; only Look 2 is gate", () => {
+  it("eight-look matrix: Look 2 ingest-ready; Man1/Woman3/Man2 prototype; only Look 2 is gate", () => {
     const matrix = eightLookPlateMatrix();
     expect(matrix).toHaveLength(ROSTER_V24.length);
     expect(matrix).toHaveLength(8);
@@ -161,7 +161,19 @@ describe("t1182u — plate ingest + Look-2 mint gate", () => {
     expect(look2.requiredPaths).toEqual([...LOOK2_MINT_REQUIRED_PATHS]);
     const others = matrix.filter((s) => s.starterId !== LOOK2_STARTER_ID);
     expect(others.every((s) => s.androidAcceptanceGate === false)).toBe(true);
-    expect(others.every((s) => s.status === "missing-plates")).toBe(true);
+    expect(matrix.find((s) => s.starterId === "m-samir")!.status).toBe(
+      "prototype-ingest-ready",
+    );
+    expect(matrix.find((s) => s.starterId === "f-priya")!.status).toBe(
+      "prototype-ingest-ready",
+    );
+    expect(matrix.find((s) => s.starterId === "m-devon")!.status).toBe(
+      "prototype-ingest-ready",
+    );
+    const remaining = others.filter(
+      (s) => !["m-samir", "f-priya", "m-devon"].includes(s.starterId),
+    );
+    expect(remaining.every((s) => s.status === "missing-plates")).toBe(true);
     expect(others.filter((s) => s.previewOnly).map((s) => s.starterId).sort()).toEqual([
       "g-aria",
       "g-milo",
@@ -287,7 +299,8 @@ describe("t1182u — plate ingest + Look-2 mint gate", () => {
     const samir = screen.getByTestId("starter-m-samir");
     expect(samir.getAttribute("data-android-acceptance-gate")).toBe("false");
     expect(samir.getAttribute("data-acceptance-eligible")).toBe("false");
-    expect(samir.getAttribute("data-plate-slot-status")).toBe("missing-plates");
+    expect(samir.getAttribute("data-plate-slot-status")).toBe("prototype-ingest-ready");
+    expect(samir.getAttribute("data-prototype-only")).toBe("true");
   });
 
   it("Home / five-tab / gromFlow / identity locks stay green", () => {

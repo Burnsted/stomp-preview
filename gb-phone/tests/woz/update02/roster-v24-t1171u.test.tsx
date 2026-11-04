@@ -215,14 +215,17 @@ describe("t1171u — artwork plate URL + SVG fallback", () => {
     expect(hit.mode).toBe("plate");
   });
 
-  it("AvatarRenderer uses svg-fallback and reports backpack off without plates", () => {
+  it("AvatarRenderer uses plates for Man 1 prototype; backpack OFF; not acceptance-eligible", () => {
     const cfg = configFromStarter(starterById("m-samir")!, {
       stomperId: "a",
       displayName: "LookPreview",
     });
     render(<AvatarRenderer config={cfg} testId="roster-render" />);
     const el = screen.getByTestId("roster-render");
-    expect(el.getAttribute("data-render-mode")).toBe("svg-fallback");
+    // t1205u: Man 1 registered prototype plates shipped.
+    expect(el.getAttribute("data-render-mode")).toBe("plates");
+    expect(el.getAttribute("data-acceptance-eligible")).toBe("false");
+    expect(el.getAttribute("data-prototype-only")).toBe("true");
     expect(el.getAttribute("data-backpack")).toBe("off");
     expect(el.getAttribute("data-starter")).toBe("m-samir");
   });

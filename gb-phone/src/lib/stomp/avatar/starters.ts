@@ -66,7 +66,7 @@ export const ADULT_STARTERS: StarterDef[] = [
   },
   {
     id: "f-priya",
-    label: "Priya",
+    label: "Woman 3",
     presenting: "female",
     ageBand: "adult",
     styleHint: "park-street",
@@ -74,14 +74,14 @@ export const ADULT_STARTERS: StarterDef[] = [
     hairStyle: "curls",
     hairColor: "#292524",
     skinTone: "#a0522d",
-    jacketFill: "#a855f7",
-    pantsFill: "#1e1b4b",
+    jacketFill: "#7e22ce",
+    pantsFill: "#6b21a8",
     boardFill: "#fbbf24",
     goggleTint: "#c084fc",
   },
   {
     id: "f-hana",
-    label: "Hana",
+    label: "Woman 2",
     presenting: "female",
     ageBand: "adult",
     styleHint: "mountain-freeride",
@@ -127,7 +127,7 @@ export const ADULT_STARTERS: StarterDef[] = [
   },
   {
     id: "m-devon",
-    label: "Devon",
+    label: "Man 2",
     presenting: "male",
     ageBand: "adult",
     styleHint: "park-street",
@@ -135,14 +135,14 @@ export const ADULT_STARTERS: StarterDef[] = [
     hairStyle: "locs",
     hairColor: "#292524",
     skinTone: "#5c3317",
-    jacketFill: "#84cc16",
-    pantsFill: "#14532d",
+    jacketFill: "#ea580c",
+    pantsFill: "#1f2937",
     boardFill: "#f97316",
-    goggleTint: "#a3e635",
+    goggleTint: "#0f172a",
   },
   {
     id: "m-samir",
-    label: "Samir",
+    label: "Man 1",
     presenting: "male",
     ageBand: "adult",
     styleHint: "mountain-freeride",
@@ -150,7 +150,7 @@ export const ADULT_STARTERS: StarterDef[] = [
     hairStyle: "short",
     hairColor: "#0c0a09",
     skinTone: "#c68642",
-    jacketFill: "#475569",
+    jacketFill: "#c4a574",
     pantsFill: "#0f172a",
     boardFill: "#e0f2fe",
     goggleTint: "#94a3b8",
@@ -287,11 +287,10 @@ export function starterById(id: string): StarterDef | undefined {
 
 export function layersFromStarter(s: StarterDef): AvatarLayers {
   const bodyId = `body-${s.silhouette}`;
-  // Look 2 (f-hana) t1197u registered prototype: 8 photo-aligned plates.
-  // Locked head composite covers hair/helmet/goggles — not separate production plates.
+  // Registered visual prototypes (t1197u Look 2; t1205u Man 1 / Woman 3 / Man 2):
+  // 8 photo-aligned plates, ONE shared transform per rider, locked head composite.
   // Board OFF (no invented board). Android 11-slot gate remains fail-closed.
-  const isLook2 = s.id === "f-hana";
-  if (isLook2) {
+  if (s.id === "f-hana") {
     return {
       body: { itemId: "body-athletic", color: s.skinTone },
       face: { itemId: "face-f-hana-locked-composite", color: s.skinTone },
@@ -303,6 +302,52 @@ export function layersFromStarter(s: StarterDef): AvatarLayers {
       headwear: { itemId: "headwear-locked-included", color: "#0f172a" },
       goggles: { itemId: "goggles-locked-included", color: s.goggleTint },
       boots: { itemId: "boots-look2-photo", color: "#334155" },
+      board: { itemId: "board-none", color: s.boardFill },
+    };
+  }
+  if (s.id === "m-samir") {
+    return {
+      body: { itemId: "body-look1-male", color: s.skinTone },
+      face: { itemId: "face-m-samir-locked-composite", color: s.skinTone },
+      hair: { itemId: "hair-locked-included", color: s.hairColor },
+      pants: { itemId: "pants-look1-black", color: s.pantsFill },
+      jacket: { itemId: "jacket-look1-tan", color: s.jacketFill },
+      backpack: { itemId: "backpack-none" },
+      gloves: { itemId: "gloves-look1-photo", color: "#1e293b" },
+      headwear: { itemId: "headwear-locked-included", color: "#0f172a" },
+      goggles: { itemId: "goggles-locked-included", color: s.goggleTint },
+      boots: { itemId: "boots-look1-photo", color: "#334155" },
+      board: { itemId: "board-none", color: s.boardFill },
+    };
+  }
+  if (s.id === "f-priya") {
+    return {
+      body: { itemId: "body-look3-solid", color: s.skinTone },
+      face: { itemId: "face-f-priya-locked-composite", color: s.skinTone },
+      hair: { itemId: "hair-locked-included", color: s.hairColor },
+      pants: { itemId: "pants-look3-purple", color: s.pantsFill },
+      jacket: { itemId: "jacket-look3-purple", color: s.jacketFill },
+      backpack: { itemId: "backpack-none" },
+      gloves: { itemId: "gloves-look3-photo", color: "#1e293b" },
+      headwear: { itemId: "headwear-locked-included", color: "#0f172a" },
+      goggles: { itemId: "goggles-locked-included", color: s.goggleTint },
+      boots: { itemId: "boots-look3-photo", color: "#334155" },
+      board: { itemId: "board-none", color: s.boardFill },
+    };
+  }
+  if (s.id === "m-devon") {
+    // Man 2 Look 4 — framework / prototype only; NOT owner-visually-approved.
+    return {
+      body: { itemId: "body-look4-lean", color: s.skinTone },
+      face: { itemId: "face-m-devon-locked-composite", color: s.skinTone },
+      hair: { itemId: "hair-locked-included", color: s.hairColor },
+      pants: { itemId: "pants-look4-charcoal", color: s.pantsFill },
+      jacket: { itemId: "jacket-look4-orange", color: s.jacketFill },
+      backpack: { itemId: "backpack-none" },
+      gloves: { itemId: "gloves-look4-photo", color: "#1e293b" },
+      headwear: { itemId: "headwear-locked-included", color: "#0f172a" },
+      goggles: { itemId: "goggles-locked-included", color: s.goggleTint },
+      boots: { itemId: "boots-look4-photo", color: "#334155" },
       board: { itemId: "board-none", color: s.boardFill },
     };
   }

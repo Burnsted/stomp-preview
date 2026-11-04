@@ -232,9 +232,10 @@ describe("t1175u — identity / Woz ban / consistency", () => {
     expect(rosterLookOrdinalLabel(look6)).not.toBe(starterById("m-leo")!.label);
   });
 
-  it("shares silhouette + backpack-off across surfaces; Look 2 plates / others SVG", () => {
+  it("shares silhouette + backpack-off across surfaces; modular prototypes plates / others SVG", () => {
     expect(CONSISTENCY_SURFACES).toEqual(["selector", "build-your-look", "locker"]);
     expect(consistencyLayerOrder()).toEqual(ARTWORK_LAYER_ORDER);
+    const modularPlates = new Set(["f-hana", "m-samir", "f-priya", "m-devon"]);
     for (const entry of ROSTER_V24) {
       const cfg = configFromStarter(starterById(entry.starterId)!, {
         stomperId: "x",
@@ -243,7 +244,7 @@ describe("t1175u — identity / Woz ban / consistency", () => {
       expect(cfg.layers.backpack.itemId).toBe(BACKPACK_OFF_ITEM_ID);
       render(<AvatarRenderer config={cfg} testId={`consist-${entry.starterId}`} />);
       const mode = screen.getByTestId(`consist-${entry.starterId}`).getAttribute("data-render-mode");
-      if (entry.starterId === "f-hana") {
+      if (modularPlates.has(entry.starterId)) {
         expect(mode).toBe("plates");
       } else {
         expect(mode).toBe("svg-fallback");

@@ -56,6 +56,42 @@ export const JACKET_SETS: readonly JacketSet[] = [
     label: "Look 2 ink charcoal shell + matching charcoal pants",
   },
   {
+    jacketId: "jacket-look1-tan",
+    pantsId: "pants-look1-black",
+    pantsColor: "#0f172a",
+    label: "Man 1 tan shell + black pants",
+  },
+  {
+    jacketId: "jacket-look1-orange",
+    pantsId: "pants-look1-charcoal",
+    pantsColor: "#1f2937",
+    label: "Man 1 orange/charcoal TEST",
+  },
+  {
+    jacketId: "jacket-look3-purple",
+    pantsId: "pants-look3-purple",
+    pantsColor: "#6b21a8",
+    label: "Woman 3 purple shell + purple pants",
+  },
+  {
+    jacketId: "jacket-look3-fuchsia",
+    pantsId: "pants-look3-charcoal",
+    pantsColor: "#1f2937",
+    label: "Woman 3 fuchsia/charcoal TEST",
+  },
+  {
+    jacketId: "jacket-look4-orange",
+    pantsId: "pants-look4-charcoal",
+    pantsColor: "#1f2937",
+    label: "Man 2 orange/charcoal prototype (not owner-reviewed)",
+  },
+  {
+    jacketId: "jacket-look4-white",
+    pantsId: "pants-look4-charcoal-silver",
+    pantsColor: "#374151",
+    label: "Man 2 white/charcoal fit TEST",
+  },
+  {
     jacketId: "jacket-look5-pink",
     pantsId: "pants-basic",
     pantsColor: "#1e293b",
