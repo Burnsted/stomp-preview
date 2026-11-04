@@ -6,6 +6,18 @@
 
 **Status:** `REGISTERED_VISUAL_PROTOTYPE_ONLY` for Man 1, Woman 2, Woman 3, Man 2 (Look 4).
 
+### CI pin (both jobs SUCCESS)
+
+| Field | Value |
+|---|---|
+| Tip SHA | `5701a1809997820386200e09bfb63d26f1e81928` |
+| CI run | [41874457949](https://github.com/Burnsted/stomp-preview/actions/runs/41874457949) |
+| `batch1 typecheck + test` | **SUCCESS** |
+| `gb-phone typecheck + woz tests + build` | **SUCCESS** |
+| Run conclusion | **success** |
+
+Still **DRAFT — NO MERGE**. CI green ≠ owner visual PASS ≠ Android PASS.
+
 | Claim | Value |
 |---|---|
 | Owner visual PASS | **NOT CLAIMED** (Man 2: NOT owner-reviewed) |

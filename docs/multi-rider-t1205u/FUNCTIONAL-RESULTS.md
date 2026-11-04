@@ -13,6 +13,16 @@
 | plate-ingest / plate-assembly / roster-v24 | PASS (updated for prototype-ingest-ready) |
 | Full `npm run test:woz` | **973 passed / 31 files** |
 
+### CI pin (tip `5701a1809997820386200e09bfb63d26f1e81928`)
+
+| Job | Result |
+|---|---|
+| `batch1 typecheck + test` | **SUCCESS** |
+| `gb-phone typecheck + woz tests + build` | **SUCCESS** |
+| Run | [41874457949](https://github.com/Burnsted/stomp-preview/actions/runs/41874457949) — conclusion **success** |
+
+CI green ≠ owner visual PASS ≠ Android PASS. **NO MERGE.**
+
 ## A/B/C AvatarRenderer (plates mode)
 
 | Rider | A | B | C | Notes |
