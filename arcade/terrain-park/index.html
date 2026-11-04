@@ -84,7 +84,7 @@ var DIFFS={easy:{id:'easy',name:'Easy',spd:0.86,gap:1.22,lip:1.28},normal:{id:'n
 var FEAT={
  box:{w:110,h:14,ride:1,grind:1,s:'S',lab:'Flat box'},
  rail:{w:96,h:22,ride:0,grind:1,s:'S',lab:'Down rail'},
- log:{w:88,h:20,ride:0,grind:0,decoy:1,s:'S',lab:'Log ≠ rail'},
+ log:{w:100,h:28,ride:0,grind:0,decoy:1,s:'S',lab:'Log ≠ rail'},
  rainbow:{w:130,h:36,ride:0,grind:1,arch:28,s:'M',lab:'Rainbow box'},
  kicker:{w:0,h:0,terr:1,ap:34,dk:10,ex:18,amp:34,s:'S',lab:'Ramp',kick:1},
  table:{w:0,h:0,terr:1,ap:48,dk:86,ex:46,amp:30,s:'M',lab:'Tabletop'},
@@ -345,20 +345,42 @@ function resize(){
  var maxSnow=GROUND+140;if(OY+maxSnow>worldH-8)OY=worldH-8-maxSnow;if(OY<0)OY=0;
 }
 function drawFeat(f){var sx=f.wx-S.dist+S.p.x,d=FEAT[f.k];
- if(d.grind){var x0=sx-f.w/2,x1=sx+f.w/2;
+ // grindables + decoy logs (logs had grind:0 so must not gate on d.grind alone)
+ if(d.grind||d.decoy){var x0=sx-f.w/2,x1=sx+f.w/2;
   if(f.k==='box'){ // beginner flat box + snow mounds
    var y=gY(sx)-f.h;cx.fillStyle='#e8f2ee';cx.fillRect(x0,y,f.w,6);cx.fillStyle='#6a9088';cx.fillRect(x0,y+6,f.w,f.h);cx.fillStyle='#2a4844';cx.fillRect(x0,y,3,f.h+6);cx.fillRect(x1-3,y,3,f.h+6);
    cx.fillStyle='#f2faf6';cx.beginPath();cx.moveTo(x0-18,gY(x0-18));cx.quadraticCurveTo(x0-4,y,x0+8,y+6);cx.lineTo(x0+8,gY(x0+8));cx.closePath();cx.fill();
    cx.beginPath();cx.moveTo(x1+18,gY(x1+18));cx.quadraticCurveTo(x1+4,y,x1-8,y+6);cx.lineTo(x1-8,gY(x1-8));cx.closePath();cx.fill();}
-  else if(f.k==='rail'){var y0=gY(x0)-f.h,y1=gY(x1)-f.h-(f.down||0);
-   cx.strokeStyle='#c45c2a';cx.lineWidth=5;cx.lineCap='round';cx.beginPath();cx.moveTo(x0,y0);cx.lineTo(x1,y1);cx.stroke();
-   cx.strokeStyle='#ffc49a';cx.lineWidth=2;cx.beginPath();cx.moveTo(x0,y0-1);cx.lineTo(x1,y1-1);cx.stroke();
-   cx.fillStyle='#555';cx.fillRect(x0+8,y0,3,gY(x0+8)-y0);cx.fillRect(x1-12,y1,3,gY(x1-12)-y1);}
-  else if(f.k==='log'){var y0=gY(x0)-f.h,y1=gY(x1)-f.h-(f.down||0);
-   cx.strokeStyle='#5a3820';cx.lineWidth=9;cx.lineCap='round';cx.beginPath();cx.moveTo(x0,y0);cx.lineTo(x1,y1);cx.stroke();
-   cx.strokeStyle='#3a2210';cx.lineWidth=2;for(var li=10;li<f.w-8;li+=12){var lx=x0+li,ly=y0+(y1-y0)*(li/f.w);cx.beginPath();cx.moveTo(lx,ly-3);cx.lineTo(lx+2,ly+3);cx.stroke();}
-   cx.fillStyle='#c4a06a';cx.beginPath();cx.ellipse(x0,y0,4,f.h/2-1,0,0,7);cx.fill();cx.beginPath();cx.ellipse(x1,y1,4,f.h/2-1,0,0,7);cx.fill();
-   cx.fillStyle='#ffb84a';cx.font='bold 10px sans-serif';cx.textAlign='center';cx.fillText('LOG',sx,Math.min(y0,y1)-10);}
+  else if(f.k==='rail'){ // thin steel pipe on posts + cold metal sheen (grindable)
+   var y0=gY(x0)-f.h,y1=gY(x1)-f.h-(f.down||0);
+   cx.fillStyle='#3a3a44';cx.fillRect(x0+6,y0,3.5,gY(x0+6)-y0);cx.fillRect(x1-10,y1,3.5,gY(x1-10)-y1);
+   cx.strokeStyle='#2a2a32';cx.lineWidth=7;cx.lineCap='round';cx.beginPath();cx.moveTo(x0,y0);cx.lineTo(x1,y1);cx.stroke();
+   cx.strokeStyle='#8a94a4';cx.lineWidth=4.2;cx.beginPath();cx.moveTo(x0,y0);cx.lineTo(x1,y1);cx.stroke();
+   cx.strokeStyle='#e8eef8';cx.lineWidth=1.5;cx.beginPath();cx.moveTo(x0,y0-2.2);cx.lineTo(x1,y1-2.2);cx.stroke();
+   cx.fillStyle='#c8d4e8';cx.font='bold 9px sans-serif';cx.textAlign='center';cx.fillText('RAIL',sx,Math.min(y0,y1)-9);}
+  else if(f.k==='log'){ // chunky bark timber + cut rings — rests on snow, no posts (decoy)
+   // collision top = gY-f.h; body hangs down from that top (align hitbox to art)
+   var top0=gY(x0)-f.h,top1=gY(x1)-f.h-(f.down||0),th=Math.max(12,f.h*0.46);
+   var y0=top0+th,y1=top1+th,ang=Math.atan2(y1-y0,x1-x0);
+   cx.fillStyle='#ebe6f2';cx.beginPath();cx.ellipse(sx,gY(sx)+3,f.w*0.4,7,0,0,7);cx.fill(); // snow under
+   // irregular bark silhouette (wavy top/bottom — not a pipe)
+   cx.beginPath();
+   for(var i=0;i<=12;i++){var t=i/12,x=x0+f.w*t,y=y0+(y1-y0)*t-th+Math.sin(t*13)*2.8+(i%4===0?2.2:0)-(i===3||i===9?1.8:0);if(i===0)cx.moveTo(x,y);else cx.lineTo(x,y);}
+   for(i=12;i>=0;i--){t=i/12;x=x0+f.w*t;y=y0+(y1-y0)*t+th+Math.sin(t*9+0.8)*2.2+(i%5===0?1.6:0);cx.lineTo(x,y);}
+   cx.closePath();cx.fillStyle='#4a2810';cx.fill();cx.strokeStyle='#1a0e06';cx.lineWidth=2.2;cx.stroke();
+   // bark ridges + knot + moss fleck
+   cx.strokeStyle='#2e1808';cx.lineWidth=1.8;for(var li=8;li<f.w-6;li+=9){var lx=x0+li,ly=y0+(y1-y0)*(li/f.w);cx.beginPath();cx.moveTo(lx-2,ly-th+5);cx.quadraticCurveTo(lx+5,ly+2,lx-1,ly+th-5);cx.stroke();}
+   cx.fillStyle='#3a1c08';cx.beginPath();cx.ellipse(sx-10,y0+(y1-y0)*0.4,4.5,3.2,0.4,0,7);cx.fill();
+   cx.fillStyle='#3a6a38';cx.beginPath();cx.ellipse(sx+14,y0+(y1-y0)*0.55-th*0.35,5,2.2,-0.3,0,7);cx.fill(); // moss
+   // broken branch stub (breaks pipe silhouette)
+   cx.strokeStyle='#3a1c08';cx.lineWidth=5;cx.lineCap='round';cx.beginPath();cx.moveTo(sx+6,y0+(y1-y0)*0.5-th+2);cx.lineTo(sx+14,y0+(y1-y0)*0.5-th-10);cx.stroke();
+   cx.fillStyle='#c4a06a';cx.beginPath();cx.arc(sx+14,y0+(y1-y0)*0.5-th-10,2.5,0,7);cx.fill();
+   // cut ends — unequal rings (timber, not capped pipe)
+   function cutEnd(ex,ey,rx,ry){cx.save();cx.translate(ex,ey);cx.rotate(ang);cx.fillStyle='#e0c49a';cx.beginPath();cx.ellipse(0,0,rx,ry,0,0,7);cx.fill();
+    cx.strokeStyle='#8a6230';cx.lineWidth=1.3;cx.beginPath();cx.ellipse(0,0,rx*0.68,ry*0.62,0,0,7);cx.stroke();cx.beginPath();cx.ellipse(0,0,rx*0.36,ry*0.32,0,0,7);cx.stroke();
+    cx.fillStyle='#4a2e14';cx.beginPath();cx.arc(0,0,2.4,0,7);cx.fill();cx.restore();}
+   cutEnd(x0,y0,th+2,th*0.95);cutEnd(x1,y1,th*0.85,th*0.78);
+   cx.fillStyle='#ffb84a';cx.font='bold 11px sans-serif';cx.textAlign='center';cx.fillText('LOG',sx,Math.min(top0,top1)-8);}
   else if(f.k==='rainbow'){ // kinked/rainbow box silhouette
    var arch=f.arch||28,steps=12;cx.beginPath();
    for(var i=0;i<=steps;i++){var t=i/steps,x=x0+f.w*t,y=gY(x)-f.h-Math.sin(t*Math.PI)*arch;if(i===0)cx.moveTo(x,y);else cx.lineTo(x,y);}
@@ -530,7 +552,7 @@ function legendHTML(){return '<div class="lg-inner"><h1>TERRAIN PARK</h1><div cl
  '<h2>Groms</h2><div class="row"><canvas class="lg-ico" data-ico="grom" width="56" height="40"></canvas><div><span class="tag">GROM</span><p>Slow kids in the line — dodge or time around (not wildlife).</p></div></div>'+
  '<h2>Tricks</h2><div class="row txt"><span class="tag g">GOAL</span><p>HUD shows Goal (grind time, hold-flip, ramp air, combo). Must initiate before clear/star. Progressive: early easy → late combo.</p></div>'+
  '<h2>Controls</h2><div class="ctrl"><div class="chip"><b>TAP</b>Jump / PLAY</div><div class="chip"><b>HOLD</b>Flip in air · land upright</div><div class="chip"><b>DOUBLE-TAP</b>Small air pop</div></div>'+
- '<button type="button" id="legendPlay">PLAY</button><p class="foot">Offline · this device · v0.3 · scroll for full legend</p></div>';}
+ '<button type="button" id="legendPlay">PLAY</button><p class="foot">Offline · this device · v0.3.1 · scroll for full legend</p></div>';}
 function paintLegendIcons(){var dpr=Math.min(2,window.devicePixelRatio||1);
  legendEl.querySelectorAll('canvas.lg-ico').forEach(function(cv){var k=cv.dataset.ico,w=+cv.getAttribute('width')||56,h=+cv.getAttribute('height')||40;
   cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);cv.style.width=w+'px';cv.style.height=h+'px';
@@ -538,8 +560,14 @@ function paintLegendIcons(){var dpr=Math.min(2,window.devicePixelRatio||1);
   c.fillStyle='#120820';c.fillRect(0,0,w,h);c.fillStyle='#f4f0f8';c.fillRect(0,h-7,w,7);var base=h-7;
   if(k==='star'){c.save();c.translate(w/2,h/2-4);c.fillStyle='#ffb84a';c.strokeStyle='#b8860b';c.lineWidth=1.5;c.beginPath();for(var j=0;j<10;j++){var rr=j%2?3.2:9,an=j*Math.PI/5-Math.PI/2;c.lineTo(Math.cos(an)*rr,Math.sin(an)*rr);}c.closePath();c.fill();c.stroke();c.restore();}
   else if(k==='ramp'){c.fillStyle='#e8a070';c.beginPath();c.moveTo(4,base);c.lineTo(28,base-22);c.lineTo(36,base-22);c.lineTo(48,base);c.fill();c.fillStyle='#2a1810';c.fillRect(26,base-28,5,8);c.fillStyle='#ffb84a';c.font='bold 8px sans-serif';c.fillText('RAMP',14,base-26);}
-  else if(k==='rail'){c.strokeStyle='#c45c2a';c.lineWidth=4;c.lineCap='round';c.beginPath();c.moveTo(6,base-14);c.lineTo(50,base-10);c.stroke();c.strokeStyle='#ffc49a';c.lineWidth=1.5;c.beginPath();c.moveTo(6,base-15);c.lineTo(50,base-11);c.stroke();c.fillStyle='#555';c.fillRect(12,base-14,2,14);c.fillRect(40,base-10,2,10);}
-  else if(k==='log'){c.strokeStyle='#5a3820';c.lineWidth=8;c.lineCap='round';c.beginPath();c.moveTo(6,base-12);c.lineTo(50,base-8);c.stroke();c.fillStyle='#c4a06a';c.beginPath();c.ellipse(8,base-12,3.5,5,0,0,7);c.fill();c.beginPath();c.ellipse(48,base-8,3.5,5,0,0,7);c.fill();c.fillStyle='#ffb84a';c.font='bold 8px sans-serif';c.fillText('LOG',20,base-18);}
+  else if(k==='rail'){c.fillStyle='#3a3a44';c.fillRect(12,base-14,2.5,14);c.fillRect(40,base-10,2.5,10);c.strokeStyle='#8a94a4';c.lineWidth=3.2;c.lineCap='round';c.beginPath();c.moveTo(6,base-14);c.lineTo(50,base-10);c.stroke();c.strokeStyle='#e8eef8';c.lineWidth=1.1;c.beginPath();c.moveTo(6,base-15.5);c.lineTo(50,base-11.5);c.stroke();c.fillStyle='#c8d4e8';c.font='bold 7px sans-serif';c.fillText('RAIL',18,base-18);}
+  else if(k==='log'){var ly=base-10;c.fillStyle='#4a2810';c.beginPath();
+   c.moveTo(8,ly-7);for(var li=0;li<=5;li++){var t=li/5;c.lineTo(8+38*t,ly-7+Math.sin(t*11)*1.8+(li===2?2:0));}for(li=5;li>=0;li--){t=li/5;c.lineTo(8+38*t,ly+7+Math.sin(t*8)*1.3);}c.closePath();c.fill();
+   c.strokeStyle='#1a0e06';c.lineWidth=1.2;c.stroke();c.strokeStyle='#2e1808';c.lineWidth=1;for(li=14;li<42;li+=7){c.beginPath();c.moveTo(li,ly-5);c.quadraticCurveTo(li+3,ly,li,ly+5);c.stroke();}
+   c.fillStyle='#3a6a38';c.beginPath();c.ellipse(30,ly-5,4,1.6,0,0,7);c.fill();c.strokeStyle='#3a1c08';c.lineWidth=3;c.beginPath();c.moveTo(28,ly-6);c.lineTo(33,ly-14);c.stroke();
+   c.fillStyle='#e0c49a';c.beginPath();c.ellipse(9,ly,5,7.5,0,0,7);c.fill();c.beginPath();c.ellipse(47,ly,4,6.5,0,0,7);c.fill();
+   c.strokeStyle='#8a6230';c.beginPath();c.ellipse(9,ly,3,4.5,0,0,7);c.stroke();c.beginPath();c.ellipse(47,ly,2.2,3.5,0,0,7);c.stroke();
+   c.fillStyle='#ffb84a';c.font='bold 8px sans-serif';c.fillText('LOG',18,ly-12);}
   else if(k==='box'){c.fillStyle='#e8f2ee';c.fillRect(8,base-16,40,5);c.fillStyle='#6a9088';c.fillRect(8,base-11,40,11);c.fillStyle='#2a4844';c.fillRect(8,base-16,3,16);c.fillRect(45,base-16,3,16);}
   else if(k==='table'){c.fillStyle='#5eb8a8';c.beginPath();c.moveTo(4,base);c.lineTo(16,base-16);c.lineTo(42,base-16);c.lineTo(52,base);c.fill();c.fillStyle='rgba(230,245,240,.85)';c.fillRect(16,base-16,26,5);c.fillStyle='#1a2e2c';c.fillRect(14,base-22,4,6);}
   else if(k==='gap'){c.fillStyle='#f4f0f8';c.fillRect(0,base-4,18,4);c.fillRect(38,base-4,18,4);c.fillStyle='rgba(20,40,38,.55)';c.fillRect(18,base-2,20,10);c.fillStyle='#ff6b4a';c.font='bold 9px sans-serif';c.fillText('GAP',22,base+8);}
@@ -548,7 +576,7 @@ function paintLegendIcons(){var dpr=Math.min(2,window.devicePixelRatio||1);
 function openLegend(){S.prevMode=S.mode==='legend'?'ready':S.mode;if(S.mode==='play')S.mode='pause';S.mode='legend';legendEl.innerHTML=legendHTML();legendEl.style.display='flex';menu.style.display='none';paintLegendIcons();syncUI();announce('Legend');}
 function dismissLegend(){legendSeen=true;try{localStorage.setItem('terrainPark.legend','1')}catch(e){}legendEl.style.display='none';S.mode=(S.prevMode&&S.prevMode!=='legend')?S.prevMode:'ready';if(S.mode==='play')S.mode='ready';syncUI();announce('Ready');}
 function openMenu(){if(S.mode==='play')S.mode='pause';S.prevMode=S.mode;S.mode='menu';legendEl.style.display='none';
- var h='<button id="close" aria-label="Close menu">✕</button><h1>TERRAIN PARK</h1><div>v0.3 · purple dusk · <button id="showLeg" style="display:inline;border:0;background:0;color:#ffb84a;font:bold 14px sans-serif;text-decoration:underline;padding:0;cursor:pointer">Legend</button></div>';
+ var h='<button id="close" aria-label="Close menu">✕</button><h1>TERRAIN PARK</h1><div>v0.3.1 · purple dusk · <button id="showLeg" style="display:inline;border:0;background:0;color:#ffb84a;font:bold 14px sans-serif;text-decoration:underline;padding:0;cursor:pointer">Legend</button></div>';
  h+='<div class="leg"><b>LEGEND</b> — park features & scoring<div class="row">';
  [['Ramp','takeoff kicker'],['Box','ride-on grind'],['Rail','metal grind'],['Log ≠ rail','bark trap'],['Grom','slow kid'],['Rainbow','arched jib'],['Table','ramp→deck→land'],['Gap','miss=fall'],['Hip','corner land'],['QP','wallride']].forEach(function(c){h+='<span class="chip"><b>'+c[0]+'</b> '+c[1]+'</span>';});
  h+='</div><div style="margin-top:8px"><b>Score:</b> grind · lip/ramp · flips · combos · ★.<br><b>Trick goals:</b> each line requires a trick before clear (HUD Goal).<br><b>Controls:</b> tap JUMP · hold air to flip · double-tap pop.</div></div>';
@@ -557,7 +585,7 @@ function openMenu(){if(S.mode==='play')S.mode='pause';S.prevMode=S.mode;S.mode='
  h+='</div><h2>PARK LINES</h2><div class="grid">';
  LEVELS.concat([ENDLESS]).forEach(function(L){var u=unlocked(L.n),d=PR.done.indexOf(L.n)>=0,st=starsFor(PR.best[L.n]||0,L.len),ss='';for(var i=0;i<3;i++)ss+=i<st?'★':'☆';
   h+='<button class="lv'+(d?' done':'')+'" data-l="'+L.n+'"'+(u?'':' disabled')+'><b class="n">'+(u?(d?'✓':(L.endless?'∞':L.n)):'🔒')+'</b><span class="t">'+(L.endless?'Endless':L.n+'. '+L.name)+'<small>'+(u?(L.trick?'Goal: '+L.trick.lab+' · ':'')+L.sub+(PR.best[L.n]?' · Best '+PR.best[L.n]+' '+ss:''):(L.endless?'Clear 1–9':'Clear L'+(L.n-1)))+'</small></span></button>';});
- h+='</div><p style="opacity:.75;font-size:12px;margin:14px 0 8px">Offline · ★ lifetime '+ (PR.stars||0) +' · PB '+pb+' · terrain-park-v0-3</p>';
+ h+='</div><p style="opacity:.75;font-size:12px;margin:14px 0 8px">Offline · ★ lifetime '+ (PR.stars||0) +' · PB '+pb+' · terrain-park-v0-3-1</p>';
  h+='<button id="resetP" style="min-height:48px;padding:10px 16px;border-radius:10px;border:2px solid #fff5;background:#5a1d1d;color:#fff;font:bold 14px sans-serif">Reset progress</button>';
  menu.innerHTML=h;menu.style.display='block';syncUI();}
 function closeMenu(){menu.style.display='none';syncUI();}
@@ -593,7 +621,7 @@ document.getElementById('mute').onclick=function(){toggleMute();this.blur();};
 document.getElementById('mute').textContent=muted?'Muted':'Sound';
 document.addEventListener('visibilitychange',function(){if(document.hidden){if(S.mode==='play'){S.mode='pause';pausedByHide=true;syncUI();}}else if(pausedByHide&&S.mode==='pause')syncUI();});
 var API=window.TerrainPark={
- version:'0.3',
+ version:'0.3.1',
  start:function(){if(S.mode==='menu'){closeMenu();reset(null,LV);}if(S.mode==='ready'||S.mode==='over'||S.mode==='clear'){if(S.mode!=='ready')reset(null,LV);S.mode='play';S.playAt=performance.now();}syncUI();},
  startLevel:function(n){var L=n===10?ENDLESS:LEVELS[n-1];if(!L||(!unlocked(n)&&!TEST))return false;closeMenu();if(legendEl)legendEl.style.display='none';reset(null,L);S.mode='ready';pausedByHide=false;syncUI();announce(L.name);return true;},
  openMenu:function(){openMenu();},openLegend:function(){openLegend();},
@@ -613,8 +641,8 @@ if(TEST){Object.defineProperty(API,'_test',{value:API._t,enumerable:false});}del
 addEventListener('resize',resize);resize();
 reset(null,LEVELS[0]);S.mode='ready';requestAnimationFrame(function(ts){last=ts;frame(ts);});if(!legendSeen)openLegend();else syncUI();announce('Terrain Park ready.');
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
- navigator.serviceWorker.register('sw.js?v=0-3',{scope:'./'}).then(function(reg){if(reg.update)reg.update();}).catch(function(){});
- if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){if(k.indexOf('terrain-park-')===0&&k!=='terrain-park-v0-3')caches.delete(k);});});
+ navigator.serviceWorker.register('sw.js?v=0-3-1',{scope:'./'}).then(function(reg){if(reg.update)reg.update();}).catch(function(){});
+ if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){if(k.indexOf('terrain-park-')===0&&k!=='terrain-park-v0-3-1')caches.delete(k);});});
 }
 addEventListener('orientationchange',function(){setTimeout(resize,50);});
 })();
