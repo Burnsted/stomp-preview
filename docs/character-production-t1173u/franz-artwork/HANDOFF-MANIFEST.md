@@ -1,20 +1,27 @@
 # Franz Look 2 artwork — handoff manifest
 
 **Branch:** `cursor/franz-look2-modular-artwork` (docs-only DRAFT · PR #23)  
-**Updated:** 2026-11-04 (crotch-clip)  
+**Updated:** 2026-11-04 (HEAD_CLEAN)  
 **Art pass:** **PARTIAL** · **REGISTERED_VISUAL_PROTOTYPE_ONLY**  
 **Scope:** Briefs + contracts + art-pass status. **No** runtime WebPs under `gb-phone/public/stomper/` on this PR. Woz integrates / re-ingests plates on draft [#27](https://github.com/Burnsted/stomp-preview/pull/27). Youth OFF. Do not merge / deploy / wire catalog here.
 
-## Drive — crotch-clip pass 2026-11-04 (current)
+## Drive — HEAD CLEAN + under-chin collar fill 2026-11-04 (current)
+
+| Asset | URL |
+|---|---|
+| Zip ART_PASS (HEAD_CLEAN) | https://drive.google.com/file/d/1PqLFxVx4o8q6oSQ1iWkU08AnGmR4nFhG/view |
+| Status md (Drive, HEAD_CLEAN) | https://drive.google.com/file/d/1ZalFs1cZG8nSDkd7cGgpoyCeRBHUs3dI/view |
+| Editable masters folder | https://drive.google.com/drive/folders/1swuEBtojhgvtRnalvgMcwm9VCWm6i5fH |
+
+Woz #27 owns plate ingest / re-ingest (`face@512` sha `1b962229…`, `body@512` sha `21a12aca…`). Crotch CLEARED on #27 tip `e0fb4b2`. This PR documents only.
+
+## Drive — crotch-clip pass 2026-11-04
 
 | Asset | URL |
 |---|---|
 | Zip ART_PASS (crotch-clip) | https://drive.google.com/file/d/1p6dYRr-5QXr9baMAsR7pT8bDkzIMCtNU/view |
 | Proof A/B/C (crotch-clip) | https://drive.google.com/file/d/1sbS-QccSfyCqc9Phj_EFMLpXZ4JvhQwY/view |
 | Status md (Drive, crotch-clip) | https://drive.google.com/file/d/1gTgZr7_ExIrvpKenVTZ69eHmvymv8Kek/view |
-| Editable masters folder | https://drive.google.com/drive/folders/1swuEBtojhgvtRnalvgMcwm9VCWm6i5fH |
-
-Woz #27 owns plate ingest (including new `body@512.webp` sha `c69f7d87…`). This PR documents only.
 
 ## Drive — prior ART PASS 2026-11-04
 
@@ -30,7 +37,7 @@ All under `docs/character-production-t1173u/franz-artwork/`:
 
 | File | Role |
 |---|---|
-| `ARTWORK-STATUS.md` | ART PASS + crotch-clip status; `REGISTERED_VISUAL_PROTOTYPE_ONLY` |
+| `ARTWORK-STATUS.md` | HEAD_CLEAN + crotch-clip + art-pass status; `REGISTERED_VISUAL_PROTOTYPE_ONLY` |
 | `ARTIST-BRIEF.md` | Character artist deliverable brief (Look 2 mint) |
 | `SECOND-OUTFIT-INK-LOCKED.md` | Woz-locked ink jacket/pants itemIds |
 | `LIMITATION.md` | Franz tool limitation receipt (no fake plates) |
@@ -39,8 +46,6 @@ All under `docs/character-production-t1173u/franz-artwork/`:
 | `PLATE-RENDERER-CONTRACT.md` | Runtime layering / all-or-nothing probe contract |
 | `proofs/A_B_C_ART_PASS_2026-11-04.png` | Prior A/B/C proof (reference only — not a runtime plate) |
 | `HANDOFF-MANIFEST.md` | This index |
-
-Crotch-clip A/B/C proof PNG not stored locally (no attached source; do not invent pixels) — use Drive proof above.
 
 ## Look 2 mint — expected runtime paths (ABSENT on #23; Woz #27 integrates)
 
