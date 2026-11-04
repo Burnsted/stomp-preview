@@ -39,36 +39,45 @@ function terr(x, seed){
 }
 function gY(x, seed){return GROUND+terr(x, seed||0.4);}
 
-/* pts: [x,y] or [x,y,snow] where snow 0..1 = cap strength (0/omit = bare) */
-function mtRidge(cx,W,pts,col,snowCol,edgeCol){
+/* pts: [x,y] or [x,y,snow] — snow>0 marks peak for a bold cap (drawn later via mtSnowCaps) */
+function mtRidge(cx,W,pts,col,edgeCol){
   cx.fillStyle=col;cx.beginPath();cx.moveTo(-20,VH+40);
   for(var i=0;i<pts.length;i++)cx.lineTo(pts[i][0],pts[i][1]);
   cx.lineTo(W+20,VH+40);cx.closePath();cx.fill();
-  // ridgeline definition
   if(edgeCol){
-    cx.strokeStyle=edgeCol;cx.lineWidth=1.6;cx.lineJoin='round';cx.beginPath();
+    cx.strokeStyle=edgeCol;cx.lineWidth=2.2;cx.lineJoin='round';cx.beginPath();
     cx.moveTo(pts[0][0],pts[0][1]);
     for(i=1;i<pts.length;i++)cx.lineTo(pts[i][0],pts[i][1]);
     cx.stroke();
   }
-  // selective snow — draped wedges on flagged local peaks only (asymmetric, not hats)
-  if(snowCol){
-    cx.fillStyle=snowCol;
-    for(i=1;i<pts.length-1;i++){
+}
+/* Bold phone-readable snow caps — bright filled wedges on SELECTED peaks only.
+   Call AFTER all mountain layers so caps are never buried. */
+function mtSnowCaps(cx, layers, snowCol){
+  cx.fillStyle=snowCol;
+  for(var L=0;L<layers.length;L++){
+    var pts=layers[L];
+    for(var i=1;i<pts.length-1;i++){
       var p=pts[i], sn=p[2]||0; if(sn<=0) continue;
-      if(!(p[1]<pts[i-1][1]-3 && p[1]<pts[i+1][1]-3)) continue;
-      var L=pts[i-1], R=pts[i+1];
-      var leftSpan=p[0]-L[0], rightSpan=R[0]-p[0];
-      var dropL=Math.min(22, (L[1]-p[1])*0.38)*sn;
-      var dropR=Math.min(26, (R[1]-p[1])*0.42)*sn;
-      var lean=i%2?1:-1; // alternate wind lean
+      if(!(p[1]<pts[i-1][1]-4 && p[1]<pts[i+1][1]-4)) continue;
+      var A=pts[i-1], B=pts[i+1];
+      var riseL=A[1]-p[1], riseR=B[1]-p[1];
+      // BIG caps: 48–72px deep, ~55–95px wide — unmistakable at phone size
+      var depth=Math.max(48, Math.min(72, Math.min(riseL,riseR)*0.55))*sn;
+      var halfW=Math.max(28, Math.min(48, Math.min(p[0]-A[0], B[0]-p[0])*0.55))*sn;
+      var lean=(i%2?1:-1)*Math.max(6, halfW*0.18); // wind lean
+      var tipX=p[0]+lean*0.35, tipY=p[1]-2;
+      var leftX=p[0]-halfW+lean*0.15, leftY=p[1]+depth*0.92;
+      var rightX=p[0]+halfW+lean*0.55, rightY=p[1]+depth;
+      // filled asymmetric wedge (not a thin outline)
       cx.beginPath();
-      cx.moveTo(p[0]-leftSpan*0.35, p[1]+dropL);
-      cx.lineTo(p[0]-2+lean, p[1]-1.5);
-      cx.lineTo(p[0]+3+lean*2, p[1]-1);
-      cx.lineTo(p[0]+rightSpan*0.45, p[1]+dropR);
-      cx.quadraticCurveTo(p[0]+rightSpan*0.12, p[1]+dropR*0.55, p[0]-leftSpan*0.08, p[1]+dropL*0.7);
-      cx.closePath();cx.fill();
+      cx.moveTo(leftX, leftY);
+      cx.lineTo(tipX-3, tipY);
+      cx.lineTo(tipX+4, tipY+1);
+      cx.lineTo(rightX, rightY);
+      cx.quadraticCurveTo(tipX+halfW*0.15, tipY+depth*0.55, tipX-halfW*0.1, tipY+depth*0.5);
+      cx.closePath();
+      cx.fill();
     }
   }
 }
@@ -178,10 +187,10 @@ var BD_B2_NEAR=[
 
 // BD B3 massif left
 var BD_B3_FAR=[
-  [-60,235],[20,145,1],[90,190],[150,125,0.9],[220,200],[300,175],[400,210],[500,155],[580,195],[660,140,0.7],[740,185]
+  [-60,235],[20,145,1],[90,190],[150,125,1],[220,200],[300,175],[400,210],[500,155,0.75],[580,195],[660,140,1],[740,185]
 ];
 var BD_B3_MID=[
-  [-30,270],[40,200,0.8],[110,245],[190,215],[280,250],[380,230],[480,255],[580,205,0.45],[680,245]
+  [-30,270],[40,200,1],[110,245],[190,215],[280,250],[380,230],[480,255],[580,205,0.85],[680,245]
 ];
 var BD_B3_NEAR=[
   [-10,295],[90,278],[200,290],[320,268],[450,285],[580,275],[700,292]
@@ -207,45 +216,51 @@ function finishTP(cx,W,H,seed){
 
 function bdB1(cx,W,H){
   bdSky(cx,W,H);
-  mtRidge(cx,W,BD_B1_FAR,'#445f88','#d8e6f4','#6a84a8');
-  mtRidge(cx,W,BD_B1_MID,'#5a789e','#e6f0f9','#7a94b4');
-  mtRidge(cx,W,BD_B1_NEAR,'#6b8ab0',null,'#8aa0bc');
+  mtRidge(cx,W,BD_B1_FAR,'#445f88','#6a84a8');
+  mtRidge(cx,W,BD_B1_MID,'#5a789e','#7a94b4');
+  mtRidge(cx,W,BD_B1_NEAR,'#6b8ab0','#8aa0bc');
+  mtSnowCaps(cx,[BD_B1_FAR,BD_B1_MID],'#f7fbff'); // bright white — phone-readable
   finishBD(cx,W,H,0.55);
 }
 function bdB2(cx,W,H){
   bdSky(cx,W,H);
-  mtRidge(cx,W,BD_B2_FAR,'#3f5a82','#d4e4f4','#6580a4');
-  mtRidge(cx,W,BD_B2_MID,'#55749c','#e4eef8','#7594b4');
-  mtRidge(cx,W,BD_B2_NEAR,'#6b8ab0',null,'#8aa0bc');
+  mtRidge(cx,W,BD_B2_FAR,'#3f5a82','#6580a4');
+  mtRidge(cx,W,BD_B2_MID,'#55749c','#7594b4');
+  mtRidge(cx,W,BD_B2_NEAR,'#6b8ab0','#8aa0bc');
+  mtSnowCaps(cx,[BD_B2_FAR,BD_B2_MID],'#f7fbff');
   finishBD(cx,W,H,0.55);
 }
 function bdB3(cx,W,H){
   bdSky(cx,W,H);
-  mtRidge(cx,W,BD_B3_FAR,'#3a557c','#d2e2f2','#5e7a9e');
-  mtRidge(cx,W,BD_B3_MID,'#4e6e96','#e2ecf8','#6e8eb0');
-  mtRidge(cx,W,BD_B3_NEAR,'#6586ac',null,'#849cbc');
+  mtRidge(cx,W,BD_B3_FAR,'#3a557c','#5e7a9e');
+  mtRidge(cx,W,BD_B3_MID,'#4e6e96','#6e8eb0');
+  mtRidge(cx,W,BD_B3_NEAR,'#6586ac','#849cbc');
+  mtSnowCaps(cx,[BD_B3_FAR,BD_B3_MID],'#f7fbff');
   finishBD(cx,W,H,0.55);
 }
 
 function tpB1(cx,W,H){
   tpSky(cx,W,H);
-  mtRidge(cx,W,TP_B1_FAR,'#281650','#e4daf0','#4a3478');
-  mtRidge(cx,W,TP_B1_MID,'#3a2468','#ebe2f4','#5a3a88');
-  mtRidge(cx,W,TP_B1_NEAR,'#5a3a88',null,'#7a5aa8');
+  mtRidge(cx,W,TP_B1_FAR,'#281650','#4a3478');
+  mtRidge(cx,W,TP_B1_MID,'#3a2468','#5a3a88');
+  mtRidge(cx,W,TP_B1_NEAR,'#5a3a88','#7a5aa8');
+  mtSnowCaps(cx,[TP_B1_FAR,TP_B1_MID],'#fffef8'); // near-white cream — max contrast on purple
   finishTP(cx,W,H,0.9);
 }
 function tpB2(cx,W,H){
   tpSky(cx,W,H);
-  mtRidge(cx,W,TP_B2_FAR,'#221248','#e2d8f0','#443070');
-  mtRidge(cx,W,TP_B2_MID,'#352060','#ebe2f4','#553a80');
-  mtRidge(cx,W,TP_B2_NEAR,'#5a3a88',null,'#7a5aa8');
+  mtRidge(cx,W,TP_B2_FAR,'#221248','#443070');
+  mtRidge(cx,W,TP_B2_MID,'#352060','#553a80');
+  mtRidge(cx,W,TP_B2_NEAR,'#5a3a88','#7a5aa8');
+  mtSnowCaps(cx,[TP_B2_FAR,TP_B2_MID],'#fffef8');
   finishTP(cx,W,H,0.9);
 }
 function tpB3(cx,W,H){
   tpSky(cx,W,H);
-  mtRidge(cx,W,TP_B3_FAR,'#1e1040','#e0d6ee','#3e2a68');
-  mtRidge(cx,W,TP_B3_MID,'#32205c','#e8def4','#503878');
-  mtRidge(cx,W,TP_B3_NEAR,'#543480',null,'#7450a0');
+  mtRidge(cx,W,TP_B3_FAR,'#1e1040','#3e2a68');
+  mtRidge(cx,W,TP_B3_MID,'#32205c','#503878');
+  mtRidge(cx,W,TP_B3_NEAR,'#543480','#7450a0');
+  mtSnowCaps(cx,[TP_B3_FAR,TP_B3_MID],'#fffef8');
   finishTP(cx,W,H,0.9);
 }
 

@@ -6,18 +6,22 @@
 - **Keep** Option B trees (Soft Alps denser band, varied sizes + snow tips) for **both** BD and TP.
 - Mountains felt flat/samey — need clearer ridgelines, uneven heights, snow caps on **some** peaks only.
 
+## Round 2b — bold mountain snow (Ted: prior caps invisible)
+
+Critical fix: previous caps were tiny/low-contrast and read as “no snow.” Caps are now **48–72px filled white/cream wedges**, drawn after all mountain layers. Option B trees unchanged.
+
 ## Round 2 — mountain variants (trees = Soft Alps B)
 
-All new frames use the Soft Alps tree band. Mountains are 3 layers (far / mid / near foothills) with stroked ridgelines and selective draped snow.
+All new frames use the Soft Alps tree band. Mountains are 3 layers (far / mid / near foothills) with stroked ridgelines. **Snow caps are bold white/cream filled wedges** (48–72px deep) drawn *after* all mountain layers so they stay phone-readable — some peaks capped, some bare.
 
 | ID | Name | Mountain idea | PNG |
 |----|------|---------------|-----|
-| **BD-B1** | Soft Alps + crenellated range | Many uneven peaks; snow on ~⅓ of tallest | `bd-b1.png` |
-| **BD-B2** | Soft Alps + statement peaks | 2–3 dramatic tall peaks with snow; lower shoulders bare | `bd-b2.png` |
-| **BD-B3** | Soft Alps + left massif | Asymmetric tall left massif + broken right ridge | `bd-b3.png` |
-| **TP-B1** | Soft Alps dusk + crenellated | Same silhouette as BD-B1, purple dusk palette | `tp-b1.png` |
-| **TP-B2** | Soft Alps dusk + statement peaks | Same as BD-B2, purple | `tp-b2.png` |
-| **TP-B3** | Soft Alps dusk + left massif | Same as BD-B3, purple | `tp-b3.png` |
+| **BD-B1** | Soft Alps + crenellated range | Many uneven peaks; bold snow on ~⅓ of tallest | `bd-b1.png` |
+| **BD-B2** | Soft Alps + statement peaks | 2–3 dramatic tall peaks with big snow wedges; lower shoulders bare | `bd-b2.png` |
+| **BD-B3** | Soft Alps + left massif | Asymmetric tall left massif + broken right ridge + selective caps | `bd-b3.png` |
+| **TP-B1** | Soft Alps dusk + crenellated | Same silhouette as BD-B1, purple dusk + cream caps | `tp-b1.png` |
+| **TP-B2** | Soft Alps dusk + statement peaks | Same as BD-B2, purple + cream caps | `tp-b2.png` |
+| **TP-B3** | Soft Alps dusk + left massif | Same as BD-B3, purple + cream caps | `tp-b3.png` |
 
 Prior round kept for compare: `bd-now.png`, `tp-now.png`, `bd-opt-b.png`, `tp-opt-b.png` (old flat mountains + Soft Alps trees).
 
