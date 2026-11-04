@@ -74,20 +74,36 @@ var LEVELS=[
  {n:7,name:'Snowcat Alley',sub:'Jump ON the snowcats · double-jump unlocked',k:{snowcat:4,boulderM:1,boulderS:1,log:1,boulderL:1},base:370,ramp:4,max:520,len:8500,pair:0,gapX:1,storm:[.2,.5],spike:.25,pick:.5,doubleJump:true},
  {n:8,name:'Full Send',sub:'Everything + double-jump recovery',k:{boulderS:1,boulderM:1,boulderL:1.2,log:1,logLong:1,ice:1,coyote:1,skier:1,bear:1.2,moose:1.3,snowmobile:1.5,snowcat:1.5},base:400,ramp:5,max:600,len:10000,pair:.18,gapX:.75,storm:[.25,.55],spike:.3,pick:.55,doubleJump:true}];
 var ENDLESS={n:9,name:'Endless',sub:'All hazards · double-jump on',k:LEVELS[7].k,base:330,ramp:8,max:760,len:Infinity,pair:.18,gapX:.75,storm:[.1,.55],spike:.25,pick:.5,endless:true,doubleJump:true};
+// Achievements → faster boards (speed variants). Clear map; persisted in PR.ach.
+var ACH={
+ l3:{name:'Wild Tracks Clear',how:'Clear Level 3'},
+ moose:{name:'First Moose',how:'Clear a moose'},
+ catride:{name:'Snowcat Ride',how:'Land on a snowcat'},
+ dj7:{name:'2× Jump Clear',how:'Clear Level 7'},
+ l8:{name:'Full Campaign',how:'Clear Level 8'}
+};
+// spd = run speed multiplier (1 = stock). Ordered slow→fast for locker.
 var BOARDS=[
- {id:'first',name:'First Tracks',c:'#ff6a1a',s:'#ffffff',unlock:0},
- {id:'ice',name:'Ice Runner',c:'#38b6ff',s:'#d9f3ff',unlock:2},
- {id:'full',name:'Full Send',c:'#e0245e',s:'#ffd84a',unlock:8},
- {id:'copper',name:'Coyote Copper',c:'#b5824a',s:'#3b2414',unlock:3},
- {id:'timber',name:'Backwoods Timber',c:'#2f6b3a',s:'#c79a5e',unlock:5},
- {id:'cat',name:'Snowcat Orange',c:'#ff9f1a',s:'#14213d',unlock:7}];
+ {id:'first',name:'First Tracks',c:'#ff6a1a',s:'#ffffff',spd:1,ach:null},
+ {id:'ice',name:'Ice Runner',c:'#38b6ff',s:'#d9f3ff',spd:1.06,ach:'l3'},
+ {id:'copper',name:'Coyote Copper',c:'#b5824a',s:'#3b2414',spd:1.10,ach:'moose'},
+ {id:'timber',name:'Backwoods Timber',c:'#2f6b3a',s:'#c79a5e',spd:1.14,ach:'catride'},
+ {id:'cat',name:'Snowcat Orange',c:'#ff9f1a',s:'#14213d',spd:1.18,ach:'dj7'},
+ {id:'full',name:'Full Send',c:'#e0245e',s:'#ffd84a',spd:1.24,ach:'l8'}];
 var PK='boulderDodge.progress',PR;try{PR=JSON.parse(localStorage.getItem(PK))}catch(e){}
-PR=PR||{};PR.done=PR.done||[];PR.board=PR.board||'first';PR.best=PR.best||{};
+PR=PR||{};PR.done=PR.done||[];PR.board=PR.board||'first';PR.best=PR.best||{};PR.ach=PR.ach||[];
 function saveP(){try{localStorage.setItem(PK,JSON.stringify(PR))}catch(e){}}
 function unlocked(n){return n===1||PR.done.indexOf(n-1)>=0||(n===9&&endlessOpen())}
 function endlessOpen(){for(var i=1;i<=8;i++)if(PR.done.indexOf(i)<0)return false;return true}
-function boardOpen(b){return b.unlock===0||PR.done.indexOf(b.unlock)>=0}
+function boardOpen(b){return !b.ach||PR.ach.indexOf(b.ach)>=0}
 function board(){var b=BOARDS.filter(function(x){return x.id===PR.board&&boardOpen(x)})[0];return b||BOARDS[0];}
+function boardSpd(){return board().spd||1;}
+function boardForAch(id){for(var i=0;i<BOARDS.length;i++)if(BOARDS[i].ach===id)return BOARDS[i];return null;}
+function earnAch(id,silent){if(!ACH[id]||PR.ach.indexOf(id)>=0)return false;PR.ach.push(id);saveP();
+ if(!silent){var bb=boardForAch(id);announce((ACH[id].name)+(bb?' → '+bb.name+' +'+Math.round((bb.spd-1)*100)+'%':''));S.flash=0.2;S.achToast=ACH[id].name+(bb?' · '+bb.name:'');S.achT=2.4;}
+ return true;}
+function syncAchFromDone(){if(PR.done.indexOf(3)>=0)earnAch('l3',true);if(PR.done.indexOf(7)>=0)earnAch('dj7',true);if(PR.done.indexOf(8)>=0)earnAch('l8',true);}
+syncAchFromDone();
 var LV=LEVELS[0];
 var cv=document.getElementById('c'),cx=cv.getContext('2d'),W=640,scale=1,OY=0,worldH=VH;
 var LS='boulderDodge.pb', pb=+(localStorage.getItem(LS)||0);
@@ -98,21 +114,24 @@ var S;
 function mk(s){return function(){s=(s*1664525+1013904223)>>>0;return s/4294967296}}
 var rng,rngW,rngP,rngB,TER;function seed(s){rng=mk(s);rngW=mk((s^0x9e3779b9)>>>0);rngP=mk((s^0x85ebca6b)>>>0);rngB=mk((s^0xc2b2ae35)>>>0);
  var rt=mk((s^0x27d4eb2f)>>>0);TER=[rt()*6.283,rt()*6.283,rt()*6.283];}
-// v0.7.3 terrain: amplified hills; physics + visuals share the same height function (no flat-collision lie).
-// Positive terr = dip (higher Y). Crests are negative terr (lower Y / uphill).
-var HILL=[0,32,52,64,72,84,84,58,98,98]; // ~2.2× v0.6.1 — Hill Climber snow-hill feel; L7 slightly tempered for decks
+// Terrain authority: hills + mogul bumps share one height fn (draw + physics). Positive = dip (↓Y), negative = crest (↑Y).
+var HILL=[0,32,52,64,72,84,84,58,98,98]; // ~2.2× v0.6.1 — Hill Climber feel; L7 tempered for decks
+// Mogul peak raise (world px) + half-width — early modest launch, late/endless biggest. L7 tempered for snowcats.
+var BUMP_A=[0,26,34,44,54,64,72,56,82,88];
+var BUMP_W=[0,42,48,54,60,66,72,62,80,86];
 function terr(wx){var A=HILL[LV.n]||12;return A*(0.55*Math.sin(wx/380+TER[0])+0.3*Math.sin(wx/170+TER[1])+0.15*Math.sin(wx/88+TER[2]));}
-function H(sx){return terr(S.dist+sx-S.p.x);}
+function bumpH(wx){if(!S||!S.bumps)return 0;var h=0;for(var i=0;i<S.bumps.length;i++){var bm=S.bumps[i],dx=wx-bm.wx,hw=bm.hw;if(dx>-hw&&dx<hw){var u=dx/hw;h-=bm.amp*(1-u*u);}}return h;}
+function H(sx){var wx=S.dist+sx-S.p.x;return terr(wx)+bumpH(wx);}
 function gY(sx){return GROUND+H(sx);} // absolute snow surface Y at screen x — AUTHORITY for draw + physics
 function slopeAt(sx){return Math.atan2(H(sx+6)-H(sx-6),12);}
 function airStats(){ // double-jump levels get longer air / higher apex for fairness gating
  if(LV.doubleJump)return {air:AIR*1.42,maxh:MAXH*1.55,dj:true};
  return {air:AIR,maxh:MAXH,dj:false};}
-function hillPad(){return (HILL[LV.n]||12)*0.38;} // clearance pad for terrain rise over a jump
+function hillPad(){return (HILL[LV.n]||12)*0.38+(BUMP_A[LV.n]||0)*0.22;} // clearance for hills + mogul rise
 var SPAWN_AHEAD=2000,WARN_T=2.0;
 function reset(sd,lv){if(lv)LV=lv;seed(sd==null?(LV.endless?(Date.now()>>>0):1000+LV.n):sd);
  var gy0=GROUND+terr(0);
- S={pops:[],blog:[],bumps:[],bumpN:0,hop:0,log:[],wlog:[],warnLog:[],arrGapMin:1e9,lastTail:null,lv:LV,seen:{},bonus:0,pick:0,pickups:[],pickT:2,clearPts:0,storm:LV.storm[0],stormT:LV.storm[0],stormClock:3,parts:[],flash:0,land:0,mode:'ready',t:0,dist:0,cleared:0,spd:LV.base,p:{x:110,y:gy0,vy:0,on:true,airUsed:0},obs:[],nextX:900,flakes:[],shake:0,minGapT:1e9,done:false,newBest:false,playAt:0};
+ S={pops:[],blog:[],bumps:[],bumpN:0,hop:0,climbVy:0,log:[],wlog:[],warnLog:[],arrGapMin:1e9,lastTail:null,lv:LV,seen:{},bonus:0,pick:0,pickups:[],pickT:2,clearPts:0,storm:LV.storm[0],stormT:LV.storm[0],stormClock:3,parts:[],flash:0,land:0,mode:'ready',t:0,dist:0,cleared:0,spd:LV.base*boardSpd(),p:{x:110,y:gy0,vy:0,on:true,airUsed:0},obs:[],nextX:900,flakes:[],shake:0,minGapT:1e9,done:false,newBest:false,playAt:0,achToast:'',achT:0,rodeCat:false};
  for(var i=0;i<90;i++)S.flakes.push({x:Math.random()*1000,y:Math.random()*VH,r:1+Math.random()*2,z:Math.random(),vx:(Math.random()-.5)*12});}
 function threatPts(k){var d=KINDS[k];if(!d)return 20;if(d.deck)return 42;if(d.vx)return 48;return 12+Math.round(d.h*0.7)+Math.round(d.w*0.12);}
 function score(){return Math.floor(S.dist/10)+S.clearPts+S.bonus+S.pick*30+S.bumpN*10}
@@ -121,13 +140,13 @@ function clearPx(k,v){var d=KINDS[k],a=airStats();if(d.deck)return 1e9;
 function fits(k,v){var d=KINDS[k];return d.deck||(d.w+14)<=0.85*clearPx(k,v);}
 function pickKind(){var tot=0,k,ks=Object.keys(LV.k);ks.forEach(function(n){tot+=LV.k[n]});
  for(var tries=0;tries<12;tries++){var rr=rng()*tot;k=ks[ks.length-1];for(var i=0;i<ks.length;i++){rr-=LV.k[ks[i]];if(rr<=0){k=ks[i];break;}}
-  if(fits(k,S.spd)&&fits(k,LV.max))return k;}
+  if(fits(k,S.spd)&&fits(k,LV.max*boardSpd()))return k;}
  return 'boulderS';}
 function spawn(){
- var p=S.p,ahead=S.nextX-p.x,a=airStats();
+ var p=S.p,ahead=S.nextX-p.x,a=airStats(),bM=boardSpd();
  if(S.dist+ahead>LV.len-250){S.nextX+=1e6;return;}
  var k=pickKind(),d=KINDS[k],cols=Object.keys(BCOL);
- var vArr=Math.min(LV.max,S.spd+LV.ramp*ahead/S.spd);
+ var vArr=Math.min(LV.max*bM,S.spd+LV.ramp*bM*ahead/Math.max(1,S.spd));
  var lead=d.vx?d.vx*ahead/S.spd*1.1:0;
  var o={k:k,x:S.nextX+lead,w:d.w,h:d.h,vx:d.vx||0,deck:!!d.deck,passed:false,c:cols[Math.floor(rng()*3)],ph:rng()*6};
  S.obs.push(o);S.log.push(k+'@'+Math.round(S.dist+o.x-S.p.x));var end=o.x+o.w-S.nextX;
@@ -137,7 +156,9 @@ function spawn(){
  var g=need+rng()*vArr*LV.gapX;
  S.lastGapT=g/vArr;
  var ba=S.nextX+end+100,bb=S.nextX+end+g-100;
- if(bb-ba>40){var nb=Math.floor(rngB()*3);for(var q=0;q<nb;q++){var bx=ba+rngB()*(bb-ba),wx=Math.round(S.dist+bx-S.p.x);S.bumps.push({wx:wx,hit:false});S.blog.push(wx);}}
+ if(bb-ba>40){var nb=Math.floor(rngB()*3),A0=BUMP_A[LV.n]||26,W0=BUMP_W[LV.n]||42;
+  for(var q=0;q<nb;q++){var bx=ba+rngB()*(bb-ba),wx=Math.round(S.dist+bx-S.p.x);
+   S.bumps.push({wx:wx,hit:false,amp:A0*(0.88+rngB()*0.28),hw:W0*(0.9+rngB()*0.22)});S.blog.push(wx);}}
  S.nextX+=end+g;
 }
 function jump(){if(S.mode!=='play')return;
@@ -148,18 +169,26 @@ function deckUnder(){var p=S.p;for(var i=0;i<S.obs.length;i++){var o=S.obs[i];if
 function step(dt){S.land=Math.max(0,S.land-dt*6);S.flash=Math.max(0,S.flash-dt);
  for(var q=S.parts.length-1;q>=0;q--){var P=S.parts[q];P.x+=P.vx*dt;P.y+=P.vy*dt;P.vy+=600*dt;P.l-=dt;if(P.l<=0)S.parts.splice(q,1);}
  if(S.parts.length>150)S.parts.splice(0,S.parts.length-150);
- S.t+=dt; S.spd=Math.min(LV.max,LV.base+LV.ramp*S.t);
+ S.t+=dt; var bM=boardSpd();S.spd=Math.min(LV.max*bM,(LV.base+LV.ramp*S.t)*bM);S.achT=Math.max(0,S.achT-dt);
  var dx=S.spd*dt; S.dist+=dx;
  var p=S.p,py0=p.y;
  S.nextX-=dx; while(S.nextX<SPAWN_AHEAD)spawn();
  for(var i=S.obs.length-1;i>=0;i--){var o=S.obs[i];o.x-=dx+o.vx*dt;if(o.x+o.w<-80)S.obs.splice(i,1);}
- var dk=deckUnder(),snow=gY(p.x),floor=dk?gY(p.x)-dk.h:snow;
- if(p.on&&!dk&&Math.abs(p.y-snow)>0.01)p.y=snow; // stick to terrain while riding snow
- if(p.on&&dk)p.y=floor;
+ var dk=deckUnder(),snow=gY(p.x),floor=dk?gY(p.x)-dk.h:snow,surfVy=(snow-py0)/dt;
+ if(p.on&&dk){p.y=floor;S.climbVy=0;if(dk.k==='snowcat'&&!S.rodeCat){S.rodeCat=true;earnAch('catride');}}
+ else if(p.on&&!dk){
+  // Keep peak climb (don't let the flattening crest overwrite the launch pop)
+  if(surfVy<S.climbVy)S.climbVy=surfVy;
+  // Crest launch: surface falls away after a real climb — bumps/ramps feel like jumps (capped ≤ ~jump)
+  if(S.climbVy<-140&&surfVy>30){
+   p.on=false;p.vy=Math.max(JV*0.88,S.climbVy*0.92);p.airUsed=0;S.hop=1;S.climbVy=0;
+   puff(p.x,p.y-2,8,'#ffffff',110);beep(260+Math.random()*60,0.05,'square',0.07);
+   for(var bi=0;bi<S.bumps.length;bi++){var bm=S.bumps[bi],bxs=bm.wx-S.dist+p.x;if(!bm.hit&&Math.abs(bxs-p.x)<bm.hw){bm.hit=true;S.bumpN++;S.pops.push({x:p.x,y:p.y-50,l:0.6});}}}
+  else{p.y=snow;if(surfVy>-40&&surfVy<40)S.climbVy*=0.91;}} // decay on flats — no stale false launch
  if(p.on&&p.y<floor-0.5)p.on=false;
  if(!p.on){p.vy+=G*dt;p.y+=p.vy*dt;
-  if(p.vy>=0&&p.y>=floor&&py0<=floor+1){p.y=floor;p.vy=0;p.on=true;p.airUsed=0;S.land=1;puff(p.x,floor,8,'#ffffff',120);}
-  else if(p.y>=snow+40){p.y=snow;p.vy=0;p.on=true;p.airUsed=0;S.land=1;}}
+  if(p.vy>=0&&p.y>=floor&&py0<=floor+1){p.y=floor;p.vy=0;p.on=true;p.airUsed=0;S.land=1;S.climbVy=0;puff(p.x,floor,8,'#ffffff',120);}
+  else if(p.y>=snow+40){p.y=snow;p.vy=0;p.on=true;p.airUsed=0;S.land=1;S.climbVy=0;}}
  else if(Math.random()<0.25)S.parts.push({x:p.x-16,y:p.y-2,vx:-60-Math.random()*60,vy:-30*Math.random(),l:0.3,c:'#ffffff',s:2});
  var px1=p.x-11,px2=p.x+11,py1=p.y-30,py2=p.y;
  for(i=0;i<S.obs.length;i++){o=S.obs[i];
@@ -169,7 +198,7 @@ function step(dt){S.land=Math.max(0,S.land-dt*6);S.flash=Math.max(0,S.flash-dt);
   if(o.visT==null&&o.x<=W)o.visT=S.t;
   if(o.arrT==null&&o.x<=px2){o.arrT=S.t;if(!o.pair&&S.lastTail!=null)S.arrGapMin=Math.min(S.arrGapMin,o.arrT-S.lastTail);
    if(o.vx||o.deck)S.warnLog.push({k:o.k,spd:Math.round(S.spd),warn:+(o.arrT-(o.warnT==null?o.arrT:o.warnT)).toFixed(3),vis:+(o.arrT-o.visT).toFixed(3)});}
-  if(!o.passed&&o.x+o.w<px1){o.passed=true;S.lastTail=S.t;S.cleared++;S.clearPts+=threatPts(o.k);if(!S.seen[o.k]){S.seen[o.k]=1;S.bonus+=5;}S.flash=0.12;puff(p.x,p.y-20,6,'#ffd84a',160);beep(880,0.05,'triangle',0.08);}}
+  if(!o.passed&&o.x+o.w<px1){o.passed=true;S.lastTail=S.t;S.cleared++;S.clearPts+=threatPts(o.k);if(!S.seen[o.k]){S.seen[o.k]=1;S.bonus+=5;}if(o.k==='moose')earnAch('moose');S.flash=0.12;puff(p.x,p.y-20,6,'#ffd84a',160);beep(880,0.05,'triangle',0.08);}}
  if(S.lastGapT<S.minGapT)S.minGapT=S.lastGapT;
  S.stormClock-=dt;if(S.stormClock<=0){var lo=LV.storm[0],hi=LV.storm[1];S.stormT=rngW()<LV.spike?Math.min(0.7,hi+0.1):lo+rngW()*(hi-lo)*Math.min(1,0.4+S.t/40);S.stormClock=3+rngW()*6;S.wlog.push('s'+S.stormT.toFixed(3));}
  S.storm+=(S.stormT-S.storm)*Math.min(1,dt*0.8);
@@ -183,13 +212,15 @@ function step(dt){S.land=Math.max(0,S.land-dt*6);S.flash=Math.max(0,S.flash-dt);
   if(u.x<-20||u.y>gY(u.x)+20)S.pickups.splice(i,1);}
  S.hop=Math.max(0,S.hop-dt*4);
  for(i=S.bumps.length-1;i>=0;i--){var bm=S.bumps[i],bxs=bm.wx-S.dist+p.x;
-  if(!bm.hit&&Math.abs(bxs-p.x)<14&&p.on&&!dk){bm.hit=true;S.bumpN++;S.hop=1;S.pops.push({x:p.x,y:p.y-50,l:0.6});puff(p.x,p.y-2,6,'#ffffff',90);beep(300+Math.random()*80,0.04,'square',0.06);}
-  if(bxs<-40)S.bumps.splice(i,1);}
+  // Score lip rides that didn't full-launch (early modest bumps)
+  if(!bm.hit&&Math.abs(bxs-p.x)<Math.max(14,bm.hw*0.35)&&p.on&&!dk){bm.hit=true;S.bumpN++;S.hop=1;S.pops.push({x:p.x,y:p.y-50,l:0.6});puff(p.x,p.y-2,6,'#ffffff',90);beep(300+Math.random()*80,0.04,'square',0.06);}
+  if(bxs<-bm.hw-20)S.bumps.splice(i,1);}
  for(i=S.pops.length-1;i>=0;i--){S.pops[i].l-=dt;S.pops[i].y-=30*dt;if(S.pops[i].l<=0)S.pops.splice(i,1);}
  if(S.dist>=LV.len)finish();
 }
 function finish(){S.mode='clear';S.done=true;scrapeStop();var sc=score();if(LV.n<=8&&PR.done.indexOf(LV.n)<0)PR.done.push(LV.n);
- if(!(PR.best[LV.n]>=sc))PR.best[LV.n]=sc;if(sc>pb){pb=sc;try{localStorage.setItem(LS,pb)}catch(e){}}saveP();overAt=performance.now();
+ if(!(PR.best[LV.n]>=sc))PR.best[LV.n]=sc;if(sc>pb){pb=sc;try{localStorage.setItem(LS,pb)}catch(e){}}
+ if(LV.n===3)earnAch('l3');if(LV.n===7)earnAch('dj7');if(LV.n===8)earnAch('l8');syncAchFromDone();saveP();overAt=performance.now();
  [660,880,1100].forEach(function(f,i){setTimeout(function(){beep(f,0.12,'square',0.12)},i*110)});}
 function crash(){S.mode='over';if(!reduceMotion){S.shake=10;S.flash=-0.3;}puff(S.p.x,S.p.y-15,24,'#ffffff',240);puff(S.p.x,S.p.y-10,12,'#bfe3ff',200);var sc=score();if(sc>pb){pb=sc;try{localStorage.setItem(LS,pb)}catch(e){}}if(!(PR.best[LV.n]>=sc)){PR.best[LV.n]=sc;saveP();}
  scrapeStop();beep(160,0.35,'sawtooth',0.22);}
@@ -226,15 +257,14 @@ function scrapeTick(){if(!S||muted){scrapeStop();return;}
  else scrapeStop();}
 setInterval(scrapeTick,80);
 // ---- render ----
-// Fit so deepest snow (GROUND + hill amp) stays on-screen in landscape; camera anchors the snow band.
-var FIT_H=GROUND+120; // ~420: room for amplified dips + margin under the rider
+// Fit deepest snow (hills + post-mogul dips) on-screen in landscape; camera anchors the snow band.
+var FIT_H=GROUND+145; // ~445: headroom for taller mogul-adjacent dips
 function resize(){
  var r=window.devicePixelRatio||1;cv.width=innerWidth*r;cv.height=innerHeight*r;
- scale=Math.min(cv.height/FIT_H,cv.width/560); // was VH=360 — clipped landscape dips off the bottom
+ scale=Math.min(cv.height/FIT_H,cv.width/560);
  W=cv.width/scale;worldH=cv.height/scale;
- // Put GROUND ~62% down the viewport so sky/look-ahead stay above and snow stays visible
- OY=worldH*0.62-GROUND;
- var maxSnow=GROUND+110; // deepest plausible surface
+ OY=worldH*0.60-GROUND; // slightly more sky for launch apex / crest
+ var maxSnow=GROUND+130;
  if(OY+maxSnow>worldH-8)OY=worldH-8-maxSnow;
  if(OY<0)OY=0;
 }
@@ -253,7 +283,10 @@ function draw(){
  var po=(S.dist*0.4)%90;for(var x=-po;x<W+90;x+=90){cx.fillStyle='#2f5d50';tri(x,gY(x+8)-6,16,40);}
  cx.fillStyle='#e9f2fb';cx.beginPath();cx.moveTo(-20,worldH-OY+400);for(var gx=-20;gx<=W+24;gx+=8)cx.lineTo(gx,gY(gx));cx.lineTo(W+24,worldH-OY+400);cx.closePath();cx.fill();
  cx.strokeStyle='#bcd3ec';cx.lineWidth=3;cx.beginPath();for(gx=-20;gx<=W+24;gx+=8){var gy=gY(gx)+1.5;if(gx===-20)cx.moveTo(gx,gy);else cx.lineTo(gx,gy);}cx.stroke();
- S.bumps.forEach(function(bm){var bx=bm.wx-S.dist+S.p.x;if(bx<-30||bx>W+30)return;var by=gY(bx);cx.fillStyle=bm.hit?'#dbe8f6':'#ffffff';cx.strokeStyle='#9fbfe0';cx.lineWidth=1.5;cx.beginPath();cx.ellipse(bx,by,18,9,0,Math.PI,0);cx.fill();cx.stroke();cx.fillStyle='#cfe3f7';cx.fillRect(bx-6,by-4,8,2);});
+ // Moguls are already in gY snow fill — peak tick marks readable launch lips
+ S.bumps.forEach(function(bm){var bx=bm.wx-S.dist+S.p.x;if(bx<-bm.hw||bx>W+bm.hw)return;var by=gY(bx);
+  cx.strokeStyle=bm.hit?'#9fbfe0':'#7aa3c8';cx.lineWidth=2;cx.beginPath();cx.moveTo(bx-bm.hw*0.55,gY(bx-bm.hw*0.55)+1);cx.quadraticCurveTo(bx,by-2,bx+bm.hw*0.55,gY(bx+bm.hw*0.55)+1);cx.stroke();
+  cx.fillStyle=bm.hit?'#c5d8ec':'#ffffff';cx.beginPath();cx.arc(bx,by-1,3.2,0,7);cx.fill();});
  if(isFinite(LV.len)){var fx=S.p.x+(LV.len-S.dist);if(fx<W+40){var fgy=gY(fx+8);for(var j=0;j<8;j++){cx.fillStyle=j%2?'#111':'#fff';cx.fillRect(fx,fgy-8-j*8,8,8);cx.fillStyle=j%2?'#fff':'#111';cx.fillRect(fx+8,fgy-8-j*8,8,8);}
   cx.fillStyle='#2bd17e';cx.font='bold 14px sans-serif';cx.textAlign='center';cx.fillText('FINISH',fx+8,fgy-74);}}
  S.pickups.forEach(function(u){cx.save();cx.translate(u.x,u.y);cx.rotate(u.a*.3);cx.fillStyle='#ffd84a';cx.strokeStyle='#b8860b';cx.lineWidth=2;cx.beginPath();
@@ -274,7 +307,7 @@ function draw(){
   cx.fillStyle='#000';cx.font='bold 20px sans-serif';cx.textAlign='center';cx.fillText('!',W-30,gY(W-30)-36);cx.fillStyle='#fff';cx.strokeStyle='#000';cx.lineWidth=3;cx.lineJoin='round';cx.font='bold 12px sans-serif';cx.textAlign='right';
   var tx=wn.deck?'SNOWCAT AHEAD: JUMP ON DECK':'SNOWMOBILE INCOMING';cx.strokeText(tx,W-8,gY(W-8)-80);cx.fillText(tx,W-8,gY(W-8)-80);cx.textAlign='left';}
  // rider — p.y is absolute terrain-space
- var p=S.p,slope=slopeAt(p.x),hopY=-Math.sin(S.hop*Math.PI)*7,snow=gY(p.x);
+ var p=S.p,slope=slopeAt(p.x),hopY=-Math.sin(S.hop*Math.PI)*12,snow=gY(p.x);
  cx.save();cx.fillStyle='rgba(30,50,90,0.18)';var sh=Math.max(.3,1-(snow-p.y)/140);cx.beginPath();cx.ellipse(p.x,snow+2,20*sh,3*sh,0,0,7);cx.fill();
  cx.translate(p.x,p.y+hopY);cx.rotate(p.on?slope+Math.sin(S.hop*12)*0.12*S.hop:Math.max(-.5,Math.min(.5,p.vy/1600)));
  if(S.mode==='over'){cx.translate(0,4);cx.rotate(1.3);}
@@ -294,7 +327,8 @@ function draw(){
  if(S.flash>0&&!reduceMotion){cx.fillStyle='rgba(255,230,120,'+(S.flash*1.5)+')';cx.fillRect(0,-OY,W,cv.height/scale);}
  if(S.flash<0){cx.fillStyle='rgba(190,225,255,'+(-S.flash)+')';cx.fillRect(0,-OY,W,cv.height/scale);S.flash=Math.min(0,S.flash+0.012);}
  cx.fillStyle='#fff';cx.font='bold 20px sans-serif';cx.textAlign='left';cx.fillText('Score '+score(),12,28-OY+(OY>20?40:0));
- cx.font='13px sans-serif';var hy=-OY+(OY>20?40:0);cx.fillText((LV.endless?'Endless':'L'+LV.n+' '+LV.name)+'   Best '+(PR.best[LV.n]||0)+'   ★'+S.pick+(LV.doubleJump?'   2×':'')+(S.storm>0.55?'   ❄':''),12,46+hy);
+ cx.font='13px sans-serif';var hy=-OY+(OY>20?40:0),bSp=boardSpd();cx.fillText((LV.endless?'Endless':'L'+LV.n+' '+LV.name)+'   Best '+(PR.best[LV.n]||0)+'   ★'+S.pick+(bSp>1?'   ✈'+Math.round(bSp*100)+'%':'')+(LV.doubleJump?'   2×':'')+(S.storm>0.55?'   ❄':''),12,46+hy);
+ if(S.achT>0){cx.fillStyle='rgba(11,24,48,'+(Math.min(1,S.achT)*0.85)+')';cx.fillRect(W/2-130,58+hy,260,28);cx.fillStyle='#ffd84a';cx.font='bold 13px sans-serif';cx.textAlign='center';cx.fillText(S.achToast||'Board unlocked!',W/2,78+hy);cx.textAlign='left';}
  if(isFinite(LV.len)){cx.fillStyle='#0005';cx.fillRect(12,54+hy,160,6);cx.fillStyle='#2bd17e';cx.fillRect(12,54+hy,160*Math.min(1,S.dist/LV.len),6);}
  cx.textAlign='center';
  if(S.mode!=='play'&&S.mode!=='menu'){cx.fillStyle='#0008';cx.fillRect(W/2-170,110,340,110);cx.fillStyle='#fff';
@@ -416,18 +450,17 @@ function press(){ ensureAC();
  else if(S.mode==='over'&&performance.now()-overAt>250){API.restart();}
  else if(S.mode==='clear'&&performance.now()-overAt>400){if(LV.n<8)API.startLevel(LV.n+1);else openMenu();}
  syncUI();}
-function openMenu(){if(S.mode==='play')S.mode='pause';S.prevMode=S.mode;S.mode='menu';var h='<button id="close" aria-label="Close menu">✕</button><h1>BOULDER DODGE</h1><div>PLAY → JUMP · hills are real · double-jump on L7+</div><h2>LEVELS</h2><div class="grid">';
+function openMenu(){if(S.mode==='play')S.mode='pause';S.prevMode=S.mode;S.mode='menu';var h='<button id="close" aria-label="Close menu">✕</button><h1>BOULDER DODGE</h1><div>PLAY → JUMP · moguls launch · achievements unlock faster boards</div><h2>LEVELS</h2><div class="grid">';
  LEVELS.concat([ENDLESS]).forEach(function(L){var u=unlocked(L.n),d=PR.done.indexOf(L.n)>=0;h+='<button class="lv'+(d?' done':'')+'" data-l="'+L.n+'"'+(u?'':' disabled')+' aria-label="'+L.name+(u?'':' locked')+'"><b class="n">'+(u?(d?'✓':(L.endless?'∞':L.n)):'🔒')+'</b><span class="t">'+(L.endless?'Endless':L.n+'. '+L.name)+'<small>'+(u?L.sub+(L.doubleJump?' · 2× jump':'')+(PR.best[L.n]?' · Best '+PR.best[L.n]:''):(L.endless?'Clear levels 1–8 to unlock':'Clear level '+(L.n-1)+' to unlock'))+'</small></span></button>';});
- h+='</div><h2>BOARD</h2><div class="boards">';
- BOARDS.forEach(function(b){var o=boardOpen(b);if(!o&&b.unlock>0)return; // collapse: show unlocked only (+ locked teased as one line below)
-  h+='<button class="bd'+(board().id===b.id?' sel':'')+'" data-b="'+b.id+'"><span class="sw" style="background:linear-gradient('+b.c+' 0 55%,'+b.s+' 55% 75%,'+b.c+' 75%)"></span><span class="t">'+b.name+(board().id===b.id?' ★':'')+'</span></button>';});
- var locked=BOARDS.filter(function(b){return !boardOpen(b);});
- if(locked.length)h+='</div><p style="opacity:.65;font-size:12px;margin:8px">Locked boards unlock by clearing levels · next: '+locked[0].name+' (L'+locked[0].unlock+')';
- else h+='</div>';
- menu.innerHTML=h+'<p style="opacity:.7;font-size:12px;margin:14px 0 8px">Offline · progress on this device · v0.7.4</p><button id="resetP" style="min-height:48px;padding:10px 16px;border-radius:10px;border:2px solid #fff5;background:#5a1d1d;color:#fff;font:bold 14px sans-serif">Reset progress</button>';menu.style.display='block';syncUI();}
+ h+='</div><h2>BOARD LOCKER · speed</h2><div class="boards">';
+ BOARDS.forEach(function(b){var o=boardOpen(b),pct=Math.round((b.spd-1)*100),tag=pct?(' +'+pct+'%'):' stock';
+  if(o)h+='<button class="bd'+(board().id===b.id?' sel':'')+'" data-b="'+b.id+'"><span class="sw" style="background:linear-gradient('+b.c+' 0 55%,'+b.s+' 55% 75%,'+b.c+' 75%)"></span><span class="t">'+b.name+tag+(board().id===b.id?' ★':'')+'</span></button>';
+  else{var a=ACH[b.ach];h+='<button class="bd" disabled aria-label="'+b.name+' locked"><span class="sw" style="background:#333"></span><span class="t">🔒 '+b.name+tag+'<small>'+(a?a.how:'Locked')+'</small></span></button>';}});
+ h+='</div>';
+ menu.innerHTML=h+'<p style="opacity:.7;font-size:12px;margin:14px 0 8px">Offline · achievements + boards on this device · v0.7.5</p><button id="resetP" style="min-height:48px;padding:10px 16px;border-radius:10px;border:2px solid #fff5;background:#5a1d1d;color:#fff;font:bold 14px sans-serif">Reset progress</button>';menu.style.display='block';syncUI();}
 function closeMenu(){menu.style.display='none';syncUI();}
-function resetProgress(force){if(!force&&!confirm('Reset all unlocks, best scores and selected board on this device? Mute stays.'))return false;
- PR={done:[],board:'first',best:{}};saveP();pb=0;try{localStorage.removeItem(LS)}catch(e){}openMenu();return true;}
+function resetProgress(force){if(!force&&!confirm('Reset all unlocks, achievements, best scores and selected board on this device? Mute stays.'))return false;
+ PR={done:[],board:'first',best:{},ach:[]};saveP();pb=0;try{localStorage.removeItem(LS)}catch(e){}openMenu();return true;}
 menu.addEventListener('click',function(e){var b=e.target.closest('button');if(!b||b.disabled)return;if(b.id==='close'){document.getElementById('menuB').onclick.call(document.getElementById('menuB'));return;}
  if(b.id==='resetP'){resetProgress();return;}
  if(b.dataset.l){closeMenu();API.startLevel(+b.dataset.l);}else if(b.dataset.b){PR.board=b.dataset.b;saveP();openMenu();}});
@@ -462,15 +495,16 @@ document.addEventListener('visibilitychange',function(){
 if(window.matchMedia){try{window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',function(ev){reduceMotion=ev.matches;});}catch(e){}}
 // ---- STOMP future contract (arcade preview only) ----
 var API=window.BoulderDodge={
- version:'0.7.4',
+ version:'0.7.5',
  start:function(){if(S.mode==='menu'){closeMenu();reset(null,LV);}if(S.mode==='ready'||S.mode==='over'||S.mode==='clear'){if(S.mode!=='ready')reset(null,LV);S.mode='play';S.playAt=performance.now();}syncUI();},
  startLevel:function(n){var L=n===9?ENDLESS:LEVELS[n-1];if(!L||(!unlocked(n)&&!TEST))return false;closeMenu();reset(null,L);S.mode='ready';pausedByHide=false;syncUI();announce(L.name+(L.doubleJump?' double-jump on':''));return true;},
  startEndless:function(){return API.startLevel(9);},
  openMenu:function(){openMenu();},
  getLevels:function(){return LEVELS.concat([ENDLESS]).map(function(L){return {n:L.n,name:L.name,unlocked:unlocked(L.n),completed:PR.done.indexOf(L.n)>=0,best:PR.best[L.n]||0,endless:!!L.endless,doubleJump:!!L.doubleJump};});},
  getCurrentLevel:function(){return {n:LV.n,name:LV.name,progress:isFinite(LV.len)?Math.min(1,S.dist/LV.len):null,doubleJump:!!LV.doubleJump};},
- getProgress:function(){return JSON.parse(JSON.stringify({completed:PR.done,best:PR.best,board:board().id,endlessUnlocked:endlessOpen()}));},
- getBoards:function(){return BOARDS.map(function(b){return {id:b.id,name:b.name,unlocked:boardOpen(b),selected:board().id===b.id,unlockLevel:b.unlock};});},
+ getProgress:function(){return JSON.parse(JSON.stringify({completed:PR.done,best:PR.best,board:board().id,achievements:PR.ach.slice(),endlessUnlocked:endlessOpen()}));},
+ getBoards:function(){return BOARDS.map(function(b){var a=b.ach&&ACH[b.ach];return {id:b.id,name:b.name,spd:b.spd,unlocked:boardOpen(b),selected:board().id===b.id,achievement:b.ach||null,how:a?a.how:null};});},
+ getAchievements:function(){return Object.keys(ACH).map(function(id){var a=ACH[id],bb=boardForAch(id);return {id:id,name:a.name,how:a.how,earned:PR.ach.indexOf(id)>=0,board:bb?bb.id:null,spd:bb?bb.spd:null};});},
  selectBoard:function(id){var b=BOARDS.filter(function(x){return x.id===id})[0];if(!b||!boardOpen(b))return false;PR.board=id;saveP();return true;},
  pause:function(){if(S.mode==='play'){S.mode='pause';pausedByHide=false;syncUI();}},
  resume:function(){if(S.mode==='pause'){S.mode='play';pausedByHide=false;syncUI();}},
@@ -478,16 +512,16 @@ var API=window.BoulderDodge={
  getState:function(){return S.mode;},
  getScore:function(){return score();},
  getPersonalBest:function(){return pb;},
- exportScoreSummary:function(){return {game:'boulder-dodge',version:API.version,score:score(),distance:Math.floor(S.dist/10),cleared:S.cleared,varietyBonus:S.bonus,kindsCleared:Object.keys(S.seen),durationSec:+S.t.toFixed(2),personalBest:pb,finished:S.mode==='over'||S.mode==='clear',levelCompleted:S.done,level:LV.n,levelName:LV.name,pickups:S.pick,bumps:S.bumpN,board:board().id,doubleJump:!!LV.doubleJump,arcadeOnly:true,verifiedAchievement:false,timestamp:new Date().toISOString()};},
- _t:{step:step,jump:jump,state:function(){return S},consts:{AIR:AIR,MAXH:MAXH,KINDS:KINDS,DT:DT,REACT:REACT,LEVELS:LEVELS,ENDLESS:ENDLESS,BOARDS:BOARDS,HILL:HILL},reset:reset,fits:fits,terr:function(x){return terr(x)},gY:gY,planted:planted,visOff:function(o,sx){return H(sx);},resetProgress:function(){return resetProgress(true);},syncUI:syncUI,setGod:function(g){GOD=!!g},tick:tick,draw:function(){draw()},setW:function(w){W=w},getW:function(){return W},ctx:function(){return cx},scale:function(){return [scale,OY]},wipe:function(){PR.done=[];PR.best={};PR.board='first';saveP();},airStats:airStats}
+ exportScoreSummary:function(){return {game:'boulder-dodge',version:API.version,score:score(),distance:Math.floor(S.dist/10),cleared:S.cleared,varietyBonus:S.bonus,kindsCleared:Object.keys(S.seen),durationSec:+S.t.toFixed(2),personalBest:pb,finished:S.mode==='over'||S.mode==='clear',levelCompleted:S.done,level:LV.n,levelName:LV.name,pickups:S.pick,bumps:S.bumpN,board:board().id,boardSpd:boardSpd(),achievements:PR.ach.slice(),doubleJump:!!LV.doubleJump,arcadeOnly:true,verifiedAchievement:false,timestamp:new Date().toISOString()};},
+ _t:{step:step,jump:jump,state:function(){return S},consts:{AIR:AIR,MAXH:MAXH,KINDS:KINDS,DT:DT,REACT:REACT,LEVELS:LEVELS,ENDLESS:ENDLESS,BOARDS:BOARDS,ACH:ACH,HILL:HILL,BUMP_A:BUMP_A,BUMP_W:BUMP_W},reset:reset,fits:fits,terr:function(x){return terr(x)},bumpH:function(x){return bumpH(x)},gY:gY,planted:planted,visOff:function(o,sx){return H(sx);},resetProgress:function(){return resetProgress(true);},syncUI:syncUI,setGod:function(g){GOD=!!g},tick:tick,draw:function(){draw()},setW:function(w){W=w},getW:function(){return W},ctx:function(){return cx},scale:function(){return [scale,OY]},wipe:function(){PR.done=[];PR.best={};PR.board='first';PR.ach=[];saveP();},earnAch:earnAch,boardSpd:boardSpd,airStats:airStats}
 };
 if(/[?&]test=1/.test(location.search)){Object.defineProperty(API,'_test',{value:API._t,enumerable:false});}delete API._t;Object.freeze(API);
 addEventListener('resize',resize);resize();
 reset(null,LEVELS[0]);S.mode='ready';requestAnimationFrame(function(ts){last=ts;frame(ts);});syncUI();announce('Boulder Dodge ready. Tap PLAY.');
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
- var swUrl='sw.js?v=7-4',swScope='./';
+ var swUrl='sw.js?v=7-5',swScope='./';
  navigator.serviceWorker.register(swUrl,{scope:swScope}).then(function(reg){if(reg.update)reg.update();}).catch(function(){});
- if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){if(k.indexOf('boulder-dodge-')===0&&k!=='boulder-dodge-v7-4')caches.delete(k);});});
+ if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){if(k.indexOf('boulder-dodge-')===0&&k!=='boulder-dodge-v7-5')caches.delete(k);});});
 }
 addEventListener('orientationchange',function(){setTimeout(resize,50);});
 })();
