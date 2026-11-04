@@ -102,7 +102,8 @@ Head leftovers remain **OPEN**. Android / production 11-slot gate remains **fail
 
 | Field | Value |
 |---|---|
-| CI green tip | _(pending body-clip tip)_ |
-| CI | _(pending both pr-verify)_ |
+| CI green tip | `e0fb4b29827bc0413d78d19e1748b266140c3bd2` |
+| CI | both pr-verify **SUCCESS** — [run 41840811073](https://github.com/Burnsted/stomp-preview/actions/runs/41840811073) |
+| Jobs | `batch1 typecheck + test` · `gb-phone typecheck + woz tests + build` |
 | Receipt | `T1197U-VERIFICATION-RECEIPT.md` |
-| Status | **REGISTERED_VISUAL_PROTOTYPE_ONLY** |
+| Status | **REGISTERED_VISUAL_PROTOTYPE_ONLY** — no Android / Pages / merge PASS |
