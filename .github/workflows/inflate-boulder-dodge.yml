@@ -22,14 +22,14 @@ jobs:
           pathlib.Path('arcade/boulder-dodge/index.html').write_bytes(raw)
           text = raw.decode('utf-8')
           assert text.startswith('<!DOCTYPE html')
-          assert "version:'0.7.5'" in text
+          assert "version:'0.7.6'" in text
+          assert 'TAB_DK' in text
+          assert 'POST_LIP' in text
+          assert 'holdSet' in text
+          assert 'SPD_PER_2LV' in text
+          assert 'KICK_A' in text
           assert 'jumpBoing' in text
           assert 'doubleJump' in text
-          assert 'gY' in text
-          assert 'FIT_H' in text
-          assert 'BUMP_A' in text
-          assert 'boardSpd' in text
-          assert 'earnAch' in text
           print('bytes', len(raw))
           PY
       - name: Commit inflated file
@@ -37,5 +37,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add arcade/boulder-dodge/index.html
-          git diff --cached --quiet || git commit -m "feat: boulder-dodge v0.7.5 moguls + achievement speed boards [skip ci]"
+          git diff --cached --quiet || git commit -m "feat: boulder-dodge v0.7.6 tabletops flip combo difficulty [skip ci]"
           git push
