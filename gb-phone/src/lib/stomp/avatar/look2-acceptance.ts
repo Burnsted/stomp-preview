@@ -153,8 +153,10 @@ export const LOOK2_GATE_STATUS = {
   runtimeCanvas: 512 as const,
   commonScale: 0.5 as const,
   status: "REGISTERED_VISUAL_PROTOTYPE_ONLY" as const,
-  preferredPack: "franz-head-cleanup" as const,
+  preferredPack: "franz-finishing" as const,
   sourceZipSha256:
+    "2118bdc84855f2aae526fdaf6111d014e5d990dd0705a1354113988b67bdbd84" as const,
+  priorHeadCleanupZipSha256:
     "6be4a58b610493c18d8be4ae85e22259b59f0b96b1048ef562b5710e37d9bff6" as const,
   priorBodyClipZipSha256:
     "b713687909462d4e91efcd19032a2b0ebd575d1e44628bdc58564815377f7f86" as const,
@@ -163,11 +165,20 @@ export const LOOK2_GATE_STATUS = {
   priorMorningZipSha256:
     "62b7bdcefec632a31e8f95c0c8e298d78a85fd7c2cf132bc950e90aed8ea3f89" as const,
   bodySha256:
-    "21a12aca8ac4f24f2e862e19b6eadb357e82e77d52a353a3a9c9c75516516671" as const,
+    "85ecf3646890a4e4a730f7045a34b8284fbea8aa5dbeb4b0d26614873d26d37a" as const,
   faceLockedSha256:
-    "1b96222995092646c8f91e55d9f5025d9a318b002dcaa7e26108c183c8bc2ebf" as const,
+    "c2ffcbd901648b718d71d468f31090b959459b97b7fd9a7d25ca6044580bd434" as const,
+  jacketMintSha256:
+    "2c7e796345854bd27eddfbdeacaa32adcd1889735c8cb31379819a49d0f12c1e" as const,
+  jacketInkSha256:
+    "1611f0fb5d4f868c0439624dbce2092f6a2f26e884c766bf6dc98c4c10056462" as const,
+  pantsMintSha256:
+    "1f21b5f90f7c659ba478011d23228c1a1ef9dd276845a92210754a05fc6ab1ce" as const,
+  pantsInkSha256:
+    "904c32b7df3bd7b2c3c7415cd1282230338b5ff2dc7e37bc60404881ad22227d" as const,
   crotchClip: "DONE" as const,
-  headCleanup: "STAGED" as const,
+  headCleanup: "SUPERSEDED_BY_FINISHING" as const,
+  finishing: "STAGED" as const,
   sourceZip:
     "docs/modular-prototype-t1197u/art-pass/look2-f-hana-REGISTERED-PROTOTYPE.ora" as const,
   registrationContract: "docs/modular-alignment-t1194u/REGISTRATION-CONTRACT.md" as const,
@@ -179,12 +190,13 @@ export const LOOK2_GATE_STATUS = {
     "goggles (separated)",
     "board (real bindings)",
   ] as const,
-  /** Franz staged head cleanup — residual jaw step may remain; no owner visual PASS claimed. */
+  /** Franz finishing staged — no owner visual PASS / Android PASS claimed. */
   openArtRepairs: [
-    "residual tiny jaw step may remain in locked face rows 0–156 (not owner visual acceptance)",
+    "owner visual acceptance of finishing pack not claimed",
     "body painted graphic not photo anatomy; shoulder line approximate",
     "ink green-excess edge pass deferred",
     "Android device proof not run",
+    "production 11-slot separated face/hair/helmet/goggles + real board still missing",
   ] as const,
 };
 

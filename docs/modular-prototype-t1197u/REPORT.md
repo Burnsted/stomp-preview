@@ -1,28 +1,29 @@
-# REPORT — t1197u Franz head cleanup (DRAFT)
+# REPORT — t1202u Franz finishing + prove-out (DRAFT)
 
-**Title:** DRAFT t1197u — Look 2 registered visual prototype (head-cleanup)  
-**Owner:** Ted Burns (`t1197u`)  
+**Title:** DRAFT t1202u — Look 2 finishing batch (Franz pack + AvatarRenderer phone proofs)  
+**Owner:** Ted Burns (`t1202u`)  
 **PR:** draft [#27](https://github.com/Burnsted/stomp-preview/pull/27)  
 **Branch:** `cursor/modular-look2-alignment-t1194u-a5c4`  
-**Status:** **REGISTERED_VISUAL_PROTOTYPE_ONLY** — not Android-accepted · not Pages · no merge claim · **no owner visual acceptance claimed**
+**Status:** **REGISTERED_VISUAL_PROTOTYPE_ONLY** — not Android-accepted · not Pages · no merge claim · **no owner visual PASS claimed**
 
 ## Verdict
 
-Franz **head-cleanup** pack re-ingested on draft #27 (face + body).  
-Jacket-off leftovers staged: chin notch feathered (**residual jaw step possible**); braid wisp **CLEARED**; chest slashes **CLEARED**.  
-Crotch dark-T still **CLEARED** on B/C; A torso tuck **OK**.  
-AvatarRenderer A/B/C **PROTOTYPE_RENDERED**.  
-Android / production 11-slot gate remains **fail-closed**.
+Franz **finishing** pack re-ingested on draft #27 (face/body/jacket mint+ink/pants mint+ink).  
+Gloves/boots unchanged.  
+AvatarRenderer + real Locker paths recomposed A/B/C on ~390×844 phone viewport.  
+Mint↔ink swap + jacket-off hold face/hair/stance registration (zero bbox drift).  
+Name + outfit persist across reload; backpack OFF; `acceptanceEligible=false` for prototype.  
+HQ-cited defects (arm gap, jaw, waist band, wrist gaps) triage **PASS** on phone closeups (engineering only).  
+**Merge remains NO-GO** awaiting owner visual acceptance. Android Batch E **NOT RUN**.
 
 ## Preferred source
 
 | Field | Value |
 |---|---|
-| Pack | `franz-head-cleanup.zip` |
-| sha256 | `6be4a58b610493c18d8be4ae85e22259b59f0b96b1048ef562b5710e37d9bff6` |
-| Drive | https://drive.google.com/file/d/1PqLFxVx4o8q6oSQ1iWkU08AnGmR4nFhG/view |
-| Prior body-clip ZIP | `b713687909462d4e91efcd19032a2b0ebd575d1e44628bdc58564815377f7f86` |
-| Prior art-pass ZIP | `75d1dd0377bd9f4223631e25661e97831e23a563f8735ecaa3829a991b326762` |
+| Pack | `franz-finishing` |
+| sha256 | `2118bdc84855f2aae526fdaf6111d014e5d990dd0705a1354113988b67bdbd84` |
+| Drive | https://drive.google.com/file/d/1Tg0OG-9poiaLKscqx8jdrpXGicMIxTby/view |
+| Prior head-cleanup ZIP | `6be4a58b610493c18d8be4ae85e22259b59f0b96b1048ef562b5710e37d9bff6` |
 | ARTWORK-STATUS | `docs/modular-prototype-t1197u/art-pass/ARTWORK-STATUS.md` |
 | ORA | `docs/modular-prototype-t1197u/art-pass/look2-f-hana-REGISTERED-PROTOTYPE.ora` |
 
@@ -30,57 +31,66 @@ Android / production 11-slot gate remains **fail-closed**.
 
 | Plate | sha256 |
 |---|---|
-| `face-f-hana-locked-composite@512.webp` | `1b96222995092646c8f91e55d9f5025d9a318b002dcaa7e26108c183c8bc2ebf` (9838 B) |
-| `body-athletic@512.webp` | `21a12aca8ac4f24f2e862e19b6eadb357e82e77d52a353a3a9c9c75516516671` (6808 B) |
-| `jacket-look2-ink@512.webp` | `d22534a9e700cf29b0b45a2c0106c6848136288ecc8e3b9c23bdbb3e33ce5206` |
-| `pants-look2-ink@512.webp` | `6fe342fea91bc14086a3d9d2006e256d5cf1f81c0ad4b2103cc49e893adf9279` |
+| `face-f-hana-locked-composite@512.webp` | `c2ffcbd901648b718d71d468f31090b959459b97b7fd9a7d25ca6044580bd434` (10090 B) |
+| `body-athletic@512.webp` | `85ecf3646890a4e4a730f7045a34b8284fbea8aa5dbeb4b0d26614873d26d37a` (6930 B) |
+| `jacket-look2-mint@512.webp` | `2c7e796345854bd27eddfbdeacaa32adcd1889735c8cb31379819a49d0f12c1e` |
+| `jacket-look2-ink@512.webp` | `1611f0fb5d4f868c0439624dbce2092f6a2f26e884c766bf6dc98c4c10056462` |
+| `pants-look2-mint@512.webp` | `1f21b5f90f7c659ba478011d23228c1a1ef9dd276845a92210754a05fc6ab1ce` |
+| `pants-look2-ink@512.webp` | `904c32b7df3bd7b2c3c7415cd1282230338b5ff2dc7e37bc60404881ad22227d` |
+| `gloves-look2-photo@512.webp` | `abf6339e…` (unchanged) |
+| `boots-look2-photo@512.webp` | `449eee37…` (unchanged) |
 
-## Head cleanup (staged — not owner PASS)
+## Phone-viewport proofs (real Locker + AvatarRenderer)
 
-| Leftover | Verdict | Notes |
-|---|---|---|
-| Chin notch | **CLEARED_WITH_RESIDUAL_JAW_STEP** | Alpha feather below jaw; tiny step may remain in locked face rows |
-| Braid wisp | **CLEARED** | Stray strand zeroed; main braid kept |
-| Chest slashes | **CLEARED** | Face-plate opaque y≥108: 111→0 |
-| Owner visual acceptance | **NOT claimed** | Ted OK-to-clean ≠ acceptance / Android PASS |
-
-Evidence: `evidence/A-jacket-off-before-after.png`, `qa/*_before_after.png`, `proofs/A_B_C_HEAD_CLEAN_2026-11-04.png`, `evidence/head-cleanup-metrics.json`
-
-## Crotch clip (still holds)
-
-| Field | Value |
+| Item | Path |
 |---|---|
-| Status | **CLEARED** on B mint + C ink |
-| A torso above waist | **OK** |
-| Metrics | `evidence/head-cleanup-metrics.json` · `evidence/crotch-clip-metrics.json` |
+| A / B / C full phone | `finishing/A-jacket-off-phone-390x844.png` · `B-mint-…` · `C-ink-…` |
+| Avatar crops | `finishing/*-avatar.png` |
+| Closeups (head/cuffs/waist/crotch/boots) | `finishing/closeups/` |
+| Side-by-side | `finishing/ABC-phone-locker-side-by-side.png` · `evidence/ABC-finishing-phone-side-by-side.png` |
+| Manifest | `finishing/phone-viewport-manifest.json` |
+| Franz baseline proof | `proofs/A_B_C_FINISHING_2026-11-04.png` |
 
-## Wiring
+**Honesty:** browser 390×844 ≠ Android PASS.
 
-- Catalog mint↔ink; jacket-off body; locked head composite
-- `LOOK2_GATE_STATUS`: `PROTOTYPE_8_OF_11` · `headCleanup=STAGED` · `crotchClip=DONE` · `androidAccepted=false`
-- Android gate fail-closed on prototype outfit
+## Defect matrix (HQ NO-GO items)
 
-## Franz repair list
+See `finishing/defect-matrix/DEFECT-MATRIX.md` + annotated sheet.
 
-### Repaired / staged on disk
-1. Body underlayer (art-pass) + crotch clip
-2. Ink charcoal (mint-halos visually cleared)
-3. Head cleanup: chin feather / braid wisp / chest slash zeros + body collar fill
+| HQ issue | Engineering triage |
+|---|---|
+| Uncovered/gray arm-hand gap (jacket-off) | **PASS** (phone closeup) |
+| Abrupt neckline/jaw | **PASS** (soft collar; residual micro-step not owner PASS) |
+| Dark rectangular waist seam B/C | **PASS** |
+| Wrist/sleeve gaps clothed | **PASS** |
 
-### Still OPEN / honesty
-1. Residual tiny jaw step in locked face rows possible
-2. Body painted graphic ≠ photo anatomy
-3. Ink green-excess edge pass deferred
-4. Separated face/hair/headwear/goggles + real board missing (8-of-11)
-5. Android device proof not run
-6. **No owner visual acceptance / Android PASS claim**
+Franz paint-from notes kept in matrix for any owner residual finds.
+
+## 8-of-11 vs production 11
+
+| Slot | Prototype | Production need |
+|---|---|---|
+| body / jacket mint+ink / pants mint+ink / gloves photo / boots photo / locked head | **PRESENT** | — |
+| face / hair / helmet / goggles separated | locked composite only | **NEED genuine source art** |
+| board + bindings | `board-none` | **NEED genuine source art** |
+
+`LOOK2_GATE_STATUS`: `PROTOTYPE_8_OF_11` · `finishing=STAGED` · `crotchClip=DONE` · `androidAccepted=false`
+
+## Code / tests this batch
+
+- `AvatarRenderer`: Look 2 `data-acceptance-eligible` now gate-owned (prototype stays false)
+- `scripts/look2-finishing-phone-proofs.mjs` — Locker A/B/C phone captures
+- `tests/woz/update02/look2-finishing-t1202u.test.tsx` — swap / persist / fail-closed harness
+- Manifest + acceptance hashes pinned to finishing pack
+
+## Android Batch E
+
+**NOT RUN** — see `finishing/ANDROID-BATCH-E-NOT-RUN.md` + updated `BATCH-E-LOOK2-ANDROID-CHECKLIST.md`.
 
 ## CI
 
 | Field | Value |
 |---|---|
-| CI green tip | `5f0941f94cb8f4d9d63599a4fb4cb8d2a1adda4f` |
-| CI | both pr-verify **SUCCESS** — [run 41842633799](https://github.com/Burnsted/stomp-preview/actions/runs/41842633799) |
-| Jobs | `batch1 typecheck + test` · `gb-phone typecheck + woz tests + build` |
-| Receipt | `T1197U-VERIFICATION-RECEIPT.md` |
+| Tip SHA | _(pinned after green CI)_ |
+| Receipt | `T1202U-FINISHING-RECEIPT.md` |
 | Status | **REGISTERED_VISUAL_PROTOTYPE_ONLY** — no Android / Pages / merge / owner visual PASS |

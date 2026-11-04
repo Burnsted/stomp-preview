@@ -157,7 +157,9 @@ describe("t1179u Batch D — verify + harden", () => {
     render(<AvatarRenderer config={cfg} testId="batch-d-look2" />);
     const el = screen.getByTestId("batch-d-look2");
     expect(el.getAttribute("data-render-mode")).toBe("plates");
-    expect(el.getAttribute("data-acceptance-eligible")).toBe("true");
+    // Prototype starter outfit: plates complete, Android acceptanceEligible stays false
+    expect(el.getAttribute("data-acceptance-eligible")).toBe("false");
+    expect(el.getAttribute("data-prototype-only")).toBe("true");
     expect(el.getAttribute("data-plate-complete")).toBe("true");
     expect(Number(el.getAttribute("data-required-plates"))).toBeGreaterThan(5);
 

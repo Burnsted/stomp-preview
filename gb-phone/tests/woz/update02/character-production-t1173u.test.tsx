@@ -216,7 +216,9 @@ describe("t1177u — Look 2 mint acceptance / plate-renderer contract", () => {
     expect(swapped.pants.itemId).toBe("pants-look2-mint");
     render(<AvatarRenderer config={cfg} testId="look2-render" />);
     expect(screen.getByTestId("look2-render").getAttribute("data-render-mode")).toBe("plates");
-    expect(screen.getByTestId("look2-render").getAttribute("data-acceptance-eligible")).toBe("true");
+    // f-hana starter defaults are Franz prototype 8-of-11 — Android eligibility fail-closed
+    expect(screen.getByTestId("look2-render").getAttribute("data-acceptance-eligible")).toBe("false");
+    expect(screen.getByTestId("look2-render").getAttribute("data-prototype-only")).toBe("true");
     expect(screen.getByTestId("look2-render").getAttribute("data-starter")).toBe("f-hana");
     expect(screen.getByTestId("look2-render").getAttribute("data-backpack")).toBe("off");
   });

@@ -106,41 +106,42 @@ describe("t1194u/t1197u — Look 2 fixed registration (honest visual gate)", () 
       p.url.includes("pants-look2-ink"),
     )!;
     expect(body.sha256).toBe(
-      "21a12aca8ac4f24f2e862e19b6eadb357e82e77d52a353a3a9c9c75516516671",
+      "85ecf3646890a4e4a730f7045a34b8284fbea8aa5dbeb4b0d26614873d26d37a",
     );
-    expect(body.bytes).toBe(6808);
+    expect(body.bytes).toBe(6930);
     const face = LOOK2_PLATE_MANIFEST.plates.find((p) =>
       p.url.includes("face-f-hana-locked-composite"),
     )!;
     expect(face.sha256).toBe(
-      "1b96222995092646c8f91e55d9f5025d9a318b002dcaa7e26108c183c8bc2ebf",
+      "c2ffcbd901648b718d71d468f31090b959459b97b7fd9a7d25ca6044580bd434",
     );
-    expect(face.bytes).toBe(9838);
+    expect(face.bytes).toBe(10090);
     expect(LOOK2_GATE_STATUS.crotchClip).toBe("DONE");
-    expect(LOOK2_GATE_STATUS.headCleanup).toBe("STAGED");
+    expect(LOOK2_GATE_STATUS.headCleanup).toBe("SUPERSEDED_BY_FINISHING");
+    expect(LOOK2_GATE_STATUS.finishing).toBe("STAGED");
     expect(LOOK2_GATE_STATUS.bodySha256).toBe(
-      "21a12aca8ac4f24f2e862e19b6eadb357e82e77d52a353a3a9c9c75516516671",
+      "85ecf3646890a4e4a730f7045a34b8284fbea8aa5dbeb4b0d26614873d26d37a",
     );
     expect(LOOK2_GATE_STATUS.faceLockedSha256).toBe(
-      "1b96222995092646c8f91e55d9f5025d9a318b002dcaa7e26108c183c8bc2ebf",
+      "c2ffcbd901648b718d71d468f31090b959459b97b7fd9a7d25ca6044580bd434",
     );
     expect(inkJ.sha256).toBe(
-      "d22534a9e700cf29b0b45a2c0106c6848136288ecc8e3b9c23bdbb3e33ce5206",
+      "1611f0fb5d4f868c0439624dbce2092f6a2f26e884c766bf6dc98c4c10056462",
     );
     expect(inkP.sha256).toBe(
-      "6fe342fea91bc14086a3d9d2006e256d5cf1f81c0ad4b2103cc49e893adf9279",
+      "904c32b7df3bd7b2c3c7415cd1282230338b5ff2dc7e37bc60404881ad22227d",
     );
     expect(LOOK2_PLATE_MANIFEST.sourceZipSha256).toBe(
-      "6be4a58b610493c18d8be4ae85e22259b59f0b96b1048ef562b5710e37d9bff6",
+      "2118bdc84855f2aae526fdaf6111d014e5d990dd0705a1354113988b67bdbd84",
     );
-    expect(LOOK2_PLATE_MANIFEST.preferredPack).toBe("franz-head-cleanup");
+    expect(LOOK2_PLATE_MANIFEST.preferredPack).toBe("franz-finishing");
     expect(LOOK2_PLATE_MANIFEST.crotchClip?.status).toBe("DONE");
-    expect(LOOK2_PLATE_MANIFEST.headCleanupNotes?.owner_visual_acceptance_claimed).toBe(
+    expect(LOOK2_PLATE_MANIFEST.finishingNotes?.owner_visual_acceptance_claimed).toBe(
       false,
     );
-    expect(LOOK2_GATE_STATUS.openArtRepairs.join(" ")).toMatch(/jaw step/);
+    expect(LOOK2_GATE_STATUS.openArtRepairs.join(" ")).toMatch(/owner visual acceptance/);
     expect(existsSync(resolve(T1197, "art-pass/ARTWORK-STATUS.md"))).toBe(true);
-    expect(existsSync(resolve(T1197, "evidence/ABC-headclean-side-by-side.png"))).toBe(true);
+    expect(existsSync(resolve(T1197, "proofs/A_B_C_FINISHING_2026-11-04.png"))).toBe(true);
     expect(existsSync(resolve(T1197, "evidence/A-jacket-off-before-after.png"))).toBe(true);
     // Historical t1194u underlayer evidence retained for audit trail
     expect(existsSync(resolve(T1194, "evidence/validation-summary.json"))).toBe(true);

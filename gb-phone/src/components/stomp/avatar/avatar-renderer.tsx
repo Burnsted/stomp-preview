@@ -18,6 +18,8 @@ import {
   evaluatePlateAssembly,
   type PlateProbeStatus,
 } from "@/lib/stomp/avatar/plate-assembly";
+import { LOOK2_STARTER_ID } from "@/lib/stomp/avatar/look2-acceptance";
+import { evaluateLook2MintGate } from "@/lib/stomp/avatar/plate-registry";
 import { starterById } from "@/lib/stomp/avatar/starters";
 import { useAvatar } from "@/lib/stomp/avatar/store";
 import type { AvatarConfig } from "@/lib/stomp/avatar/types";
@@ -175,6 +177,18 @@ export function AvatarRenderer({
 
   const usePlates = assembly.renderMode === "plates" && assembly.complete;
   const backpackOff = backpackLayer.itemId === BACKPACK_OFF_ITEM_ID;
+  // Look 2 Android eligibility is gate-owned (prototype 8-of-11 stays fail-closed).
+  // Non-Look2 keeps assembly.acceptanceEligible (complete plate set only).
+  const look2Gate =
+    config.starterId === LOOK2_STARTER_ID
+      ? evaluateLook2MintGate({
+          config: configWithBackpack,
+          plateProbe: (url) => probeMap[url] ?? "pending",
+        })
+      : null;
+  const acceptanceEligible = look2Gate
+    ? look2Gate.acceptanceEligible
+    : assembly.acceptanceEligible;
 
   useEffect(() => {
     if (!flash || reducedMotion) return;
@@ -213,7 +227,8 @@ export function AvatarRenderer({
     "data-missing-plates": String(assembly.missingUrls.length),
     "data-present-plates": String(assembly.presentUrls.length),
     "data-required-plates": String(assembly.required.length),
-    "data-acceptance-eligible": assembly.acceptanceEligible ? "true" : "false",
+    "data-acceptance-eligible": acceptanceEligible ? "true" : "false",
+    "data-prototype-only": look2Gate?.prototypeOnly ? "true" : "false",
     "data-backpack": backpackOff ? "off" : backpackLayer.itemId,
     "data-board": config.layers.board.itemId,
     "data-goggles": config.layers.goggles.itemId,

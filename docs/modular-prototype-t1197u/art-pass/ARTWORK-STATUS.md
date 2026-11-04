@@ -25,3 +25,11 @@ Status: **REGISTERED_VISUAL_PROTOTYPE_ONLY** (not Android-accepted; not a comple
 - Crotch: CLEARED (Woz #27, e0fb4b2)
 - Status: REGISTERED_VISUAL_PROTOTYPE_ONLY (not Android-accepted)
 - Residual: tiny jaw step may remain in locked face rows (face ROI kept byte-identical).
+
+## FINISHING 2026-11-04
+- Painted (body plate): jacket-off sleeve/forearm/wrist gap fill inside jacket silhouette connecting torso→glove tops (neighbor-sampled ~RGB 33,37,45, morphological closing, soft edge); under-chin collar soft fill.
+- Waist: body clipped where pants alpha>40 (only 6px half-strength seam blend at y 515–521); nothing below y 521 → no dark waist band on B/C. Crotch CLEARED retained (no gap fill).
+- Neck/jaw: head alpha-only feather on hard cut edge at y>=157; no face/eye/goggle/helmet/pose change; braid mass kept; no slashes/wisps restored.
+- Face webp sha256: c2ffcbd901648b718d71d468f31090b959459b97b7fd9a7d25ca6044580bd434
+- Body webp sha256: 85ecf3646890a4e4a730f7045a34b8284fbea8aa5dbeb4b0d26614873d26d37a
+- Status: REGISTERED_VISUAL_PROTOTYPE_ONLY (not Android PASS, not owner visual PASS)

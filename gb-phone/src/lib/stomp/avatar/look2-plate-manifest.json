@@ -1,12 +1,12 @@
 {
-  "task": "t1197u",
+  "task": "t1202u",
   "status": "REGISTERED_VISUAL_PROTOTYPE_ONLY",
   "artPass": "2026-11-04",
   "bodyClip": "2026-11-04",
-  "sourceZipSha256": "6be4a58b610493c18d8be4ae85e22259b59f0b96b1048ef562b5710e37d9bff6",
+  "sourceZipSha256": "2118bdc84855f2aae526fdaf6111d014e5d990dd0705a1354113988b67bdbd84",
   "priorArtPassZipSha256": "75d1dd0377bd9f4223631e25661e97831e23a563f8735ecaa3829a991b326762",
   "priorMorningZipSha256": "62b7bdcefec632a31e8f95c0c8e298d78a85fd7c2cf132bc950e90aed8ea3f89",
-  "preferredPack": "franz-head-cleanup",
+  "preferredPack": "franz-finishing",
   "sourceSheet": "docs/character-production-t1173u/masters/look2-f-hana-MODULAR-SHEET.png",
   "sourceSha256": "e273e6c13142cf068d25fc1c18503d1d59e947e8af52fee54b9c8e2abda93322",
   "sourceSize": [
@@ -38,10 +38,11 @@
     "board (real bindings)"
   ],
   "openArtRepairs": [
-    "residual tiny jaw step may remain in locked face rows 0\u2013156 (byte-identical ROI; not claimed owner visual acceptance)",
+    "owner visual acceptance of finishing pack not claimed",
     "body painted graphic not photo anatomy; shoulder line approximate",
     "ink green-excess edge pass deferred",
-    "Android device proof not run"
+    "Android device proof not run",
+    "production 11-slot separated face/hair/helmet/goggles + real board still missing"
   ],
   "crotchClip": {
     "status": "DONE",
@@ -54,8 +55,8 @@
       "slot": "jacket_mint",
       "path": "gb-phone/public/stomper/adult/jacket/jacket-look2-mint@512.webp",
       "url": "/stomper/adult/jacket/jacket-look2-mint@512.webp",
-      "sha256": "66dea635583a966453a2c6db8bf825edf5bcf1651e7a487ad3035cd5d56b2e35",
-      "bytes": 34246,
+      "sha256": "2c7e796345854bd27eddfbdeacaa32adcd1889735c8cb31379819a49d0f12c1e",
+      "bytes": 34274,
       "size": [
         512,
         512
@@ -65,8 +66,8 @@
       "slot": "pants_mint",
       "path": "gb-phone/public/stomper/adult/pants/pants-look2-mint@512.webp",
       "url": "/stomper/adult/pants/pants-look2-mint@512.webp",
-      "sha256": "0946a9546913a9aa402d1348f9710c4930679e181d2a947ad31ece1eb353f8b7",
-      "bytes": 33322,
+      "sha256": "1f21b5f90f7c659ba478011d23228c1a1ef9dd276845a92210754a05fc6ab1ce",
+      "bytes": 33366,
       "size": [
         512,
         512
@@ -76,8 +77,8 @@
       "slot": "body",
       "path": "gb-phone/public/stomper/adult/body/body-athletic@512.webp",
       "url": "/stomper/adult/body/body-athletic@512.webp",
-      "sha256": "21a12aca8ac4f24f2e862e19b6eadb357e82e77d52a353a3a9c9c75516516671",
-      "bytes": 6808,
+      "sha256": "85ecf3646890a4e4a730f7045a34b8284fbea8aa5dbeb4b0d26614873d26d37a",
+      "bytes": 6930,
       "size": [
         512,
         512
@@ -175,8 +176,8 @@
       "slot": "jacket_ink",
       "path": "gb-phone/public/stomper/adult/jacket/jacket-look2-ink@512.webp",
       "url": "/stomper/adult/jacket/jacket-look2-ink@512.webp",
-      "sha256": "d22534a9e700cf29b0b45a2c0106c6848136288ecc8e3b9c23bdbb3e33ce5206",
-      "bytes": 16204,
+      "sha256": "1611f0fb5d4f868c0439624dbce2092f6a2f26e884c766bf6dc98c4c10056462",
+      "bytes": 16182,
       "size": [
         512,
         512
@@ -186,8 +187,8 @@
       "slot": "pants_ink",
       "path": "gb-phone/public/stomper/adult/pants/pants-look2-ink@512.webp",
       "url": "/stomper/adult/pants/pants-look2-ink@512.webp",
-      "sha256": "6fe342fea91bc14086a3d9d2006e256d5cf1f81c0ad4b2103cc49e893adf9279",
-      "bytes": 18846,
+      "sha256": "904c32b7df3bd7b2c3c7415cd1282230338b5ff2dc7e37bc60404881ad22227d",
+      "bytes": 18906,
       "size": [
         512,
         512
@@ -197,8 +198,8 @@
       "slot": "head_locked",
       "path": "gb-phone/public/stomper/adult/face/face-f-hana-locked-composite@512.webp",
       "url": "/stomper/adult/face/face-f-hana-locked-composite@512.webp",
-      "sha256": "1b96222995092646c8f91e55d9f5025d9a318b002dcaa7e26108c183c8bc2ebf",
-      "bytes": 9838,
+      "sha256": "c2ffcbd901648b718d71d468f31090b959459b97b7fd9a7d25ca6044580bd434",
+      "bytes": 10090,
       "size": [
         512,
         512
@@ -265,11 +266,22 @@
   "headCleanup": "2026-11-04",
   "priorBodyClipZipSha256": "b713687909462d4e91efcd19032a2b0ebd575d1e44628bdc58564815377f7f86",
   "headCleanupNotes": {
+    "status": "SUPERSEDED_BY_FINISHING",
+    "chin_notch": "finishing soft collar + alpha feather y>=157",
+    "braid_wisp": "CLEARED (prior)",
+    "chest_slashes": "CLEARED (prior)",
+    "residual": "re-check jaw on finishing phone closeups; no owner PASS",
+    "owner_visual_acceptance_claimed": false,
+    "android_pass_claimed": false
+  },
+  "priorHeadCleanupZipSha256": "6be4a58b610493c18d8be4ae85e22259b59f0b96b1048ef562b5710e37d9bff6",
+  "finishing": "2026-11-04",
+  "finishingNotes": {
     "status": "STAGED",
-    "chin_notch": "alpha feather below jaw (y>=157); face ROI 0-156 untouched",
-    "braid_wisp": "stray strand zeroed; main braid kept",
-    "chest_slashes": "disconnected fragments below jaw + y>=215 zeroed",
-    "residual": "tiny jaw step may remain in locked face rows",
+    "sleeve_wrist_gaps": "Franz claim closed (7781\u21920) \u2014 verify on AvatarRenderer phone proofs",
+    "neck_jaw": "soft collar + head alpha feather y>=157; no face redesign",
+    "waist": "body-over-pants clipped (5451\u2192866 seam-only); dark band targeted",
+    "crotch": "CLEARED retained",
     "owner_visual_acceptance_claimed": false,
     "android_pass_claimed": false
   }

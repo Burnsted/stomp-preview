@@ -25,10 +25,10 @@
     "independent_per_layer_resize": false
   },
   "artistic_methods": {
-    "body": "manual dark registered underlayer; not original unseen anatomy",
+    "body": "ART PASS 2026-11-04: repainted fitted dark athletic base layer (torso, both arms, collar fill, wrist/waist overlaps); clipped inside jacket silhouette; no construction lines. Not original anatomy. CROTCH CLIP 2026-11-04: body truncated below pants_top+40; in tuck zone body kept only where pants alpha>40; crotch gap fill 0. Runtime paint order pants -> body -> jacket. BODY COLLAR FILL 2026-11-04: small under-chin collar fill to close residual step; face untouched. FINISHING 2026-11-04: sleeve/forearm fill inside jacket silhouette to glove tops (neighbor-sampled color, closing, soft edge); under-chin collar fill; body zeroed where pants alpha>40 (6px half-strength seam blend), zero below pants_top+6; crotch gap fill 0.",
     "mint_clothing": "exact visible photo pixels partitioned by region",
-    "ink_clothing": "charcoal/black recolor of mint cutout, shared photo geometry",
-    "head": "exact locked source photo pixels. Combined head/helmet/hair; NOT interchangeable eyewear yet"
+    "ink_clothing": "charcoal/black full desaturation of mint photo geometry; mint halos removed 2026-11-04 (max G-excess <=1)",
+    "head": "exact locked source photo pixels. Combined head/helmet/hair; NOT interchangeable eyewear yet. HEAD CLEANUP 2026-11-04: alpha-only cleanup below jaw (y>=157): chest slashes/specks zeroed, braid wisp zeroed, chin/neck hard cut edge feathered (x>=516). Face ROI y<157 byte-identical. FINISHING 2026-11-04: alpha-only feather on hard edge pixels y>=157; RGB untouched; face y<157 unchanged."
   },
   "tests": {
     "head_photo_identical_between_mint_and_ink": true,
@@ -40,38 +40,38 @@
     {
       "slot": "body",
       "path": "gb-phone/public/stomper/adult/body/body-athletic@512.webp",
-      "sha256": "d646e0414cf2bd7d27a7acca6f37c9e67959156ebe8eba5f28e979bc1e48a667",
-      "bytes": 17792
+      "sha256": "85ecf3646890a4e4a730f7045a34b8284fbea8aa5dbeb4b0d26614873d26d37a",
+      "bytes": 6930
     },
     {
       "slot": "jacket_mint",
       "path": "gb-phone/public/stomper/adult/jacket/jacket-look2-mint@512.webp",
-      "sha256": "300f35ac64155f9c97068716b0e6af7b9024937b86451fb8d39f59f8ec82fd80",
-      "bytes": 33268
+      "sha256": "2c7e796345854bd27eddfbdeacaa32adcd1889735c8cb31379819a49d0f12c1e",
+      "bytes": 34274
     },
     {
       "slot": "jacket_ink",
       "path": "gb-phone/public/stomper/adult/jacket/jacket-look2-ink@512.webp",
-      "sha256": "6e988d29ca966205f0d2f91af02cee74bfaea0ce14ad657b94ff8e9fefb20013",
-      "bytes": 23372
+      "sha256": "1611f0fb5d4f868c0439624dbce2092f6a2f26e884c766bf6dc98c4c10056462",
+      "bytes": 16182
     },
     {
       "slot": "pants_mint",
       "path": "gb-phone/public/stomper/adult/pants/pants-look2-mint@512.webp",
-      "sha256": "cf5ea3943b1b9640eed67e3de457240d23bf242b496c9cdebdcbb55ab2580ec2",
-      "bytes": 32682
+      "sha256": "1f21b5f90f7c659ba478011d23228c1a1ef9dd276845a92210754a05fc6ab1ce",
+      "bytes": 33366
     },
     {
       "slot": "pants_ink",
       "path": "gb-phone/public/stomper/adult/pants/pants-look2-ink@512.webp",
-      "sha256": "b20a6aec8e74b37321a730e8e4022dc7fb98a7134eda03c8aba6c08683e41d8c",
-      "bytes": 26078
+      "sha256": "904c32b7df3bd7b2c3c7415cd1282230338b5ff2dc7e37bc60404881ad22227d",
+      "bytes": 18906
     },
     {
       "slot": "head_locked",
       "path": "gb-phone/public/stomper/adult/face/face-f-hana-locked-composite@512.webp",
-      "sha256": "0f569e0f5a137e87bc12c3214d81a59bb6ac356a0c0c3bb325f71ed502966864",
-      "bytes": 11398
+      "sha256": "c2ffcbd901648b718d71d468f31090b959459b97b7fd9a7d25ca6044580bd434",
+      "bytes": 10090
     },
     {
       "slot": "gloves",
@@ -82,8 +82,8 @@
     {
       "slot": "boots",
       "path": "gb-phone/public/stomper/adult/boots/boots-look2-photo@512.webp",
-      "sha256": "1799335b66b43079c7cbfd790919ebdc7171a89f46722a4913b1718a53a5d42f",
-      "bytes": 7578
+      "sha256": "449eee37cdd51a416d99683c4a2a0ccf942077016f9f97737f30708fd148be59",
+      "bytes": 7672
     }
   ],
   "proofs": [
@@ -96,5 +96,58 @@
     "Board with real bindings",
     "Physical Android proof + Woz renderer verification",
     "Franz/owner visual acceptance of underbody fit"
-  ]
+  ],
+  "art_pass": {
+    "date": "2026-11-04",
+    "android_proof": "PENDING (Woz)",
+    "crotch_clip": "2026-11-04 body under pants; gap fill 0",
+    "head_cleanup": "DONE 2026-11-04",
+    "crotch_clip_woz": "CLEARED on Woz #27 tip e0fb4b2"
+  },
+  "head_master_sha256": "0e78e8ae73311ee7cdca14404b93158a527490d6959ec68f1a6053e9f93ab0f5",
+  "ora_sha256": "e0f5e30bd190f88f589cbd21d0e54c6629b004250b76a4d876dfd7496e901137",
+  "masters_sha256": {
+    "body@1024.png": "308fb5955d164748fcaea0dd5053a771cdb04853c1d7b8888a97858465cadac6",
+    "boots@1024.png": "b9f9dbec79d6eb78ee226b2db945fe2ff3a6d13046b47b96249704aa04eed4c2",
+    "gloves@1024.png": "973eb9c38911d568b0523009778d991dd56109be4b102265e1aff335f1d51083",
+    "head_locked@1024.png": "1ed76e1e5324a125d015b072f1276cab9cba81753fee2429fdcff35a37cc85b6",
+    "jacket_ink@1024.png": "e63146fb002e2f1f203aa3d0e4db1631659c9264978724bb68d980961226da8a",
+    "jacket_mint@1024.png": "eb99c9c21be4b53045b6b3091bc514a20b0c417e4f97b18cca22b471de0307f8",
+    "pants_ink@1024.png": "2ca0d00f1e8b91964d41438ec4323f1a4e9df95fb1d77ecc4f6ea0a998e8e799",
+    "pants_mint@1024.png": "80d796fa5ab8794b1ab50de9bd5cfd84aadb98b74126b136716588f45767c5c7"
+  },
+  "runtime_sha256": {
+    "body/body-athletic@512.webp": {
+      "sha256": "85ecf3646890a4e4a730f7045a34b8284fbea8aa5dbeb4b0d26614873d26d37a",
+      "bytes": 6930
+    },
+    "face/face-f-hana-locked-composite@512.webp": {
+      "sha256": "c2ffcbd901648b718d71d468f31090b959459b97b7fd9a7d25ca6044580bd434",
+      "bytes": 10090
+    },
+    "boots/boots-look2-photo@512.webp": {
+      "sha256": "449eee37cdd51a416d99683c4a2a0ccf942077016f9f97737f30708fd148be59",
+      "bytes": 7672
+    },
+    "gloves/gloves-look2-photo@512.webp": {
+      "sha256": "abf6339e2190b6c520308d5ac64f371673eb6e79c475c0b1b4bb362ee42a3a92",
+      "bytes": 3994
+    },
+    "jacket/jacket-look2-ink@512.webp": {
+      "sha256": "1611f0fb5d4f868c0439624dbce2092f6a2f26e884c766bf6dc98c4c10056462",
+      "bytes": 16182
+    },
+    "jacket/jacket-look2-mint@512.webp": {
+      "sha256": "2c7e796345854bd27eddfbdeacaa32adcd1889735c8cb31379819a49d0f12c1e",
+      "bytes": 34274
+    },
+    "pants/pants-look2-ink@512.webp": {
+      "sha256": "904c32b7df3bd7b2c3c7415cd1282230338b5ff2dc7e37bc60404881ad22227d",
+      "bytes": 18906
+    },
+    "pants/pants-look2-mint@512.webp": {
+      "sha256": "1f21b5f90f7c659ba478011d23228c1a1ef9dd276845a92210754a05fc6ab1ce",
+      "bytes": 33366
+    }
+  }
 }
