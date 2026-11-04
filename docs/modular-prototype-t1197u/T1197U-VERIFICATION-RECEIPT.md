@@ -9,8 +9,9 @@
 **Crotch clip:** **DONE** / dark T **CLEARED** on B+C  
 **Head leftovers:** chin **CLEARED_WITH_RESIDUAL_JAW_STEP** · braid **CLEARED** · chest **CLEARED** — **no owner visual acceptance claimed**
 
-**CI green tip:** _(pending push)_  
-**CI:** _(pending)_
+**CI green tip:** `5f0941f94cb8f4d9d63599a4fb4cb8d2a1adda4f`  
+**CI:** both pr-verify **SUCCESS** — [run 41842633799](https://github.com/Burnsted/stomp-preview/actions/runs/41842633799)  
+(`batch1 typecheck + test` + `gb-phone typecheck + woz tests + build`)
 
 **Prior body-clip CI tip:** `e0fb4b29827bc0413d78d19e1748b266140c3bd2` · [run 41840811073](https://github.com/Burnsted/stomp-preview/actions/runs/41840811073)
 

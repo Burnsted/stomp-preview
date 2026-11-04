@@ -79,7 +79,8 @@ Evidence: `evidence/A-jacket-off-before-after.png`, `qa/*_before_after.png`, `pr
 
 | Field | Value |
 |---|---|
-| CI green tip | _(pending head-cleanup tip)_ |
-| CI | _(pending both pr-verify)_ |
+| CI green tip | `5f0941f94cb8f4d9d63599a4fb4cb8d2a1adda4f` |
+| CI | both pr-verify **SUCCESS** — [run 41842633799](https://github.com/Burnsted/stomp-preview/actions/runs/41842633799) |
+| Jobs | `batch1 typecheck + test` · `gb-phone typecheck + woz tests + build` |
 | Receipt | `T1197U-VERIFICATION-RECEIPT.md` |
-| Status | **REGISTERED_VISUAL_PROTOTYPE_ONLY** |
+| Status | **REGISTERED_VISUAL_PROTOTYPE_ONLY** — no Android / Pages / merge / owner visual PASS |
