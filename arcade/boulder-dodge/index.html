@@ -38,8 +38,11 @@ canvas{display:block;width:100vw;height:100vh}
 #legend h1{margin:8px 0 4px;font-size:28px;letter-spacing:1.5px;color:#fff;text-align:center;text-shadow:0 2px 0 #000}
 #legend .hi{text-align:center;font:800 15px system-ui,sans-serif;color:#ffd84a;margin:4px 0 12px;padding:8px 12px;border:2px solid #ffd84a;background:#1a1400;border-radius:10px}
 #legend h2{font-size:13px;margin:14px 0 6px;color:#9fd3ff;letter-spacing:.08em;text-transform:uppercase;border-bottom:2px solid #1d3b66;padding-bottom:3px}
-#legend .row{display:grid;grid-template-columns:92px 1fr;gap:8px;align-items:start;margin:6px 0;padding:8px;background:#0b1830;border:2px solid #fff2;border-radius:10px}
-#legend .tag{font:800 11px/1.2 system-ui,sans-serif;color:#050a14;background:#ffd84a;border-radius:6px;padding:6px 7px;text-align:center}
+#legend .row{display:grid;grid-template-columns:60px 1fr;gap:8px;align-items:center;margin:6px 0;padding:8px;background:#0b1830;border:2px solid #fff2;border-radius:10px}
+#legend .row.txt{grid-template-columns:1fr}
+#legend .lg-ico{width:56px;height:40px;border-radius:8px;border:2px solid #fff3;background:#071222;display:block}
+#legend .row.wide{grid-template-columns:96px 1fr}#legend .lg-ico.wide{width:92px}
+#legend .tag{display:inline-block;font:800 11px/1.2 system-ui,sans-serif;color:#050a14;background:#ffd84a;border-radius:6px;padding:4px 7px;margin:0 0 4px}
 #legend .tag.g{background:#2bd17e}#legend .tag.r{background:#ff2d55;color:#fff}#legend .tag.b{background:#9fd3ff}
 #legend p{margin:0;color:#e8eef8;font-size:13px}
 #legend .ctrl{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
@@ -71,14 +74,9 @@ var VH=360, GROUND=300, G=3600, JV=-950, DT=1/120;
 var AIR=2*-JV/G;               // single-jump airtime (s) ~0.53
 var MAXH=JV*JV/(2*G);          // single-jump apex ~125
 var BASE=320, MAXSPD=760, RAMP=9;
-// ---- v0.7.7 knobs (steeper GD curve after L3/L4 + fairness) ----
-var SPD_BASE=1.0;              // level speed mult base (L1–3 stay readable)
-var SPD_PER_2LV=0.11;          // +0.11 every 2 levels
-var SPD_AFTER_L4=0.07;         // extra GD ramp per level after L4
-var SPD_CAP=1.58;              // late Hard can demand GD-kid timing
-var POST_LIP=0.42;             // min seconds after feature lip before next hazard (fair, not soft)
-var AIR_TAP_MUL=0.52;          // early double-tap air control (2nd beat)
-var DJ_MUL=0.92;               // full double-jump power (L7+)
+// ---- v0.7.8 knobs (GD curve after L3/L4 + fairness) ----
+var SPD_BASE=1.0,SPD_PER_2LV=0.11,SPD_AFTER_L4=0.07,SPD_CAP=1.58,POST_LIP=0.42;
+var AIR_TAP_MUL=0.52,DJ_MUL=0.92; // air double-tap · full 2× on L7+
 var COMBO_NEED=3, COMBO_BOOST=1.12, COMBO_T=1.55;
 var DIFFS={easy:{id:'easy',name:'Easy',spd:0.88,storm:0.75,gap:1.18},normal:{id:'normal',name:'Normal',spd:1,storm:1,gap:1},hard:{id:'hard',name:'Hard',spd:1.18,storm:1.38,gap:0.76}};
 var BCOL={brown:['#7a4b26','#a06a3c'],grey:['#6e7178','#9a9ea6'],dark:['#2e3036','#4c5058']};
@@ -537,17 +535,32 @@ function press(){ ensureAC();
  else if(S.mode==='clear'&&performance.now()-overAt>400){if(LV.n<campN())API.startLevel(LV.n+1);else openMenu();}
  syncUI();}
 function legendHTML(){return '<div class="lg-inner"><h1>BOULDER DODGE</h1><div class="hi">HIGH SCORE · '+pb+'</div>'+
- '<h2>Goal</h2><div class="row"><span class="tag g">★ SCORE</span><p>Ride the slope, clear hazards, grab stars. Beat your high score. Clear levels to unlock boards + Endless.</p></div>'+
- '<h2>Points</h2><div class="row"><span class="tag">BUMPS</span><p>Kickers + tabletops = +10 each when you pop the lip. Stars ★ = +30.</p></div>'+
- '<div class="row"><span class="tag">NEAR</span><p>Skim a hazard (+12 NEAR). Chain near-miss / clean flips → combo → SPEED boost.</p></div>'+
- '<h2>Obstacles</h2><div class="row"><span class="tag r">ROCKS</span><p>Jagged boulders (S/M/L). Jump clear — no stuckable jump→boulder gaps.</p></div>'+
- '<div class="row"><span class="tag r">LOGS</span><p>Fallen timber across the run. Ice spikes too.</p></div>'+
- '<div class="row"><span class="tag b">TABLE</span><p>Flat tabletops / kickers — ride the deck, pop the far lip.</p></div>'+
- '<h2>Wildlife + traffic</h2><div class="row"><span class="tag">WILD</span><p>Coyotes, polar bears, moose. Skiers, snowmobiles (incoming!), snowcats — jump ON the green deck.</p></div>'+
+ '<h2>Goal</h2><div class="row"><canvas class="lg-ico" data-ico="star" width="56" height="40" aria-hidden="true"></canvas><div><span class="tag g">★ SCORE</span><p>Ride the slope, clear hazards, grab stars. Beat your high score. Clear levels to unlock boards + Endless.</p></div></div>'+
+ '<h2>Points</h2><div class="row"><canvas class="lg-ico" data-ico="bump" width="56" height="40" aria-hidden="true"></canvas><div><span class="tag">BUMPS</span><p>Kickers + tabletops = +10 when you pop the lip. Stars ★ = +30.</p></div></div>'+
+ '<div class="row"><canvas class="lg-ico" data-ico="near" width="56" height="40" aria-hidden="true"></canvas><div><span class="tag">NEAR</span><p>Skim a hazard (+12 NEAR). Chain near-miss / clean flips → combo → SPEED boost.</p></div></div>'+
+ '<h2>Obstacles</h2><div class="row"><canvas class="lg-ico" data-ico="rock" width="56" height="40" aria-hidden="true"></canvas><div><span class="tag r">ROCKS</span><p>Jagged boulders (S/M/L). Jump clear — fair gaps, no stuckable jump→boulder.</p></div></div>'+
+ '<div class="row"><canvas class="lg-ico" data-ico="log" width="56" height="40" aria-hidden="true"></canvas><div><span class="tag r">LOGS</span><p>Fallen timber across the run. Ice spikes too.</p></div></div>'+
+ '<div class="row"><canvas class="lg-ico" data-ico="table" width="56" height="40" aria-hidden="true"></canvas><div><span class="tag b">TABLE</span><p>Flat tabletops / kickers — ride the deck, pop the far lip.</p></div></div>'+
+ '<h2>Wildlife + traffic</h2><div class="row wide"><canvas class="lg-ico wide" data-ico="wild" width="92" height="40" aria-hidden="true"></canvas><div><span class="tag">WILD</span><p>Coyotes, polar bears, moose. Skiers, snowmobiles, snowcats — jump ON the green deck.</p></div></div>'+
  '<h2>Controls</h2><div class="ctrl"><div class="chip"><b>TAP</b>Jump off snow</div><div class="chip"><b>DOUBLE-TAP</b>2nd beat in air (air control · full 2× on L7+)</div><div class="chip"><b>HOLD</b>Flip in air · land upright for CLEAN / FLIP pts</div></div>'+
- '<h2>Difficulty</h2><div class="row"><span class="tag">EASY→HARD</span><p>Easy teaches. Hard late route is GD pressure — denser gaps, storms, speed after L3/L4. ☰ picks difficulty + levels.</p></div>'+
- '<button type="button" id="legendPlay">PLAY</button><p class="foot">Offline · this device · v0.7.7 · scroll for full legend</p></div>';}
-function openLegend(){S.prevMode=S.mode==='legend'?'ready':S.mode;if(S.mode==='play')S.mode='pause';S.mode='legend';legendEl.innerHTML=legendHTML();legendEl.style.display='flex';menu.style.display='none';syncUI();announce('Legend');}
+ '<h2>Difficulty</h2><div class="row txt"><span class="tag">EASY→HARD</span><p>Easy teaches. Hard late route is GD pressure after L3/L4. ☰ picks difficulty + levels.</p></div>'+
+ '<button type="button" id="legendPlay">PLAY</button><p class="foot">Offline · this device · v0.7.8 · scroll for full legend</p></div>';}
+function paintLegendIcons(){var prev=cx,prevGY=gY,dpr=Math.min(2,window.devicePixelRatio||1);
+ legendEl.querySelectorAll('canvas.lg-ico').forEach(function(cv){var k=cv.dataset.ico,w=+cv.getAttribute('width')||56,h=+cv.getAttribute('height')||40;
+  cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);cv.style.width=w+'px';cv.style.height=h+'px';
+  var c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);
+  c.fillStyle='#071222';c.fillRect(0,0,w,h);c.fillStyle='#e9f2fb';c.fillRect(0,h-7,w,7);
+  cx=c;gY=function(){return h-7;};var base=h-7,o0={vx:0,passed:false};
+  if(k==='star'){c.save();c.translate(w/2,h/2-4);c.fillStyle='#ffd84a';c.strokeStyle='#b8860b';c.lineWidth=1.5;c.beginPath();for(var j=0;j<10;j++){var rr=j%2?3.2:9,an=j*Math.PI/5-Math.PI/2;c.lineTo(Math.cos(an)*rr,Math.sin(an)*rr);}c.closePath();c.fill();c.stroke();c.restore();}
+  else if(k==='bump'||k==='table'){var y0=base-2;c.fillStyle='rgba(160,190,220,.4)';c.beginPath();c.moveTo(4,y0);c.lineTo(14,y0-14);c.lineTo(42,y0-14);c.lineTo(52,y0);c.lineTo(52,y0+4);c.lineTo(4,y0+4);c.fill();
+   c.strokeStyle='#3a5a7a';c.lineWidth=2;c.beginPath();c.moveTo(4,y0);c.lineTo(14,y0-14);c.lineTo(42,y0-14);c.lineTo(52,y0);c.stroke();c.fillStyle='#2a4a68';c.fillRect(12,y0-20,4,6);if(k==='table')c.fillRect(40,y0-18,3,4);c.fillStyle='#ffd84a';c.font='bold 9px sans-serif';c.fillText('+10',22,y0-18);}
+  else if(k==='near'){drawObs(Object.assign({k:'boulderS',x:18,w:20,h:16,c:'grey',ph:2},o0),base-16,base);c.strokeStyle='#9fd3ff';c.setLineDash([3,2]);c.beginPath();c.moveTo(6,base-22);c.quadraticCurveTo(28,base-30,50,base-18);c.stroke();c.setLineDash([]);c.fillStyle='#fff';c.font='bold 8px sans-serif';c.fillText('+12',34,base-26);}
+  else if(k==='rock')drawObs(Object.assign({k:'boulderM',x:11,w:34,h:28,c:'grey',ph:1},o0),base-28,base);
+  else if(k==='log'){drawObs(Object.assign({k:'log',x:4,w:48,h:16,ph:0},o0),base-16,base);c.save();c.translate(44,0);c.scale(.55,.55);drawObs(Object.assign({k:'ice',x:0,w:28,h:40,ph:0},o0),base/.55-40,base/.55);c.restore();}
+  else if(k==='wild'){c.save();c.translate(2,6);c.scale(.48,.48);drawObs(Object.assign({k:'bear',x:0,w:56,h:46,ph:.4},o0),(base-6)/.48-46,(base-6)/.48);c.restore();
+   c.save();c.translate(44,2);c.scale(.38,.38);drawObs(Object.assign({k:'moose',x:0,w:54,h:70,ph:1.1},o0),(base-2)/.38-70,(base-2)/.38);c.restore();}
+ });cx=prev;gY=prevGY;}
+function openLegend(){S.prevMode=S.mode==='legend'?'ready':S.mode;if(S.mode==='play')S.mode='pause';S.mode='legend';legendEl.innerHTML=legendHTML();legendEl.style.display='flex';menu.style.display='none';paintLegendIcons();syncUI();announce('Legend');}
 function dismissLegend(){legendSeen=true;try{localStorage.setItem('boulderDodge.legend','1')}catch(e){}legendEl.style.display='none';S.mode=(S.prevMode&&S.prevMode!=='legend')?S.prevMode:'ready';if(S.mode==='play')S.mode='ready';syncUI();announce('Ready');}
 function openMenu(){if(S.mode==='play')S.mode='pause';S.prevMode=S.mode;S.mode='menu';legendEl.style.display='none';var h='<button id="close" aria-label="Close menu">✕</button><h1>BOULDER DODGE</h1><div>Tap jump · double-tap air · hold flip · <button id="showLeg" style="display:inline;border:0;background:0;color:#ffd84a;font:bold 14px sans-serif;text-decoration:underline;padding:0;cursor:pointer">Legend</button></div><div style="margin:8px 0;padding:8px;border:2px solid #ffd84a;border-radius:10px;background:#1a1400;color:#ffd84a;font:800 14px sans-serif">HIGH SCORE · '+pb+'</div><h2>DIFFICULTY</h2><div class="boards">';
  ['easy','normal','hard'].forEach(function(id){var D=DIFFS[id];h+='<button class="bd'+(PR.diff===id?' sel':'')+'" data-d="'+id+'"><span class="t">'+D.name+'<small>speed ×'+D.spd+' · storm ×'+D.storm+' · gaps ×'+D.gap+'</small></span></button>';});
@@ -558,7 +571,7 @@ function openMenu(){if(S.mode==='play')S.mode='pause';S.prevMode=S.mode;S.mode='
   if(o)h+='<button class="bd'+(board().id===b.id?' sel':'')+'" data-b="'+b.id+'"><span class="sw" style="background:linear-gradient('+b.c+' 0 55%,'+b.s+' 55% 75%,'+b.c+' 75%)"></span><span class="t">'+b.name+tag+(board().id===b.id?' ★':'')+'</span></button>';
   else{var a=ACH[b.ach];h+='<button class="bd" disabled aria-label="'+b.name+' locked"><span class="sw" style="background:#333"></span><span class="t">🔒 '+b.name+tag+'<small>'+(a?a.how:'Locked')+'</small></span></button>';}});
  h+='</div>';
- menu.innerHTML=h+'<p style="opacity:.7;font-size:12px;margin:14px 0 8px">Offline · progress on this device · v0.7.7</p><button id="resetP" style="min-height:48px;padding:10px 16px;border-radius:10px;border:2px solid #fff5;background:#5a1d1d;color:#fff;font:bold 14px sans-serif">Reset progress</button>';menu.style.display='block';syncUI();}
+ menu.innerHTML=h+'<p style="opacity:.7;font-size:12px;margin:14px 0 8px">Offline · progress on this device · v0.7.8</p><button id="resetP" style="min-height:48px;padding:10px 16px;border-radius:10px;border:2px solid #fff5;background:#5a1d1d;color:#fff;font:bold 14px sans-serif">Reset progress</button>';menu.style.display='block';syncUI();}
 function closeMenu(){menu.style.display='none';syncUI();}
 function resetProgress(force){if(!force&&!confirm('Reset all unlocks, achievements, best scores and selected board on this device? Mute + difficulty stay.'))return false;
  var keepDiff=PR.diff||'normal';PR={done:[],board:'first',best:{},ach:[],diff:keepDiff};saveP();pb=0;try{localStorage.removeItem(LS)}catch(e){}openMenu();return true;}
@@ -604,7 +617,7 @@ document.addEventListener('visibilitychange',function(){
 if(window.matchMedia){try{window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',function(ev){reduceMotion=ev.matches;});}catch(e){}}
 // ---- STOMP future contract (arcade preview only) ----
 var API=window.BoulderDodge={
- version:'0.7.7',
+ version:'0.7.8',
  start:function(){if(S.mode==='legend')dismissLegend();if(S.mode==='menu'){closeMenu();reset(null,LV);}if(S.mode==='ready'||S.mode==='over'||S.mode==='clear'){if(S.mode!=='ready')reset(null,LV);S.mode='play';S.playAt=performance.now();}syncUI();},
  startLevel:function(n){var L=n===ENDLESS.n?ENDLESS:LEVELS[n-1];if(!L||(!unlocked(n)&&!TEST))return false;closeMenu();legendEl.style.display='none';reset(null,L);S.mode='ready';pausedByHide=false;syncUI();announce(L.name+(L.doubleJump?' full 2× jump':' air tap'));return true;},
  startEndless:function(){return API.startLevel(ENDLESS.n);},
@@ -631,12 +644,12 @@ if(/[?&]test=1/.test(location.search)){Object.defineProperty(API,'_test',{value:
 addEventListener('resize',resize);resize();
 reset(null,LEVELS[0]);
 // Boot: legend before PLAY (always show on fresh load; PLAY dismisses)
-S.mode='legend';legendEl.innerHTML=legendHTML();legendEl.style.display='flex';
-requestAnimationFrame(function(ts){last=ts;frame(ts);});syncUI();announce('Boulder Dodge v0.7.7 — read legend, then PLAY.');
+S.mode='legend';legendEl.innerHTML=legendHTML();legendEl.style.display='flex';paintLegendIcons();
+requestAnimationFrame(function(ts){last=ts;frame(ts);});syncUI();announce('Boulder Dodge v0.7.8 — read legend, then PLAY.');
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
- var swUrl='sw.js?v=7-7',swScope='./';
+ var swUrl='sw.js?v=7-8',swScope='./';
  navigator.serviceWorker.register(swUrl,{scope:swScope}).then(function(reg){if(reg.update)reg.update();}).catch(function(){});
- if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){if(k.indexOf('boulder-dodge-')===0&&k!=='boulder-dodge-v7-7')caches.delete(k);});});
+ if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){if(k.indexOf('boulder-dodge-')===0&&k!=='boulder-dodge-v7-8')caches.delete(k);});});
 }
 addEventListener('orientationchange',function(){setTimeout(resize,50);});
 })();
