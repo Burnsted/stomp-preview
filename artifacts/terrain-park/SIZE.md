@@ -1,13 +1,13 @@
-# Terrain Park v0.3.1 — size vs budget
+# Terrain Park v0.3.2 — size vs budget
 
 | File | Raw | Gzip |
 |------|-----|------|
-| `arcade/terrain-park/index.html` | 64077 | 21532 |
+| `arcade/terrain-park/index.html` | 65684 | 22078 |
 | `arcade/terrain-park/sw.js` | 1116 | 543 |
-| **Total** | **65193** | **22075** |
+| **Total** | **66800** | **22621** |
 
-Soft budget: **~70KB raw**. Usage: **93.1%**.
+Soft budget: **~70KB raw**. Usage: **95.4%**.
 
-Cache bust: `terrain-park-v0-3-1`
+Cache bust: `terrain-park-v0-3-2`
 
-v0.3.1: LOG draw bugfix (was gated on grind:0 → invisible) · barky timber + cut rings + branch stub vs steel RAIL · legend icons match · SW bust
+v0.3.2: finish always CLEARs (no trick-fail wipeout) · 3 lives same-level retry · 0 lives → L1
