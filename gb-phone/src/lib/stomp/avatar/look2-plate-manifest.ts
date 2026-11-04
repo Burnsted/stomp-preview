@@ -36,7 +36,9 @@ export type Look2PlateManifest = {
   status?: "REGISTERED_VISUAL_PROTOTYPE_ONLY" | string;
   artPass?: string;
   bodyClip?: string;
+  headCleanup?: string;
   sourceZipSha256?: string;
+  priorBodyClipZipSha256?: string;
   priorArtPassZipSha256?: string;
   priorMorningZipSha256?: string;
   preferredPack?: string;
@@ -44,6 +46,15 @@ export type Look2PlateManifest = {
     status: string;
     rule?: string;
     paintOrder?: string;
+  };
+  headCleanupNotes?: {
+    status: string;
+    chin_notch?: string;
+    braid_wisp?: string;
+    chest_slashes?: string;
+    residual?: string;
+    owner_visual_acceptance_claimed?: boolean;
+    android_pass_claimed?: boolean;
   };
   sourceSheet?: string;
   sourceSha256?: string;

@@ -1,30 +1,29 @@
-# t1197u visual annotations — Franz crotch clip
+# t1197u visual annotations — Franz head cleanup
 
-Status: **REGISTERED_VISUAL_PROTOTYPE_ONLY** — not Android-accepted.
+Status: **REGISTERED_VISUAL_PROTOTYPE_ONLY** — not Android-accepted · **no owner visual acceptance claimed**.
 
-## Body plate (crotch clip)
-- `body-athletic@512.webp` sha256 `c69f7d872043c36432f7e0035deb2021c54514d5b781e18f23ffa04d11b0a999` (7082 bytes)
-- Replaces prior art-pass body `451ae7ed…`
-- Rule: truncate below pants_top+40; tuck only where pants alpha>40; crotch gap fill 0
-- Paint order: pants → body → jacket
+## Plates staged
+- `face-f-hana-locked-composite@512.webp` → `1b96222995092646c8f91e55d9f5025d9a318b002dcaa7e26108c183c8bc2ebf` (9838 B)
+- `body-athletic@512.webp` → `21a12aca8ac4f24f2e862e19b6eadb357e82e77d52a353a3a9c9c75516516671` (6808 B) — collar fill under chin
+- Face alpha edits concentrated below y≈78 (512): changed_px below=771, above=21
 
-## Crotch gap — body contribution (isolated)
-Method: compare composites with/without body; count gap ROI pixels that gain opacity from body only.
+## A jacket-off leftovers (face-plate metrics + Franz QA)
 
-| Variant | body α in gap | gained opaque from body | alpha-up from body |
-|---|---:|---:|---:|
-| A jacket-off | 1 | 0 | 0 |
-| B mint | 1 | 0 | 0 |
-| C ink | 1 | 0 | 0 |
+| Leftover | Evidence | Verdict |
+|---|---|---|
+| Chin notch | Hard neck cut feathered below jaw; face ROI locked | **CLEARED_WITH_RESIDUAL_JAW_STEP** |
+| Braid wisp | Face opaque in braid-wisp ROI 0→0; see `qa/braid_wisp_before_after.png` | **CLEARED** |
+| Chest slashes | Face opaque y≥108: 111→0; see `qa/chest_before_after.png` | **CLEARED** |
 
-- A torso-above-waist opaque px = **7016**
-- Verdict: crotch T **CLEARED**; A torso tuck **OK**
-- ≤2 fringe px allowed; jacket/pants silhouette in ROI is not body bleed.
+- Residual: tiny jaw step may remain inside locked face rows — **not** claimed owner PASS.
+- Before/after: `A-jacket-off-before-after.png`, `face-before-after.png`, `face-headclean-alpha-diff.png`
 
-## Still OPEN (do NOT fake-PASS)
-- head_locked leftovers on jacket-off: chin notch / braid wisp / chest slashes (Ted face-lock)
-- body painted graphic not photo anatomy
-- ink green-excess edge pass deferred
-- Android device proof not run
+## Crotch clip (still must hold)
+- B/C body-bleed gained opaque = 0/0
+- Verdict: crotch T **CLEARED**; A torso **OK** (7016 px)
 
-Evidence: `*-bodyclip-*.png`, `ABC-bodyclip-side-by-side.png`, `*-bleed-heatmap.png`, `crotch-clip-metrics.json`, `proofs/franz-abc-bodyclip.png`, `proofs/zoom_crotch_*.png`
+## Honesty
+- Franz notes Ted OK’d cleaning with face locked — **plates staged only**; no owner visual acceptance / Android PASS claim
+- Ink green-excess edge pass deferred · 8-of-11 production slots still missing
+
+Evidence: `ABC-headclean-side-by-side.png`, `proofs/A_B_C_HEAD_CLEAN_2026-11-04.png`, `qa/*`, `head-cleanup-metrics.json`

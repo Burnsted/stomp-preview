@@ -3,13 +3,16 @@
   "status": "REGISTERED_VISUAL_PROTOTYPE_ONLY",
   "artPass": "2026-11-04",
   "bodyClip": "2026-11-04",
-  "sourceZipSha256": "b713687909462d4e91efcd19032a2b0ebd575d1e44628bdc58564815377f7f86",
+  "sourceZipSha256": "6be4a58b610493c18d8be4ae85e22259b59f0b96b1048ef562b5710e37d9bff6",
   "priorArtPassZipSha256": "75d1dd0377bd9f4223631e25661e97831e23a563f8735ecaa3829a991b326762",
   "priorMorningZipSha256": "62b7bdcefec632a31e8f95c0c8e298d78a85fd7c2cf132bc950e90aed8ea3f89",
-  "preferredPack": "franz-body-clip",
+  "preferredPack": "franz-head-cleanup",
   "sourceSheet": "docs/character-production-t1173u/masters/look2-f-hana-MODULAR-SHEET.png",
   "sourceSha256": "e273e6c13142cf068d25fc1c18503d1d59e947e8af52fee54b9c8e2abda93322",
-  "sourceSize": [1024, 1024],
+  "sourceSize": [
+    1024,
+    1024
+  ],
   "approvedMaster": "docs/character-production-t1173u/masters/look2-f-hana-APPROVED.png",
   "registrationContract": "docs/modular-alignment-t1194u/REGISTRATION-CONTRACT.md",
   "productionCanvas": 1024,
@@ -35,7 +38,7 @@
     "board (real bindings)"
   ],
   "openArtRepairs": [
-    "head_locked leftovers on jacket-off: chin notch / braid wisp / chest slashes",
+    "residual tiny jaw step may remain in locked face rows 0\u2013156 (byte-identical ROI; not claimed owner visual acceptance)",
     "body painted graphic not photo anatomy; shoulder line approximate",
     "ink green-excess edge pass deferred",
     "Android device proof not run"
@@ -53,7 +56,10 @@
       "url": "/stomper/adult/jacket/jacket-look2-mint@512.webp",
       "sha256": "66dea635583a966453a2c6db8bf825edf5bcf1651e7a487ad3035cd5d56b2e35",
       "bytes": 34246,
-      "size": [512, 512]
+      "size": [
+        512,
+        512
+      ]
     },
     {
       "slot": "pants_mint",
@@ -61,15 +67,21 @@
       "url": "/stomper/adult/pants/pants-look2-mint@512.webp",
       "sha256": "0946a9546913a9aa402d1348f9710c4930679e181d2a947ad31ece1eb353f8b7",
       "bytes": 33322,
-      "size": [512, 512]
+      "size": [
+        512,
+        512
+      ]
     },
     {
       "slot": "body",
       "path": "gb-phone/public/stomper/adult/body/body-athletic@512.webp",
       "url": "/stomper/adult/body/body-athletic@512.webp",
-      "sha256": "c69f7d872043c36432f7e0035deb2021c54514d5b781e18f23ffa04d11b0a999",
-      "bytes": 7082,
-      "size": [512, 512]
+      "sha256": "21a12aca8ac4f24f2e862e19b6eadb357e82e77d52a353a3a9c9c75516516671",
+      "bytes": 6808,
+      "size": [
+        512,
+        512
+      ]
     },
     {
       "slot": "face_production_scaffold",
@@ -77,7 +89,10 @@
       "url": "/stomper/adult/face/face-female@512.webp",
       "sha256": "7a5ec54a01b6fa30a22785b111aa608290d9f61d11e32bd161d8b0a5e505c55f",
       "bytes": 8696,
-      "size": [512, 512]
+      "size": [
+        512,
+        512
+      ]
     },
     {
       "slot": "hair_production_scaffold",
@@ -85,7 +100,10 @@
       "url": "/stomper/adult/hair/hair-straight@512.webp",
       "sha256": "77f0e70ef8af69407514d8272a78faec5775298b2cd9221d3f3d76b2168e0db3",
       "bytes": 11070,
-      "size": [512, 512]
+      "size": [
+        512,
+        512
+      ]
     },
     {
       "slot": "headwear_production_scaffold",
@@ -93,7 +111,10 @@
       "url": "/stomper/adult/headwear/helmet-basic@512.webp",
       "sha256": "88912939f88508c9bb7915fe1adf5339ff686e5e90ef551d9953fb0c1cb9a84c",
       "bytes": 7480,
-      "size": [512, 512]
+      "size": [
+        512,
+        512
+      ]
     },
     {
       "slot": "goggles_production_scaffold",
@@ -101,7 +122,10 @@
       "url": "/stomper/adult/goggles/goggles-basic@512.webp",
       "sha256": "b6e7a9c50bc416ce331d85c9361ef15ab8cf260afc153bca08b507923cce7394",
       "bytes": 5108,
-      "size": [512, 512]
+      "size": [
+        512,
+        512
+      ]
     },
     {
       "slot": "gloves_production_scaffold",
@@ -109,7 +133,10 @@
       "url": "/stomper/adult/gloves/gloves-basic@512.webp",
       "sha256": "3c60f9c418f8ec4ac40590f82f8253aefce509a2e2752bfcee4739013be31bf9",
       "bytes": 11852,
-      "size": [512, 512]
+      "size": [
+        512,
+        512
+      ]
     },
     {
       "slot": "boots_production_scaffold",
@@ -117,7 +144,10 @@
       "url": "/stomper/adult/boots/boots-basic@512.webp",
       "sha256": "571067d00f84a5a8a6a3fe8e0ec0e9feaa5ea072700a2474f848c17fcf91988d",
       "bytes": 11212,
-      "size": [512, 512]
+      "size": [
+        512,
+        512
+      ]
     },
     {
       "slot": "board_production_scaffold",
@@ -125,7 +155,10 @@
       "url": "/stomper/adult/board/board-basic@512.webp",
       "sha256": "326652882e2dfe68a0d1259c43f6086fece0315803206fe4ee534752f104b6e5",
       "bytes": 48596,
-      "size": [512, 512]
+      "size": [
+        512,
+        512
+      ]
     },
     {
       "slot": "preview",
@@ -133,7 +166,10 @@
       "url": "/stomper/adult/starter/f-hana/preview@512.webp",
       "sha256": "282bca1f4ac39e89a1729f870e7fd2c85a064ba5054a1091d01e4a31814824cc",
       "bytes": 86724,
-      "size": [512, 512]
+      "size": [
+        512,
+        512
+      ]
     },
     {
       "slot": "jacket_ink",
@@ -141,7 +177,10 @@
       "url": "/stomper/adult/jacket/jacket-look2-ink@512.webp",
       "sha256": "d22534a9e700cf29b0b45a2c0106c6848136288ecc8e3b9c23bdbb3e33ce5206",
       "bytes": 16204,
-      "size": [512, 512]
+      "size": [
+        512,
+        512
+      ]
     },
     {
       "slot": "pants_ink",
@@ -149,15 +188,21 @@
       "url": "/stomper/adult/pants/pants-look2-ink@512.webp",
       "sha256": "6fe342fea91bc14086a3d9d2006e256d5cf1f81c0ad4b2103cc49e893adf9279",
       "bytes": 18846,
-      "size": [512, 512]
+      "size": [
+        512,
+        512
+      ]
     },
     {
       "slot": "head_locked",
       "path": "gb-phone/public/stomper/adult/face/face-f-hana-locked-composite@512.webp",
       "url": "/stomper/adult/face/face-f-hana-locked-composite@512.webp",
-      "sha256": "0cf18191bcfa75af6e1714a98ec3bb72ee8e374bc37f617a2eb1a60c42372b16",
-      "bytes": 11770,
-      "size": [512, 512]
+      "sha256": "1b96222995092646c8f91e55d9f5025d9a318b002dcaa7e26108c183c8bc2ebf",
+      "bytes": 9838,
+      "size": [
+        512,
+        512
+      ]
     },
     {
       "slot": "gloves_photo",
@@ -165,7 +210,10 @@
       "url": "/stomper/adult/gloves/gloves-look2-photo@512.webp",
       "sha256": "abf6339e2190b6c520308d5ac64f371673eb6e79c475c0b1b4bb362ee42a3a92",
       "bytes": 3994,
-      "size": [512, 512]
+      "size": [
+        512,
+        512
+      ]
     },
     {
       "slot": "boots_photo",
@@ -173,7 +221,10 @@
       "url": "/stomper/adult/boots/boots-look2-photo@512.webp",
       "sha256": "449eee37cdd51a416d99683c4a2a0ccf942077016f9f97737f30708fd148be59",
       "bytes": 7672,
-      "size": [512, 512]
+      "size": [
+        512,
+        512
+      ]
     },
     {
       "slot": "backpack",
@@ -181,7 +232,10 @@
       "url": "/stomper/adult/backpack/backpack-daypack@512.webp",
       "sha256": "200f23ed9bd75df73e3e101f081428ea4e5f02e0d336b4632e33c2297bddcf95",
       "bytes": 22566,
-      "size": [512, 512]
+      "size": [
+        512,
+        512
+      ]
     }
   ],
   "requiredUrls": [
@@ -207,5 +261,16 @@
     "/stomper/adult/gloves/gloves-look2-photo@512.webp",
     "/stomper/adult/boots/boots-look2-photo@512.webp"
   ],
-  "optionalBackpackPresent": true
+  "optionalBackpackPresent": true,
+  "headCleanup": "2026-11-04",
+  "priorBodyClipZipSha256": "b713687909462d4e91efcd19032a2b0ebd575d1e44628bdc58564815377f7f86",
+  "headCleanupNotes": {
+    "status": "STAGED",
+    "chin_notch": "alpha feather below jaw (y>=157); face ROI 0-156 untouched",
+    "braid_wisp": "stray strand zeroed; main braid kept",
+    "chest_slashes": "disconnected fragments below jaw + y>=215 zeroed",
+    "residual": "tiny jaw step may remain in locked face rows",
+    "owner_visual_acceptance_claimed": false,
+    "android_pass_claimed": false
+  }
 }

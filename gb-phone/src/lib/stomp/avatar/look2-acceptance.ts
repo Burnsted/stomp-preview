@@ -153,16 +153,21 @@ export const LOOK2_GATE_STATUS = {
   runtimeCanvas: 512 as const,
   commonScale: 0.5 as const,
   status: "REGISTERED_VISUAL_PROTOTYPE_ONLY" as const,
-  preferredPack: "franz-body-clip" as const,
+  preferredPack: "franz-head-cleanup" as const,
   sourceZipSha256:
+    "6be4a58b610493c18d8be4ae85e22259b59f0b96b1048ef562b5710e37d9bff6" as const,
+  priorBodyClipZipSha256:
     "b713687909462d4e91efcd19032a2b0ebd575d1e44628bdc58564815377f7f86" as const,
   priorArtPassZipSha256:
     "75d1dd0377bd9f4223631e25661e97831e23a563f8735ecaa3829a991b326762" as const,
   priorMorningZipSha256:
     "62b7bdcefec632a31e8f95c0c8e298d78a85fd7c2cf132bc950e90aed8ea3f89" as const,
   bodySha256:
-    "c69f7d872043c36432f7e0035deb2021c54514d5b781e18f23ffa04d11b0a999" as const,
+    "21a12aca8ac4f24f2e862e19b6eadb357e82e77d52a353a3a9c9c75516516671" as const,
+  faceLockedSha256:
+    "1b96222995092646c8f91e55d9f5025d9a318b002dcaa7e26108c183c8bc2ebf" as const,
   crotchClip: "DONE" as const,
+  headCleanup: "STAGED" as const,
   sourceZip:
     "docs/modular-prototype-t1197u/art-pass/look2-f-hana-REGISTERED-PROTOTYPE.ora" as const,
   registrationContract: "docs/modular-alignment-t1194u/REGISTRATION-CONTRACT.md" as const,
@@ -174,9 +179,9 @@ export const LOOK2_GATE_STATUS = {
     "goggles (separated)",
     "board (real bindings)",
   ] as const,
-  /** Franz still OPEN — do not fake-PASS. */
+  /** Franz staged head cleanup — residual jaw step may remain; no owner visual PASS claimed. */
   openArtRepairs: [
-    "head_locked leftovers on jacket-off: chin notch / braid wisp / chest slashes",
+    "residual tiny jaw step may remain in locked face rows 0–156 (not owner visual acceptance)",
     "body painted graphic not photo anatomy; shoulder line approximate",
     "ink green-excess edge pass deferred",
     "Android device proof not run",

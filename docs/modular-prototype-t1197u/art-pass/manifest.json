@@ -25,10 +25,10 @@
     "independent_per_layer_resize": false
   },
   "artistic_methods": {
-    "body": "ART PASS 2026-11-04: repainted fitted dark athletic base layer (torso, both arms, collar fill, wrist/waist overlaps); clipped inside jacket silhouette; no construction lines. Not original anatomy. CROTCH CLIP 2026-11-04: body truncated below pants_top+40; in tuck zone body kept only where pants alpha>40; crotch gap fill 0. Runtime paint order pants -> body -> jacket.",
+    "body": "ART PASS 2026-11-04: repainted fitted dark athletic base layer (torso, both arms, collar fill, wrist/waist overlaps); clipped inside jacket silhouette; no construction lines. Not original anatomy. CROTCH CLIP 2026-11-04: body truncated below pants_top+40; in tuck zone body kept only where pants alpha>40; crotch gap fill 0. Runtime paint order pants -> body -> jacket. BODY COLLAR FILL 2026-11-04: small under-chin collar fill to close residual step; face untouched.",
     "mint_clothing": "exact visible photo pixels partitioned by region",
     "ink_clothing": "charcoal/black full desaturation of mint photo geometry; mint halos removed 2026-11-04 (max G-excess <=1)",
-    "head": "exact locked source photo pixels. Combined head/helmet/hair; NOT interchangeable eyewear yet"
+    "head": "exact locked source photo pixels. Combined head/helmet/hair; NOT interchangeable eyewear yet. HEAD CLEANUP 2026-11-04: alpha-only cleanup below jaw (y>=157): chest slashes/specks zeroed, braid wisp zeroed, chin/neck hard cut edge feathered (x>=516). Face ROI y<157 byte-identical."
   },
   "tests": {
     "head_photo_identical_between_mint_and_ink": true,
@@ -40,8 +40,8 @@
     {
       "slot": "body",
       "path": "gb-phone/public/stomper/adult/body/body-athletic@512.webp",
-      "sha256": "c69f7d872043c36432f7e0035deb2021c54514d5b781e18f23ffa04d11b0a999",
-      "bytes": 7082
+      "sha256": "21a12aca8ac4f24f2e862e19b6eadb357e82e77d52a353a3a9c9c75516516671",
+      "bytes": 6808
     },
     {
       "slot": "jacket_mint",
@@ -70,8 +70,8 @@
     {
       "slot": "head_locked",
       "path": "gb-phone/public/stomper/adult/face/face-f-hana-locked-composite@512.webp",
-      "sha256": "0cf18191bcfa75af6e1714a98ec3bb72ee8e374bc37f617a2eb1a60c42372b16",
-      "bytes": 11770
+      "sha256": "1b96222995092646c8f91e55d9f5025d9a318b002dcaa7e26108c183c8bc2ebf",
+      "bytes": 9838
     },
     {
       "slot": "gloves",
@@ -100,6 +100,20 @@
   "art_pass": {
     "date": "2026-11-04",
     "android_proof": "PENDING (Woz)",
-    "crotch_clip": "2026-11-04 body under pants; gap fill 0"
+    "crotch_clip": "2026-11-04 body under pants; gap fill 0",
+    "head_cleanup": "DONE 2026-11-04",
+    "crotch_clip_woz": "CLEARED on Woz #27 tip e0fb4b2"
+  },
+  "head_master_sha256": "0e78e8ae73311ee7cdca14404b93158a527490d6959ec68f1a6053e9f93ab0f5",
+  "ora_sha256": "8981278627066409da57363967f67012f4cd9434a37aaad0eb8657f471adb401",
+  "masters_sha256": {
+    "body@1024.png": "5bdf47671dcf029799749e2987f1d27acc62faa6c49f9543dc8964f138c61ba4",
+    "boots@1024.png": "b9f9dbec79d6eb78ee226b2db945fe2ff3a6d13046b47b96249704aa04eed4c2",
+    "gloves@1024.png": "973eb9c38911d568b0523009778d991dd56109be4b102265e1aff335f1d51083",
+    "head_locked@1024.png": "0e78e8ae73311ee7cdca14404b93158a527490d6959ec68f1a6053e9f93ab0f5",
+    "jacket_ink@1024.png": "e63146fb002e2f1f203aa3d0e4db1631659c9264978724bb68d980961226da8a",
+    "jacket_mint@1024.png": "eb99c9c21be4b53045b6b3091bc514a20b0c417e4f97b18cca22b471de0307f8",
+    "pants_ink@1024.png": "2ca0d00f1e8b91964d41438ec4323f1a4e9df95fb1d77ecc4f6ea0a998e8e799",
+    "pants_mint@1024.png": "80d796fa5ab8794b1ab50de9bd5cfd84aadb98b74126b136716588f45767c5c7"
   }
 }

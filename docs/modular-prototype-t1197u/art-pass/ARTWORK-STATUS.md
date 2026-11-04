@@ -8,3 +8,20 @@ Status: **REGISTERED_VISUAL_PROTOTYPE_ONLY** (not Android-accepted; not a comple
 - ORA rebuilt with clipped body (layer_07) and new mergedimage.png.
 - Head plate untouched. Head leftovers: **OPEN** — pending Ted face-lock.
 - Woz re-ingest: **NEEDED** for the new body webp.
+
+## Head cleanup — 2026-11-04: **DONE**
+- Chin notch: alpha feather of hard neck cut edge below jaw (y>=157, x>=516); no RGB painted, no face redraw.
+- Braid wisp: stray strand/grey fragment left of main braid zeroed (alpha only). Main braid kept.
+- Chest ghost slashes: all disconnected head-plate fragments below jaw + everything y>=215 zeroed.
+- Face/helmet/goggles ROI (rows 0-156) byte-identical: sha256 0965e1763afc16c0fa9db8e210e6f916ae2592f7cc5bda693ccd6bb9b1b19826 before & after.
+- New face-f-hana-locked-composite@512.webp: 1b96222995092646c8f91e55d9f5025d9a318b002dcaa7e26108c183c8bc2ebf (9838 bytes, lossless).
+- Crotch clip: **CLEARED** on Woz #27 tip e0fb4b2.
+- Runtime paint order: boots -> pants -> body -> face(head) -> jacket -> gloves.
+- Status remains **REGISTERED_VISUAL_PROTOTYPE_ONLY**. Woz re-ingest NEEDED for new face webp.
+
+## Update 2026-11-04 (head cleanup package)
+- Head cleanup: DONE (face webp sha 1b96222995092646c8f91e55d9f5025d9a318b002dcaa7e26108c183c8bc2ebf)
+- Body collar under-chin fill: DONE (body webp sha 21a12aca8ac4f24f2e862e19b6eadb357e82e77d52a353a3a9c9c75516516671)
+- Crotch: CLEARED (Woz #27, e0fb4b2)
+- Status: REGISTERED_VISUAL_PROTOTYPE_ONLY (not Android-accepted)
+- Residual: tiny jaw step may remain in locked face rows (face ROI kept byte-identical).

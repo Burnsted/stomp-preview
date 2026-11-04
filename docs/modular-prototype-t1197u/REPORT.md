@@ -1,28 +1,28 @@
-# REPORT — t1197u Franz art-pass + crotch clip (DRAFT)
+# REPORT — t1197u Franz head cleanup (DRAFT)
 
-**Title:** DRAFT t1197u — Look 2 registered visual prototype (body-clip)  
+**Title:** DRAFT t1197u — Look 2 registered visual prototype (head-cleanup)  
 **Owner:** Ted Burns (`t1197u`)  
 **PR:** draft [#27](https://github.com/Burnsted/stomp-preview/pull/27)  
 **Branch:** `cursor/modular-look2-alignment-t1194u-a5c4`  
-**Status:** **REGISTERED_VISUAL_PROTOTYPE_ONLY** — not Android-accepted · not Pages · no merge claim
+**Status:** **REGISTERED_VISUAL_PROTOTYPE_ONLY** — not Android-accepted · not Pages · no merge claim · **no owner visual acceptance claimed**
 
 ## Verdict
 
-Franz **body-clip** pack re-ingested on draft #27 (supersedes art-pass body `451ae7ed…`).  
-Crotch dark-T on B mint / C ink **CLEARED** (body truncated below pants waist + 40px tuck; gap fill 0).  
-A jacket-off still shows torso/arms above waist (**OK**).  
+Franz **head-cleanup** pack re-ingested on draft #27 (face + body).  
+Jacket-off leftovers staged: chin notch feathered (**residual jaw step possible**); braid wisp **CLEARED**; chest slashes **CLEARED**.  
+Crotch dark-T still **CLEARED** on B/C; A torso tuck **OK**.  
 AvatarRenderer A/B/C **PROTOTYPE_RENDERED**.  
-Head leftovers remain **OPEN**. Android / production 11-slot gate remains **fail-closed**.
+Android / production 11-slot gate remains **fail-closed**.
 
 ## Preferred source
 
 | Field | Value |
 |---|---|
-| Pack | `franz-body-clip.zip` |
-| sha256 | `b713687909462d4e91efcd19032a2b0ebd575d1e44628bdc58564815377f7f86` |
-| Drive | https://drive.google.com/file/d/1p6dYRr-5QXr9baMAsR7pT8bDkzIMCtNU/view |
+| Pack | `franz-head-cleanup.zip` |
+| sha256 | `6be4a58b610493c18d8be4ae85e22259b59f0b96b1048ef562b5710e37d9bff6` |
+| Drive | https://drive.google.com/file/d/1PqLFxVx4o8q6oSQ1iWkU08AnGmR4nFhG/view |
+| Prior body-clip ZIP | `b713687909462d4e91efcd19032a2b0ebd575d1e44628bdc58564815377f7f86` |
 | Prior art-pass ZIP | `75d1dd0377bd9f4223631e25661e97831e23a563f8735ecaa3829a991b326762` |
-| Prior morning ZIP | `62b7bdcefec632a31e8f95c0c8e298d78a85fd7c2cf132bc950e90aed8ea3f89` |
 | ARTWORK-STATUS | `docs/modular-prototype-t1197u/art-pass/ARTWORK-STATUS.md` |
 | ORA | `docs/modular-prototype-t1197u/art-pass/look2-f-hana-REGISTERED-PROTOTYPE.ora` |
 
@@ -30,80 +30,56 @@ Head leftovers remain **OPEN**. Android / production 11-slot gate remains **fail
 
 | Plate | sha256 |
 |---|---|
-| `body-athletic@512.webp` | `c69f7d872043c36432f7e0035deb2021c54514d5b781e18f23ffa04d11b0a999` (7082 bytes) |
+| `face-f-hana-locked-composite@512.webp` | `1b96222995092646c8f91e55d9f5025d9a318b002dcaa7e26108c183c8bc2ebf` (9838 B) |
+| `body-athletic@512.webp` | `21a12aca8ac4f24f2e862e19b6eadb357e82e77d52a353a3a9c9c75516516671` (6808 B) |
 | `jacket-look2-ink@512.webp` | `d22534a9e700cf29b0b45a2c0106c6848136288ecc8e3b9c23bdbb3e33ce5206` |
 | `pants-look2-ink@512.webp` | `6fe342fea91bc14086a3d9d2006e256d5cf1f81c0ad4b2103cc49e893adf9279` |
 
-## Crotch clip
+## Head cleanup (staged — not owner PASS)
+
+| Leftover | Verdict | Notes |
+|---|---|---|
+| Chin notch | **CLEARED_WITH_RESIDUAL_JAW_STEP** | Alpha feather below jaw; tiny step may remain in locked face rows |
+| Braid wisp | **CLEARED** | Stray strand zeroed; main braid kept |
+| Chest slashes | **CLEARED** | Face-plate opaque y≥108: 111→0 |
+| Owner visual acceptance | **NOT claimed** | Ted OK-to-clean ≠ acceptance / Android PASS |
+
+Evidence: `evidence/A-jacket-off-before-after.png`, `qa/*_before_after.png`, `proofs/A_B_C_HEAD_CLEAN_2026-11-04.png`, `evidence/head-cleanup-metrics.json`
+
+## Crotch clip (still holds)
 
 | Field | Value |
 |---|---|
-| Cause | Paint order pants→body→jacket put body pixels in crotch gap → dark T on B/C |
-| Fix | Truncate body below pants_top+40; within tuck, body only where pants α>40; crotch gap fill 0 |
-| Head | Untouched |
-| Metrics | `evidence/crotch-clip-metrics.json` — B/C body-bleed gained opaque = **0**; A torso above waist **OK** |
-| Proof | `proofs/franz-abc-bodyclip.png`, `proofs/zoom_crotch_{A,B,C}.png`, `evidence/ABC-bodyclip-side-by-side.png` |
+| Status | **CLEARED** on B mint + C ink |
+| A torso above waist | **OK** |
+| Metrics | `evidence/head-cleanup-metrics.json` · `evidence/crotch-clip-metrics.json` |
 
 ## Wiring
 
-- Catalog: mint ↔ ink jacket sets; `jacket-none` / `board-none` / locked-head includes
-- Starter `f-hana`: prototype 8-plate layers (locked head composite, photo gloves/boots, board OFF)
-- `LOOK2_GATE_STATUS`: `PROTOTYPE_8_OF_11` · `crotchClip=DONE` · `androidAccepted=false`
-- Android `evaluateLook2MintGate`: fail-closed on prototype outfit
+- Catalog mint↔ink; jacket-off body; locked head composite
+- `LOOK2_GATE_STATUS`: `PROTOTYPE_8_OF_11` · `headCleanup=STAGED` · `crotchClip=DONE` · `androidAccepted=false`
+- Android gate fail-closed on prototype outfit
 
-## 8-vs-11 gap list (production still missing)
+## Franz repair list
 
-| # | Slot | Prototype | Production need |
-|---|---|---|---|
-| 1 | body | PRESENT (painted graphic, crotch-clipped) | photo-real anatomy (future) |
-| 2 | jacket mint | PRESENT | — |
-| 3 | jacket ink | PRESENT | — |
-| 4 | pants mint | PRESENT | — |
-| 5 | pants ink | PRESENT | — |
-| 6 | head | locked composite | separated face |
-| 7 | hair | included in head | separated hair |
-| 8 | headwear | included in head | separated helmet |
-| 9 | goggles | included in head | separated goggles |
-| 10 | gloves | photo plate | — |
-| 11 | boots | photo plate | — |
-| — | board | OFF (`board-none`) | real board + bindings |
+### Repaired / staged on disk
+1. Body underlayer (art-pass) + crotch clip
+2. Ink charcoal (mint-halos visually cleared)
+3. Head cleanup: chin feather / braid wisp / chest slash zeros + body collar fill
 
-## Composites A / B / C
-
-| ID | Outfit | Status | Evidence |
-|---|---|---|---|
-| A | jacket-off + mint pants + body | `PROTOTYPE_RENDERED` | torso/arms above waist retained |
-| B | mint jacket + pants | `PROTOTYPE_RENDERED` | crotch T **CLEARED** |
-| C | ink jacket + pants | `PROTOTYPE_RENDERED` | crotch T **CLEARED** |
-| ABC | side-by-side | Franz + renderer | `proofs/franz-abc-bodyclip.png`, `evidence/ABC-bodyclip-side-by-side.png` |
-
-## Franz repair list (receipt)
-
-### Repaired — held on disk
-1. Body underlayer (art-pass): no white construction lines; collar/wrist/waist fill
-2. Ink jacket+pants: mint-halos visually cleared → charcoal
-3. **Crotch clip:** body truncated / tucked; B/C dark T gone; A torso tuck retained
-
-### Still OPEN — do NOT fake-PASS
-1. **Head leftovers on jacket-off:** chin notch / braid wisp / chest slashes — Ted face-lock decision
+### Still OPEN / honesty
+1. Residual tiny jaw step in locked face rows possible
 2. Body painted graphic ≠ photo anatomy
 3. Ink green-excess edge pass deferred
-4. Separated face / hair / headwear / goggles / real board still absent
+4. Separated face/hair/headwear/goggles + real board missing (8-of-11)
 5. Android device proof not run
-
-## Honesty locks
-
-- No merge / Pages / Android PASS claim
-- No invented head cutouts
-- Locker / selector: `data-acceptance-eligible=false` for prototype starter
-- `LOOK2_GATE_STATUS.androidAccepted === false`
+6. **No owner visual acceptance / Android PASS claim**
 
 ## CI
 
 | Field | Value |
 |---|---|
-| CI green tip | `e0fb4b29827bc0413d78d19e1748b266140c3bd2` |
-| CI | both pr-verify **SUCCESS** — [run 41840811073](https://github.com/Burnsted/stomp-preview/actions/runs/41840811073) |
-| Jobs | `batch1 typecheck + test` · `gb-phone typecheck + woz tests + build` |
+| CI green tip | _(pending head-cleanup tip)_ |
+| CI | _(pending both pr-verify)_ |
 | Receipt | `T1197U-VERIFICATION-RECEIPT.md` |
-| Status | **REGISTERED_VISUAL_PROTOTYPE_ONLY** — no Android / Pages / merge PASS |
+| Status | **REGISTERED_VISUAL_PROTOTYPE_ONLY** |
