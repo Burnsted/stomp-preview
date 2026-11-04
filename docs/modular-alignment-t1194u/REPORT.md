@@ -4,6 +4,7 @@
 **Owner:** Ted Burns (`t1194u`)  
 **Base:** stacked from #21 tip `8b4b79986637ea69330698d8363726feaa8f477f`  
 **Branch:** `cursor/modular-look2-alignment-t1194u-a5c4`  
+**PR:** draft [#27](https://github.com/Burnsted/stomp-preview/pull/27) (stacked on #21)  
 **Hard nos:** no merge · no Home/five-tab/Crew Invite · no payments/youth/live/Pages · no face/pose redesign · tips #12–#20/#22–#26 untouched
 
 ## Verdict
@@ -59,7 +60,7 @@ Required LOOK2_MINT paths rewritten with matching manifest sha256 (see JSON). Op
 
 | Field | Value |
 |---|---|
-| Tip SHA | `d05b3a93f122b16f3538656592985e0911f2ad05` |
+| Tip SHA | `ca356e0df374bb912b80cd2215446147ef4e2c71` (work tip `d05b3a9`; docs tip follows) |
 | CI | both pr-verify jobs must be green before claiming engineering done |
 | AF tests | existing Look 2 plate tests + `look2-registration-t1194u.test.tsx` |
 
