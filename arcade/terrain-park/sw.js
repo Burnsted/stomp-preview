@@ -1,5 +1,5 @@
-/* terrain-park-v0-3-5 — network-first HTML; offline cache */
-const C='terrain-park-v0-3-5';
+/* terrain-park-v0-3-6 — network-first HTML; offline cache */
+const C='terrain-park-v0-3-6';
 const ASSETS=['./','./index.html','./sw.js'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
