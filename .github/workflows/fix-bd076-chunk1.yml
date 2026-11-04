@@ -1,0 +1,38 @@
+name: fix-bd076-chunk1
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-bd076-chunk1.yml'
+  workflow_dispatch:
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix chunk1 typo and verify
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          p = Path('arcade/boulder-dodge/.packed/chunk1.b64')
+          t = p.read_text()
+          if 'ERERER8' in t:
+              t2 = t.replace('ERERER8', 'ERER8', 1)
+              assert t2.count('ERERER8') == 0
+              p.write_text(t2)
+              print('fixed', len(t), '->', len(t2))
+          else:
+              print('no typo', len(t))
+          t = p.read_text()
+          print('sha1', hashlib.sha1(t.encode()).hexdigest())
+          print('len', len(t))
+          PY
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add arcade/boulder-dodge/.packed/chunk1.b64
+          git diff --cached --quiet || git commit -m "fix: boulder-dodge v0.7.6 absolute-flat tabletops"
+          git push
