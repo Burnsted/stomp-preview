@@ -1,12 +1,13 @@
-# Terrain Park v0.2 — size vs budget
+# Terrain Park v0.3 — size vs budget
 
 | File | Raw | Gzip |
 |------|-----|------|
-| `arcade/terrain-park/index.html` | 46493 | 16544 |
-| `arcade/terrain-park/sw.js` | 1112 | 546 |
-| **Total** | **47605** | **17090** |
+| `arcade/terrain-park/index.html` | 61248 | 20557 |
+| `arcade/terrain-park/sw.js` | 1112 | 540 |
+| **Total** | **62360** | **21097** |
 
-Soft budget: **~70KB raw**. Usage: **68.0%** (47605 / 70000).
+Soft budget: **~70KB raw**. Usage: **89.1%**.
 
-Cache bust: `terrain-park-v0-2`
-Preview: https://burnsted.github.io/stomp-preview/arcade/terrain-park/
+Cache bust: `terrain-park-v0-3`
+
+v0.3 add-ons: purple dusk sky · BD-style boot legend · groms · decoy logs · per-level trick goals · text wrap
