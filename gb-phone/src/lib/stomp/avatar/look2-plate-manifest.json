@@ -2,9 +2,11 @@
   "task": "t1197u",
   "status": "REGISTERED_VISUAL_PROTOTYPE_ONLY",
   "artPass": "2026-11-04",
-  "sourceZipSha256": "75d1dd0377bd9f4223631e25661e97831e23a563f8735ecaa3829a991b326762",
+  "bodyClip": "2026-11-04",
+  "sourceZipSha256": "b713687909462d4e91efcd19032a2b0ebd575d1e44628bdc58564815377f7f86",
+  "priorArtPassZipSha256": "75d1dd0377bd9f4223631e25661e97831e23a563f8735ecaa3829a991b326762",
   "priorMorningZipSha256": "62b7bdcefec632a31e8f95c0c8e298d78a85fd7c2cf132bc950e90aed8ea3f89",
-  "preferredPack": "franz-art-pass",
+  "preferredPack": "franz-body-clip",
   "sourceSheet": "docs/character-production-t1173u/masters/look2-f-hana-MODULAR-SHEET.png",
   "sourceSha256": "e273e6c13142cf068d25fc1c18503d1d59e947e8af52fee54b9c8e2abda93322",
   "sourceSize": [1024, 1024],
@@ -35,8 +37,14 @@
   "openArtRepairs": [
     "head_locked leftovers on jacket-off: chin notch / braid wisp / chest slashes",
     "body painted graphic not photo anatomy; shoulder line approximate",
+    "ink green-excess edge pass deferred",
     "Android device proof not run"
   ],
+  "crotchClip": {
+    "status": "DONE",
+    "rule": "body truncated below pants_top+40; tuck only where pants alpha>40; crotch gap fill 0",
+    "paintOrder": "pants -> body -> jacket"
+  },
   "editableMasterOra": "docs/modular-prototype-t1197u/art-pass/look2-f-hana-REGISTERED-PROTOTYPE.ora",
   "plates": [
     {
@@ -59,8 +67,8 @@
       "slot": "body",
       "path": "gb-phone/public/stomper/adult/body/body-athletic@512.webp",
       "url": "/stomper/adult/body/body-athletic@512.webp",
-      "sha256": "451ae7edb3e21019def97bb5661ae68aa693727944fa243f33b30eac0eeabe8a",
-      "bytes": 13010,
+      "sha256": "c69f7d872043c36432f7e0035deb2021c54514d5b781e18f23ffa04d11b0a999",
+      "bytes": 7082,
       "size": [512, 512]
     },
     {

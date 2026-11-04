@@ -25,7 +25,7 @@
     "independent_per_layer_resize": false
   },
   "artistic_methods": {
-    "body": "ART PASS 2026-11-04: repainted fitted dark athletic base layer (torso, both arms, collar fill, wrist/waist overlaps); clipped inside jacket silhouette; no construction lines. Not original anatomy.",
+    "body": "ART PASS 2026-11-04: repainted fitted dark athletic base layer (torso, both arms, collar fill, wrist/waist overlaps); clipped inside jacket silhouette; no construction lines. Not original anatomy. CROTCH CLIP 2026-11-04: body truncated below pants_top+40; in tuck zone body kept only where pants alpha>40; crotch gap fill 0. Runtime paint order pants -> body -> jacket.",
     "mint_clothing": "exact visible photo pixels partitioned by region",
     "ink_clothing": "charcoal/black full desaturation of mint photo geometry; mint halos removed 2026-11-04 (max G-excess <=1)",
     "head": "exact locked source photo pixels. Combined head/helmet/hair; NOT interchangeable eyewear yet"
@@ -40,8 +40,8 @@
     {
       "slot": "body",
       "path": "gb-phone/public/stomper/adult/body/body-athletic@512.webp",
-      "sha256": "451ae7edb3e21019def97bb5661ae68aa693727944fa243f33b30eac0eeabe8a",
-      "bytes": 13010
+      "sha256": "c69f7d872043c36432f7e0035deb2021c54514d5b781e18f23ffa04d11b0a999",
+      "bytes": 7082
     },
     {
       "slot": "jacket_mint",
@@ -99,6 +99,7 @@
   ],
   "art_pass": {
     "date": "2026-11-04",
-    "android_proof": "PENDING (Woz)"
+    "android_proof": "PENDING (Woz)",
+    "crotch_clip": "2026-11-04 body under pants; gap fill 0"
   }
 }

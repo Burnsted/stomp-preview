@@ -153,11 +153,16 @@ export const LOOK2_GATE_STATUS = {
   runtimeCanvas: 512 as const,
   commonScale: 0.5 as const,
   status: "REGISTERED_VISUAL_PROTOTYPE_ONLY" as const,
-  preferredPack: "franz-art-pass" as const,
+  preferredPack: "franz-body-clip" as const,
   sourceZipSha256:
+    "b713687909462d4e91efcd19032a2b0ebd575d1e44628bdc58564815377f7f86" as const,
+  priorArtPassZipSha256:
     "75d1dd0377bd9f4223631e25661e97831e23a563f8735ecaa3829a991b326762" as const,
   priorMorningZipSha256:
     "62b7bdcefec632a31e8f95c0c8e298d78a85fd7c2cf132bc950e90aed8ea3f89" as const,
+  bodySha256:
+    "c69f7d872043c36432f7e0035deb2021c54514d5b781e18f23ffa04d11b0a999" as const,
+  crotchClip: "DONE" as const,
   sourceZip:
     "docs/modular-prototype-t1197u/art-pass/look2-f-hana-REGISTERED-PROTOTYPE.ora" as const,
   registrationContract: "docs/modular-alignment-t1194u/REGISTRATION-CONTRACT.md" as const,
@@ -173,6 +178,7 @@ export const LOOK2_GATE_STATUS = {
   openArtRepairs: [
     "head_locked leftovers on jacket-off: chin notch / braid wisp / chest slashes",
     "body painted graphic not photo anatomy; shoulder line approximate",
+    "ink green-excess edge pass deferred",
     "Android device proof not run",
   ] as const,
 };

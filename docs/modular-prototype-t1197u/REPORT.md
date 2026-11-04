@@ -1,6 +1,6 @@
-# REPORT — t1197u Franz art-pass staging (DRAFT)
+# REPORT — t1197u Franz art-pass + crotch clip (DRAFT)
 
-**Title:** DRAFT t1197u — Look 2 registered visual prototype (art-pass)  
+**Title:** DRAFT t1197u — Look 2 registered visual prototype (body-clip)  
 **Owner:** Ted Burns (`t1197u`)  
 **PR:** draft [#27](https://github.com/Burnsted/stomp-preview/pull/27)  
 **Branch:** `cursor/modular-look2-alignment-t1194u-a5c4`  
@@ -8,21 +8,21 @@
 
 ## Verdict
 
-Franz **art-pass** pack staged into `gb-phone/public/stomper` (preferred over morning prototype ZIP).  
-Body underlayer repaired (no white construction lines; collar/wrist/waist fill).  
-Ink jacket+pants mint-halos cleared → charcoal visually.  
-AvatarRenderer A/B/C prototype composites **PROTOTYPE_RENDERED**.  
-Android / production 11-slot gate remains **fail-closed**.  
-Head-plate leftovers on jacket-off remain **OPEN** (do not fake-PASS).
+Franz **body-clip** pack re-ingested on draft #27 (supersedes art-pass body `451ae7ed…`).  
+Crotch dark-T on B mint / C ink **CLEARED** (body truncated below pants waist + 40px tuck; gap fill 0).  
+A jacket-off still shows torso/arms above waist (**OK**).  
+AvatarRenderer A/B/C **PROTOTYPE_RENDERED**.  
+Head leftovers remain **OPEN**. Android / production 11-slot gate remains **fail-closed**.
 
 ## Preferred source
 
 | Field | Value |
 |---|---|
-| Pack | `franz-art-pass.zip` |
-| sha256 | `75d1dd0377bd9f4223631e25661e97831e23a563f8735ecaa3829a991b326762` |
-| Drive | https://drive.google.com/file/d/1tOR6LXbrij589gCDOQqsAkyOJBFVSqCh/view |
-| Prior morning ZIP (superseded) | `62b7bdcefec632a31e8f95c0c8e298d78a85fd7c2cf132bc950e90aed8ea3f89` |
+| Pack | `franz-body-clip.zip` |
+| sha256 | `b713687909462d4e91efcd19032a2b0ebd575d1e44628bdc58564815377f7f86` |
+| Drive | https://drive.google.com/file/d/1p6dYRr-5QXr9baMAsR7pT8bDkzIMCtNU/view |
+| Prior art-pass ZIP | `75d1dd0377bd9f4223631e25661e97831e23a563f8735ecaa3829a991b326762` |
+| Prior morning ZIP | `62b7bdcefec632a31e8f95c0c8e298d78a85fd7c2cf132bc950e90aed8ea3f89` |
 | ARTWORK-STATUS | `docs/modular-prototype-t1197u/art-pass/ARTWORK-STATUS.md` |
 | ORA | `docs/modular-prototype-t1197u/art-pass/look2-f-hana-REGISTERED-PROTOTYPE.ora` |
 
@@ -30,22 +30,32 @@ Head-plate leftovers on jacket-off remain **OPEN** (do not fake-PASS).
 
 | Plate | sha256 |
 |---|---|
-| `body-athletic@512.webp` | `451ae7edb3e21019def97bb5661ae68aa693727944fa243f33b30eac0eeabe8a` |
+| `body-athletic@512.webp` | `c69f7d872043c36432f7e0035deb2021c54514d5b781e18f23ffa04d11b0a999` (7082 bytes) |
 | `jacket-look2-ink@512.webp` | `d22534a9e700cf29b0b45a2c0106c6848136288ecc8e3b9c23bdbb3e33ce5206` |
 | `pants-look2-ink@512.webp` | `6fe342fea91bc14086a3d9d2006e256d5cf1f81c0ad4b2103cc49e893adf9279` |
+
+## Crotch clip
+
+| Field | Value |
+|---|---|
+| Cause | Paint order pants→body→jacket put body pixels in crotch gap → dark T on B/C |
+| Fix | Truncate body below pants_top+40; within tuck, body only where pants α>40; crotch gap fill 0 |
+| Head | Untouched |
+| Metrics | `evidence/crotch-clip-metrics.json` — B/C body-bleed gained opaque = **0**; A torso above waist **OK** |
+| Proof | `proofs/franz-abc-bodyclip.png`, `proofs/zoom_crotch_{A,B,C}.png`, `evidence/ABC-bodyclip-side-by-side.png` |
 
 ## Wiring
 
 - Catalog: mint ↔ ink jacket sets; `jacket-none` / `board-none` / locked-head includes
 - Starter `f-hana`: prototype 8-plate layers (locked head composite, photo gloves/boots, board OFF)
-- `LOOK2_GATE_STATUS`: `PROTOTYPE_8_OF_11` · `inkVariants=PRESENT` · `underJacketBody=PROTOTYPE_PRESENT` · `androidAccepted=false`
-- Android `evaluateLook2MintGate`: fail-closed on prototype outfit (`prototype-outfit`, `board-off`, locked goggles)
+- `LOOK2_GATE_STATUS`: `PROTOTYPE_8_OF_11` · `crotchClip=DONE` · `androidAccepted=false`
+- Android `evaluateLook2MintGate`: fail-closed on prototype outfit
 
 ## 8-vs-11 gap list (production still missing)
 
 | # | Slot | Prototype | Production need |
 |---|---|---|---|
-| 1 | body | PRESENT (painted graphic) | photo-real anatomy (future) |
+| 1 | body | PRESENT (painted graphic, crotch-clipped) | photo-real anatomy (future) |
 | 2 | jacket mint | PRESENT | — |
 | 3 | jacket ink | PRESENT | — |
 | 4 | pants mint | PRESENT | — |
@@ -58,37 +68,33 @@ Head-plate leftovers on jacket-off remain **OPEN** (do not fake-PASS).
 | 11 | boots | photo plate | — |
 | — | board | OFF (`board-none`) | real board + bindings |
 
-Prototype plate count = **8**. Production slot count = **11** (separated head stack + board).
-
 ## Composites A / B / C
 
 | ID | Outfit | Status | Evidence |
 |---|---|---|---|
-| A | jacket-off + mint pants + body | `PROTOTYPE_RENDERED` | `evidence/A-jacket-off-renderer-*.png` + annotated leftovers |
-| B | mint jacket + pants | `PROTOTYPE_RENDERED` | `evidence/B-mint-renderer-*.png` |
-| C | ink jacket + pants | `PROTOTYPE_RENDERED` | `evidence/C-ink-renderer-*.png` |
-| ABC | side-by-side | Franz proof + renderer stack | `proofs/franz-abc-proof.png`, `evidence/ABC-renderer-side-by-side.png` |
-
-Vitest also mounts real `AvatarRenderer` for A/B/C (`look2PrototypeConfig`) — plates mode, complete prototype stack.
+| A | jacket-off + mint pants + body | `PROTOTYPE_RENDERED` | torso/arms above waist retained |
+| B | mint jacket + pants | `PROTOTYPE_RENDERED` | crotch T **CLEARED** |
+| C | ink jacket + pants | `PROTOTYPE_RENDERED` | crotch T **CLEARED** |
+| ABC | side-by-side | Franz + renderer | `proofs/franz-abc-bodyclip.png`, `evidence/ABC-bodyclip-side-by-side.png` |
 
 ## Franz repair list (receipt)
 
-### Repaired (art-pass) — held on disk
-1. Body underlayer: white construction lines removed; fitted dark athletic base
-2. Collar / wrist / waist fills (no transparent holes under jacket-off)
-3. Ink jacket+pants desaturated; mint-halos visually cleared to charcoal
+### Repaired — held on disk
+1. Body underlayer (art-pass): no white construction lines; collar/wrist/waist fill
+2. Ink jacket+pants: mint-halos visually cleared → charcoal
+3. **Crotch clip:** body truncated / tucked; B/C dark T gone; A torso tuck retained
 
 ### Still OPEN — do NOT fake-PASS
-1. **Head leftovers on jacket-off:** chin notch / braid wisp / chest slashes — needs owner face-lock / cut-out decision (head photo untouched)
-2. Body is painted graphic, not photo anatomy; 3/4 shoulder line approximate
-3. Android device proof not run
+1. **Head leftovers on jacket-off:** chin notch / braid wisp / chest slashes — Ted face-lock decision
+2. Body painted graphic ≠ photo anatomy
+3. Ink green-excess edge pass deferred
 4. Separated face / hair / headwear / goggles / real board still absent
-5. Seam note: ink green-excess heuristic still reports low teens on partial-alpha edge px (jacket≈12, pants≈19) while visual charcoal holds — Franz may want another edge pass; not claimed clear-by-metric
+5. Android device proof not run
 
 ## Honesty locks
 
 - No merge / Pages / Android PASS claim
-- No invented separated face/hair/goggles/board
+- No invented head cutouts
 - Locker / selector: `data-acceptance-eligible=false` for prototype starter
 - `LOOK2_GATE_STATUS.androidAccepted === false`
 
@@ -96,8 +102,7 @@ Vitest also mounts real `AvatarRenderer` for A/B/C (`look2PrototypeConfig`) — 
 
 | Field | Value |
 |---|---|
-| CI green tip | `7a49db1c64d2ea74f0c599de543d1be7afdc9536` |
-| CI | both pr-verify **SUCCESS** — [run 41839026551](https://github.com/Burnsted/stomp-preview/actions/runs/41839026551) |
-| Jobs | `batch1 typecheck + test` · `gb-phone typecheck + woz tests + build` |
+| CI green tip | _(pending body-clip tip)_ |
+| CI | _(pending both pr-verify)_ |
 | Receipt | `T1197U-VERIFICATION-RECEIPT.md` |
-| Status | **REGISTERED_VISUAL_PROTOTYPE_ONLY** — no Android / Pages / merge PASS |
+| Status | **REGISTERED_VISUAL_PROTOTYPE_ONLY** |

@@ -106,7 +106,12 @@ describe("t1194u/t1197u — Look 2 fixed registration (honest visual gate)", () 
       p.url.includes("pants-look2-ink"),
     )!;
     expect(body.sha256).toBe(
-      "451ae7edb3e21019def97bb5661ae68aa693727944fa243f33b30eac0eeabe8a",
+      "c69f7d872043c36432f7e0035deb2021c54514d5b781e18f23ffa04d11b0a999",
+    );
+    expect(body.bytes).toBe(7082);
+    expect(LOOK2_GATE_STATUS.crotchClip).toBe("DONE");
+    expect(LOOK2_GATE_STATUS.bodySha256).toBe(
+      "c69f7d872043c36432f7e0035deb2021c54514d5b781e18f23ffa04d11b0a999",
     );
     expect(inkJ.sha256).toBe(
       "d22534a9e700cf29b0b45a2c0106c6848136288ecc8e3b9c23bdbb3e33ce5206",
@@ -115,8 +120,10 @@ describe("t1194u/t1197u — Look 2 fixed registration (honest visual gate)", () 
       "6fe342fea91bc14086a3d9d2006e256d5cf1f81c0ad4b2103cc49e893adf9279",
     );
     expect(LOOK2_PLATE_MANIFEST.sourceZipSha256).toBe(
-      "75d1dd0377bd9f4223631e25661e97831e23a563f8735ecaa3829a991b326762",
+      "b713687909462d4e91efcd19032a2b0ebd575d1e44628bdc58564815377f7f86",
     );
+    expect(LOOK2_PLATE_MANIFEST.preferredPack).toBe("franz-body-clip");
+    expect(LOOK2_PLATE_MANIFEST.crotchClip?.status).toBe("DONE");
     expect(LOOK2_GATE_STATUS.openArtRepairs.join(" ")).toMatch(/chin notch/);
     expect(LOOK2_GATE_STATUS.openArtRepairs.join(" ")).toMatch(/braid wisp/);
     expect(LOOK2_GATE_STATUS.openArtRepairs.join(" ")).toMatch(/chest slashes/);

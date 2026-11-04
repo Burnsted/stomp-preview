@@ -30,3 +30,7 @@ Uses Ted/Franz's mint-jacket studio photo of the brunette (`1000100043.png`) as 
 
 ## File provenance / risks
 Some semantic slicing boundaries (glove cuffs, helmet, hair braid, pants hem) are region masks, not professionally painted isolations. Pixel-lock and registration are mechanical, but seam quality needs visual inspection. No claim that this is the final 11-layer stack.
+
+
+## Crotch clip 2026-11-04
+Body clipped under pants (gap fill 0). Paint order pants -> body -> jacket. See ARTWORK-STATUS.md.

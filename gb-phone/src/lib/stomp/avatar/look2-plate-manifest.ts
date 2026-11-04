@@ -35,9 +35,16 @@ export type Look2PlateManifest = {
   task?: string;
   status?: "REGISTERED_VISUAL_PROTOTYPE_ONLY" | string;
   artPass?: string;
+  bodyClip?: string;
   sourceZipSha256?: string;
+  priorArtPassZipSha256?: string;
   priorMorningZipSha256?: string;
   preferredPack?: string;
+  crotchClip?: {
+    status: string;
+    rule?: string;
+    paintOrder?: string;
+  };
   sourceSheet?: string;
   sourceSha256?: string;
   sourceSize?: number[];
