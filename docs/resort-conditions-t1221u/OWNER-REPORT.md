@@ -50,8 +50,8 @@ Under `gb-phone/screenshots/t1221u/` and `/opt/cursor/artifacts/t1221u/`:
 
 ## Tip / PR
 
-- **Tip SHA:** `03c39ce656eacabb4a670a48d40724b37409fe6e`  
-- **Draft PR:** _(set after open)_ — *DRAFT t1221u — resort conditions model + fiction UI + provider research (NO MERGE)*  
+- **Tip SHA:** `1c2b1e9bc2346dc9a4ccda5f1f79b3fc5a825ffe`  
+- **Draft PR:** [#60](https://github.com/Burnsted/stomp-preview/pull/60) — *DRAFT t1221u — resort conditions model + fiction UI + provider research (NO MERGE)*  
 - **Branch:** `cursor/resort-conditions-t1221u-94bf` → base `cursor/chrome-demote-t1220u-cfab` (stack on #59 tip)
 
 ## Recommended next owner gate
