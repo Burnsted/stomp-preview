@@ -1,5 +1,6 @@
 import { ChevronLeft } from "lucide-react";
 import { HeySessionCompact } from "@/components/stomp/alpine-chrome";
+import { Form7Brand } from "@/components/stomp/brand/form7-brand";
 import { PlaylistLink } from "@/components/stomp/playlist-chrome";
 import { useStomp } from "@/lib/stomp/store";
 import { useWoz } from "@/lib/stomp/woz-bridge/woz-store";
@@ -39,13 +40,13 @@ export function Wordmark({
   tone?: "ink" | "snow";
   onClick?: () => void;
 }) {
-  /** Alpine: lime wordmark is the brand signal; tone still flips badge/context. */
-  const color = tone === "snow" ? "text-lime" : "text-lime";
+  /** Form #7 monochrome lockup — snow tone = onDark hero; ink = theme auto. */
   const mark = (
-    <span className={"inline-flex items-center gap-2 " + color}>
-      <span className="font-display text-6xl leading-none tracking-tight">STOMP</span>
-      <BoltBadge className="size-11" />
-    </span>
+    <Form7Brand
+      testId="chrome-wordmark"
+      tone={tone === "snow" ? "onDark" : "auto"}
+      size="lg"
+    />
   );
   if (!onClick) return <p className="leading-none">{mark}</p>;
   return (

@@ -11,6 +11,7 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
+import { Form7Brand } from "@/components/stomp/brand/form7-brand";
 import { BoltBadge, HomeButton } from "@/components/stomp/chrome";
 import { HomeMapCard } from "@/components/stomp/home-map-card";
 import { HomePlaylistBlock } from "@/components/stomp/home-playlist-block";
@@ -99,7 +100,8 @@ export function Greet() {
           <img src={PHOTOS.hero} alt="" className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-navy/55 via-navy/35 to-navy" />
           <div className="relative flex items-center justify-between px-5 pt-5">
-            <h1 className="font-display text-4xl leading-none tracking-tight text-lime">STOMP</h1>
+            {/* Form #7 brand only — CrewLink / invite paths untouched */}
+            <Form7Brand tone="onDark" size="md" testId="home-form7-brand" />
             <div className="flex items-center gap-2">
               <BoltBadge />
               <button type="button" onClick={() => fileRef.current?.click()} className="size-9 overflow-hidden rounded-full ring-2 ring-lime/60">

@@ -1,9 +1,10 @@
 /**
- * Premium alpine chrome — five-tab nav, lime wordmark, glass cards, compact Hey SESSION.
+ * Premium alpine chrome — Form #7 monochrome wordmark, glass cards, compact Hey SESSION.
  * Does not replace CrewLink / greet Invite lock.
  */
 import type { ReactNode } from "react";
 import { BarChart3, Home, Map as MapIcon, Music2, Users } from "lucide-react";
+import { Form7Brand } from "@/components/stomp/brand/form7-brand";
 import { useStomp, type Screen } from "@/lib/stomp/store";
 
 export const PRIMARY_TABS = [
@@ -45,23 +46,22 @@ export function tabForScreen(screen: Screen): PrimaryTabId | null {
   return null;
 }
 
-/** Lime condensed wordmark — logo-only accent (batch 8/10). */
+/** Form #7 brand lockup — theme-aware B&W (replaces lime condensed wordmark). */
 export function AlpineWordmark({
   onClick,
   size = "md",
+  tone = "auto",
 }: {
   onClick?: () => void;
   size?: "sm" | "md" | "lg";
+  tone?: "auto" | "onDark" | "onLight";
 }) {
-  const text =
-    size === "lg" ? "text-5xl" : size === "sm" ? "text-2xl" : "text-3xl";
   const mark = (
-    <span
-      data-testid="alpine-wordmark"
-      className={"font-display leading-none tracking-tight text-lime " + text}
-    >
-      STOMP
-    </span>
+    <Form7Brand
+      testId="alpine-wordmark"
+      tone={tone}
+      size={size}
+    />
   );
   if (!onClick) return mark;
   return (
@@ -135,9 +135,9 @@ export function AlpineTopBar({
         >
           ← BACK
         </button>
-      ) : (
-        <AlpineWordmark onClick={() => setScreen("greet")} size="sm" />
-      )}
+      ) : null}
+      {/* Form #7 always present in shared headers (Create + playtest surfaces). */}
+      <AlpineWordmark onClick={() => setScreen("greet")} size="sm" />
       {title ? (
         <h1 className="ml-1 font-display text-3xl tracking-wide text-ink">{title}</h1>
       ) : (
