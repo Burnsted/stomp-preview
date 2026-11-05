@@ -34,7 +34,7 @@ Family seed still auto-applies (`applyFamilySeedIfNeeded` on bottom chrome mount
 
 ## Tip / PR
 
-- **Tip SHA:** `5d2cfcb0e840d91be29e16e84a75a9da33deef9a`
+- **Tip SHA:** `7d1699ecd54b14341bd70879d9cc06f98933b4f1`
 - **Draft PR:** [#59](https://github.com/Burnsted/stomp-preview/pull/59) — *DRAFT t1220u — demote Explore/Feedback to bottom chrome (NO MERGE)*
 - **Branch:** `cursor/chrome-demote-t1220u-cfab` → `cursor/color-refine-form7-t1219u-539b`
 
