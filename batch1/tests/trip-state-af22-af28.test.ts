@@ -200,7 +200,7 @@ describe("AF22–AF28 participation + renewal + clocks", () => {
     expect(world.trip.officialEndDate).toBe("2026-10-18T23:59:00Z");
     const media = mediaViewerDeadline(world.trip);
     expect(media.deadlineIso).toBe("2026-12-02T23:59:00Z");
-    const archive = world.clocks.find((c) => c.kind === "pass_archive_6mo")!;
+    const archive = world.clocks.find((c) => c.kind === "pass_export_only_12mo")!;
     expect(archive.anchorIso).toBe("2026-10-17T18:00:00Z");
     expect(archive.deadlineIso).not.toBe(media.deadlineIso);
     const never = world.clocks.find((c) => c.kind === "never_rider")!;

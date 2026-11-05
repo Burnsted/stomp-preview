@@ -9,7 +9,20 @@ import type {
 } from "./types.js";
 
 export const VIEWER_MEDIA_MAX_DAYS = 45;
-export const RIDER_ARCHIVE_MONTHS = 6;
+
+/**
+ * D2 (t1208u) — single policy constant for Pass export-only retention.
+ * SUPERSEDES prior RIDER_ARCHIVE_MONTHS=6 / pass_archive_6mo product meaning.
+ * G1 Day Sesh media ≤45d remains separate and unchanged.
+ */
+export const PASS_EXPORT_ONLY_MONTHS = 12;
+
+/**
+ * @deprecated SUPERSEDED by PASS_EXPORT_ONLY_MONTHS (owner D2, Nov 4 2026).
+ * Alias kept so older imports resolve; value equals the 12mo export-only policy.
+ */
+export const RIDER_ARCHIVE_MONTHS = PASS_EXPORT_ONLY_MONTHS;
+
 export const VIEWER_ONLY_MONTHS = 12;
 
 /**
@@ -51,28 +64,47 @@ export function viewerDownloadDeadline(trip: Trip): RetentionClock {
   return { ...base, kind: "viewer_download_45d" };
 }
 
-/** Rider Archive 6mo from actual Pass end — never from trip end [LOCKED]. */
-export function riderArchiveClock(
+/**
+ * Pass export-only clock — 12 calendar months from actual Pass end (D2).
+ * Never from trip end. Not a deletion job.
+ */
+export function passExportOnlyClock(
   stomperId: StomperId,
   passEndIso: string,
 ): RetentionClock {
   return {
     stomperId,
-    kind: "pass_archive_6mo",
+    kind: "pass_export_only_12mo",
     anchorIso: passEndIso,
-    deadlineIso: addUtcMonths(passEndIso, RIDER_ARCHIVE_MONTHS),
+    deadlineIso: addUtcMonths(passEndIso, PASS_EXPORT_ONLY_MONTHS),
   };
 }
 
 /**
- * On renewal: archive clock restarts at new Pass end [RECOMMENDED / accepted default].
- * Prior window record is not rewritten elsewhere; this returns the new clock.
+ * @deprecated Prefer passExportOnlyClock — product meaning of 6mo archive SUPERSEDED (D2).
+ * Returns the 12mo export-only clock under the new kind.
+ */
+export function riderArchiveClock(
+  stomperId: StomperId,
+  passEndIso: string,
+): RetentionClock {
+  return passExportOnlyClock(stomperId, passEndIso);
+}
+
+/**
+ * On renewal: export-only clock for the *future* Pass end restarts.
+ * Does NOT silently restore content already purged under deletion lifecycle (D2).
+ * Prior purged history must stay purged — callers track purged ids separately
+ * (see renewPassAccess in pass-lifecycle.ts).
  */
 export function restartArchiveOnRenewal(
   stomperId: StomperId,
   newPassEndIso: string,
-): RetentionClock {
-  return riderArchiveClock(stomperId, newPassEndIso);
+): RetentionClock & { silentRestoreOfPurgedHistory: false } {
+  return {
+    ...passExportOnlyClock(stomperId, newPassEndIso),
+    silentRestoreOfPurgedHistory: false,
+  };
 }
 
 /** Viewer-only account 12-month retention — independent of trip 45d download. */
@@ -164,7 +196,7 @@ export function retentionKinds(): RetentionKind[] {
     "media_45d",
     "viewer_download_45d",
     "viewer_only_12mo",
-    "pass_archive_6mo",
+    "pass_export_only_12mo",
     "never_rider",
     "founder",
   ];

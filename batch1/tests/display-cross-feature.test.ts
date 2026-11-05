@@ -92,7 +92,7 @@ describe("AF-X1…X6 cross-feature display + isolation", () => {
     aClone.deadlineIso = "2098-01-01T00:00:00Z";
     expect(viewerOnly.deadlineIso).not.toBe(aClone.deadlineIso);
     expect(viewerOnly.kind).toBe("viewer_only_12mo");
-    expect(archive.kind).toBe("pass_archive_6mo");
+    expect(archive.kind).toBe("pass_export_only_12mo");
   });
 
   it("AF-X3 Viewer purchase never activates Rider Pass", () => {

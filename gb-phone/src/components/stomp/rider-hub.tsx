@@ -1,10 +1,68 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useSessionRouter } from "@/components/stomp/session-mic";
+import {
+  buildCrewPortraitComposite,
+  decideWelcomeBack,
+  FOUNDER_ELIGIBILITY,
+  PASS_EXPORT_ONLY_MONTHS,
+  type CharacterSlotLabel,
+} from "@/lib/stomp/pass-lifecycle-demo";
+import { savedHistoryFromSocial } from "@/lib/stomp/demo-history";
+import { buildClipsFirstProfile } from "@/lib/stomp/stomper-profile";
+import {
+  emptyQuickShareSheet,
+  openQuickShareSheet,
+  stageUnifiedShare,
+  confirmUnifiedShare,
+  cancelUnifiedShare,
+  type QuickShareSheetState,
+} from "@/lib/stomp/squad-quick-share";
+import { resolveTripDropVisual } from "@/lib/stomp/pass-lifecycle-demo";
 import { exportPack, type Jacket } from "@/lib/stomp/social";
 import { useSocial } from "@/lib/stomp/social-store";
+import { AVATAR_FLAGS } from "@/lib/stomp/avatar/flags";
+import type { Trip } from "@woz/trips/types.js";
 
-const PANELS = ["Avatar", "Trip", "Day", "Squad", "Pass", "History"] as const;
+const PANELS = ["Profile", "Avatar", "Trip", "Day", "Squad", "Pass", "History"] as const;
 type Panel = (typeof PANELS)[number];
+
+const FICTION_PORTRAIT: {
+  id: string;
+  slotLabel: CharacterSlotLabel;
+  firstName: string | null;
+  ageBand: "adult" | "grom";
+  portraitConsent: boolean;
+  guardianPortraitAllowed: boolean;
+  avatarAvailable: boolean;
+}[] = [
+  {
+    id: "slot-w2",
+    slotLabel: "Woman 2",
+    firstName: "Alex",
+    ageBand: "adult",
+    portraitConsent: true,
+    guardianPortraitAllowed: false,
+    avatarAvailable: true,
+  },
+  {
+    id: "slot-m1",
+    slotLabel: "Man 1",
+    firstName: "Blake",
+    ageBand: "adult",
+    portraitConsent: true,
+    guardianPortraitAllowed: false,
+    avatarAvailable: true,
+  },
+  {
+    id: "slot-g1",
+    slotLabel: "Grom 1",
+    firstName: null,
+    ageBand: "grom",
+    portraitConsent: false,
+    guardianPortraitAllowed: false,
+    avatarAvailable: false,
+  },
+];
 
 const JACKETS: { id: Jacket; label: string }[] = [
   { id: "purple-white", label: "Purple / white" },
@@ -22,8 +80,8 @@ function download(text: string, name: string) {
   URL.revokeObjectURL(url);
 }
 
-/** Local rider journeys. Demo people only. Not a new home. */
-export function RiderHub({ initial = "Avatar" }: { initial?: Panel }) {
+/** Local rider journeys. Demo people only. Not a new home / CREW You tab. */
+export function RiderHub({ initial = "Profile" }: { initial?: Panel }) {
   const social = useSocial();
   const { apply } = useSessionRouter();
   const [panel, setPanel] = useState<Panel>(initial);
@@ -33,15 +91,76 @@ export function RiderHub({ initial = "Avatar" }: { initial?: Panel }) {
   const [squadName, setSquadName] = useState("");
   const [message, setMessage] = useState("");
   const [line, setLine] = useState("");
+  const [shareSheet, setShareSheet] = useState<QuickShareSheetState>(emptyQuickShareSheet());
+  const [demoNowIso] = useState("2026-11-07T12:00:00Z");
+  const [welcomeLastActive, setWelcomeLastActive] = useState<string | null>("2026-01-01T00:00:00Z");
 
   const squad = social.squads.find((row) => row.joined) ?? social.squads[0];
   const notes = social.notes.filter((note) => note.squadId === squad?.id);
 
+  const profile = useMemo(
+    () =>
+      buildClipsFirstProfile({
+        displayName: social.avatar?.name ?? null,
+        bagTrickCount: social.history.length,
+        clips: social.history.map((h) => ({ id: h.id, label: h.label, source: h.source })),
+        joinedSquadNames: social.squads.filter((s) => s.joined).map((s) => s.name),
+        profileLocked: social.passAccessState !== "active" || social.passExpired,
+        canAccessReportCard: social.passAccessState !== "deletion_lifecycle",
+        founderChromeFiction: false,
+      }),
+    [social],
+  );
+
+  const tripVisual = useMemo(() => {
+    const tripLike = {
+      id: social.trip.id as never,
+      name: social.trip.name,
+      kind: "trip" as const,
+      timeZone: "America/Denver",
+      startIso: social.trip.startIso ?? "2026-11-07T08:00:00Z",
+      originalEndAt: social.trip.scheduledEndAt ?? "2026-11-07T23:59:00Z",
+      scheduledEndAt: social.trip.scheduledEndAt ?? "2026-11-07T23:59:00Z",
+      officialEndDate: social.trip.officialEndDate ?? null,
+      extensions: [],
+      hostId: social.trip.hostId as never,
+      status: social.trip.status ?? "active",
+      entitlementOk: true,
+      adminCorrections: [],
+    } satisfies Trip;
+    return resolveTripDropVisual(tripLike, demoNowIso);
+  }, [social.trip, demoNowIso]);
+
+  const portrait = useMemo(
+    () =>
+      buildCrewPortraitComposite({
+        participants: FICTION_PORTRAIT,
+        viewerRole: "rider",
+        gromFlowEnabled: AVATAR_FLAGS.gromFlowEnabled,
+        youthCampfireEnabled: false,
+      }),
+    [],
+  );
+
+  const welcome = useMemo(
+    () =>
+      decideWelcomeBack({
+        pass: {
+          stomperId: "demo-you",
+          passEndIso: social.passEndIso,
+          nowIso: demoNowIso,
+        },
+        saved: savedHistoryFromSocial(social, welcomeLastActive),
+        nowIso: demoNowIso,
+      }),
+    [social, demoNowIso, welcomeLastActive],
+  );
+
   return (
     <div className="px-4 pt-2 pb-28" data-testid="rider-hub">
       <h1 className="font-display text-4xl tracking-wide">Rider</h1>
-      <p className="mt-1 text-sm text-white/50">Demo on this phone. No live accounts.</p>
-      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+      <p className="mt-1 text-sm text-white/50">Demo on this phone. No live accounts. Fictional Pass ≠ real entitlement.</p>
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm" data-testid="rider-hub-panels">
         {PANELS.map((item) => (
           <button key={item} type="button" onClick={() => setPanel(item)} className={panel === item ? "font-semibold" : "text-white/45"}>
             {item}
@@ -49,6 +168,69 @@ export function RiderHub({ initial = "Avatar" }: { initial?: Panel }) {
         ))}
       </div>
       {social.notice ? <p className="mt-3 text-sm text-white/80">{social.notice}</p> : null}
+
+      {panel === "Profile" ? (
+        <section className="mt-4 text-sm" data-testid="stomper-profile">
+          <p className="text-xs tracking-widest text-white/40">STOMPER PROFILE · CLIPS FIRST</p>
+          <p className="mt-1 font-semibold text-lg">{profile.bagBadgeLabel ?? "Add an avatar name"}</p>
+          <p className="mt-1 text-white/55">{profile.notice}</p>
+          {welcome.show ? (
+            <div className="mt-3 rounded-xl bg-white/5 p-3 ring-1 ring-white/10" data-testid="welcome-back">
+              <p className="font-semibold">Welcome back</p>
+              <p className="text-white/60">{welcome.notice}</p>
+              {welcome.payload.lastEligibleTripLabel ? (
+                <p className="mt-1">Last trip: {welcome.payload.lastEligibleTripLabel}</p>
+              ) : null}
+            </div>
+          ) : (
+            <p className="mt-2 text-white/45" data-testid="welcome-back-suppressed">
+              {welcome.notice}
+            </p>
+          )}
+          <div className="mt-4">
+            <p className="text-xs tracking-widest text-white/40">1 · CLIPS</p>
+            {profile.profileLocked ? (
+              <p className="mt-1 text-white/45">Full clip history locked. Use Pass → Download export for Report Card.</p>
+            ) : (
+              <ul className="mt-1 flex flex-col gap-1" data-testid="profile-clips">
+                {profile.clips.map((c) => (
+                  <li key={c.id}>
+                    {c.label}
+                    <span className="text-white/45"> · {c.source}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className="mt-4">
+            <p className="text-xs tracking-widest text-white/40">2 · SQUAD</p>
+            <p className="mt-1">{profile.squadNames.join(", ") || "No squad joined yet"}</p>
+          </div>
+          <div className="mt-4">
+            <p className="text-xs tracking-widest text-white/40">3 · BOARDS</p>
+            <ul className="mt-1">
+              {profile.boards.map((b) => (
+                <li key={b.id}>
+                  {b.label}
+                  {b.goldFounderChrome ? <span className="text-white/45"> · gold fiction</span> : null}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-white/40 text-xs">
+              Founder awards: {FOUNDER_ELIGIBILITY.awardsEnabled ? "on" : "disabled"} · cutoff{" "}
+              {FOUNDER_ELIGIBILITY.ruleId}
+            </p>
+          </div>
+          <button
+            type="button"
+            className="mt-3 text-xs text-white/50"
+            data-testid="welcome-clear-activity"
+            onClick={() => setWelcomeLastActive(null)}
+          >
+            Clear saved activity (demo)
+          </button>
+        </section>
+      ) : null}
 
       {panel === "Avatar" ? (
         <form
@@ -76,11 +258,21 @@ export function RiderHub({ initial = "Avatar" }: { initial?: Panel }) {
       ) : null}
 
       {panel === "Trip" ? (
-        <section className="mt-4 text-sm">
+        <section className="mt-4 text-sm" data-testid="trip-drop-panel">
           <p className="font-semibold">{social.trip.name}</p>
           <p className="text-white/55">
             {social.trip.place} · {social.trip.day} · host {social.trip.hostId}
           </p>
+          <p className="mt-2 font-semibold" data-testid="trip-drop-visual-state">
+            {tripVisual.label}
+            <span className="font-normal text-white/55"> · {tripVisual.statusLabel}</span>
+          </p>
+          <p className="mt-1 text-white/45">{tripVisual.note}</p>
+          {!tripVisual.countdown.past ? (
+            <p className="mt-1 text-white/55" data-testid="trip-drop-countdown">
+              {tripVisual.countdown.days}d {tripVisual.countdown.hours}h {tripVisual.countdown.minutes}m
+            </p>
+          ) : null}
           <p className="mt-2 text-white/55">
             {social.trip.joined ? "Joined" : "Invited — preview until you join"}
             {social.trip.cohosts.length ? ` · co-host ${social.trip.cohosts.join(", ")}` : ""}
@@ -93,6 +285,26 @@ export function RiderHub({ initial = "Avatar" }: { initial?: Panel }) {
             <button type="button" onClick={() => social.addCohost("kai")}>Add Kai as co-host</button>
             <button type="button" onClick={() => social.setAttendance("you", "in")}>I'm in</button>
             <button type="button" onClick={() => social.setAttendance("you", "out")}>I'm out</button>
+          </div>
+          <div className="mt-4" data-testid="crew-portrait">
+            <p className="text-xs tracking-widest text-white/40">CREW PORTRAIT · CONSENT-SAFE</p>
+            <ul className="mt-2 flex flex-col gap-1">
+              {portrait.participants.map((p, i) => (
+                <li key={FICTION_PORTRAIT[i]?.id ?? i}>
+                  {p.mode === "named" ? (
+                    <>
+                      <span className="text-white/45">{p.slotLabel}</span> {p.firstName}
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-white/45">{p.slotLabel}</span> {p.label}
+                      <span className="text-white/35"> · {p.reason}</span>
+                    </>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-1 text-xs text-white/40">Viewer access ≠ public. Grom slots fail-closed while gates off.</p>
           </div>
         </section>
       ) : null}
@@ -179,6 +391,24 @@ export function RiderHub({ initial = "Avatar" }: { initial?: Panel }) {
               >
                 Send
               </button>
+              <button
+                type="button"
+                data-testid="quick-share-open"
+                onClick={() => {
+                  if (!squad) return;
+                  setShareSheet(
+                    openQuickShareSheet(shareSheet, {
+                      scope: "squad",
+                      squadId: squad.id,
+                      title: "1.4s air",
+                      kind: "photo",
+                      recipients: squad.members,
+                    }),
+                  );
+                }}
+              >
+                Quick Share
+              </button>
               <button type="button" onClick={() => squad && social.stageShare(squad.id, "1.4s air", "photo")}>
                 Share the air clip
               </button>
@@ -198,6 +428,49 @@ export function RiderHub({ initial = "Avatar" }: { initial?: Panel }) {
                 />
               </label>
             </div>
+            {shareSheet.open ? (
+              <div className="mt-3 rounded-xl bg-white/5 p-3 ring-1 ring-white/10" data-testid="squad-quick-share">
+                <p className="text-xs tracking-widest text-white/40">SQUAD QUICK SHARE · ONE SHEET</p>
+                <p className="mt-1">{shareSheet.notice}</p>
+                <p className="mt-1 text-white/45 text-xs">
+                  Native OS handoff ≠ delivery proof. deliveryClaimed={String(shareSheet.nativeDeliveryClaimed)}
+                </p>
+                <div className="mt-2 flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    className="font-semibold"
+                    onClick={() => {
+                      const staged = stageUnifiedShare(social, shareSheet);
+                      social.run(staged.social);
+                      setShareSheet(staged.sheet);
+                    }}
+                  >
+                    Stage
+                  </button>
+                  <button
+                    type="button"
+                    className="font-semibold"
+                    onClick={() => {
+                      const confirmed = confirmUnifiedShare(social, shareSheet);
+                      social.run(confirmed.social);
+                      setShareSheet(confirmed.sheet);
+                    }}
+                  >
+                    Confirm
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const cancelled = cancelUnifiedShare(social, shareSheet);
+                      social.run(cancelled.social);
+                      setShareSheet(cancelled.sheet);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : null}
             {social.draft ? (
               <p className="mt-3">
                 Send “{social.draft.title}” to {social.squads.find((row) => row.id === social.draft?.squadId)?.name}? Confirm within 20 seconds.{" "}
@@ -214,16 +487,19 @@ export function RiderHub({ initial = "Avatar" }: { initial?: Panel }) {
       ) : null}
 
       {panel === "Pass" ? (
-        <section className="mt-4 text-sm">
+        <section className="mt-4 text-sm" data-testid="pass-lifecycle-panel">
           <p>
-            {social.passRole === "viewer" ? "Viewer" : "Rider"} pass · {social.passExpired ? "expired" : "current"}
+            {social.passRole === "viewer" ? "Viewer" : "Rider"} pass · {social.passAccessState}
+            <span className="text-white/45"> · export-only {PASS_EXPORT_ONLY_MONTHS}mo</span>
           </p>
           <p className="mt-2 text-white/55">
-            {social.passExpired
-              ? "Expired: you can look and export. You can’t join, host, or post."
-              : social.passRole === "viewer"
+            {social.passAccessState === "active"
+              ? social.passRole === "viewer"
                 ? "Viewer: you can look. You can’t post or join."
-                : "Rider: you can join, host, and post while the pass is current."}
+                : "Rider: you can join, host, and post while the pass is current (fictional)."
+              : social.passAccessState === "deletion_lifecycle"
+                ? "Deletion lifecycle — warnings only. Jobs OFF. Report Card export closed."
+                : "Expired / export-only: profile locked. Report Card + export available. No join/host/post."}
           </p>
           <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
             <button type="button" onClick={() => social.setPass("rider", false)}>
@@ -232,26 +508,48 @@ export function RiderHub({ initial = "Avatar" }: { initial?: Panel }) {
             <button type="button" onClick={() => social.setPass("viewer", false)}>
               Viewer
             </button>
-            <button type="button" onClick={() => social.setPass(social.passRole, true)}>
+            <button type="button" data-testid="pass-expire" onClick={() => social.setPass(social.passRole, true)}>
               Expire
             </button>
-            <button type="button" onClick={() => download(exportPack(social), "stomp-rider-export.json")}>
-              Download export
+            <button type="button" data-testid="pass-export-only" onClick={() => social.enterPassExportOnly()}>
+              Enter export-only
+            </button>
+            <button type="button" data-testid="pass-deletion" onClick={() => social.enterPassDeletionLifecycle()}>
+              Deletion warnings
+            </button>
+            <button type="button" data-testid="pass-renew" onClick={() => social.renewDemoPass()}>
+              Renew
+            </button>
+            <button
+              type="button"
+              data-testid="pass-report-card-export"
+              onClick={() => download(exportPack(social), "stomp-rider-export.json")}
+            >
+              Download Report Card / export
             </button>
           </div>
-          <p className="mt-3 text-white/45">Export stays on this phone. Nothing is uploaded.</p>
+          <p className="mt-3 text-white/45">
+            Export stays on this phone. Nothing is uploaded. Fictional Pass states are not real entitlements.
+          </p>
         </section>
       ) : null}
 
       {panel === "History" ? (
-        <ul className="mt-4 flex flex-col gap-2 text-sm">
-          {social.history.map((row) => (
-            <li key={row.id}>
-              {row.label}
-              <span className="text-white/45"> · {row.source === "self" ? "self-reported" : "confirmed"}</span>
-            </li>
-          ))}
-        </ul>
+        social.passAccessState !== "active" || social.passExpired ? (
+          <p className="mt-4 text-sm text-white/55" data-testid="history-locked">
+            Full history locked after Pass expiry. Use Pass → Download Report Card / export while the {PASS_EXPORT_ONLY_MONTHS}
+            -month export-only window is open.
+          </p>
+        ) : (
+          <ul className="mt-4 flex flex-col gap-2 text-sm" data-testid="history-list">
+            {social.history.map((row) => (
+              <li key={row.id}>
+                {row.label}
+                <span className="text-white/45"> · {row.source === "self" ? "self-reported" : "confirmed"}</span>
+              </li>
+            ))}
+          </ul>
+        )
       ) : null}
 
       <TalkBox apply={apply} />

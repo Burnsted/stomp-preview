@@ -5,6 +5,8 @@ import {
   confirmShare,
   createSquad,
   declineTrip,
+  enterPassDeletionLifecycle,
+  enterPassExportOnly,
   finishDay,
   hostTrip,
   inviteDay,
@@ -14,6 +16,7 @@ import {
   postNote,
   previewTrip,
   reactNote,
+  renewDemoPass,
   rideDay,
   saveAvatar,
   seedSocial,
@@ -49,6 +52,9 @@ type SocialStore = SocialState & {
   confirmShare: () => void;
   cancelShare: () => void;
   setPass: (role: PassRole, expired: boolean) => void;
+  enterPassExportOnly: () => void;
+  enterPassDeletionLifecycle: () => void;
+  renewDemoPass: () => void;
 };
 
 export const useSocial = create<SocialStore>((set, get) => ({
@@ -74,4 +80,7 @@ export const useSocial = create<SocialStore>((set, get) => ({
   confirmShare: () => get().run(confirmShare(get())),
   cancelShare: () => get().run(cancelShare(get())),
   setPass: (role, expired) => get().run(setPass(get(), role, expired)),
+  enterPassExportOnly: () => get().run(enterPassExportOnly(get())),
+  enterPassDeletionLifecycle: () => get().run(enterPassDeletionLifecycle(get())),
+  renewDemoPass: () => get().run(renewDemoPass(get())),
 }));
