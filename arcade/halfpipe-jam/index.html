@@ -54,52 +54,54 @@ canvas{display:block;width:100vw;height:100vh}
 <script>
 (function(){
 "use strict";
-/* Halfpipe Jam — Batch A+ Ted feedback
-   Family structure like BD/TP: levels, 5 lives, board locker, difficulty row.
-   Variety = boards + weather (NOT obstacles). Skill core = pipe momentum / air / grabs / landings. */
+/* Halfpipe Jam — Batch C polish (PR #49 UNMERGED)
+   Family structure like BD/TP: levels, 5 lives, board locker, difficulty.
+   Variety = boards + weather (NOT obstacles). Skill = momentum / air / grabs / landings. */
 // ---- knobs ----
 var VH=360,CX=320,CY=248,PIPE_R=148,LIP=1.12;
-var GRAVITY=2100,FRICTION=0.0018,PUMP_BOOST=0.42,MAX_OMEGA=3.55;
-var LAUNCH_MUL=1.18,AIR_G=1680,MAX_AIR_H=118,SPIN_RATE=7.2;
-var LAND_IDEAL=0.42,WIPE_ANGLE=1.55,TIMING_EARLY=-0.22,TIMING_LATE=0.28;
-var LIVES_MAX=5,lives=LIVES_MAX,LIFE_PAUSE=1.25,STORY=10,COMBO_DECAY=2.8,SPAM_PEN=0.55;
-var VERSION='0.2.0-batchA';
+var GRAVITY=2050,FRICTION=0.00155,PUMP_BOOST=0.48,PUMP_TRANS=1.55,MAX_OMEGA=3.65;
+var LAUNCH_MUL=1.22,AIR_G=1620,MAX_AIR_H=112,SAFE_H=0.82,SPIN_RATE=7.4;
+var LAND_IDEAL=0.38,LAND_OK_VY=380,WIPE_ANGLE=1.48,WIPE_VY=680;
+var TIMING_EARLY=-0.28,TIMING_IDEAL=0.14,TIMING_LATE=0.32;
+var LIVES_MAX=5,lives=LIVES_MAX,LIFE_PAUSE=1.25,STORY=10,COMBO_DECAY=2.6,SPAM_PEN=0.55;
+var VERSION='0.3.0-batchC';
 
-// Difficulty exposed like BD/TP Easy/Normal/Hard row — Halfpipe names Grom/Standard/Advanced
+// Difficulty — Grom/Standard/Advanced (BD/TP Easy/Normal/Hard exposure pattern)
 var DIFFS={
-  grom:{id:'grom',name:'Grom',spd:0.88,win:1.45,land:1.55,wipe:1.35,wx:0.75,note:'forgiving windows'},
+  grom:{id:'grom',name:'Grom',spd:0.86,win:1.55,land:1.65,wipe:1.45,wx:0.7,note:'wide windows'},
   standard:{id:'standard',name:'Standard',spd:1,win:1,land:1,wipe:1,wx:1,note:'balanced pipe'},
-  advanced:{id:'advanced',name:'Advanced',spd:1.12,win:0.72,land:0.78,wipe:0.82,wx:1.2,note:'tight timing'}
+  advanced:{id:'advanced',name:'Advanced',spd:1.14,win:0.68,land:0.72,wipe:0.78,wx:1.25,note:'tight timing'}
 };
-// Weather = mountain conditions (readable). No obstacle hazards.
+// Weather — fair, readable play changes (friction / drift / visibility / pump)
 var WX={
-  clear:{id:'clear',name:'Clear',sky:['#2a1458','#4a2880','#e8c8b0'],flake:0,vis:1,wind:0,fric:1,score:1,hint:'Bluebird'},
-  flurry:{id:'flurry',name:'Light Snow',sky:['#241448','#3a2470','#c8b8d8'],flake:0.45,vis:0.92,wind:0.12,fric:1.05,score:1.05,hint:'Soft flakes'},
-  haze:{id:'haze',name:'Haze',sky:['#2a1840','#4a3868','#b0a0c0'],flake:0.12,vis:0.62,wind:0,fric:1,score:1.1,hint:'Reduced vis — fair, not unfair'},
-  sunset:{id:'sunset',name:'Sunset',sky:['#3a1450','#8a3860','#f0a060'],flake:0.05,vis:0.95,wind:0.05,fric:0.98,score:1.08,hint:'Warm light'},
-  gust:{id:'gust',name:'Wind Gusts',sky:['#1a1848','#3a4880','#a8c0d8'],flake:0.2,vis:0.88,wind:0.55,fric:1.02,score:1.12,hint:'Air drift (visible)'},
-  storm:{id:'storm',name:'Storm Light',sky:['#120828','#2a2050','#687090'],flake:0.7,vis:0.7,wind:0.35,fric:1.12,score:1.18,hint:'Heavy flake + friction'}
+  clear:{id:'clear',name:'Clear',sky:['#2a1458','#4a2880','#e8c8b0'],flake:0,vis:1,wind:0,gust:0,fric:1,pump:1,score:1,hint:'Bluebird — full amp'},
+  flurry:{id:'flurry',name:'Light Snow',sky:['#241448','#3a2470','#c8b8d8'],flake:0.55,vis:0.9,wind:0.08,gust:0,fric:1.08,pump:0.92,score:1.06,hint:'Flakes + soft drag'},
+  haze:{id:'haze',name:'Haze',sky:['#2a1840','#4a3868','#b0a0c0'],flake:0.08,vis:0.58,wind:0,gust:0,fric:1,pump:1,score:1.1,hint:'Dim sky — lips stay bright'},
+  sunset:{id:'sunset',name:'Sunset',sky:['#3a1450','#8a3860','#f0a060'],flake:0.04,vis:0.96,wind:0.04,gust:0,fric:0.96,pump:1.04,score:1.1,hint:'Warm glide — easy amp'},
+  gust:{id:'gust',name:'Wind Gusts',sky:['#1a1848','#3a4880','#a8c0d8'],flake:0.22,vis:0.9,wind:0.42,gust:0.85,fric:1.04,pump:0.95,score:1.14,hint:'Pulsing drift (chevrons)'},
+  storm:{id:'storm',name:'Storm Light',sky:['#120828','#2a2050','#687090'],flake:0.82,vis:0.68,wind:0.28,gust:0.35,fric:1.18,pump:0.88,score:1.2,hint:'Heavy flake + grip'}
 };
+// L1–5 = intro challenges; L6–10 story weather; Endless = Free Jam
 var LEVELS=[
-  {n:1,name:'First Pipe',sub:'Clear · land 3 airs',wx:'clear',goal:{t:'airs',n:3},len:55},
-  {n:2,name:'Soft Flurry',sub:'Light snow · score 700',wx:'flurry',goal:{t:'score',n:700},len:60},
-  {n:3,name:'Grab Glow',sub:'Sunset · land a grab',wx:'sunset',goal:{t:'grabs',n:1},len:60},
-  {n:4,name:'Spin Ridge',sub:'Clear · land 180+',wx:'clear',goal:{t:'spins',n:1},len:65},
-  {n:5,name:'Haze Bowl',sub:'Haze · 3 clean streak',wx:'haze',goal:{t:'streak',n:3},len:70},
-  {n:6,name:'Gust Line',sub:'Wind · score 1100',wx:'gust',goal:{t:'score',n:1100},len:70},
-  {n:7,name:'Flow Dusk',sub:'Sunset · 5 airs',wx:'sunset',goal:{t:'airs',n:5},len:75},
-  {n:8,name:'Storm Warmup',sub:'Storm light · grab+180',wx:'storm',goal:{t:'comboish',n:1},len:75},
-  {n:9,name:'Full Pipe',sub:'Gust · streak 4',wx:'gust',goal:{t:'streak',n:4},len:80},
-  {n:10,name:'Summit Jam',sub:'Storm · score 1800',wx:'storm',goal:{t:'score',n:1800},len:90}
+  {n:1,name:'First Air',sub:'Clear · land 1 air',wx:'clear',goal:{t:'airs',n:1},len:70,intro:1},
+  {n:2,name:'Grab It',sub:'Sunset · land a grab',wx:'sunset',goal:{t:'grabs',n:1},len:70,intro:1},
+  {n:3,name:'Spin Doctor',sub:'Clear · land 180+',wx:'clear',goal:{t:'spins',n:1},len:75,intro:1},
+  {n:4,name:'Three in a Row',sub:'Haze · clean streak ×3',wx:'haze',goal:{t:'streak',n:3},len:80,intro:1},
+  {n:5,name:'Pipe Flow',sub:'Light snow · score 1200',wx:'flurry',goal:{t:'score',n:1200},len:85,intro:1},
+  {n:6,name:'Gust Line',sub:'Wind · score 1100',wx:'gust',goal:{t:'score',n:1100},len:75},
+  {n:7,name:'Flow Dusk',sub:'Sunset · 5 airs',wx:'sunset',goal:{t:'airs',n:5},len:80},
+  {n:8,name:'Storm Warmup',sub:'Storm · grab+180',wx:'storm',goal:{t:'comboish',n:1},len:80},
+  {n:9,name:'Full Pipe',sub:'Gust · streak ×4',wx:'gust',goal:{t:'streak',n:4},len:85},
+  {n:10,name:'Summit Jam',sub:'Storm · score 1800',wx:'storm',goal:{t:'score',n:1800},len:95}
 ];
-var ENDLESS={n:11,name:'Endless',sub:'Rotating weather · high score',wx:'clear',goal:{t:'score',n:999999},len:Infinity,endless:true};
-// Board locker ladder — speed / amplitude / window / forgiveness (like BD spd ladder)
+var ENDLESS={n:11,name:'Free Jam',sub:'Endless · rotating weather · high score',wx:'clear',goal:{t:'score',n:999999},len:Infinity,endless:true};
+// Board locker — fair unlock: after intros (2,4), mid (6), late (8), all 10
 var BOARDS=[
-  {id:'grom',name:'Grom Deck',c:'#e85a2a',s:'#ffe8d0',spd:1.00,amp:1.00,win:1.15,land:1.20,need:0,how:'Starter'},
-  {id:'carve',name:'Carve Cream',c:'#c9a0ff',s:'#f7f4fb',spd:1.12,amp:1.08,win:1.05,land:1.08,need:2,how:'Clear 2 pipes'},
-  {id:'lip',name:'Lip Amber',c:'#ffb84a',s:'#fff4e0',spd:1.24,amp:1.16,win:1.00,land:1.00,need:4,how:'Clear 4 pipes'},
-  {id:'gust',name:'Gust Steel',c:'#8a94a4',s:'#e8eef8',spd:1.38,amp:1.24,win:0.92,land:0.95,need:7,how:'Clear 7 pipes'},
-  {id:'pro',name:'Pro Pipe',c:'#ff2d55',s:'#ffd84a',spd:1.55,amp:1.35,win:0.85,land:0.88,need:10,how:'Clear all 10'}
+  {id:'grom',name:'Grom Deck',c:'#e85a2a',s:'#ffe8d0',spd:1.00,amp:1.00,win:1.18,land:1.22,need:0,how:'Starter'},
+  {id:'carve',name:'Carve Cream',c:'#c9a0ff',s:'#f7f4fb',spd:1.12,amp:1.10,win:1.08,land:1.10,need:2,how:'Clear 2 pipes (thru Grab It)'},
+  {id:'lip',name:'Lip Amber',c:'#ffb84a',s:'#fff4e0',spd:1.24,amp:1.18,win:1.00,land:1.00,need:4,how:'Clear 4 pipes (thru Three in a Row)'},
+  {id:'gust',name:'Gust Steel',c:'#8a94a4',s:'#e8eef8',spd:1.38,amp:1.26,win:0.92,land:0.94,need:6,how:'Clear 6 pipes (thru Gust Line)'},
+  {id:'pro',name:'Pro Pipe',c:'#ff2d55',s:'#ffd84a',spd:1.55,amp:1.38,win:0.84,land:0.86,need:10,how:'Clear all 10 · Free Jam unlocks'}
 ];
 var TRICKS={straight:{name:'Straight Air',base:80},indy:{name:'Indy',base:140,grab:1},method:{name:'Method',base:160,grab:1},fs180:{name:'FS 180',base:180},bs180:{name:'BS 180',base:180},full360:{name:'360',base:260},combo:{name:'Combo',base:320,grab:1}};
 
@@ -150,10 +152,11 @@ function beep(f,d,type,g){
 function puff(x,y,n,c,v){for(var i=0;i<n;i++)S.parts.push({x:x,y:y,vx:(Math.random()-.5)*2*v,vy:-Math.random()*v,l:0.35+Math.random()*0.35,c:c,s:2+Math.random()*2.5});}
 function pipePoint(th){var a=th/LIP*(Math.PI/2);return {x:CX+Math.sin(a)*PIPE_R,y:CY+Math.cos(a)*PIPE_R,a:a};}
 function lipY(){return pipePoint(LIP).y;}
-function mulWin(){return diffM().win*board().win*(wx().vis>0.8?1:1.05);} // slight forgiveness in haze (fair)
-function mulLand(){return diffM().land*board().land;}
+function mulWin(){return diffM().win*board().win*(wx().id==='haze'?1.08:1);} // haze: fair wider launch window
+function mulLand(){return diffM().land*board().land*(wx().id==='haze'?1.06:1);}
 function mulSpd(){return diffM().spd*boardSpd();}
-function mulAmp(){return board().amp*(2-wx().fric*0.35);}
+function mulAmp(){return board().amp*wx().pump*(1.15-(wx().fric-1)*0.5);}
+function windNow(){var w=wx(),pulse=w.gust?0.55+0.45*Math.sin(S.windPhase*2.2):1;return w.wind*pulse*diffM().wx;}
 
 function goalLabel(g){
   if(!g)return '';
@@ -207,12 +210,15 @@ function nearLip(){
   return Math.abs(S.th)>0.72;
 }
 function lipTiming(){
+  // err: negative = before crest (early), ~0 ideal, positive = past crest (late)
   var crest=S.dir>0?LIP:-LIP,err=S.th-crest;if(S.dir<0)err=-err;
   var w=mulWin();
   if(err<TIMING_EARLY*w)return 'early';
-  if(err>TIMING_LATE*w)return 'late';
-  return 'ideal';
+  if(err<=TIMING_IDEAL*w)return 'ideal';
+  if(err<=TIMING_LATE*w)return 'late';
+  return 'late';
 }
+function timingTone(tm){return tm==='ideal'?'#3ecf9a':(tm==='early'?'#ffb84a':'#ff6a6a');}
 
 function startPlay(){
   if(S.mode==='over'){
@@ -233,12 +239,16 @@ function onPress(){
   if(S.mode!=='play'){startPlay();return;}
   holding=true;holdT=0;
   if(S.onPipe){
-    if(nearLip()&&Math.abs(S.om)>0.55){var tm=lipTiming();S.timing=tm;S.timingT=0.85;launch(tm);}
+    if(nearLip()&&Math.abs(S.om)>0.5){var tm=lipTiming();S.timing=tm;S.timingT=0.95;launch(tm);}
     else{
-      var pump=PUMP_BOOST*mulAmp()*(Math.abs(S.th)<0.55?1.15:0.65);
-      S.om+=S.dir*pump;S.om=Math.max(-MAX_OMEGA,Math.min(MAX_OMEGA,S.om));
-      S.fb='PUMP';S.fbT=0.3;S.fbCol='#c9a0ff';beep(240+Math.abs(S.om)*40,0.04,'square',0.06);
-      if(!reduceMotion)puff(S.x,S.y+4,4,'#ffffff',70);
+      // amp from well-timed transitions (bottom/mid bowl) > wall pumps
+      var deep=Math.abs(S.th)<0.38,mid=Math.abs(S.th)<0.62;
+      var zone=deep?PUMP_TRANS:(mid?1.15:0.55);
+      var pump=PUMP_BOOST*mulAmp()*zone;
+      S.om+=S.dir*pump;S.om=Math.max(-MAX_OMEGA*mulSpd(),Math.min(MAX_OMEGA*mulSpd(),S.om));
+      S.fb=deep?'AMP +':(mid?'PUMP':'WALL');S.fbT=0.32;S.fbCol=deep?'#3ecf9a':'#c9a0ff';
+      beep(220+Math.abs(S.om)*45+(deep?80:0),0.04,'square',0.06);
+      if(!reduceMotion)puff(S.x,S.y+4,deep?7:4,deep?'#3ecf9a':'#ffffff',deep?90:70);
     }
   }else if(!S.grab){S.grab=S.holdSpin>0.35?'method':'indy';}
 }
@@ -253,16 +263,16 @@ function onRelease(){
   }
 }
 function launch(tm){
-  var speed=Math.abs(S.om),mul=tm==='ideal'?LAUNCH_MUL:(tm==='early'?0.92:0.78);
-  var hBoost=tm==='ideal'?1.12:(tm==='early'?0.95:0.72),p=pipePoint(S.th),a=p.a,tang=S.dir>0?1:-1;
-  var vTang=speed*PIPE_R*mul;
+  var speed=Math.abs(S.om),mul=tm==='ideal'?LAUNCH_MUL:(tm==='early'?0.9:0.72);
+  var hBoost=tm==='ideal'?1.18:(tm==='early'?0.92:0.68),p=pipePoint(S.th),a=p.a,tang=S.dir>0?1:-1;
+  var vTang=speed*PIPE_R*mul,wn=windNow();
   S.onPipe=false;S.x=p.x;S.y=p.y;
-  S.vx=Math.cos(a)*vTang*tang*0.15+Math.sin(a)*tang*vTang*0.02+(wx().wind*40*(Math.sin(S.windPhase)*0.6));
-  S.vy=-Math.abs(vTang)*0.55*hBoost-80;S.spin=0;S.grab=null;S.holdSpin=0;S.peakH=0;S.airH=0;S.boardA=a;
+  S.vx=Math.cos(a)*vTang*tang*0.15+Math.sin(a)*tang*vTang*0.02+wn*52;
+  S.vy=-Math.abs(vTang)*0.55*hBoost-85;S.spin=0;S.grab=null;S.holdSpin=0;S.peakH=0;S.airH=0;S.boardA=a;
   S.fb=tm==='ideal'?'IDEAL ★':(tm==='early'?'EARLY':'LATE');
-  S.fbCol=tm==='ideal'?'#3ecf9a':(tm==='early'?'#ffb84a':'#ff6a6a');S.fbT=0.7;
-  beep(tm==='ideal'?980:420,0.05,tm==='ideal'?'triangle':'sawtooth',0.09);
-  if(!reduceMotion)puff(S.x,S.y,tm==='ideal'?12:6,S.fbCol,130);
+  S.fbCol=timingTone(tm);S.fbT=0.85;S.timing=tm;S.timingT=1.0;
+  beep(tm==='ideal'?980:(tm==='early'?520:360),0.05,tm==='ideal'?'triangle':'sawtooth',0.09);
+  if(!reduceMotion)puff(S.x,S.y,tm==='ideal'?14:6,S.fbCol,140);
 }
 function classifyTrick(){
   var rot=Math.abs(S.spin),half=Math.PI*0.75,full=Math.PI*1.7,g=S.grab;
@@ -289,15 +299,16 @@ function land(){
   var rem=((S.spin%(Math.PI*2))+Math.PI*2)%(Math.PI*2),angErr=Math.min(rem,Math.PI*2-rem);
   if(Math.abs(rem-Math.PI)<0.55*mulLand())angErr=Math.abs(rem-Math.PI);
   var height=S.peakH,trick=classifyTrick(),wipeLim=WIPE_ANGLE*diffM().wipe*board().land,quality;
-  if(angErr>wipeLim||S.vy>720||height<8){
+  var overH=height>MAX_AIR_H*SAFE_H*1.08; // readable max-safe: overshoot softens landing
+  if(angErr>wipeLim||S.vy>WIPE_VY*diffM().wipe||height<8||(overH&&angErr>LAND_IDEAL*mulLand()*1.4)){
     quality='bail';wipeout();return;
-  }else if(angErr<LAND_IDEAL*mulLand()&&S.vy<420){
-    quality='clean';S.om=S.dir*(1.05+Math.min(0.9,height/MAX_AIR_H)*0.8)*mulSpd();
-    S.fb='CLEAN';S.fbCol='#3ecf9a';S.fbT=0.7;beep(820,0.05,'triangle',0.09);
+  }else if(angErr<LAND_IDEAL*mulLand()&&S.vy<LAND_OK_VY*mulLand()){
+    quality='clean';S.om=S.dir*(1.08+Math.min(0.95,height/MAX_AIR_H)*0.85)*mulSpd();
+    S.fb=overH?'CLEAN · HIGH':'CLEAN';S.fbCol='#3ecf9a';S.fbT=0.75;beep(820,0.05,'triangle',0.09);
     if(!reduceMotion)puff(S.x,S.y,10,'#3ecf9a',120);
   }else{
-    quality='ok';S.om=S.dir*(0.7+Math.min(0.5,height/MAX_AIR_H)*0.5)*mulSpd();
-    S.fb='STICKY';S.fbCol='#ffb84a';S.fbT=0.55;beep(360,0.06,'square',0.07);
+    quality='ok';S.om=S.dir*(0.68+Math.min(0.5,height/MAX_AIR_H)*0.45)*mulSpd();
+    S.fb=overH?'HIGH · STICKY':'STICKY';S.fbCol='#ffb84a';S.fbT=0.55;beep(360,0.06,'square',0.07);
   }
   scoreLanding(quality,trick,height,Math.abs(S.spin));
   reattach();checkClear();
@@ -356,9 +367,9 @@ function step(dt){
   if(holding)holdT+=dt;
   for(var q=S.parts.length-1;q>=0;q--){var P=S.parts[q];P.x+=P.vx*dt;P.y+=P.vy*dt;P.vy+=500*dt;P.l-=dt;if(P.l<=0)S.parts.splice(q,1);}
   for(var k=S.pops.length-1;k>=0;k--){S.pops[k].l-=dt;S.pops[k].y-=28*dt;if(S.pops[k].l<=0)S.pops.splice(k,1);}
-  // weather flakes
-  var nf=Math.floor(18+70*w.flake*d.wx);
-  for(var fi=0;fi<nf;fi++){var f=S.flakes[fi];if(!f)continue;f.x+=f.vx*dt+w.wind*55*dt;f.y+=(30+f.z*50+w.flake*40)*dt;if(f.y>worldH||f.x<-20||f.x>W+20){f.y=-4;f.x=Math.random()*W;}}
+  // weather flakes (intensity × difficulty wx)
+  var nf=Math.floor(14+90*w.flake*d.wx),wn=windNow();
+  for(var fi=0;fi<nf;fi++){var f=S.flakes[fi];if(!f)continue;f.x+=f.vx*dt+wn*70*dt;f.y+=(28+f.z*55+w.flake*48)*dt;if(f.y>worldH||f.x<-20||f.x>W+20){f.y=-4;f.x=Math.random()*W;}}
 
   if(S.onPipe){
     var a=S.th/LIP*(Math.PI/2);
@@ -371,21 +382,23 @@ function step(dt){
     if(Math.abs(S.om)>0.25)S.dir=S.om>0?1:-1;
     S.om=Math.max(-MAX_OMEGA*mulSpd(),Math.min(MAX_OMEGA*mulSpd(),S.om));
     var p=pipePoint(S.th);S.x=p.x;S.y=p.y;S.boardA=p.a;
-    if(nearLip()&&Math.abs(S.om)>0.7&&S.timingT<=0)S.timing=lipTiming();
+    if(nearLip()&&Math.abs(S.om)>0.55){S.timing=lipTiming();S.timingT=Math.max(S.timingT,0.05);}
   }else{
     if(holding){S.holdSpin+=dt;S.spin+=SPIN_RATE*d.spd*dt*(S.dir||1);if(holdT>0.45)S.grab='method';}
-    // readable wind drift
-    S.vx+=Math.sin(S.windPhase)*w.wind*28*dt;
+    S.vx+=wn*36*dt; // readable pulsed drift
     S.vy+=AIR_G*dt;S.x+=S.vx*dt;S.y+=S.vy*dt;
     S.airH=Math.max(0,lipY()-S.y);S.peakH=Math.max(S.peakH,S.airH);S.boardA=S.spin;
-    if(S.airH>MAX_AIR_H&&S.vy<0)S.vy*=0.92;
+    // soft ceiling at max safe height (readable meter turns red above SAFE_H)
+    if(S.airH>MAX_AIR_H*SAFE_H&&S.vy<0)S.vy*=0.88;
+    if(S.airH>MAX_AIR_H&&S.vy<0)S.vy*=0.82;
     var lipBand=lipY()+8,inX=S.x>CX-PIPE_R*0.85&&S.x<CX+PIPE_R*0.85;
     if(S.vy>0&&S.y>=lipBand&&inX)land();
     else if(S.y>CY+PIPE_R+40){S.peakH=0;S.spin=Math.PI*0.6;land();}
   }
-  if(LV.endless&&S.t>0&&Math.floor(S.t/45)!==Math.floor((S.t-dt)/45)){
+  if(LV.endless&&S.t>0&&Math.floor(S.t/40)!==Math.floor((S.t-dt)/40)){
     var keys=Object.keys(WX);LV.wx=keys[Math.floor(Math.random()*keys.length)];
-    S.pops.push({x:S.x,y:S.y-60,l:1,txt:wx().name.toUpperCase(),c:'#c9a0ff'});
+    S.pops.push({x:S.x,y:S.y-60,l:1.1,txt:wx().name.toUpperCase(),c:'#c9a0ff'});
+    announce('Weather · '+wx().name);
   }
   setModeUI();
 }
@@ -408,18 +421,24 @@ function drawPipe(){
   cx.beginPath();for(t=-LIP;t<=LIP;t+=0.03){p=pipePoint(t);if(t===-LIP)cx.moveTo(p.x,p.y);else cx.lineTo(p.x,p.y);}
   cx.strokeStyle='#f7f4fb';cx.lineWidth=5;cx.stroke();
   var L=pipePoint(-LIP),R=pipePoint(LIP);
+  // early / ideal / late bands on approach lip (always readable even in haze)
+  if(S.mode==='play'&&S.onPipe&&Math.abs(S.th)>0.55){
+    var lip=S.th>0?R:L,mw=mulWin(),band=S.th>0?1:-1;
+    function bandAt(off,col,a){var pt=pipePoint(LIP*band-off*band);cx.fillStyle=col;cx.globalAlpha=a;cx.beginPath();cx.arc(pt.x,pt.y-14,7,0,7);cx.fill();cx.globalAlpha=1;}
+    bandAt(-TIMING_EARLY*mw*0.55,'#ffb84a',0.35);
+    bandAt(TIMING_IDEAL*mw*0.35,'#3ecf9a',0.55);
+    bandAt(TIMING_LATE*mw*0.45,'#ff6a6a',0.35);
+    if(nearLip()){var tm=S.timing||lipTiming();cx.fillStyle=timingTone(tm);cx.globalAlpha=0.55;cx.beginPath();cx.arc(lip.x,lip.y-22,16+((!reduceMotion&&(S.t*8)%1)*3),0,7);cx.fill();cx.globalAlpha=1;}
+  }
   cx.fillStyle='#ffb84a';cx.fillRect(L.x-10,L.y-5,20,8);cx.fillRect(R.x-10,R.y-5,20,8);
   cx.fillStyle='#fff';cx.font='800 10px system-ui,sans-serif';cx.textAlign='center';cx.fillText('LIP',L.x,L.y-10);cx.fillText('LIP',R.x,R.y-10);cx.textAlign='left';
-  if(S.mode==='play'&&S.onPipe&&nearLip()){
-    var tm=S.timing||lipTiming(),col=tm==='ideal'?'#3ecf9a88':(tm==='early'?'#ffb84a66':'#ff2d5566'),lip=S.th>0?R:L;
-    cx.fillStyle=col;cx.beginPath();cx.arc(lip.x,lip.y-20,18,0,7);cx.fill();
-  }
-  // haze overlay (fair reduced vis — pipe + rider still high contrast)
-  if(w.vis<0.95){cx.fillStyle='rgba(40,30,70,'+(1-w.vis)*0.45+')';cx.fillRect(-40,-OY-20,W+80,worldH+40);}
-  // wind chevrons (readable)
-  if(w.wind>0.2&&!reduceMotion){
-    cx.strokeStyle='rgba(200,220,255,'+(0.25+w.wind*0.35)+')';cx.lineWidth=2;
-    for(var wi=0;wi<4;wi++){var wx0=(S.t*60*w.wind+wi*90)%(W+40)-20,wy=60+wi*28;cx.beginPath();cx.moveTo(wx0,wy);cx.lineTo(wx0+18,wy-4);cx.lineTo(wx0,wy-8);cx.stroke();}
+  // haze overlay — pipe + lip markers drawn above stay bright
+  if(w.vis<0.95){cx.fillStyle='rgba(40,30,70,'+(1-w.vis)*0.42+')';cx.fillRect(-40,-OY-20,W+80,(lipY()-(-OY)-8));}
+  // wind chevrons (strength follows pulsed gust)
+  var wn=S.mode==='play'?windNow():w.wind;
+  if(wn>0.12&&!reduceMotion){
+    cx.strokeStyle='rgba(200,220,255,'+(0.22+wn*0.5)+')';cx.lineWidth=2;
+    for(var wi=0;wi<5;wi++){var wx0=(S.t*(50+wn*80)+wi*80)%(W+50)-25,wy=50+wi*30;cx.beginPath();cx.moveTo(wx0,wy);cx.lineTo(wx0+16+wn*10,wy-5);cx.lineTo(wx0,wy-10);cx.stroke();}
   }
 }
 function drawRider(){
@@ -451,20 +470,34 @@ function drawHud(){
   cx.fillStyle='#c9a0ff';cx.font='700 11px system-ui,sans-serif';cx.fillText(diffM().name+' · '+wx().name,W-160,top+40);
   cx.fillStyle='#ffb84a';cx.fillText(LV.n+'. '+LV.name,W-160,top+56);
   if(S.fbT>0){cx.globalAlpha=Math.min(1,S.fbT*2);cx.fillStyle=S.fbCol;cx.font='800 26px system-ui,sans-serif';cx.textAlign='center';cx.fillText(S.fb,W/2,top+84);cx.textAlign='left';cx.globalAlpha=1;}
-  if(S.timingT>0&&S.timing){cx.globalAlpha=Math.min(1,S.timingT*2);cx.fillStyle=S.timing==='ideal'?'#3ecf9a':(S.timing==='early'?'#ffb84a':'#ff6a6a');cx.font='800 15px system-ui,sans-serif';cx.textAlign='center';cx.fillText(S.timing.toUpperCase(),W/2,top+110);cx.textAlign='left';cx.globalAlpha=1;}
+  if(S.timingT>0&&S.timing){cx.globalAlpha=Math.min(1,S.timingT*2);cx.fillStyle=timingTone(S.timing);cx.font='800 15px system-ui,sans-serif';cx.textAlign='center';cx.fillText(S.timing.toUpperCase(),W/2,top+110);cx.textAlign='left';cx.globalAlpha=1;}
   if(S.achT>0){cx.fillStyle='#ffb84a';cx.font='800 13px system-ui,sans-serif';cx.textAlign='center';cx.fillText('BOARD · '+S.achToast,W/2,top+130);cx.textAlign='left';}
-  if(!S.onPipe){var hm=Math.min(1,S.airH/MAX_AIR_H);cx.fillStyle='#fff3';cx.fillRect(W-28,top+60,10,100);cx.fillStyle='#ffb84a';cx.fillRect(W-28,top+160-hm*100,10,hm*100);}
+  if(!S.onPipe||S.airH>2){
+    var hm=Math.min(1.15,S.airH/MAX_AIR_H),safe=SAFE_H,meterH=110,xM=W-30,yM=top+58;
+    cx.fillStyle='#fff2';cx.fillRect(xM,yM,12,meterH);
+    cx.fillStyle='#3ecf9a55';cx.fillRect(xM,yM+meterH*(1-safe),12,meterH*safe);
+    cx.fillStyle=hm>safe?'#ff2d55':'#ffb84a';
+    var fill=Math.min(1,hm)*meterH;cx.fillRect(xM,yM+meterH-fill,12,fill);
+    cx.fillStyle='#fff';cx.font='700 9px system-ui,sans-serif';cx.fillText('H',xM+2,yM-4);
+    if(hm>safe){cx.fillStyle='#ff2d55';cx.font='800 10px system-ui,sans-serif';cx.fillText('MAX',xM-18,yM+12);}
+  }
   for(var i=0;i<S.pops.length;i++){var pop=S.pops[i];cx.globalAlpha=Math.max(0,pop.l);cx.fillStyle=pop.c||'#ffb84a';cx.font='800 13px system-ui,sans-serif';cx.fillText(pop.txt,pop.x-28,pop.y);cx.globalAlpha=1;}
   for(i=0;i<S.parts.length;i++){var pt=S.parts[i];cx.globalAlpha=Math.max(0,pt.l*2);cx.fillStyle=pt.c;cx.fillRect(pt.x,pt.y,pt.s,pt.s);cx.globalAlpha=1;}
-  // flakes
-  var w=wx(),nf=Math.floor(18+70*w.flake*diffM().wx);
-  cx.fillStyle='rgba(255,255,255,'+(0.35+w.flake*0.4)+')';
+  var w=wx(),nf=Math.floor(14+90*w.flake*diffM().wx);
+  cx.fillStyle='rgba(255,255,255,'+(0.35+w.flake*0.45)+')';
   for(i=0;i<nf;i++){var fl=S.flakes[i];if(fl)cx.fillRect(fl.x,fl.y,fl.r,fl.r);}
   if(S.mode==='ready'){
     cx.fillStyle='#ffffffee';cx.font='800 28px system-ui,sans-serif';cx.textAlign='center';
     cx.fillText('HALFPIPE JAM',W/2,top+78);
-    cx.fillStyle='#ffb84a';cx.font='700 13px system-ui,sans-serif';cx.fillText(LV.name+' · '+wx().name,W/2,top+104);
+    cx.fillStyle='#ffb84a';cx.font='700 13px system-ui,sans-serif';cx.fillText(LV.name+' · '+wx().name+(LV.intro?' · intro':''),W/2,top+104);
     cx.fillStyle='#d4b0ff';cx.font='600 12px system-ui,sans-serif';cx.fillText(goalLabel(LV.goal)+' · '+livesStr()+' · v'+VERSION,W/2,top+124);cx.textAlign='left';
+  }
+  if(S.mode==='over'){
+    cx.fillStyle='#1a0a30bb';cx.fillRect(50,top+140,W-100,70);
+    cx.strokeStyle='#ff2d55';cx.lineWidth=2;cx.strokeRect(50,top+140,W-100,70);
+    cx.fillStyle='#fff';cx.font='800 18px system-ui,sans-serif';cx.textAlign='center';
+    cx.fillText(S.gameOver?'OUT OF LIVES':'WIPEOUT',W/2,top+172);
+    cx.fillStyle='#ffb84a';cx.font='700 13px system-ui,sans-serif';cx.fillText(S.gameOver?'Tap RETRY L1 · 5♥ refill':('Auto-retry · '+lives+' left'),W/2,top+194);cx.textAlign='left';
   }
 }
 
@@ -486,11 +519,16 @@ function openMenu(){
   h+='<div style="margin:4px 0;color:#ffb84a;font:800 13px system-ui,sans-serif">v'+VERSION+' · '+livesStr()+' · '+boardTag()+' · boards + weather (no obstacles)</div>';
   h+=boardPanelHTML();
   h+='<h2>Difficulty</h2><div class="boards">';
-  ['grom','standard','advanced'].forEach(function(id){var D=DIFFS[id];h+='<button class="bd'+(PR.diff===id?' sel':'')+'" data-d="'+id+'"><span class="t">'+D.name+'<small>pace ×'+D.spd+' · win ×'+D.win+' · wx ×'+D.wx+' · '+D.note+'</small></span></button>';});
-  h+='</div><h2>Levels · weather</h2><div class="grid">';
-  LEVELS.concat([ENDLESS]).forEach(function(L){
+  ['grom','standard','advanced'].forEach(function(id){var D=DIFFS[id];h+='<button class="bd'+(PR.diff===id?' sel':'')+'" data-d="'+id+'"><span class="t">'+D.name+'<small>pace ×'+D.spd+' · win ×'+D.win+' · land ×'+D.land+' · '+D.note+'</small></span></button>';});
+  h+='</div><h2>Intro challenges (L1–5)</h2><div class="grid">';
+  LEVELS.filter(function(L){return L.intro;}).forEach(function(L){
+    var u=unlocked(L.n),d=PR.done.indexOf(L.n)>=0,ww=WX[L.wx]||WX.clear;
+    h+='<button class="lv'+(d?' done':'')+'" data-l="'+L.n+'"'+(u?'':' disabled')+'><b class="n">'+(u?(d?'✓':L.n):'🔒')+'</b><span class="t">'+L.n+'. '+L.name+'<small>'+(u?(ww.name+' · '+goalLabel(L.goal)+(PR.best[L.n]?' · Best '+PR.best[L.n]:'')):'Clear L'+(L.n-1))+'</small></span></button>';
+  });
+  h+='</div><h2>Story · weather (L6–10) + Free Jam</h2><div class="grid">';
+  LEVELS.filter(function(L){return !L.intro;}).concat([ENDLESS]).forEach(function(L){
     var u=unlocked(L.n)||(L.endless&&endlessOpen()),d=PR.done.indexOf(L.n)>=0,ww=WX[L.wx]||WX.clear;
-    h+='<button class="lv'+(d?' done':'')+'" data-l="'+L.n+'"'+(u?'':' disabled')+'><b class="n">'+(u?(d?'✓':(L.endless?'∞':L.n)):'🔒')+'</b><span class="t">'+(L.endless?'Endless':L.n+'. '+L.name)+'<small>'+(u?(L.endless?'Rotating weather · high score':(ww.name+' · '+goalLabel(L.goal)+(PR.best[L.n]?' · Best '+PR.best[L.n]:''))):(L.endless?'Clear 1–'+STORY:'Clear L'+(L.n-1)))+'</small></span></button>';
+    h+='<button class="lv'+(d?' done':'')+'" data-l="'+L.n+'"'+(u?'':' disabled')+'><b class="n">'+(u?(d?'✓':(L.endless?'∞':L.n)):'🔒')+'</b><span class="t">'+(L.endless?'Free Jam':L.n+'. '+L.name)+'<small>'+(u?(L.endless?'Rotating weather · high score':(ww.name+' · '+goalLabel(L.goal)+(PR.best[L.n]?' · Best '+PR.best[L.n]:''))):(L.endless?'Clear 1–'+STORY:'Clear L'+(L.n-1)))+'</small></span></button>';
   });
   h+='</div><h2>Equip board</h2><div class="boards">';
   BOARDS.forEach(function(b){var o=boardOpen(b);h+='<button class="bd'+(PR.board===b.id?' sel':'')+'" data-b="'+b.id+'"'+(o?'':' disabled')+'>'+boardSw(b,!o)+'<span class="t">'+(o?'':'🔒 ')+b.name+'<small>'+boardTag(b)+' · amp ×'+b.amp.toFixed(2)+(o?'':' · '+b.how)+'</small></span></button>';});
@@ -527,9 +565,9 @@ function loop(ts){if(!last)last=ts;var dt=Math.min(0.05,(ts-last)/1000);last=ts;
 window.addEventListener('resize',resize);resize();reset(LEVELS[0]);setModeUI();requestAnimationFrame(loop);
 announce('Halfpipe Jam v'+VERSION+' · '+livesStr());
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
-  navigator.serviceWorker.register('sw.js?v=0-2-0',{scope:'./'}).then(function(reg){if(reg.update)reg.update();}).catch(function(){});
+  navigator.serviceWorker.register('sw.js?v=0-3-0',{scope:'./'}).then(function(reg){if(reg.update)reg.update();}).catch(function(){});
 }
-window.__HPJ={getS:function(){return S;},reset:function(n){reset(n?LEVELS[n-1]:LV);},start:startPlay,launch:launch,startLevel:startLevel,openMenu:openMenu,VERSION:VERSION,DIFFS:DIFFS,BOARDS:BOARDS,LEVELS:LEVELS,WX:WX};
+window.__HPJ={getS:function(){return S;},reset:function(n){reset(n?LEVELS[n-1]:LV);},start:startPlay,launch:launch,startLevel:startLevel,openMenu:openMenu,wipeout:function(){if(S.mode==='play')wipeout();},VERSION:VERSION,DIFFS:DIFFS,BOARDS:BOARDS,LEVELS:LEVELS,WX:WX,MAX_AIR_H:MAX_AIR_H,SAFE_H:SAFE_H};
 })();
 </script>
 </body></html>

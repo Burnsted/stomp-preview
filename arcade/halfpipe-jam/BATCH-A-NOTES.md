@@ -1,33 +1,31 @@
-# Halfpipe Jam — Batch A notes (Ted revision)
+# Halfpipe Jam — notes (through Batch C)
 
-## Structure (aligned with BD/TP family)
-- **10 story levels + Endless** with unlock chain
-- **5 lives**, wipeout −1♥, auto-retry; 0 lives → Retry L1 refill
-- **Board Locker** NOW / GOAL / NEXT (speed + amp + window ladder)
-- **Difficulty row** like BD/TP: Grom / Standard / Advanced (pace · win · weather intensity)
-- **localStorage** `halfpipeJam.progress` / `.pb` / `.mute`
+## Version
+`0.3.0-batchC` — PR #49 UNMERGED
 
-## Progression identity (NOT obstacles)
-Level variety = **boards + weather conditions**:
-- Weather: Clear, Light Snow, Haze, Sunset, Wind Gusts, Storm Light
-- Readable effects: flakes, haze overlay, wind chevrons + air drift, friction
-- Skill core unchanged: pipe momentum / launch timing / grabs / spins / landings
-- No obstacle-dodge hazards
+## Structure (BD/TP family)
+- 10 story levels + Free Jam (Endless)
+- **L1–5 intro challenges:** First Air, Grab It, Spin Doctor, Three in a Row, Pipe Flow
+- **L6–10** weather story; Free Jam rotates weather
+- 5 lives, wipeout auto-retry; Board Locker NOW/GOAL/NEXT
+- Difficulty: Grom / Standard / Advanced (distinct win/land/wipe)
 
-## Tip inspection (unchanged reference)
-- **BD:** survival dodge + board ladder via achievements
-- **TP:** park grind/lip/flip + board ladder via clears
-- **Halfpipe:** pipe jam — boards + weather only
+## Batch C polish
+- Transition pumps build amp (`AMP +` at bottom); early/ideal/late lip bands + tones
+- Landing windows per difficulty tightened; max-safe height meter (amber→red)
+- Weather: pulsed gusts, flurry drag, haze fair windows, sunset pump, storm friction/flakes
+- Board unlocks: 0 / 2 / 4 / 6 / 10 (fair across intros→story)
+
+## Identity
+Boards + weather only — **no obstacles**. Skill = momentum / launch / grabs / landings.
 
 ## Known issues
-- Weather tuning still coarse (Batch C)
-- Grab Indy vs Method stilized by hold length
-- Endless weather rotation every 45s — may want owner-chosen playlist later
-- No shared board locker with TP yet (separate keys)
+- Weather still room for Batch D taste-pass
+- Grab Indy/Method stilized by hold length
+- Free Jam weather rotate every 40s — may want playlist
 
-## Owner decisions
-1. Keep optional module vs fold into TP tip later?
-2. Tip URL / SW promote only when authorized — PR stays UNMERGED
-3. Share board progress with TP or keep `halfpipeJam.*`?
-4. Finalize weather set + clear goals numbers
-5. Batches B–D still follow-ups
+## Owner decisions (Batch D)
+1. Optional module vs fold into TP tip?
+2. Tip URL / SW promote when authorized?
+3. Shared board progress with TP?
+4. Final weather/goal numbers?
