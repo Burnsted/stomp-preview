@@ -23,7 +23,7 @@ var AIR=2*-JV/GRAVITY, MAXH=JV*JV/(2*GRAVITY);
 var GRIND_FRIC=0.88, LIP_WIN=0.20, POST_LIP=0.40;
 var SPD_BASE=1.0, SPD_PER_2LV=0.02, SPD_CAP=1.10;
 var COMBO_NEED=3, COMBO_BOOST=1.14, COMBO_T=1.55;
-var LIVES_MAX=3,lives=LIVES_MAX,LIFE_PAUSE=1.25,HEART_SCORE=380,LIP_PTS=35,RAMP_PTS=45,HEART_SKY=.22;
+var LIVES_MAX=5,lives=LIVES_MAX,LIFE_PAUSE=1.25,HEART_SCORE=380,LIP_PTS=35,RAMP_PTS=45,HEART_SKY=.22;
 var HEART_MIN_LV=5; // ♥: L5+ & lives<=1 only
 var LEN_MUL=1.5;
 var STAR_PICK=1.55;
@@ -530,7 +530,7 @@ else if(S.mode==='play'){if(performance.now()-(S.playAt||0)<160)return;jump();}
 else if(S.mode==='pause'){S.mode='play';pausedByHide=false;announce('Resumed');}
 else if(S.mode==='over'&&performance.now()-overAt>LIFE_PAUSE*1000){
 if(lives>0){S.autoRetry=false;S.heartFlashT=0;API.restart();}
-else{lives=LIVES_MAX;API.startLevel(1);S.mode='play';S.playAt=performance.now();announce('New run · 3 lives');syncUI();}}
+else{lives=LIVES_MAX;API.startLevel(1);S.mode='play';S.playAt=performance.now();announce('New run · 5 lives');syncUI();}}
 else if(S.mode==='clear'&&performance.now()-overAt>400){if(LV.n<STORY)API.startLevel(LV.n+1,{keepLives:true});else openMenu();}
 syncUI();}
 function legendHTML(){return '<div class="lg-inner"><h1>TERRAIN PARK</h1><div class="hi">HIGH SCORE · '+pb+' · ★ '+(PR.stars||0)+' · '+livesStr()+' '+LIVES_MAX+' lives</div>'+
@@ -546,7 +546,7 @@ function legendHTML(){return '<div class="lg-inner"><h1>TERRAIN PARK</h1><div cl
 '<h2>Tricks</h2><div class="row txt"><span class="tag g">COMBO</span><p>Hold on a rail to spin · jump off into flips · tabletop air tricks. Chains score RAIL→FLIP / TABLE TRICK.</p></div>'+
 '<h2>Lives · hearts</h2><div class="row txt"><span class="tag r">'+livesStr()+' ×'+LIVES_MAX+'</span><p>Wipeout −1♥ · retry. Restore only L'+HEART_MIN_LV+'+ at ≤1 life. 0→L1 resets gate.</p></div>'+
 '<h2>Controls</h2><div class="ctrl"><div class="chip"><b>TAP</b>Jump / PLAY</div><div class="chip"><b>HOLD</b>Flip in air or on-rail</div><div class="chip"><b>DOUBLE-TAP</b>Small air pop</div></div>'+
-'<button type="button" id="legendPlay">PLAY</button><p class="foot">Offline · this device · v0.3.7 · scroll for full legend</p></div>';}
+'<button type="button" id="legendPlay">PLAY</button><p class="foot">Offline · this device · v0.3.8 · scroll for full legend</p></div>';}
 function paintLegendIcons(){var dpr=Math.min(2,window.devicePixelRatio||1);
 legendEl.querySelectorAll('canvas.lg-ico').forEach(function(cv){var k=cv.dataset.ico,w=+cv.getAttribute('width')||56,h=+cv.getAttribute('height')||40;
 cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);cv.style.width=w+'px';cv.style.height=h+'px';
@@ -565,7 +565,7 @@ else if(k==='grom'){c.fillStyle='#f2c9a0';c.beginPath();c.arc(28,base-28,5,0,7);
 function openLegend(){S.prevMode=S.mode==='legend'?'ready':S.mode;if(S.mode==='play')S.mode='pause';S.mode='legend';legendEl.innerHTML=legendHTML();legendEl.style.display='flex';menu.style.display='none';paintLegendIcons();syncUI();announce('Legend');}
 function dismissLegend(){legendSeen=true;try{localStorage.setItem('terrainPark.legend','1')}catch(e){}legendEl.style.display='none';S.mode=(S.prevMode&&S.prevMode!=='legend')?S.prevMode:'ready';if(S.mode==='play')S.mode='ready';syncUI();announce('Ready');}
 function openMenu(){if(S.mode==='play')S.mode='pause';S.prevMode=S.mode;S.mode='menu';legendEl.style.display='none';
-var h='<button id="close" aria-label="Close menu">✕</button><h1>TERRAIN PARK</h1><div>v0.3.7 · '+livesStr()+' · ✈'+boardPct()+'% · <button id="showLeg" style="display:inline;border:0;background:0;color:#ffb84a;font:bold 14px sans-serif;text-decoration:underline;padding:0;cursor:pointer">Legend</button></div>';
+var h='<button id="close" aria-label="Close menu">✕</button><h1>TERRAIN PARK</h1><div>v0.3.8 · '+livesStr()+' · ✈'+boardPct()+'% · <button id="showLeg" style="display:inline;border:0;background:0;color:#ffb84a;font:bold 14px sans-serif;text-decoration:underline;padding:0;cursor:pointer">Legend</button></div>';
 h+=boardPanelHTML();
 h+='<div class="leg"><b>TIP</b> Board SPD is the speed ladder. Open <b>Legend</b> for features · hearts · controls.</div>';
 h+='<h2>DIFFICULTY</h2><div class="boards">';
@@ -577,7 +577,7 @@ h+='</div><h2>EQUIP BOARD</h2><div class="boards">';
 BOARDS.forEach(function(b){var o=boardOpen(b),tag=boardTag(b);
 if(o)h+='<button class="bd'+(board().id===b.id?' sel':'')+'" data-b="'+b.id+'"><span class="sw" style="background:linear-gradient('+b.c+' 0 55%,'+b.s+' 55% 75%,'+b.c+' 75%)"></span><span class="t">'+b.name+' · '+tag+(board().id===b.id?' ★':'')+'</span></button>';
 else h+='<button class="bd" disabled aria-label="'+b.name+' locked"><span class="sw" style="background:#333"></span><span class="t">🔒 '+b.name+' · '+tag+'<small>'+b.how+'</small></span></button>';});
-h+='</div><p style="opacity:.75;font-size:12px;margin:14px 0 8px">Offline · ★ '+ (PR.stars||0) +' · PB '+pb+' · v0.3.7</p>';
+h+='</div><p style="opacity:.75;font-size:12px;margin:14px 0 8px">Offline · ★ '+ (PR.stars||0) +' · PB '+pb+' · v0.3.8</p>';
 h+='<button id="resetP" style="min-height:48px;padding:10px 16px;border-radius:10px;border:2px solid #fff5;background:#5a1d1d;color:#fff;font:bold 14px sans-serif">Reset progress</button>';
 menu.innerHTML=h;menu.style.display='block';syncUI();}
 function closeMenu(){menu.style.display='none';syncUI();}
@@ -613,7 +613,7 @@ document.getElementById('mute').onclick=function(){toggleMute();this.blur();};
 document.getElementById('mute').textContent=muted?'Muted':'Sound';
 document.addEventListener('visibilitychange',function(){if(document.hidden){if(S.mode==='play'){S.mode='pause';pausedByHide=true;syncUI();}}else if(pausedByHide&&S.mode==='pause')syncUI();});
 var API=window.TerrainPark={
-version:'0.3.7',
+version:'0.3.8',
 start:function(){if(S.mode==='menu'){closeMenu();reset(null,LV);}if(S.mode==='ready'||S.mode==='over'||S.mode==='clear'){if(S.mode!=='ready')reset(null,LV);S.mode='play';S.playAt=performance.now();}syncUI();},
 startLevel:function(n,opts){var L=n===STORY+1?ENDLESS:LEVELS[n-1];if(!L||(!unlocked(n)&&!TEST))return false;closeMenu();if(legendEl)legendEl.style.display='none';
 if(!(opts&&opts.keepLives)){lives=LIVES_MAX;S.gameOver=false;}reset(null,L);S.mode='ready';pausedByHide=false;syncUI();announce(L.name+' · '+livesStr());return true;},
@@ -633,10 +633,10 @@ _t:{step:step,jump:jump,holdSet:holdSet,state:function(){return S},consts:{GRAVI
 };
 if(TEST){Object.defineProperty(API,'_test',{value:API._t,enumerable:false});}delete API._t;Object.freeze(API);
 addEventListener('resize',resize);resize();
-reset(null,LEVELS[0]);S.mode='ready';requestAnimationFrame(function(ts){last=ts;frame(ts);});if(!legendSeen)openLegend();else syncUI();announce('Terrain Park v0.3.7 — bg Soft Alps dusk B1');
+reset(null,LEVELS[0]);S.mode='ready';requestAnimationFrame(function(ts){last=ts;frame(ts);});if(!legendSeen)openLegend();else syncUI();announce('Terrain Park v0.3.8 — 5 lives');
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
-navigator.serviceWorker.register('sw.js?v=0-3-7',{scope:'./'}).then(function(reg){if(reg.update)reg.update();}).catch(function(){});
-if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){if(k.indexOf('terrain-park-')===0&&k!=='terrain-park-v0-3-7')caches.delete(k);});});
+navigator.serviceWorker.register('sw.js?v=0-3-8',{scope:'./'}).then(function(reg){if(reg.update)reg.update();}).catch(function(){});
+if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){if(k.indexOf('terrain-park-')===0&&k!=='terrain-park-v0-3-8')caches.delete(k);});});
 }
 addEventListener('orientationchange',function(){setTimeout(resize,50);});
 })();
