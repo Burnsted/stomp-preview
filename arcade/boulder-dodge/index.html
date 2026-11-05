@@ -580,7 +580,7 @@ cx.fillStyle='#111';cx.beginPath();cx.arc(cx0-16,G0-22+bob,2.5,0,7);cx.arc(cx0+1
 function pine(x,by,sc,body,snow){var s=sc,h=42*s,w=18*s;cx.fillStyle='#3a2a18';cx.fillRect(x-1.5*s,by-h*.22,3*s,h*.22);cx.fillStyle=body;for(var t=0;t<3;t++){var ty=by-h*(.28+t*.24),tw=w*(1-t*.22),th=h*(.34-t*.04);cx.beginPath();cx.moveTo(x-tw,ty);cx.lineTo(x,ty-th);cx.lineTo(x+tw,ty);cx.fill();}if(snow){cx.fillStyle=snow;for(var u=0;u<3;u++){var uy=by-h*(.38+u*.22),uw=w*(.55-u*.12),uh=5*s;cx.beginPath();cx.moveTo(x-uw*.55,uy-uh*.2);cx.lineTo(x,uy-uh*1.6);cx.lineTo(x+uw*.45,uy);cx.lineTo(x,uy+uh*.3);cx.fill();}}}
 function mtLayer(pts,col,edge,snow,par,per){var off=(S.dist*par)%per;for(var c=-1;c<=1;c++){var dx=c*per-off;if(dx+per<-60||dx>W+60)continue;cx.fillStyle=col;cx.beginPath();cx.moveTo(dx-40,VH+80);for(var i=0;i<pts.length;i++)cx.lineTo(pts[i][0]+dx,pts[i][1]);cx.lineTo(dx+per+40,VH+80);cx.closePath();cx.fill();if(edge){cx.strokeStyle=edge;cx.lineWidth=2;cx.lineJoin='round';cx.beginPath();cx.moveTo(pts[0][0]+dx,pts[0][1]);for(i=1;i<pts.length;i++)cx.lineTo(pts[i][0]+dx,pts[i][1]);cx.stroke();}if(snow){cx.fillStyle=snow;for(i=1;i<pts.length-1;i++){var p=pts[i],sn=p[2]||0;if(sn<=0)continue;if(!(p[1]<pts[i-1][1]-4&&p[1]<pts[i+1][1]-4))continue;var A=pts[i-1],B=pts[i+1],rise=Math.min(A[1]-p[1],B[1]-p[1]),depth=Math.max(48,Math.min(72,rise*.55))*sn,hw=Math.max(28,Math.min(48,Math.min(p[0]-A[0],B[0]-p[0])*.55))*sn,lean=(i%2?1:-1)*Math.max(6,hw*.18),tx=p[0]+dx+lean*.35,ty=p[1]-2;cx.beginPath();cx.moveTo(p[0]+dx-hw+lean*.15,p[1]+depth*.92);cx.lineTo(tx-3,ty);cx.lineTo(tx+4,ty+1);cx.lineTo(p[0]+dx+hw+lean*.55,p[1]+depth);cx.quadraticCurveTo(tx+hw*.15,ty+depth*.55,tx-hw*.1,ty+depth*.5);cx.fill();}}}}
 var MT_FAR=[[-50,255],[30,210],[100,235],[180,105,1],[250,220],[340,185],[430,112,1],[520,200],[600,170],[690,130,.75],[760,205]],MT_MID=[[-30,275],[70,240],[240,188,.5],[420,210],[600,195],[700,250]],MT_NEAR=[[-10,292],[200,272],[500,280],[740,290]],MT_PER=780;
-function treesSoft(body,mid,snow,dens){dens=dens==null?1:dens;var per=648,off=(S.dist*.4)%per,step=dens>1?1:(dens>0.5?2:3);for(var c=-1;c<=1;c++){var dx=c*per-off;for(var i=0;i<14;i+=step){var x=10+i*36+(i%2?8:0)+dx;if(x<-40||x>W+40)continue;pine(x,gY(x)-3,.4+((i*7)%5)*.09,i%4?body:mid,i%3?snow:0);}if(dens>0.7)[[150,1.25],[400,1.35]].forEach(function(t){var x=t[0]+dx;if(x<-40||x>W+40)return;pine(x,gY(x)-2,t[1],mid,snow);});}}
+function treesSoft(body,mid,snow,dens){dens=dens==null?1:dens;var par=0.38,sp=52,step=dens>1?1:(dens>0.5?2:3),scroll=S.dist*par;var i0=Math.floor((scroll-60)/sp),i1=Math.ceil((scroll+W+60)/sp);for(var i=i0;i<=i1;i+=step){var wx=i*sp+((i%5)*9),x=wx-scroll;if(x<-50||x>W+50)continue;pine(x,GROUND+terr(wx)-2,.38+((Math.abs(i)*7)%5)*.09,i%4?body:mid,i%3?snow:0);}if(dens>0.7){var base=Math.floor(scroll/420)*420;for(var j=-1;j<=2;j++){var wx2=base+j*420+160,x2=wx2-scroll;if(x2<-70||x2>W+70)continue;pine(x2,GROUND+terr(wx2)-2,1.22+(j%2)*.12,mid,snow);}}}
 var acc=0,last=0;
 function tick(d){if(S.mode==='intro'){S.introT=(S.introT||0)+d;if(S.introT>=2.85)endIntro();return;}if(S.mode==='play'&&!window.__freeze){acc+=Math.min(0.05,d);while(acc>=DT&&S.mode==='play'){step(DT);acc-=DT;}}else{acc=0;if(S.mode==='over'&&S.heartFlashT>0)S.heartFlashT=Math.max(0,S.heartFlashT-d);}if(S.mode==='over'&&S.autoRetry&&!S.gameOver&&performance.now()-overAt>=520){S.autoRetry=false;S.heartFlashT=0;API.restart();announce('Retry · '+lives+'♥');}}
 function frame(ts){var d=(ts-last)/1000||0;last=ts;tick(d);
@@ -633,7 +633,7 @@ function legendHTML(){return '<div class="lg-inner"><h1>BOULDER DODGE</h1><div c
 '<h2>Controls</h2><div class="ctrl"><div class="chip"><b>TAP</b>Jump</div><div class="chip"><b>DOUBLE-TAP</b>Air (2× L7+)</div><div class="chip"><b>HOLD</b>Flip upright</div></div>'+
 '<h2>Difficulty</h2><div class="row txt"><span class="tag">EASY→HARD</span><p>Storm/gaps · ☰ diff/levels.</p></div>'+
 '<h2>Mountain</h2><div class="row txt"><span class="tag b">BATCH B</span><p>Conditions · events · chapters · near-miss · challenges.</p></div>'+'<h2>Lives</h2><div class="row txt"><span class="tag r">'+livesStr()+' ×'+LIVES_MAX+'</span><p>−1♥ · 0→L1 · RETRY fast.</p></div>'+
-'<button type="button" id="legendPlay">PLAY</button><p class="foot">Offline · v0.8.4-cast</p></div>';}
+'<button type="button" id="legendPlay">PLAY</button><p class="foot">Offline · v0.8.5-trees</p></div>';}
 function paintLegendIcons(){var dpr=Math.min(2,devicePixelRatio||1);
 legendEl.querySelectorAll('canvas.lg-ico').forEach(function(cv){var k=cv.dataset.ico,w=+cv.getAttribute('width')||56,h=+cv.getAttribute('height')||40;
 cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);cv.style.width=w+'px';cv.style.height=h+'px';
@@ -670,7 +670,7 @@ h+='<div class="homeMeta"><b>'+(NL.endless?'Endless':('L'+NL.n+' · '+NL.name))+
 h+='<div class="sheetNav"><button type="button" data-sheet="how">How to play</button><button type="button" data-sheet="locker">Boards</button><button type="button" data-sheet="levels">Levels</button><button type="button" data-sheet="practice">Practice</button></div>';
 h+='<div class="diffs">';
 ['easy','normal','hard'].forEach(function(id){var D=DIFFS[id];h+='<button class="bd'+(PR.diff===id?' sel':'')+'" data-d="'+id+'"><span class="t">'+D.name+'</span></button>';});
-h+='</div><p style="opacity:.65;font-size:12px;margin:16px 0 0">Offline · v0.8.4-cast</p></div>';
+h+='</div><p style="opacity:.65;font-size:12px;margin:16px 0 0">Offline · v0.8.5-trees</p></div>';
 }else{
 h+='<div class="sheetTop"><button type="button" id="sheetBack">← Back</button><h2>'+(sheet==='locker'?'Board shelf':(sheet==='levels'?'Levels':(sheet==='practice'?'Practice':'How to play')))+'</h2></div>';
 if(sheet==='practice'){h+='<div class="prac"><p class="lead">learn the shape before the run.</p>';h+='<button type="button" class="card" data-drill="kicker"><span style="flex:1"><b>KICKER</b><span>Smooth take-off. Pop and commit.</span></span><canvas class="ico" data-pico="kicker" width="64" height="40"></canvas></button>';h+='<button type="button" class="card" data-drill="table"><span style="flex:1"><b>TABLETOP</b><span>Flat top, clean lips. Balance and control.</span></span><canvas class="ico" data-pico="table" width="64" height="40"></canvas></button>';h+='<button type="button" class="card" data-drill="lip"><span style="flex:1"><b>LIP HOLD</b><span>Hold the lip. Settle and release.</span></span><canvas class="ico" data-pico="lip" width="64" height="40"></canvas></button>';h+='<button type="button" class="pracGo" data-drill="kicker">PLAY PRACTICE</button><p class="tagline">Practice makes progression.</p></div>';}else if(sheet==='locker'){h+=boardPanelHTML();h+='<details class="more"><summary>More · challenges &amp; badges</summary><div class="body"><div style="color:#9fd3ff;font:800 12px system-ui,sans-serif;margin:4px 0">Challenges</div>'+chalHTML();
@@ -744,7 +744,7 @@ else if(pausedByHide&&S.mode==='pause')syncUI();
 });
 if(window.matchMedia){try{window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',function(ev){reduceMotion=ev.matches;});}catch(e){}}
 var API=window.BoulderDodge={
-version:'0.8.4-cast',
+version:'0.8.5-trees',
 start:function(){if(S.mode==='legend')dismissLegend();if(S.mode==='menu'){closeMenu();reset(null,LV);}if(S.mode==='intro'){endIntro();return;}if(S.mode==='ready'||S.mode==='over'||S.mode==='clear'){if(S.mode!=='ready')reset(null,LV);beginIntro();}syncUI();},
 startLevel:function(n,opts){var L=n===ENDLESS.n?ENDLESS:LEVELS[n-1];if(!L||(!unlocked(n)&&!TEST))return false;closeMenu();legendEl.style.display='none';if(!(opts&&opts.keepLives)){lives=LIVES_MAX;S.gameOver=false;}reset(null,L);pausedByHide=false;beginIntro();announce(L.name+' · '+livesStr());return true;},
 startEndless:function(){return API.startLevel(ENDLESS.n);},
@@ -772,11 +772,11 @@ if(/[?&]test=1/.test(location.search)){Object.defineProperty(API,'_test',{value:
 addEventListener('resize',resize);resize();
 reset(null,LEVELS[0]);
 menuSheet=null;openMenu();
-requestAnimationFrame(function(ts){last=ts;frame(ts);});syncUI();announce('BD v0.8.4-cast · patrol · groms · practice');
+requestAnimationFrame(function(ts){last=ts;frame(ts);});syncUI();announce('BD v0.8.5-trees · rigid trees');
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
-var swUrl='sw.js?v=8-4-cast',swScope='./';
+var swUrl='sw.js?v=8-5-trees',swScope='./';
 navigator.serviceWorker.register(swUrl,{scope:swScope}).then(function(reg){if(reg.update)reg.update();}).catch(function(){});
-if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){if(k.indexOf('boulder-dodge-')===0&&k!=='boulder-dodge-v8-4-cast')caches.delete(k);});});
+if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){if(k.indexOf('boulder-dodge-')===0&&k!=='boulder-dodge-v8-5-trees')caches.delete(k);});});
 }
 addEventListener('orientationchange',function(){setTimeout(resize,50);});
 })();
