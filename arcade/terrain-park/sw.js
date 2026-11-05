@@ -1,5 +1,5 @@
-/* terrain-park-v0-3-7 — network-first; tip cache only (leave tp-release-* alone) */
-const C='terrain-park-v0-3-7';
+/* terrain-park-v0-3-8 — network-first; tip cache only (leave tp-release-* alone) */
+const C='terrain-park-v0-3-8';
 const ASSETS=['./','./index.html','./sw.js'];
 const OWN=k=>k.indexOf('terrain-park-')===0;
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));});
