@@ -33,3 +33,5 @@ export * as voice from "./session/voice-router.js";
 export * as ride from "./ride/ride.js";
 export * as media from "./media/crew-dump.js";
 export * as smartId from "./smartid/smart-id.js";
+// Campfire CF-2 fictional foundation (t1147u) — namespaced to avoid legacy clashes
+export * as campfireCf2 from "./campfire/cf2-index.js";
