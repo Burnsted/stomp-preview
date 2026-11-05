@@ -24,8 +24,8 @@ Boards + weather only — **no obstacles**. Skill = momentum / launch / grabs / 
 - Grab Indy/Method stilized by hold length
 - Free Jam weather rotate every 40s — may want playlist
 
-## Owner decisions (Batch D)
-1. Optional module vs fold into TP tip?
-2. Tip URL / SW promote when authorized?
-3. Shared board progress with TP?
-4. Final weather/goal numbers?
+## Owner decisions
+1. **Settled (Ted 2026-11-04):** Halfpipe stays a **standalone game** under `arcade/halfpipe-jam/` — **not** folded into Terrain Park. See `README.md`.
+2. Tip URL / SW promote only when Ted authorizes.
+3. Shared board progress with TP? (still open — default separate `halfpipeJam.*` keys)
+4. Final weather/goal taste numbers? (Batch D / later)
