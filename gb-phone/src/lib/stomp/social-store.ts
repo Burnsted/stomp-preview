@@ -29,6 +29,8 @@ import {
   type SocialState,
 } from "@/lib/stomp/social";
 import { seedFamilyPlaytestSocial } from "@/lib/stomp/playtest/demo-seed";
+import { useHomeMountain } from "@/lib/stomp/home-mountain";
+import { useResortConditions } from "@/lib/stomp/resort-conditions";
 
 type SocialStore = SocialState & {
   run: (result: { state: SocialState }) => void;
@@ -62,7 +64,16 @@ export const useSocial = create<SocialStore>((set, get) => ({
   run: (result) => set(result.state),
   saveAvatar: (name, jacket) => get().run(saveAvatar(get(), name, jacket)),
   previewTrip: () => get().run(previewTrip(get())),
-  joinTrip: () => get().run(joinTrip(get())),
+  joinTrip: () => {
+    get().run(joinTrip(get()));
+    // Align Home / Map / conditions with Trip Drop resort when present (t1221u).
+    const resortId = get().trip.resortId;
+    if (resortId) {
+      useResortConditions.getState().syncSelectedResortId(resortId);
+    } else {
+      useHomeMountain.getState().hydrate();
+    }
+  },
   declineTrip: () => get().run(declineTrip(get())),
   setAttendance: (riderId, status) => get().run(setAttendance(get(), riderId, status)),
   addCohost: (riderId) => get().run(addCohost(get(), riderId)),

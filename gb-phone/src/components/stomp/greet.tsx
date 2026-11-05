@@ -7,6 +7,7 @@ import { HomeFeatureRows } from "@/components/stomp/home-feature-rows";
 import { HomeMapCard } from "@/components/stomp/home-map-card";
 import { HomePlaylistBlock } from "@/components/stomp/home-playlist-block";
 import { HomeTripStatus } from "@/components/stomp/home-trip-status";
+import { HomeResortConditions } from "@/components/stomp/resort-conditions-panel";
 import { SessionMic } from "@/components/stomp/session-mic";
 import { useAvatar } from "@/lib/stomp/avatar/store";
 import { PROGRESS_STATS, useBag } from "@/lib/stomp/bag";
@@ -65,6 +66,7 @@ export function Greet() {
             <p data-testid="home-selected-resort" className="mt-2 text-sm text-ink/85">
               {locationLineFor(resortId)}
             </p>
+            <HomeResortConditions tone="onDark" />
           </div>
         </div>
         <div className="px-5 pt-2">

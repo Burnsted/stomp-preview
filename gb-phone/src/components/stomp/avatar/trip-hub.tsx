@@ -9,7 +9,9 @@ import { ThemeToggle } from "@/components/stomp/avatar/theme-toggle";
 import { isAvatarFlagOn } from "@/lib/stomp/avatar/flags";
 import { useAvatar } from "@/lib/stomp/avatar/store";
 import { useTripHub, type TripPhotoStyle } from "@/lib/stomp/avatar/trip-hub";
+import { locationLineFor, useHomeMountain } from "@/lib/stomp/home-mountain";
 import { resolveTripDropVisual } from "@/lib/stomp/pass-lifecycle-demo";
+import { useSocial } from "@/lib/stomp/social-store";
 import { useStomp } from "@/lib/stomp/store";
 import type { Trip } from "@woz/trips/types.js";
 
@@ -51,6 +53,9 @@ export function TripHubScreen() {
   const requestAiPhoto = useTripHub((s) => s.requestAiPhoto);
   const setScreen = useStomp((s) => s.setScreen);
   const crew = useStomp((s) => s.crew);
+  const socialTrip = useSocial((s) => s.trip);
+  const homeResortId = useHomeMountain((s) => s.resortId);
+  const sharedResortId = socialTrip.resortId || homeResortId;
 
   const visualStates = [
     demoTripVisual("Upcoming Drop", "scheduled"),
@@ -65,6 +70,14 @@ export function TripHubScreen() {
         <p className="font-display text-4xl leading-none tracking-wide">Trip Hub</p>
         <p className="mt-2 text-sm text-muted">
           Placeholder trips · lodging stays private · AI photos are stubs only.
+        </p>
+
+        <p
+          data-testid="trip-hub-shared-resort"
+          className="mt-3 text-xs font-semibold tracking-wide text-accent"
+        >
+          Shared mountain · {locationLineFor(sharedResortId)}
+          <span className="sr-only"> · id {sharedResortId}</span>
         </p>
 
         <section className="mt-4 rounded-2xl bg-snow/5 p-4 ring-1 ring-line" data-testid="trip-drop-visual-states">
