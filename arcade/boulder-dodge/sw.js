@@ -1,5 +1,5 @@
-/* boulder-dodge-v8-2-shelf — network-first; tip cache only (leave bd-release-* alone) */
-const C='boulder-dodge-v8-2-shelf';
+/* boulder-dodge-v8-3-feel — network-first; tip cache only (leave bd-release-* alone) */
+const C='boulder-dodge-v8-3-feel';
 const ASSETS=['./','./index.html','./sw.js'];
 const OWN=k=>k.indexOf('boulder-dodge-')===0;
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));});
