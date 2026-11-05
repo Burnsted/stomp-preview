@@ -1,5 +1,5 @@
-/* tp-release-v0-3-6 — playtest freeze; release cache only */
-const C='tp-release-v0-3-6';
+/* tp-release-v0-3-8 — playtest freeze; release cache only */
+const C='tp-release-v0-3-8';
 const ASSETS=['./','./index.html','./sw.js'];
 const OWN=k=>k.indexOf('tp-release-')===0;
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));});
