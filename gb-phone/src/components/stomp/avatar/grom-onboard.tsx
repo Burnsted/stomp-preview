@@ -74,7 +74,7 @@ export function GromOnboard() {
 
         {!starter ? (
           <>
-            <p className="mt-4 text-xs font-bold tracking-widest text-pink">3 GIRLS · 3 BOYS</p>
+            <p className="mt-4 text-xs font-bold tracking-widest text-accent">3 GIRLS · 3 BOYS</p>
             <div className="mt-2 grid grid-cols-3 gap-2" data-testid="grom-starter-grid">
               {GROM_STARTERS.map((s, i) => {
                 const lookLabel = lookOrdinalLabel(i + 1, GROM_STARTERS.length);
@@ -137,7 +137,7 @@ export function GromOnboard() {
               ))}
             </div>
             {!nameOk ? (
-              <p className="mt-3 text-xs text-pink" data-testid="grom-name-required">
+              <p className="mt-3 text-xs text-accent" data-testid="grom-name-required">
                 Enter a nickname before revealing your ID.
               </p>
             ) : null}
@@ -146,7 +146,7 @@ export function GromOnboard() {
               data-testid="grom-finish"
               onClick={finish}
               disabled={!nameOk}
-              className="mt-6 h-14 w-full rounded-full bg-lime font-semibold text-navy disabled:opacity-40"
+              className="mt-6 h-14 w-full rounded-full bg-cta font-semibold text-cta-fg disabled:opacity-40"
             >
               Show GROM STOMPER ID
             </button>

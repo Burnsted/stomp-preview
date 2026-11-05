@@ -127,9 +127,9 @@ function LevelCards({ onOpen }: { onOpen: (band: Band) => void }) {
   const levels: Band[] = ["beginner", "intermediate", "advanced"];
   const edge =
     {
-      beginner: "from-sky-400/80 via-teal/40 to-transparent",
-      intermediate: "from-violet-400/80 via-pink/30 to-transparent",
-      advanced: "from-amber-300/70 via-pink/40 to-transparent",
+      beginner: "from-steel/80 via-accent/35 to-transparent",
+      intermediate: "from-muted/70 via-accent/30 to-transparent",
+      advanced: "from-ink/55 via-steel/40 to-transparent",
     } as const;
   return (
     <div className="mt-4 flex flex-col gap-3 px-4" data-testid="bag-level-cards">
@@ -173,7 +173,7 @@ function ProgressRing({ percent }: { percent: number }) {
         cy="36"
         r={r}
         fill="none"
-        stroke="#2ad4c2"
+        stroke="#9aa6b8"
         strokeWidth="6"
         strokeLinecap="round"
         strokeDasharray={c}
@@ -209,7 +209,7 @@ function HubMyBag() {
               <Play className="size-5" fill="currentColor" />
             </span>
           </span>
-          <span className="absolute bottom-2 left-2 text-[10px] font-bold tracking-[0.2em] text-lime drop-shadow">
+          <span className="absolute bottom-2 left-2 text-[10px] font-bold tracking-[0.2em] text-accent drop-shadow">
             INTERMEDIATE
           </span>
         </div>
@@ -222,7 +222,7 @@ function HubMyBag() {
               type="button"
               data-testid={`bag-featured-${tab}`}
               onClick={() => openTrick(featured.id, tab === "log" ? "log" : tab)}
-              className="pb-0.5 text-sm font-semibold text-ink/90 hover:text-teal"
+              className="pb-0.5 text-sm font-semibold text-ink/90 hover:text-accent"
             >
               {tab === "learn" ? "Learn" : tab === "practice" ? "Practice" : "Log"}
             </button>
@@ -234,7 +234,7 @@ function HubMyBag() {
         <div className="flex items-center gap-3">
           <ProgressRing percent={PROGRESS_STATS.percent} />
           <div>
-            <p className="text-xs font-bold tracking-widest text-teal">MY PROGRESS</p>
+            <p className="text-xs font-bold tracking-widest text-accent">MY PROGRESS</p>
             <p className="text-sm font-semibold text-ink">{PROGRESS_STATS.landed} landed</p>
             <p className="text-sm text-muted">{PROGRESS_STATS.inProgress} in progress</p>
             <p className="text-sm text-muted">{PROGRESS_STATS.toNext} to next level</p>
@@ -243,7 +243,7 @@ function HubMyBag() {
             type="button"
             data-testid="bag-open-journey"
             onClick={() => openView("journey")}
-            className="ml-auto text-teal"
+            className="ml-auto text-accent"
             aria-label="Trick Journey"
           >
             <ChevronRight className="size-5" />
@@ -264,7 +264,7 @@ function HubMyBag() {
             }}
             className="flex flex-col items-center gap-1 rounded-2xl bg-snow/5 py-3 ring-1 ring-line"
           >
-            <Mic className="size-5 text-lime" />
+            <Mic className="size-5 text-accent" />
             <span className="text-[11px] font-semibold">Pre-Roll</span>
           </button>
           <button
@@ -273,7 +273,7 @@ function HubMyBag() {
             onClick={() => openTrick(FEATURED_TRICK_ID, "log")}
             className="flex flex-col items-center gap-1 rounded-2xl bg-snow/5 py-3 ring-1 ring-line"
           >
-            <Check className="size-5 text-teal" />
+            <Check className="size-5 text-accent" />
             <span className="text-[11px] font-semibold">Log Trick</span>
           </button>
           <button
@@ -282,7 +282,7 @@ function HubMyBag() {
             onClick={() => openView("add")}
             className="flex flex-col items-center gap-1 rounded-2xl bg-snow/5 py-3 ring-1 ring-line"
           >
-            <Plus className="size-5 text-teal" />
+            <Plus className="size-5 text-accent" />
             <span className="text-[11px] font-semibold">Add to Lineup</span>
           </button>
         </div>
@@ -295,7 +295,7 @@ function HubMyBag() {
             type="button"
             data-testid="bag-recent-all"
             onClick={() => openView("my-bag-list")}
-            className="text-sm font-semibold text-teal"
+            className="text-sm font-semibold text-accent"
           >
             All ({PROGRESS_STATS.all}) ›
           </button>
@@ -311,7 +311,7 @@ function HubMyBag() {
                 <img src={bagThumb(t.id)} alt="" className="aspect-square w-full rounded-xl object-cover" />
                 <p className="mt-1 truncate text-xs font-semibold text-ink">{t.name}</p>
                 <p className="flex items-center gap-1 truncate text-[10px] text-muted">
-                  {t.status === "landed" ? <Check className="size-3 shrink-0 text-lime" aria-hidden="true" /> : null}
+                  {t.status === "landed" ? <Check className="size-3 shrink-0 text-accent" aria-hidden="true" /> : null}
                   {trickStatusLabel(t)}
                 </p>
               </button>
@@ -335,7 +335,7 @@ function HubLearn() {
       <GlassCard className="mx-4 mt-4" testId="bag-your-progress">
         <div className="flex items-center gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold tracking-widest text-teal">YOUR PROGRESS</p>
+            <p className="text-xs font-bold tracking-widest text-accent">YOUR PROGRESS</p>
             <p className="mt-1 text-sm text-ink">
               {PROGRESS_STATS.landed} landed • {PROGRESS_STATS.inProgress} in progress • {PROGRESS_STATS.toNext} to next level
             </p>
@@ -407,7 +407,7 @@ function MyBagList() {
                 <span className="block text-xs text-muted">{trickStatusLabel(t)}</span>
               </span>
               {t.status === "landed" ? (
-                <Check className="size-5 text-lime" aria-label="Landed" />
+                <Check className="size-5 text-accent" aria-label="Landed" />
               ) : (
                 <span className="text-[10px] font-semibold tracking-wide text-amber-400">IN PROGRESS</span>
               )}
@@ -420,7 +420,7 @@ function MyBagList() {
           type="button"
           data-testid="bag-add-trick"
           onClick={() => openView("add")}
-          className="h-14 w-full rounded-full bg-lime font-bold text-navy"
+          className="h-14 w-full rounded-full bg-cta font-bold text-cta-fg"
         >
           + Add Trick
         </button>
@@ -525,7 +525,7 @@ function TrickDetail() {
             </span>
           </span>
         </div>
-        <span className="mt-3 inline-block text-[10px] font-bold tracking-[0.2em] text-lime">
+        <span className="mt-3 inline-block text-[10px] font-bold tracking-[0.2em] text-accent">
           {BAND_LABEL[trick.band].toUpperCase()}
         </span>
         <p className="mt-2 text-pretty text-sm text-muted">{trick.detail}</p>
@@ -588,7 +588,7 @@ function TrickDetail() {
             markLanded(trick.id);
             openView("my-bag-list");
           }}
-          className="mt-4 h-14 w-full rounded-full bg-lime font-bold text-navy"
+          className="mt-4 h-14 w-full rounded-full bg-cta font-bold text-cta-fg"
         >
           ✓ Mark as Landed
         </button>
@@ -615,7 +615,7 @@ function PracticeMode() {
       <p className="px-4 text-sm text-muted">{trick.name}</p>
       <div className="relative mx-4 mt-3 h-52 overflow-hidden rounded-3xl">
         <img src={bagThumb(trick.id)} alt="" className="h-full w-full object-cover" />
-        <span className="absolute top-2 right-2 rounded-md bg-navy/70 px-2 py-0.5 text-[10px] font-bold text-teal">
+        <span className="absolute top-2 right-2 rounded-md bg-navy/70 px-2 py-0.5 text-[10px] font-bold text-accent">
           AR
         </span>
         <span className="absolute inset-0 flex items-center justify-center">
@@ -631,7 +631,7 @@ function PracticeMode() {
             onClick={() => setPracticeSpeed(s.id)}
             className={
               "pb-1 text-xs font-semibold " +
-              (speed === s.id ? "border-b-2 border-lime text-ink" : "text-muted")
+              (speed === s.id ? "border-b-2 border-accent text-ink" : "text-muted")
             }
           >
             {s.label}
@@ -690,10 +690,10 @@ function LogTrick() {
                 onClick={() => setLogMethod(m.id)}
                 className={
                   "flex w-full items-start gap-3 rounded-2xl px-3 py-3 text-left ring-1 " +
-                  (method === m.id ? "bg-lime/15 ring-lime" : "bg-snow/5 ring-line")
+                  (method === m.id ? "bg-accent/15 ring-accent" : "bg-snow/5 ring-line")
                 }
               >
-                <span className="mt-0.5 flex size-9 items-center justify-center rounded-full bg-navy text-teal">
+                <span className="mt-0.5 flex size-9 items-center justify-center rounded-full bg-navy text-accent">
                   {m.id === "preroll" ? (
                     <Mic className="size-4" />
                   ) : m.id === "motion" ? (
@@ -716,7 +716,7 @@ function LogTrick() {
           type="button"
           data-testid="bag-log-primary"
           onClick={primary}
-          className="mt-4 h-14 w-full rounded-full bg-lime font-bold text-navy"
+          className="mt-4 h-14 w-full rounded-full bg-cta font-bold text-cta-fg"
         >
           {method === "preroll" ? "Start Pre-Roll" : method === "motion" ? "Start Motion Capture" : "Confirm Landing"}
         </button>
@@ -742,16 +742,16 @@ function PreRoll() {
     <div className="pb-28" data-testid="bag-preroll">
       <BagHeader title="Pre-Roll" onBack={back} />
       <div className="flex flex-col items-center px-4 pt-10">
-        <div className="relative flex size-40 items-center justify-center rounded-full ring-4 ring-lime/60">
+        <div className="relative flex size-40 items-center justify-center rounded-full ring-2 ring-accent/50">
           <div className="absolute inset-2 rounded-full ring-2 ring-teal/40" />
-          <Layers className="size-14 text-teal" aria-hidden="true" />
+          <Layers className="size-14 text-accent" aria-hidden="true" />
         </div>
-        <p className="mt-5 text-xs font-bold tracking-[0.25em] text-lime">PRE-ROLL ACTIVE</p>
+        <p className="mt-5 text-xs font-bold tracking-[0.25em] text-accent">PRE-ROLL ACTIVE</p>
         <div className="mt-3 flex h-8 items-end gap-0.5" aria-hidden="true">
           {Array.from({ length: 16 }).map((_, i) => (
             <span
               key={i}
-              className="w-1 rounded-full bg-lime"
+              className="w-1 rounded-full bg-accent"
               style={{ height: `${8 + ((i * 7) % 20)}px` }}
             />
           ))}
@@ -794,14 +794,14 @@ function ReviewAttempt() {
         <GlassCard className="mt-3" testId="bag-motion-analysis">
           <div className="flex items-center justify-between">
             <p className="text-xs font-bold tracking-widest text-muted">MOTION ANALYSIS (PHONE / META)</p>
-            <span className="rounded-full bg-lime/20 px-2 py-0.5 text-[10px] font-bold text-lime">
+            <span className="rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-bold text-accent">
               Motion Supported
             </span>
           </div>
           <ul className="mt-2 flex flex-col gap-1">
             {MOTION_ANALYSIS.map((row) => (
               <li key={row.label} className="flex items-center gap-2 text-sm text-ink">
-                <Check className="size-4 text-lime" />
+                <Check className="size-4 text-accent" />
                 {row.label}
               </li>
             ))}
@@ -822,13 +822,13 @@ function ReviewAttempt() {
                 onClick={() => setReviewOutcome(opt.id)}
                 className={
                   "flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left ring-1 " +
-                  (outcome === opt.id ? "bg-lime/15 ring-lime" : "bg-snow/5 ring-line")
+                  (outcome === opt.id ? "bg-accent/15 ring-accent" : "bg-snow/5 ring-line")
                 }
               >
                 <span
                   className={
                     "flex size-5 items-center justify-center rounded border " +
-                    (outcome === opt.id ? "border-lime bg-lime text-navy" : "border-line")
+                    (outcome === opt.id ? "border-accent bg-cta text-cta-fg" : "border-line")
                   }
                 >
                   {outcome === opt.id ? <Check className="size-3" /> : null}
@@ -852,7 +852,7 @@ function ReviewAttempt() {
               addToBag(trick.id, "progress");
             }
           }}
-          className="mt-4 h-14 w-full rounded-full bg-lime font-bold text-navy"
+          className="mt-4 h-14 w-full rounded-full bg-cta font-bold text-cta-fg"
         >
           Add to My Bag
         </button>
@@ -868,15 +868,15 @@ function TrickJourney() {
       <BagHeader title="Trick Journey" onBack={back} />
       <div className="px-4">
         <GlassCard testId="bag-rider-level">
-          <p className="text-xs font-bold tracking-widest text-teal">RIDER LEVEL</p>
+          <p className="text-xs font-bold tracking-widest text-accent">RIDER LEVEL</p>
           <p className="font-display text-4xl tracking-wide text-ink">{JOURNEY.level}</p>
           <p className="mt-2 text-sm font-semibold text-ink">
             {JOURNEY.landed} / {JOURNEY.total} Tricks
           </p>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-snow/10">
-            <div className="h-full rounded-full bg-teal" style={{ width: `${JOURNEY.percent}%` }} />
+            <div className="h-full rounded-full bg-accent" style={{ width: `${JOURNEY.percent}%` }} />
           </div>
-          <p className="mt-1 text-right text-sm font-bold text-teal">{JOURNEY.percent}%</p>
+          <p className="mt-1 text-right text-sm font-bold text-accent">{JOURNEY.percent}%</p>
         </GlassCard>
         <p className="mt-4 text-xs font-bold tracking-widest text-muted">YOUR PROGRESS</p>
         <ul className="mt-2 flex flex-col gap-2">
@@ -885,7 +885,7 @@ function TrickJourney() {
               <span className="font-semibold text-ink">{BAND_LABEL[row.band]}</span>
               <span className="flex items-center gap-2 text-sm text-muted">
                 {row.done} / {row.total}
-                {row.locked ? <Lock className="size-4 text-pink" /> : row.done === row.total ? <Check className="size-4 text-lime" /> : null}
+                {row.locked ? <Lock className="size-4 text-accent" /> : row.done === row.total ? <Check className="size-4 text-accent" /> : null}
               </span>
             </li>
           ))}
@@ -919,7 +919,7 @@ function TrickChallenges() {
       <BagHeader
         title="Trick Challenges"
         onBack={back}
-        right={<Trophy className="size-5 text-lime" aria-hidden="true" />}
+        right={<Trophy className="size-5 text-accent" aria-hidden="true" />}
       />
       <div className="mt-2 flex justify-center gap-5 px-4" data-testid="bag-challenge-tabs">
         {tabs.map((t) => (
@@ -944,7 +944,7 @@ function TrickChallenges() {
               <p className="font-display text-2xl tracking-wide text-ink">{c.title}</p>
               <p className="mt-1 text-sm text-muted">{c.detail}</p>
               <div className="mt-2 flex items-center justify-between text-xs font-bold">
-                <span className="text-lime">{c.reward}</span>
+                <span className="text-accent">{c.reward}</span>
                 <span className="text-muted">{c.meta}</span>
               </div>
             </GlassCard>
@@ -955,7 +955,7 @@ function TrickChallenges() {
         <button
           type="button"
           data-testid="bag-create-callout"
-          className="h-14 w-full rounded-full bg-lime font-bold text-navy"
+          className="h-14 w-full rounded-full bg-cta font-bold text-cta-fg"
         >
           + Create Callout
         </button>
@@ -1002,12 +1002,12 @@ function AddToBag() {
       </div>
       <div className="relative mx-4 mt-3 h-64 overflow-hidden rounded-3xl">
         <img src={bagThumb(trick.id)} alt="" className="h-full w-full object-cover" />
-        <span className="absolute top-3 left-1/2 -translate-x-1/2 rounded-full bg-pink px-3 py-1 text-xs font-bold text-ink">
+        <span className="absolute top-3 left-1/2 -translate-x-1/2 rounded-full bg-cta px-3 py-1 text-xs font-bold text-cta-fg">
           00:14
         </span>
         <div className="absolute inset-x-0 bottom-4 flex items-center justify-center gap-6">
           <span className="size-10 rounded-xl bg-snow/20" />
-          <button type="button" className="size-16 rounded-full bg-pink ring-4 ring-ink/30" aria-label="Stop" />
+          <button type="button" className="size-16 rounded-full bg-cta text-cta-fg ring-4 ring-ink/30" aria-label="Stop" />
           <span className="size-10 rounded-xl bg-snow/20" />
         </div>
       </div>
@@ -1076,7 +1076,7 @@ function TrickProgress() {
                 className={
                   "flex size-7 items-center justify-center rounded-full text-xs font-bold " +
                   (i < idx
-                    ? "bg-lime text-navy"
+                    ? "bg-cta text-cta-fg"
                     : i === idx
                       ? "bg-amber-400 text-navy"
                       : "bg-snow/10 text-muted")
@@ -1121,7 +1121,7 @@ function TrickProgress() {
               markLanded(trick.id);
               openView("my-bag-list");
             }}
-            className="h-12 rounded-full bg-lime font-bold text-navy"
+            className="h-12 rounded-full bg-cta font-bold text-cta-fg"
           >
             ✓ Mark as Landed
           </button>
@@ -1143,7 +1143,7 @@ function HubShell({ children }: { children: React.ReactNode }) {
             type="button"
             data-testid="bag-open-my-list"
             onClick={() => openView("my-bag-list")}
-            className="text-xs font-semibold text-teal"
+            className="text-xs font-semibold text-accent"
           >
             My Bag ›
           </button>
@@ -1152,7 +1152,7 @@ function HubShell({ children }: { children: React.ReactNode }) {
       </header>
       <div className="px-4 pt-2">
         <div className="flex items-center gap-2">
-          <Layers className="size-5 text-lime" aria-hidden="true" />
+          <Layers className="size-5 text-accent" aria-hidden="true" />
           <h1 className="font-display text-4xl tracking-wide text-ink">Bag of Tricks</h1>
           <DemoSimBadge label="Demo" testId="bag-demo-badge" />
         </div>

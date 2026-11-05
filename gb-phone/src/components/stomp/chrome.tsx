@@ -19,7 +19,7 @@ export function HexBadge({ className = "size-16" }: { className?: string }) {
     <svg viewBox="0 0 64 64" className={className} aria-hidden="true">
       <rect x="3" y="3" width="58" height="58" rx="16" fill="#ffffff" stroke="#141821" strokeWidth="4" />
       <path d="M32 12 48 21v18L32 48 16 39V21z" fill="none" stroke="#141821" strokeWidth="3" />
-      <circle cx="32" cy="32" r="6" fill="#2ad4c2" />
+      <circle cx="32" cy="32" r="6" fill="#0a0a0a" />
     </svg>
   );
 }
@@ -28,7 +28,7 @@ export function TriBadge({ className = "size-16" }: { className?: string }) {
   return (
     <svg viewBox="0 0 64 64" className={className} aria-hidden="true">
       <rect x="3" y="3" width="58" height="58" rx="16" fill="#ffffff" stroke="#141821" strokeWidth="4" />
-      <path d="M32 14 50 48H14z" fill="#ff3b78" />
+      <path d="M32 14 50 48H14z" fill="#0a0a0a" />
     </svg>
   );
 }
@@ -64,7 +64,7 @@ export function LivePill({
   onClick?: () => void;
 }) {
   const className =
-    "inline-flex items-center h-9 rounded-full bg-lime px-4 text-xs font-bold tracking-widest text-ink";
+    "inline-flex items-center h-9 rounded-full bg-cta px-4 text-xs font-bold tracking-widest text-cta-fg";
   if (!onClick) return <span className={className}>{children}</span>;
   return (
     <button type="button" onClick={onClick} className={className}>
@@ -74,10 +74,10 @@ export function LivePill({
 }
 
 const chipTones = {
-  pink: "bg-pink text-snow",
-  teal: "bg-teal text-ink",
+  pink: "bg-cta text-cta-fg",
+  teal: "bg-accent text-ink",
   snow: "bg-snow text-ink ring-1 ring-line",
-  lime: "bg-lime text-ink",
+  lime: "bg-cta text-cta-fg",
 } as const;
 
 export function Chip({
@@ -147,7 +147,7 @@ export function Pin({
   label: string;
   tone: "pink" | "teal" | "ink";
 }) {
-  const dot = tone === "pink" ? "bg-pink" : tone === "teal" ? "bg-teal" : "bg-ink";
+  const dot = tone === "pink" ? "bg-cta" : tone === "teal" ? "bg-accent" : "bg-ink";
   return (
     <div className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: x, top: y }}>
       <span className={"mx-auto block size-3 rounded-full ring-2 ring-snow " + dot} />

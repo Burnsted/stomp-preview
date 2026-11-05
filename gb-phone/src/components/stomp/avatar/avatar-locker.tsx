@@ -59,7 +59,7 @@ export function AvatarLocker() {
             useAvatar.getState().startOnboarding("adult");
             setScreen("avatar-onboard");
           }}
-          className="mt-4 h-12 w-full rounded-full bg-pink font-semibold text-snow"
+          className="mt-4 h-12 w-full rounded-full bg-cta font-semibold text-cta-fg"
         >
           Create Your STOMPER
         </button>
@@ -131,7 +131,7 @@ export function AvatarLocker() {
               onClick={() => setStylePath(style)}
               className={
                 "rounded-2xl px-3 py-3 text-left text-sm font-semibold ring-1 ring-line " +
-                (config.stylePath === style ? "bg-teal/20 ring-teal" : "bg-snow/10")
+                (config.stylePath === style ? "bg-accent/20 ring-teal" : "bg-snow/10")
               }
             >
               {STYLE_LABELS[style]}
@@ -167,7 +167,7 @@ export function AvatarLocker() {
                     onClick={() => equipItem(slot, item.id)}
                     className={
                       "rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ring-line " +
-                      (config.layers[slot]?.itemId === item.id ? "bg-lime text-navy" : "bg-snow/10")
+                      (config.layers[slot]?.itemId === item.id ? "bg-cta text-cta-fg" : "bg-snow/10")
                     }
                   >
                     {item.label}

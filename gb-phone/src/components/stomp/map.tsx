@@ -76,19 +76,19 @@ export function ClipMap() {
           <path
             d="M30 18 C 48 40, 36 62, 58 88 C 72 104, 64 122, 80 140"
             fill="none"
-            stroke="#5ec8ff"
+            stroke="#9aa6b8"
             strokeWidth="3.2"
             className="trail-dash trail-ice"
             filter="url(#map-ice-glow)"
             vectorEffect="non-scaling-stroke"
           />
-          <circle cx="58" cy="88" r="2.4" fill="#e8f7ff" stroke="#5ec8ff" strokeWidth="1" />
+          <circle cx="58" cy="88" r="2.4" fill="#e8ecf2" stroke="#9aa6b8" strokeWidth="1" />
         </svg>
         <div className="absolute top-3 right-3 left-3 flex items-center gap-3 rounded-2xl bg-snow p-2">
           <img src={PHOTOS.line} alt="" className="size-14 rounded-xl object-cover" />
           <div>
             <p className="font-semibold">Filming a hit</p>
-            <p className="text-sm font-medium text-pink">Live clip · phone capture</p>
+            <p className="text-sm font-medium text-accent">Live clip · phone capture</p>
           </div>
         </div>
         <Pin x="28%" y="42%" label="Hit clip" tone="pink" />
@@ -124,14 +124,14 @@ export function ClipMap() {
           <input
             value={title}
             onChange={(event) => setTitle(event.target.value)}
-            className="mt-1 h-12 w-full rounded-2xl bg-paper px-4 text-ink outline-none ring-1 ring-line focus-visible:ring-2 focus-visible:ring-pink"
+            className="mt-1 h-12 w-full rounded-2xl bg-paper px-4 text-ink outline-none ring-1 ring-line focus-visible:ring-2 focus-visible:ring-accent"
           />
         </label>
         <div className="mt-3 flex gap-2">
           <button
             type="button"
             onClick={capture}
-            className="h-12 flex-1 rounded-full bg-pink font-semibold text-snow"
+            className="h-12 flex-1 rounded-full bg-cta font-semibold text-cta-fg"
           >
             {recording > 0 ? `Recording ${recording}` : "Record"}
           </button>
@@ -153,7 +153,7 @@ export function ClipMap() {
             }}
           />
         </div>
-        {note ? <p className="mt-3 text-sm text-teal">{note}</p> : null}
+        {note ? <p className="mt-3 text-sm text-accent">{note}</p> : null}
         <div className="mt-4 grid grid-cols-2 gap-3">
           {gallery.map((clip) => (
             <figure key={clip.id} className="overflow-hidden rounded-2xl">

@@ -124,7 +124,7 @@ export function Run() {
       </div>
       <button type="button" onClick={stampAir} className="text-left">
         <p className="text-xs font-semibold tracking-widest text-muted">Airtime</p>
-        <p className="font-display text-8xl leading-none text-pink tabular-nums">
+        <p className="font-display text-8xl leading-none text-accent tabular-nums">
           {formatAir(liveAir)}
           <span className="text-5xl text-ink">s</span>
         </p>
@@ -140,12 +140,12 @@ export function Run() {
           onClick={() => stompTrick(goal.trick.id)}
           className="rounded-3xl bg-snow px-5 py-4 text-left ring-1 ring-line"
         >
-          <p className="text-xs font-semibold tracking-widest text-pink">Goal · {goal.feature.name}</p>
+          <p className="text-xs font-semibold tracking-widest text-accent">Goal · {goal.feature.name}</p>
           <p className="font-display text-4xl tracking-wide">{goal.trick.name}</p>
           <p className="mt-1 text-sm text-muted">Tap when you land it. {goal.level.name}</p>
         </button>
       ) : (
-        <button type="button" onClick={() => setScreen("park")} className="rounded-3xl bg-lime px-5 py-4 text-left">
+        <button type="button" onClick={() => setScreen("park")} className="rounded-3xl bg-accent px-5 py-4 text-left">
           <p className="font-display text-3xl">Park clear</p>
           <p className="text-sm">Every trick on the ladder is stomped.</p>
         </button>
@@ -155,9 +155,9 @@ export function Run() {
         onClick={advanceCue}
         className="rounded-3xl bg-ink px-5 py-5 text-left text-snow"
       >
-        <p className="text-xs font-semibold tracking-widest text-lime">What’s coming up</p>
+        <p className="text-xs font-semibold tracking-widest text-accent">What’s coming up</p>
         <p className="mt-2 text-lg font-medium text-pretty">{cue.line}</p>
-        <p className="mt-3 text-sm text-lime">{cue.feet} ft · tap for the next feature</p>
+        <p className="mt-3 text-sm text-accent">{cue.feet} ft · tap for the next feature</p>
       </button>
       <button
         type="button"
@@ -165,7 +165,7 @@ export function Run() {
         className="flex h-14 items-center justify-between rounded-2xl bg-snow px-4 ring-1 ring-line"
       >
         <span className="font-medium">{boardStowed ? "Board on the pack" : "Board in hand"}</span>
-        <span className={"text-sm font-semibold " + (boardStowed ? "text-teal" : "text-pink")}>
+        <span className={"text-sm font-semibold " + (boardStowed ? "text-accent" : "text-accent")}>
           {boardStowed ? `Hands free · ${elapsed}` : "Clip it"}
         </span>
       </button>
@@ -213,7 +213,7 @@ export function Run() {
         </form>
       ) : null}
       <div className="flex items-center justify-between">
-        <button type="button" onClick={() => setScreen("map")} className="text-sm font-semibold text-pink">
+        <button type="button" onClick={() => setScreen("map")} className="text-sm font-semibold text-accent">
           Open the clip map
         </button>
         <button type="button" onClick={endRun} className="text-sm font-medium text-muted">

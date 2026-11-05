@@ -57,7 +57,7 @@ export function MiniPlayerUi() {
             data-testid="mini-player-play"
             aria-label={playing ? "Pause" : "Play"}
             onClick={togglePlay}
-            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-lime text-ink"
+            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-cta text-cta-fg"
           >
             {playing ? <Pause className="size-4" /> : <Play className="size-4" />}
           </button>
@@ -73,7 +73,7 @@ export function MiniPlayerUi() {
               {source ? ` · ${source.name}` : ""}
             </p>
           </button>
-          <div className="flex items-center gap-1 text-teal" aria-hidden="true">
+          <div className="flex items-center gap-1 text-accent" aria-hidden="true">
             <span className="alpine-wave" />
             {level === "expanded" ? (
               <ChevronDown className="size-5" />
@@ -91,7 +91,7 @@ export function MiniPlayerUi() {
               <button
                 type="button"
                 onClick={togglePlay}
-                className="flex size-14 items-center justify-center rounded-full bg-lime text-ink"
+                className="flex size-14 items-center justify-center rounded-full bg-cta text-cta-fg"
               >
                 {playing ? <Pause className="size-6" /> : <Play className="size-6" />}
               </button>

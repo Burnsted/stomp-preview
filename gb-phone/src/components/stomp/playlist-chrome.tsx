@@ -53,7 +53,7 @@ export function PlaylistLink({ className = "" }: { className?: string }) {
       aria-label="Open playlist"
       onClick={() => setScreen("playlist")}
       className={
-        "flex h-11 items-center gap-1.5 rounded-full bg-pink px-3 text-xs font-semibold text-snow " + className
+        "flex h-11 items-center gap-1.5 rounded-full bg-cta px-3 text-xs font-semibold text-cta-fg " + className
       }
     >
       <ListMusic className="size-3.5" aria-hidden="true" />

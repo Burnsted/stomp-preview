@@ -82,7 +82,7 @@ export function OfflineScreen() {
                     {statusLabel(pack.status)}
                     {pack.status !== "none" ? ` · ${pack.sizeMb} MB · ${pack.pins} pins` : ""}
                   </p>
-                  <p className="text-sm text-teal/90">Playlist · {pack.playlist}</p>
+                  <p className="text-sm text-accent/90">Playlist · {pack.playlist}</p>
                 </div>
               </div>
               <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm font-semibold text-snow/80">
@@ -150,7 +150,7 @@ export function OfflineScreen() {
           </li>
         ))}
       </ul>
-      {note ? <p className="px-4 pt-2 text-sm font-semibold text-teal">{note}</p> : null}
+      {note ? <p className="px-4 pt-2 text-sm font-semibold text-accent">{note}</p> : null}
     </div>
   );
 }

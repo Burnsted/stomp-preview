@@ -179,7 +179,7 @@ export function BottomNav() {
               onClick={() => setScreen(tab.screen)}
               className={
                 "flex flex-col items-center gap-0.5 rounded-xl py-2 text-[10px] font-bold tracking-wide " +
-                (on ? "bg-teal/20 text-teal" : "text-snow/70")
+                (on ? "bg-accent/20 text-accent" : "text-snow/70")
               }
             >
               <Icon className="size-5" aria-hidden="true" strokeWidth={on ? 2.5 : 2} />

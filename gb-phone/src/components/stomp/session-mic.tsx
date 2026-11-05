@@ -123,12 +123,12 @@ export function SessionMic({ quiet = false }: { quiet?: boolean }) {
         onPointerCancel={end}
         className={
           "h-14 w-full rounded-full font-semibold " +
-          (holding ? "bg-lime text-ink" : "bg-snow text-ink ring-1 ring-line")
+          (holding ? "bg-cta text-cta-fg" : "bg-snow text-ink ring-1 ring-line")
         }
       >
         {holding ? "Listening" : "Hey Session"}
       </button>
-      {line !== "Hey Session" ? <p className="mt-2 text-center text-sm font-semibold text-teal">{line}</p> : null}
+      {line !== "Hey Session" ? <p className="mt-2 text-center text-sm font-semibold text-accent">{line}</p> : null}
       {quiet ? null : (
         <>
           <form onSubmit={onType} className="mt-2 flex gap-2">

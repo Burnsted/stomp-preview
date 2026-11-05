@@ -35,7 +35,7 @@ export function StomperIdScreen() {
             useAvatar.getState().startOnboarding("adult");
             setScreen("avatar-onboard");
           }}
-          className="mt-4 h-12 w-full rounded-full bg-pink font-semibold text-snow"
+          className="mt-4 h-12 w-full rounded-full bg-cta font-semibold text-cta-fg"
         >
           Create Your STOMPER
         </button>
@@ -72,9 +72,9 @@ export function StomperIdScreen() {
               showBackground
               testId="id-card-avatar"
             />
-            <h2 className="mt-3 font-display text-4xl tracking-wide text-lime">{config.displayName}</h2>
+            <h2 className="mt-3 font-display text-4xl tracking-wide text-accent">{config.displayName}</h2>
             <p className="mt-1 text-sm text-muted">Snowboarding · {STYLE_LABELS[config.stylePath]}</p>
-            <p className="mt-1 text-xs font-bold tracking-widest text-teal">
+            <p className="mt-1 text-xs font-bold tracking-widest text-accent">
               {STAGE_LABELS[config.stage].toUpperCase()}
             </p>
             {/* No invented activity counts for new users */}
@@ -102,7 +102,7 @@ export function StomperIdScreen() {
                 type="button"
                 data-testid="reissue-id"
                 onClick={() => reissueId()}
-                className="h-10 rounded-full bg-teal/20 px-4 text-xs font-semibold text-teal ring-1 ring-teal/40"
+                className="h-10 rounded-full bg-accent/20 px-4 text-xs font-semibold text-accent ring-1 ring-teal/40"
               >
                 Reissue
               </button>
@@ -118,7 +118,7 @@ export function StomperIdScreen() {
           <p className="mt-1 text-sm text-muted" data-testid="wallet-google-status">
             Google: {google.status} — {google.reason}
           </p>
-          <p className="mt-2 text-xs text-pink" data-testid="crew-wallet-rejected">
+          <p className="mt-2 text-xs text-accent" data-testid="crew-wallet-rejected">
             Crew Wallet Card rejected: {String(CREW_WALLET_CARD_REJECTED)}. Flag walletPassesEnabled=
             {String(isAvatarFlagOn("walletPassesEnabled"))}.
           </p>
@@ -135,7 +135,7 @@ export function StomperIdScreen() {
                 type="button"
                 data-testid="post-meet-sesh"
                 onClick={() => setScreen("meet-sesh")}
-                className="h-12 w-full rounded-full bg-pink font-semibold text-snow"
+                className="h-12 w-full rounded-full bg-cta font-semibold text-cta-fg"
               >
                 Meet Sesh →
               </button>
@@ -170,7 +170,7 @@ export function StomperIdScreen() {
                   setShowPost(false);
                   setScreen("trip-choice");
                 }}
-                className="h-12 w-full rounded-full bg-lime font-semibold text-navy"
+                className="h-12 w-full rounded-full bg-cta font-semibold text-cta-fg"
               >
                 Skip to Trip Drop
               </button>
@@ -211,7 +211,7 @@ function IdQr({ value, revoked }: { value: string; revoked: boolean }) {
     void QRCode.toDataURL(value, {
       margin: 1,
       width: 220,
-      color: { dark: revoked ? "#ff3b78" : "#10140f", light: "#ffffff" },
+      color: { dark: revoked ? "#8b95a8" : "#10140f", light: "#ffffff" },
     }).then((url) => {
       if (!cancel) setSrc(url);
     });

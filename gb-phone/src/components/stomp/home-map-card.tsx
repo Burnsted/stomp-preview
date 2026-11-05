@@ -56,7 +56,7 @@ export function HomeMapCard() {
           type="button"
           data-testid="home-map-full"
           onClick={() => setScreen("map")}
-          className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-snow/10 text-teal ring-1 ring-line"
+          className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-snow/10 text-accent ring-1 ring-line"
           aria-label="Open full map"
         >
           <MapIcon className="size-4" aria-hidden="true" />
@@ -81,7 +81,7 @@ export function HomeMapCard() {
           onClick={openMountainPlaylist}
           className="mt-3 flex min-h-12 w-full items-center gap-3 px-1 text-left"
         >
-          <ListMusic className="size-5 shrink-0 text-pink" aria-hidden="true" />
+          <ListMusic className="size-5 shrink-0 text-accent" aria-hidden="true" />
           <span className="min-w-0">
             <span className="block text-xs font-bold tracking-widest text-muted">MOUNTAIN PLAYLIST</span>
             <span className="block truncate font-semibold text-ink">{mountainPlaylist.title}</span>

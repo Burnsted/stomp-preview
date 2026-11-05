@@ -114,7 +114,7 @@ export function BeatStrip({
     >
       <p
         className={
-          "font-bold tracking-[0.2em] text-pink " + (trail ? "text-[10px]" : "text-xs")
+          "font-bold tracking-[0.2em] text-accent " + (trail ? "text-[10px]" : "text-xs")
         }
       >
         BEAT
@@ -122,7 +122,7 @@ export function BeatStrip({
       <p
         data-testid="beat-strip-time"
         className={
-          "mt-0.5 font-display tabular-nums leading-none text-lime " +
+          "mt-0.5 font-display tabular-nums leading-none text-accent " +
           (trail ? "text-lg" : "text-2xl")
         }
       >
@@ -144,12 +144,10 @@ export function BeatStrip({
         >
           <defs>
             <linearGradient id="stomp-vwave-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#ff3b78" />
-              <stop offset="18%" stopColor="#ff7a3c" />
-              <stop offset="36%" stopColor="#d6f25a" />
-              <stop offset="54%" stopColor="#2ad4c2" />
-              <stop offset="72%" stopColor="#3b82f6" />
-              <stop offset="100%" stopColor="#8b7cff" />
+              <stop offset="0%" stopColor="#e8ecf2" />
+              <stop offset="35%" stopColor="#9aa6b8" />
+              <stop offset="70%" stopColor="#5c6b7e" />
+              <stop offset="100%" stopColor="#2a3448" />
             </linearGradient>
           </defs>
           <path d={d} fill="url(#stomp-vwave-grad)" opacity="0.95" />
@@ -212,7 +210,7 @@ export function BeatStrip({
         <p
           data-testid="beat-strip-caption"
           className={
-            "mt-1.5 max-w-full truncate px-0.5 text-center font-semibold leading-tight text-pink " +
+            "mt-1.5 max-w-full truncate px-0.5 text-center font-semibold leading-tight text-accent " +
             (trail ? "text-[8px]" : "text-[9px]")
           }
           title={activeMark.label}

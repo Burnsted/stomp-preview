@@ -136,7 +136,7 @@ export function MusicSourcesRow({
           type="button"
           data-testid="music-sources-prefs-toggle"
           onClick={() => setPrefsOpen(!prefsOpen)}
-          className="text-xs font-semibold text-teal"
+          className="text-xs font-semibold text-accent"
         >
           {prefsOpen ? "Done" : "Update"}
         </button>
@@ -159,7 +159,7 @@ export function MusicSourcesRow({
                       onClick={() => (off ? show(id) : hide(id))}
                       className={
                         "h-8 rounded-full px-3 text-xs font-semibold " +
-                        (off ? "bg-snow/10 text-snow/50" : "bg-lime text-ink")
+                        (off ? "bg-snow/10 text-snow/50" : "bg-cta text-cta-fg")
                       }
                     >
                       {off ? "Hidden" : "Shown"}
@@ -211,7 +211,7 @@ export function MusicSourcesRow({
               onClick={toggleExpanded}
               className="flex w-[4.25rem] flex-col items-center gap-1"
             >
-              <span className="flex size-14 items-center justify-center rounded-full bg-navy ring-1 ring-snow/20 text-teal">
+              <span className="flex size-14 items-center justify-center rounded-full bg-navy ring-1 ring-snow/20 text-accent">
                 {expanded ? <ChevronUp className="size-6" /> : <ChevronDown className="size-6" />}
               </span>
               <span className="text-[9px] font-medium leading-tight text-ink/50">

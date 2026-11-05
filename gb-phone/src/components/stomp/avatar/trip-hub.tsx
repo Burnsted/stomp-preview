@@ -104,7 +104,7 @@ export function TripHubScreen() {
               lodgingPrivate: null,
             })
           }
-          className="mt-4 h-12 w-full rounded-full bg-pink font-semibold text-snow"
+          className="mt-4 h-12 w-full rounded-full bg-cta font-semibold text-cta-fg"
         >
           Create trip placeholder
         </button>

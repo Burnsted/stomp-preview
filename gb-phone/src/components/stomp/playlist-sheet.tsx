@@ -177,7 +177,7 @@ function UploadPanel() {
         onChange={(e) => void onFiles(e.target.files)}
       />
       {note ? (
-        <p data-testid="playlist-sheet-upload-note" className="mt-2 text-sm font-semibold text-teal">
+        <p data-testid="playlist-sheet-upload-note" className="mt-2 text-sm font-semibold text-accent">
           {note}
         </p>
       ) : null}
@@ -238,7 +238,7 @@ function AdjustPanel() {
           data-testid="playlist-sheet-eq"
         >
           <span className="w-1.5 rounded-full bg-orange" style={{ height: `${mix.low}%` }} />
-          <span className="w-1.5 rounded-full bg-teal" style={{ height: `${mix.mid}%` }} />
+          <span className="w-1.5 rounded-full bg-accent" style={{ height: `${mix.mid}%` }} />
           <span className="w-1.5 rounded-full bg-sky" style={{ height: `${mix.high}%` }} />
         </div>
       </div>
@@ -301,7 +301,7 @@ function AdjustPanel() {
         </ul>
       )}
       {note ? (
-        <p data-testid="playlist-sheet-adjust-note" className="text-sm font-semibold text-teal">
+        <p data-testid="playlist-sheet-adjust-note" className="text-sm font-semibold text-accent">
           {note}
         </p>
       ) : null}
@@ -347,7 +347,7 @@ function SharePanel() {
     <div data-testid="playlist-sheet-share" className="pb-2">
       <div className="flex items-center justify-between gap-3 rounded-2xl bg-snow/8 px-4 py-4 ring-1 ring-snow/15">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="flex size-11 items-center justify-center rounded-2xl bg-pink/25 text-pink">
+          <span className="flex size-11 items-center justify-center rounded-2xl bg-accent/25 text-accent">
             <Users className="size-5" aria-hidden="true" />
           </span>
           <div className="min-w-0">
@@ -366,7 +366,7 @@ function SharePanel() {
         </button>
       </div>
       {note ? (
-        <p data-testid="playlist-sheet-share-note" className="mt-2 text-sm font-semibold text-teal">
+        <p data-testid="playlist-sheet-share-note" className="mt-2 text-sm font-semibold text-accent">
           {note}
         </p>
       ) : null}

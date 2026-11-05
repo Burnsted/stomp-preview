@@ -29,7 +29,7 @@ export function PlaytestHomeChrome() {
           type="button"
           data-testid="explore-demo-entry"
           onClick={() => setScreen("explore-demo")}
-          className="h-11 min-w-[7.5rem] flex-1 rounded-2xl bg-pink px-3 text-sm font-bold text-snow shadow-lg"
+          className="h-11 min-w-[7.5rem] flex-1 rounded-2xl bg-cta px-3 text-sm font-bold text-cta-fg shadow-lg"
         >
           Explore Demo
         </button>
@@ -37,7 +37,7 @@ export function PlaytestHomeChrome() {
           type="button"
           data-testid="feedback-entry"
           onClick={() => setScreen("feedback")}
-          className="h-11 min-w-[5.5rem] rounded-2xl bg-navy/85 px-3 text-xs font-bold tracking-wide text-lime ring-1 ring-line"
+          className="h-11 min-w-[5.5rem] rounded-2xl bg-navy/85 px-3 text-xs font-bold tracking-wide text-accent ring-1 ring-line"
         >
           Feedback
         </button>
@@ -63,7 +63,7 @@ export function PlaytestHomeChrome() {
             <button
               type="button"
               data-testid="reset-demo-confirm-yes"
-              className="h-10 flex-1 rounded-full bg-pink text-xs font-bold text-snow"
+              className="h-10 flex-1 rounded-full bg-cta text-xs font-bold text-cta-fg"
               onClick={() => {
                 resetDemoLocal();
                 setConfirmReset(false);
@@ -85,7 +85,7 @@ export function PlaytestHomeChrome() {
         </div>
       ) : null}
       {flash ? (
-        <p data-testid="reset-demo-flash" className="pointer-events-none text-xs font-semibold text-lime">
+        <p data-testid="reset-demo-flash" className="pointer-events-none text-xs font-semibold text-accent">
           {flash}
         </p>
       ) : null}

@@ -46,7 +46,7 @@ export function Stompers() {
     <div className="px-1 pb-28">
       <header className="flex items-center gap-3 px-4 pt-5">
         <HomeButton />
-        <h1 className="font-display text-4xl tracking-wide text-lime">STOMPERS</h1>
+        <h1 className="font-display text-4xl tracking-wide text-accent">STOMPERS</h1>
       </header>
       <p className="px-5 pt-2 text-pretty text-muted">
         STOMP is the app. Stompers are the people. Your crew is who you ride with.
@@ -84,7 +84,7 @@ export function Stompers() {
             ) : selfie ? (
               <img src={selfie} alt="" className="size-16 rounded-2xl object-cover" />
             ) : (
-              <span className="flex size-16 items-center justify-center rounded-2xl bg-lime font-display text-2xl">
+              <span className="flex size-16 items-center justify-center rounded-2xl bg-accent font-display text-2xl">
                 {displayName.slice(0, 1)}
               </span>
             )}
@@ -117,7 +117,7 @@ export function Stompers() {
           <button
             type="button"
             onClick={() => setScreen("crew")}
-            className="mt-3 h-12 w-full rounded-full bg-pink font-semibold text-snow"
+            className="mt-3 h-12 w-full rounded-full bg-cta font-semibold text-cta-fg"
           >
             Link a crew
           </button>
@@ -132,7 +132,7 @@ export function Stompers() {
       {tab === "Mountain" ? (
         <section className="px-4 pt-4">
           <div className="rounded-3xl bg-snow p-4 ring-1 ring-line">
-            <p className="text-xs font-bold tracking-widest text-pink">On your mountain</p>
+            <p className="text-xs font-bold tracking-widest text-accent">On your mountain</p>
             <p className="mt-2 text-pretty">
               Public posts would sit here for the resort you’re at. This phone doesn’t know the resort, and it isn’t posting for you.
             </p>
@@ -148,7 +148,7 @@ export function Stompers() {
             className="flex h-14 w-full items-center justify-between rounded-full bg-snow px-4 ring-1 ring-line"
           >
             <span className="font-semibold">Resort discovery</span>
-            <span className={"rounded-full px-3 py-1 text-sm font-bold " + (discover ? "bg-lime" : "bg-paper")}>
+            <span className={"rounded-full px-3 py-1 text-sm font-bold " + (discover ? "bg-accent" : "bg-paper")}>
               {discover ? "On" : "Off"}
             </span>
           </button>
@@ -163,8 +163,8 @@ export function Stompers() {
                   <p className="mt-1 font-semibold">{crew.name}</p>
                   <p className="text-sm text-muted">{crew.detail}</p>
                   <div className="mt-2 flex gap-2">
-                    <span className="rounded-full bg-lime px-3 py-1 text-xs font-bold">{crew.status}</span>
-                    <button type="button" onClick={() => setHidden((ids) => [...ids, crew.id])} className="text-sm font-semibold text-pink">
+                    <span className="rounded-full bg-accent px-3 py-1 text-xs font-bold">{crew.status}</span>
+                    <button type="button" onClick={() => setHidden((ids) => [...ids, crew.id])} className="text-sm font-semibold text-accent">
                       Hide
                     </button>
                   </div>
@@ -178,23 +178,23 @@ export function Stompers() {
       ) : null}
       {tab === "Campfire" ? (
         <section className="px-4 pt-4">
-          <p className="text-xs font-bold tracking-widest text-teal">End of the riding day</p>
+          <p className="text-xs font-bold tracking-widest text-accent">End of the riding day</p>
           <p className="mt-1 font-display text-4xl leading-none">{VIBES[vibe]}</p>
-          <button type="button" onClick={() => setVibe((index) => (index + 1) % VIBES.length)} className="mt-2 text-sm font-semibold text-pink">
+          <button type="button" onClick={() => setVibe((index) => (index + 1) % VIBES.length)} className="mt-2 text-sm font-semibold text-accent">
             Next vibe · {vibe + 1} of {VIBES.length}
           </button>
           <button
             type="button"
             data-testid="open-campfire-hub"
             onClick={() => setScreen("hub")}
-            className="mt-4 text-sm font-semibold text-teal"
+            className="mt-4 text-sm font-semibold text-accent"
           >
             Open campfire
           </button>
           <button
             type="button"
             onClick={() => setScreen("map")}
-            className="mt-4 h-14 w-full rounded-full bg-pink font-semibold text-snow"
+            className="mt-4 h-14 w-full rounded-full bg-cta font-semibold text-cta-fg"
           >
             Drop today’s clips
           </button>

@@ -46,7 +46,7 @@ export function TripChoiceScreen() {
             type="button"
             data-testid="trip-choice-create"
             onClick={createTripDrop}
-            className="h-14 w-full rounded-full bg-pink font-semibold text-snow"
+            className="h-14 w-full rounded-full bg-cta font-semibold text-cta-fg"
           >
             Create Trip Drop
           </button>
@@ -54,7 +54,7 @@ export function TripChoiceScreen() {
             type="button"
             data-testid="trip-choice-join"
             onClick={joinTripDrop}
-            className="h-14 w-full rounded-full bg-teal font-semibold text-navy"
+            className="h-14 w-full rounded-full bg-accent font-semibold text-navy"
           >
             Join Trip Drop
           </button>
@@ -62,7 +62,7 @@ export function TripChoiceScreen() {
             type="button"
             data-testid="trip-choice-solo"
             onClick={goHome}
-            className="h-14 w-full rounded-full bg-lime font-semibold text-navy"
+            className="h-14 w-full rounded-full bg-cta font-semibold text-cta-fg"
           >
             Explore Solo
           </button>

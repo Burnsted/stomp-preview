@@ -25,7 +25,7 @@ export function AvatarHomeDock() {
           type="button"
           data-testid="home-avatar-open-id"
           onClick={() => setScreen("stomper-id")}
-          className="rounded-3xl ring-2 ring-lime/60"
+          className="rounded-3xl ring-2 ring-accent/50"
           aria-label="Open STOMPER ID"
         >
           <AvatarRenderer
@@ -40,7 +40,7 @@ export function AvatarHomeDock() {
           type="button"
           data-testid="home-open-locker"
           onClick={() => setScreen("avatar-locker")}
-          className="rounded-full bg-navy/80 px-3 py-1 text-[10px] font-bold tracking-widest text-lime ring-1 ring-line"
+          className="rounded-full bg-navy/80 px-3 py-1 text-[10px] font-bold tracking-widest text-accent ring-1 ring-line"
         >
           LOCKER
         </button>
@@ -61,7 +61,7 @@ export function AvatarHomeDock() {
           useAvatar.getState().startOnboarding("adult");
           setScreen("avatar-onboard");
         }}
-        className="rounded-2xl bg-pink px-3 py-2 text-xs font-bold text-snow shadow-lg"
+        className="rounded-2xl bg-cta px-3 py-2 text-xs font-bold text-cta-fg shadow-lg"
       >
         Create STOMPER
       </button>

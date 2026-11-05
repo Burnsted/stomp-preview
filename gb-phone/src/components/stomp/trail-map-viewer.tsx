@@ -54,7 +54,7 @@ export function OfficialMapLinkCard({
       }
     >
       <div>
-        <p className="flex items-center gap-2 text-xs font-bold tracking-widest text-teal">
+        <p className="flex items-center gap-2 text-xs font-bold tracking-widest text-accent">
           <MapIcon className="size-4" aria-hidden="true" />
           OFFICIAL TRAIL MAP
         </p>

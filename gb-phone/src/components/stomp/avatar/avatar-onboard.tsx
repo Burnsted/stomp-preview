@@ -81,7 +81,7 @@ function Screen1Starter({ onSkip }: { onSkip: () => void }) {
       <div className="px-5 pt-2">
         <p className="font-display text-4xl leading-none tracking-wide text-ink">Create Your STOMPER</p>
         <p className="mt-2 text-sm text-muted">Pick a starter look. You can customize everything next — and later in the Locker.</p>
-        <p className="mt-4 text-xs font-bold tracking-widest text-teal">FEMALE-PRESENTING · 6</p>
+        <p className="mt-4 text-xs font-bold tracking-widest text-accent">FEMALE-PRESENTING · 6</p>
         <div className="mt-2 grid grid-cols-3 gap-2" data-testid="starter-grid-female">
           {female.map((s, i) => (
             <StarterCard
@@ -210,7 +210,7 @@ function Screen2Look() {
                     onClick={() => patchLayer(slot, item.id, draft.layers?.[slot]?.color)}
                     className={
                       "rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ring-line " +
-                      (draft.layers?.[slot]?.itemId === item.id ? "bg-teal text-navy" : "bg-snow/10")
+                      (draft.layers?.[slot]?.itemId === item.id ? "bg-accent text-navy" : "bg-snow/10")
                     }
                   >
                     {item.label}
@@ -240,7 +240,7 @@ function Screen2Look() {
           type="button"
           data-testid="onboard-to-vibe"
           onClick={() => goStep(3)}
-          className="mt-6 h-14 w-full rounded-full bg-pink font-semibold text-snow"
+          className="mt-6 h-14 w-full rounded-full bg-cta font-semibold text-cta-fg"
         >
           Choose Your Vibe →
         </button>
@@ -279,7 +279,7 @@ function Screen3Vibe() {
               onClick={() => pick(style)}
               className={
                 "rounded-3xl p-4 text-left ring-1 ring-line " +
-                (stylePath === style ? "bg-teal/20 ring-teal" : "bg-snow/10")
+                (stylePath === style ? "bg-accent/20 ring-teal" : "bg-snow/10")
               }
             >
               <p className="font-display text-2xl tracking-wide">{STYLE_LABELS[style]}</p>
@@ -301,7 +301,7 @@ function Screen3Vibe() {
               onClick={() => setBackground(bg.id)}
               className={
                 "rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ring-line " +
-                (backgroundId === bg.id ? "bg-lime text-navy" : "bg-snow/10")
+                (backgroundId === bg.id ? "bg-cta text-cta-fg" : "bg-snow/10")
               }
             >
               {bg.label}
@@ -312,7 +312,7 @@ function Screen3Vibe() {
           type="button"
           data-testid="onboard-to-personalize"
           onClick={() => goStep(4)}
-          className="mt-6 h-14 w-full rounded-full bg-pink font-semibold text-snow"
+          className="mt-6 h-14 w-full rounded-full bg-cta font-semibold text-cta-fg"
         >
           Personalize →
         </button>
@@ -348,7 +348,7 @@ function Screen4Personalize() {
                     onClick={() => answer(q.key, opt)}
                     className={
                       "rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ring-line " +
-                      (personalize[q.key] === opt ? "bg-teal text-navy" : "bg-snow/10")
+                      (personalize[q.key] === opt ? "bg-accent text-navy" : "bg-snow/10")
                     }
                   >
                     {opt}
@@ -362,7 +362,7 @@ function Screen4Personalize() {
           type="button"
           data-testid="onboard-to-id"
           onClick={() => goStep(5)}
-          className="mt-6 h-14 w-full rounded-full bg-pink font-semibold text-snow"
+          className="mt-6 h-14 w-full rounded-full bg-cta font-semibold text-cta-fg"
         >
           Reveal STOMPER ID →
         </button>
@@ -403,11 +403,11 @@ function Screen5Id() {
         <div className="mt-4">
           <AvatarRenderer config={cfg} size={180} interactive showBackground testId="onboard-id-preview" />
         </div>
-        <p className="mt-2 font-display text-3xl tracking-wide text-lime" data-testid="onboard-id-display-name">
+        <p className="mt-2 font-display text-3xl tracking-wide text-accent" data-testid="onboard-id-display-name">
           {nameOk ? draft.displayName.trim() : "Name your STOMPER"}
         </p>
         {!nameOk ? (
-          <p className="mt-1 text-xs text-pink" data-testid="onboard-name-required">
+          <p className="mt-1 text-xs text-accent" data-testid="onboard-name-required">
             Choose a display name on Look before revealing your ID.
           </p>
         ) : null}
@@ -417,7 +417,7 @@ function Screen5Id() {
           data-testid="reveal-stomper-id"
           onClick={finish}
           disabled={!nameOk}
-          className="mt-6 h-14 w-full rounded-full bg-lime font-semibold text-navy disabled:opacity-40"
+          className="mt-6 h-14 w-full rounded-full bg-cta font-semibold text-cta-fg disabled:opacity-40"
         >
           Reveal my STOMPER ID
         </button>

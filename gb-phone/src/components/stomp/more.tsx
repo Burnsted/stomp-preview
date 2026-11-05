@@ -32,7 +32,7 @@ export function AirLog() {
         {landings.map((landing) => (
           <li key={landing.id} className="rounded-3xl bg-snow p-4 ring-1 ring-line">
             <div className="flex items-baseline justify-between gap-3">
-              <p className="font-display text-5xl text-pink tabular-nums">
+              <p className="font-display text-5xl text-accent tabular-nums">
                 {formatAir(landing.seconds)}
                 <span className="text-2xl text-ink">s</span>
               </p>
@@ -40,7 +40,7 @@ export function AirLog() {
             </div>
             <p className="mt-1 text-sm font-medium">{landing.label}</p>
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-paper">
-              <div className="h-full rounded-full bg-pink" style={{ width: `${(landing.seconds / peak) * 100}%` }} />
+              <div className="h-full rounded-full bg-cta" style={{ width: `${(landing.seconds / peak) * 100}%` }} />
             </div>
           </li>
         ))}
@@ -68,7 +68,7 @@ export function Guide() {
               "rounded-3xl p-4 " + (index === cueIndex ? "bg-ink text-snow" : "bg-snow ring-1 ring-line")
             }
           >
-            <p className={"text-xs font-semibold tracking-widest " + (index === cueIndex ? "text-lime" : "text-teal")}>
+            <p className={"text-xs font-semibold tracking-widest " + (index === cueIndex ? "text-accent" : "text-accent")}>
               {cue.feet} ft
             </p>
             <p className="mt-2 text-pretty font-medium">{cue.line}</p>
@@ -79,7 +79,7 @@ export function Guide() {
         <button
           type="button"
           onClick={startRun}
-          className="mt-4 h-14 w-full rounded-full bg-pink font-display text-2xl tracking-wide text-snow"
+          className="mt-4 h-14 w-full rounded-full bg-cta font-display text-2xl tracking-wide text-cta-fg"
         >
           Ride it
         </button>
@@ -148,12 +148,12 @@ export function StashPins() {
           type="submit"
           disabled={!name.trim()}
           title={name.trim() ? undefined : "Name the spot first"}
-          className="h-12 rounded-full bg-teal font-semibold text-ink disabled:opacity-40"
+          className="h-12 rounded-full bg-accent font-semibold text-ink disabled:opacity-40"
         >
           Drop the pin
         </button>
         {error ? (
-          <p role="alert" data-testid="stash-error" className="text-sm font-semibold text-pink">
+          <p role="alert" data-testid="stash-error" className="text-sm font-semibold text-accent">
             {error}
           </p>
         ) : null}
@@ -304,12 +304,12 @@ function MusicDeck() {
       <button
         type="button"
         onClick={() => fileRef.current?.click()}
-        className="h-14 w-full rounded-full bg-pink font-display text-2xl tracking-wide text-snow"
+        className="h-14 w-full rounded-full bg-cta font-display text-2xl tracking-wide text-cta-fg"
       >
         Upload tracks
       </button>
       <p className="mt-2 text-sm text-pretty text-muted">Songs stay on this phone. Use arrows to adjust order.</p>
-      {note ? <p className="mt-2 text-sm font-semibold text-teal">{note}</p> : null}
+      {note ? <p className="mt-2 text-sm font-semibold text-accent">{note}</p> : null}
       {tracks.length === 0 && !note ? <p data-testid="music-empty" className="mt-2 text-sm text-muted">{MUSIC_EMPTY}</p> : null}
       {ordered.length > 0 ? (
         <ul className="mt-3 flex flex-col gap-2">
@@ -381,7 +381,7 @@ export function Playlist() {
       <BackBar title="Playlist" />
       <div className="flex gap-2 px-2 pt-3">
         <div className="min-w-0 flex-1 px-2">
-          <p className="text-xs font-bold tracking-widest text-teal">CREW SOUNDTRACK</p>
+          <p className="text-xs font-bold tracking-widest text-accent">CREW SOUNDTRACK</p>
           <p className="font-display text-3xl tracking-wide leading-none">
             {mountain ? mountain.title : template.name}
           </p>
@@ -392,9 +392,9 @@ export function Playlist() {
           </p>
           {mountain ? (
             <ul data-testid="playlist-beat-legend" className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
-              <li className="rounded-full bg-teal/35 px-2.5 py-1 text-ink">Section</li>
-              <li className="rounded-full bg-pink/25 px-2.5 py-1 text-pink">Beat</li>
-              <li className="rounded-full bg-lime px-2.5 py-1 text-navy">Trick</li>
+              <li className="rounded-full bg-accent/35 px-2.5 py-1 text-ink">Section</li>
+              <li className="rounded-full bg-accent/25 px-2.5 py-1 text-accent">Beat</li>
+              <li className="rounded-full bg-accent px-2.5 py-1 text-navy">Trick</li>
             </ul>
           ) : null}
           <div className="mt-3 flex gap-2">
@@ -424,7 +424,7 @@ export function Playlist() {
               Share
             </button>
           </div>
-          {shareNote ? <p className="mt-2 text-sm font-semibold text-teal">{shareNote}</p> : null}
+          {shareNote ? <p className="mt-2 text-sm font-semibold text-accent">{shareNote}</p> : null}
 
           <div className="mt-5">
             <MusicSourcesRow
@@ -466,7 +466,7 @@ export function Playlist() {
                 {row.image ? (
                   <img src={row.image} alt="" className="size-16 rounded-2xl object-cover" />
                 ) : (
-                  <span className="flex size-16 items-center justify-center rounded-2xl bg-navy font-display text-lg text-lime">
+                  <span className="flex size-16 items-center justify-center rounded-2xl bg-navy font-display text-lg text-accent">
                     STOMP
                   </span>
                 )}

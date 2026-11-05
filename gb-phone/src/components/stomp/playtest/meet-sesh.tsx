@@ -60,7 +60,7 @@ export function MeetSeshScreen() {
           type="button"
           data-testid="meet-sesh-continue"
           onClick={() => setScreen("trip-choice")}
-          className="mt-6 h-14 w-full rounded-full bg-pink font-semibold text-snow"
+          className="mt-6 h-14 w-full rounded-full bg-cta font-semibold text-cta-fg"
         >
           Continue →
         </button>

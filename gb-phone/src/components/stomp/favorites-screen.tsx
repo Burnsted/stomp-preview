@@ -65,9 +65,9 @@ function FavCard({
             className={
               "mt-1 text-xs font-bold tracking-wide " +
               (playlist.status === "live"
-                ? "text-teal"
+                ? "text-accent"
                 : playlist.status === "offline"
-                  ? "text-teal/80"
+                  ? "text-accent/80"
                   : "text-snow/45")
             }
           >
@@ -137,7 +137,7 @@ function SharedDetail({ id }: { id: string }) {
             {playlist.area} · {playlist.tracks} tracks · {playlist.duration}
           </p>
           {playlist.status === "live" ? (
-            <p className="mt-1 text-sm font-bold text-teal">
+            <p className="mt-1 text-sm font-bold text-accent">
               ● LIVE NOW · {playlist.liveCount ?? 0} STOMPERS RIDING
             </p>
           ) : null}
@@ -168,7 +168,7 @@ function SharedDetail({ id }: { id: string }) {
             setTrack(playlist.title, playlist.from ? `@${playlist.from}` : "STOMP");
             setNote(joined ? "Already riding with this crew list." : "Joined Stompers — saved on this phone.");
           }}
-          className="mt-3 h-12 w-full rounded-full bg-lime font-bold text-ink"
+          className="mt-3 h-12 w-full rounded-full bg-cta font-bold text-cta-fg"
         >
           {joined ? "Riding with Stompers ✓" : "Join Stompers →"}
         </button>
@@ -200,7 +200,7 @@ function SharedDetail({ id }: { id: string }) {
           Remove
         </button>
       </div>
-      {note ? <p className="mt-2 text-sm font-semibold text-teal">{note}</p> : null}
+      {note ? <p className="mt-2 text-sm font-semibold text-accent">{note}</p> : null}
     </div>
   );
 }
@@ -260,7 +260,7 @@ export function FavoritesScreen() {
           </li>
         ))}
       </ul>
-      {note ? <p className="px-4 pt-2 text-sm font-semibold text-teal">{note}</p> : null}
+      {note ? <p className="px-4 pt-2 text-sm font-semibold text-accent">{note}</p> : null}
       <div className="mt-4 flex gap-2 px-4">
         <button
           type="button"
