@@ -40,7 +40,7 @@ PRIMARY_TABS Home · Map · Music · Stats · Crew asserted; CrewLink SHA unchan
 
 ## 8) Tip / PR
 
-- **Tip SHA:** `2d6e6dd216ec276164991985090c6c1affefeed5`
+- **Tip SHA:** `70f0301a772e27f64682bf029a63099dad409fdc`
 - **Draft PR:** [#57](https://github.com/Burnsted/stomp-preview/pull/57) — *DRAFT t1218u — restore approved Home / avatar persistence / official map links (NO MERGE)*
 - **Branch:** `cursor/restore-approved-ui-t1218u-32ab` → base `main` (same as #56)
 - **Changed files:** `greet.tsx` (Greet only; CrewLink byte-pinned), `home-feature-rows.tsx`, `home-trip-status.tsx`, `home-map-card.tsx`, `trail-map-viewer.tsx`, `trail-map-screen.tsx`, `app.tsx`, `avatar/store.ts`, `playtest/keys.ts`, `resort-trail-maps.ts`, docs under `docs/restore-approved-ui-t1218u/`, tests + screenshots.
