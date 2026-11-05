@@ -9,8 +9,8 @@
 
 1. **Reusable resort-conditions contract** (`gb-phone/src/lib/stomp/resort-conditions/`) — weather, snow 24/48h + base + surface, lifts/trails, trail-map ref, sources, timestamps, fetch states.
 2. **Fiction adapter + fixtures** for **Vail**, **Beaver Creek**, and **Park City** (proves not BC-hardcoded). Forced states: loading / stale / unavailable / offline.
-3. **Shared selectedResortId** via existing `useHomeMountain.resortId`; Trip Drop adds `trip.resortId` and syncs on join; Map + Home read the same ID.
-4. **Compact premium UI** in Home cinematic hero + Map strip — expand for details; Form #7 steel accent; no colored card grid; quiet chrome from #59 unchanged.
+3. **Shared selectedResortId** via existing `useHomeMountain.resortId`; Trip Drop adds `trip.resortId` and syncs on join (ID only).
+4. **Compact premium UI on Trails (Map tab)** — expand for details; Form #7 steel accent; no colored card grid; quiet chrome from #59 unchanged. *(t1222u: removed from Home hero — see addendum.)*
 5. **Honesty:** fiction badges **`FICTION · SAMPLE`** — never LIVE. `LIVE_CONDITIONS_ENABLED = false`.
 6. **Provider research (docs only)** — see `PROVIDER-MATRIX.md` + staged activation path.
 7. Trail maps remain **link-only / unclear** per #57 research; conditions panel deep-links official map pages.
@@ -39,21 +39,38 @@
 
 ## Screenshots (390×844)
 
-Under `gb-phone/screenshots/t1221u/` and `/opt/cursor/artifacts/t1221u/`:
+### t1222u (current — weather on Trails only)
 
-- `home-conditions-collapsed-390.png`
-- `home-conditions-expanded-390.png`
-- `map-conditions-strip-390.png`
-- `fiction-not-live-badge-390.png`
-- `conditions-loading-390.png` (if captured)
-- `conditions-unavailable-390.png` (if captured)
+Under `gb-phone/screenshots/t1222u/` and `/opt/cursor/artifacts/t1222u/`:
+
+- `home-clear-of-weather-390.png` — Home hero, no conditions strip
+- `trails-conditions-collapsed-390.png`
+- `trails-conditions-expanded-390.png`
+- `trails-fiction-not-live-390.png`
+- `trails-unavailable-390.png` (unknown / no fixture resort)
+
+### t1221u (superseded placement — archival)
+
+Under `gb-phone/screenshots/t1221u/` — Home-hero conditions shots are **obsolete** after t1222u.
 
 ## Tip / PR
 
-- **Tip SHA:** `7dfacf8e8b6cc2b321921761bbd5ffb408420764`  
-- **Draft PR:** [#60](https://github.com/Burnsted/stomp-preview/pull/60) — *DRAFT t1221u — resort conditions model + fiction UI + provider research (NO MERGE)*  
+- **Tip SHA:** _(set after push)_  
+- **Draft PR:** [#60](https://github.com/Burnsted/stomp-preview/pull/60) — *DRAFT t1221u — resort conditions model + fiction UI + provider research (NO MERGE)* (+ t1222u placement correction)  
 - **Branch:** `cursor/resort-conditions-t1221u-94bf` → base `cursor/chrome-demote-t1220u-cfab` (stack on #59 tip)
-- **CI:** both `pr-verify` jobs green on tip `7dfacf8`
+
+## Addendum — t1222u (Ted correction)
+
+**Ask:** Home is Stomper-first; weather belongs on the **Trails** page (Map tab) for the default/selected resort — not competing with Stomper on Home.
+
+| Change | Status |
+| --- | --- |
+| Remove mountain-conditions strip from Home hero | Done — `greet.tsx` no longer imports conditions panel |
+| Keep / strengthen conditions on Trails (Map) | Done — `TrailMapScreen` title **Trails** + `MapResortConditionsStrip` |
+| Quiet empty when no valid selected resort | Done — “Select a resort for weather and snow” |
+| Trip Drop may sync resort ID; no Home weather | Kept |
+| FICTION · SAMPLE never LIVE; LIVE gated off | Kept |
+| NO MERGE / NO Pages / NO live keys | Kept |
 
 ## Recommended next owner gate
 

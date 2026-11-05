@@ -7,7 +7,6 @@ import { HomeFeatureRows } from "@/components/stomp/home-feature-rows";
 import { HomeMapCard } from "@/components/stomp/home-map-card";
 import { HomePlaylistBlock } from "@/components/stomp/home-playlist-block";
 import { HomeTripStatus } from "@/components/stomp/home-trip-status";
-import { HomeResortConditions } from "@/components/stomp/resort-conditions-panel";
 import { SessionMic } from "@/components/stomp/session-mic";
 import { useAvatar } from "@/lib/stomp/avatar/store";
 import { PROGRESS_STATS, useBag } from "@/lib/stomp/bag";
@@ -24,9 +23,10 @@ const DEMO_LINEUPS = [
 ] as const;
 
 /**
- * Home — restored hierarchy (t1218u).
+ * Home — restored hierarchy (t1218u / t1222u).
  * Cinematic mountain hero + Form #7 · personal welcome + resort · Trip Drop ·
  * compact feature rows (no four-square color grid) · image-led lineups · map.
+ * Weather / mountain conditions live on Trails (Map tab) — not on Home (t1222u).
  * CrewLink below stays Invite-locked (byte-pinned).
  */
 export function Greet() {
@@ -66,7 +66,6 @@ export function Greet() {
             <p data-testid="home-selected-resort" className="mt-2 text-sm text-ink/85">
               {locationLineFor(resortId)}
             </p>
-            <HomeResortConditions tone="onDark" />
           </div>
         </div>
         <div className="px-5 pt-2">

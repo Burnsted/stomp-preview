@@ -7,11 +7,13 @@
 
 | Surface | Source of truth |
 | --- | --- |
-| Home hero conditions | `useHomeMountain.resortId` → `useResortConditions` |
-| Map conditions strip + trail map | same `useHomeMountain.resortId` |
-| Trip Drop | `trip.resortId` (optional); on **join**, syncs into Home mountain via `syncSelectedResortId` |
+| **Home** | Shows selected resort **name only** — **no** weather / conditions UI (t1222u) |
+| **Trails (Map tab)** conditions strip + trail map | `useHomeMountain.resortId` → `useResortConditions` |
+| Trip Drop | `trip.resortId` (optional); on **join**, syncs into Home mountain via `syncSelectedResortId` (ID only — no Home weather) |
 
 Canonical selected ID helper: `getSelectedResortId()`.
+
+When no valid selected resort → Trails shows quiet empty (“Select a resort for weather and snow”) — not a Home hero widget.
 
 ## Typed model (`ResortConditions`)
 
@@ -68,4 +70,4 @@ Reuse `#57` / t1218u catalog (`resort-trail-maps.ts`):
 | `fiction-adapter.ts` | Fiction load + forced states |
 | `live-gate.ts` | LIVE path OFF |
 | `store.ts` | Shared selection + cache |
-| `resort-conditions-panel.tsx` | Home hero + Map strip UI |
+| `resort-conditions-panel.tsx` | Trails (Map) strip UI only — not Home (t1222u) |
