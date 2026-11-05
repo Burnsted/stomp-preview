@@ -31,8 +31,8 @@
 
 ## Tip / PR
 
-- **Tip SHA:** `32b549d1c2cb1a51e03799fd77da2a86d017380c`
-- **Draft PR:** _(filled after open)_
+- **Tip SHA:** `f0aa401cd94eaf000332687398f5e6c83887c804`
+- **Draft PR:** [#58](https://github.com/Burnsted/stomp-preview/pull/58) — *DRAFT t1219u — Form #7 color refine: kill pink/lime CTAs (NO MERGE)*
 - **Branch:** `cursor/color-refine-form7-t1219u-539b` → `main`
 
 ## Screenshots (390×844)
