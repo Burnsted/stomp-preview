@@ -14,7 +14,8 @@ export const Route = createRootRoute({
       { title: APP_NAME },
       {
         name: "description",
-        content: "STOMP — the hands-free snowboard caddy and trick log. Ride the line, time the air, pin the clip.",
+        // Outside thumbnail / share text: Form #7 wordmark only — no "Hands-Free…" tagline ever
+        content: "STOMP",
       },
       { name: "theme-color", content: "#070B14" },
     ],

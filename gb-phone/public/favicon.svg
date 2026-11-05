@@ -1,4 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="STOMP">
-  <rect width="32" height="32" rx="7" fill="#0A0A0A"/>
-  <text x="16" y="23" text-anchor="middle" font-family="Arial Black, Helvetica Neue, Arial, sans-serif" font-size="20" font-weight="900" fill="#FFFFFF">S</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="STOMP">
+  <rect width="64" height="64" fill="#0A0A0A"/>
+  <rect x="8" y="8" width="48" height="48" rx="11" fill="#FFFFFF"/>
+  <text x="32" y="44" text-anchor="middle"
+    font-family="Arial Black, Helvetica Neue, Arial, sans-serif"
+    font-size="32" font-weight="900" fill="#0A0A0A">S</text>
 </svg>
