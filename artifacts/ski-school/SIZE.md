@@ -1,13 +1,13 @@
-# Slopestyle / Big Air v0.2.1 — size vs budget
+# Slopestyle / Big Air v0.2.2 — size vs budget
 
 | File | Raw | gzip-9 |
 |------|-----|--------|
-| `arcade/ski-school/index.html` | 34211 | 11330 |
+| `arcade/ski-school/index.html` | 38048 | 12692 |
 | `arcade/ski-school/sw.js` | 1205 | 589 |
-| **Total** | **35416** | **11812** |
+| **Total** | **39253** | **13174** |
 
-Soft STOMP embed budget: **~70KB raw**. Usage: **50%**. Headroom: **34584** bytes.
+Soft STOMP embed budget: **~70KB raw**. Usage: **56%**. Headroom: **30747** bytes.
 
-Cache bust: `slopestyle-ba-v0-2-1`
+Cache bust: `slopestyle-ba-v0-2-2`
 
-Tip path remains `arcade/ski-school/` (preview URL). Product name: **Slopestyle / Big Air**.
+v0.2.2: visualViewport + safe-area-inset-bottom (≥90px pad); hit-testing via canvas getBoundingClientRect.
