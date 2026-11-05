@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#5b8fb5">
+<title>Ski School · Big Air — mock</title>
+<style>
+html,body{margin:0;height:100%;background:#15202b;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
+canvas{display:block;width:100vw;height:100vh}
+#live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.tag{position:fixed;left:8px;bottom:8px;z-index:5;font:11px/1.2 system-ui,sans-serif;color:rgba(255,255,255,.5);pointer-events:none}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="live" aria-live="polite"></div>
+<div class="tag">MOCK · not tip · Big Air</div>
+<script>
+'use strict';
+/* ============================================================
+   Ski School · Big Air — canvas-fidelity MOCK (not tip rewrite)
+   MENU → JUMP → LEADERBOARD | Soft Alps side-view kicker | judged air
+   Neutral mixed cast · no Race Day theming
+   ?shot=menu|jump|leaderboard
+   ============================================================ */
+
+const C = {
+  skyA:'#5b8fb5', skyB:'#b7cfe0', snow:'#e8f0f6', shade:'rgba(150,175,195,.30)',
+  ink:'#15202b', panel:'rgba(21,32,43,.90)', white:'#fff',
+  gold:'#ffd56a', mint:'#5ec4a0', coral:'#e87a5d', steel:'#8aa0b4',
+  peak:'#6d8499', tree:'#2f4a3c', ground:'#d5e3ee', lip:'#c5d5e2',
+  skin:'#e8c4a4'
+};
+
+const CAST = [
+  {id:'you', name:'YOU', jacket:'#4a9fd8', board:'#2a3340', hair:'#1c2430', accent:'#4a9fd8'},
+  {id:'kai', name:'Kai', jacket:'#e07a3a', board:'#4a5562', hair:'#2b1c14', accent:'#e07a3a'},
+  {id:'sam', name:'Sam', jacket:'#3d7a5c', board:'#e8e0d0', hair:'#3a2a1c', accent:'#3d7a5c'},
+  {id:'rio', name:'Rio', jacket:'#2a3340', board:'#ffd56a', hair:'#1a1a22', accent:'#8aa0b4'},
+  {id:'ash', name:'Ash', jacket:'#6b7c8c', board:'#5ec4a0', hair:'#243038', accent:'#6b7c8c'}
+];
+
+const EVENTS = [
+  {id:'big', name:'BIG AIR', tip:'one huge kicker · judged'},
+  {id:'long', name:'LONG JUMP', tip:'distance · landing zone'},
+  {id:'slope', name:'SLOPESTYLE', tip:'3 jumps · points add up'}
+];
+
+const cv = document.getElementById('c'), cx = cv.getContext('2d');
+const live = document.getElementById('live');
+let W=390, H=844, dpr=1;
+let state = 'MENU'; // MENU | JUMP | LEADERBOARD
+let eventId = 'big';
+let hit = {};
+let t0 = performance.now();
+let animT = 0;
+
+function resize(){
+  dpr = Math.min(window.devicePixelRatio||1, 2);
+  const iw = innerWidth, ih = innerHeight;
+  cv.width = Math.floor(iw*dpr); cv.height = Math.floor(ih*dpr);
+  W = iw; H = ih;
+  cx.setTransform(dpr,0,0,dpr,0,0);
+}
+addEventListener('resize', resize); resize();
+function announce(s){ live.textContent = s; }
+
+function rr(x,y,w,h,r){
+  const R=Math.min(r,w/2,h/2);
+  cx.beginPath(); cx.moveTo(x+R,y); cx.arcTo(x+w,y,x+w,y+h,R); cx.arcTo(x+w,y+h,x,y+h,R);
+  cx.arcTo(x,y+h,x,y,R); cx.arcTo(x,y,x+w,y,R); cx.closePath();
+}
+function panel(x,y,w,h,a){ cx.fillStyle=a||C.panel; rr(x,y,w,h,14); cx.fill(); }
+function btn(x,y,w,h,label,fill,ink,key){
+  cx.fillStyle=fill; rr(x,y,w,h,16); cx.fill();
+  cx.fillStyle=ink||C.ink; cx.font='bold '+(h>52?19:15)+'px system-ui,sans-serif';
+  cx.textAlign='center'; cx.textBaseline='middle'; cx.fillText(label, x+w/2, y+h/2+1);
+  if(key) hit[key]={x,y,w,h};
+}
+
+/* ---- Soft Alps backdrop (neutral) ---- */
+function drawSky(){
+  const g=cx.createLinearGradient(0,0,0,H*0.42);
+  g.addColorStop(0,C.skyA); g.addColorStop(1,C.skyB);
+  cx.fillStyle=g; cx.fillRect(0,0,W,H);
+  cx.fillStyle=C.peak;
+  cx.beginPath();
+  cx.moveTo(0,H*0.28); cx.lineTo(W*0.18,H*0.14); cx.lineTo(W*0.36,H*0.26);
+  cx.lineTo(W*0.55,H*0.10); cx.lineTo(W*0.74,H*0.24); cx.lineTo(W*0.92,H*0.12);
+  cx.lineTo(W,H*0.22); cx.lineTo(W,H*0.42); cx.lineTo(0,H*0.42); cx.fill();
+  cx.fillStyle='#fff';
+  [[W*0.18,H*0.14],[W*0.55,H*0.10],[W*0.92,H*0.12]].forEach(([x,y])=>{
+    cx.beginPath(); cx.moveTo(x-16,y+16); cx.lineTo(x,y); cx.lineTo(x+16,y+16); cx.fill();
+  });
+}
+function tree(x,y,s){
+  cx.fillStyle=C.tree;
+  cx.beginPath(); cx.moveTo(x,y-s); cx.lineTo(x-s*.5,y); cx.lineTo(x+s*.5,y); cx.fill();
+  cx.beginPath(); cx.moveTo(x,y-s*.55); cx.lineTo(x-s*.7,y+s*.3); cx.lineTo(x+s*.7,y+s*.3); cx.fill();
+  cx.fillStyle='#5a4030'; cx.fillRect(x-2.5,y+s*.25,5,9);
+  cx.fillStyle='rgba(255,255,255,.85)';
+  cx.beginPath(); cx.moveTo(x,y-s); cx.lineTo(x-8,y-s*.65); cx.lineTo(x+8,y-s*.65); cx.fill();
+}
+
+/* ---- Side-view kicker geometry (fills phone) ---- */
+function kickerLayout(){
+  // approach left → lip → gap → landing deck right
+  const groundY = H*0.78;
+  const lipX = W*0.32;
+  const lipY = groundY - H*0.22;
+  const landX0 = W*0.58;
+  const landX1 = W*0.92;
+  const landY = groundY - H*0.06;
+  const approachX0 = W*0.02;
+  return {groundY, lipX, lipY, landX0, landX1, landY, approachX0};
+}
+
+function drawKickerScene(dim){
+  drawSky();
+  const K = kickerLayout();
+
+  // distant snow shelf
+  cx.fillStyle=C.ground;
+  cx.beginPath();
+  cx.moveTo(0, K.groundY+40);
+  cx.lineTo(0, K.groundY);
+  cx.lineTo(K.lipX-40, K.groundY);
+  // approach ramp up to lip
+  cx.quadraticCurveTo(K.lipX-10, K.groundY-10, K.lipX, K.lipY);
+  // steep face drop under lip (void)
+  cx.lineTo(K.lipX+8, K.groundY+8);
+  cx.lineTo(K.landX0-10, K.groundY+8);
+  // landing deck
+  cx.lineTo(K.landX0, K.landY);
+  cx.lineTo(K.landX1, K.landY+12);
+  cx.lineTo(W, K.landY+30);
+  cx.lineTo(W, H);
+  cx.lineTo(0, H);
+  cx.closePath();
+  cx.fill();
+
+  // snow shade bands on approach
+  cx.fillStyle=C.shade;
+  for(let i=0;i<4;i++){
+    const x = K.approachX0 + i*W*0.07;
+    cx.beginPath();
+    cx.ellipse(x+30, K.groundY-4-i*8, 40, 8, -0.15, 0, Math.PI*2);
+    cx.fill();
+  }
+
+  // kicker face (built feature)
+  cx.fillStyle=C.lip;
+  cx.beginPath();
+  cx.moveTo(K.lipX-70, K.groundY);
+  cx.lineTo(K.lipX-8, K.lipY+6);
+  cx.lineTo(K.lipX, K.lipY);
+  cx.lineTo(K.lipX+6, K.lipY+18);
+  cx.lineTo(K.lipX-20, K.groundY);
+  cx.closePath();
+  cx.fill();
+  // lip edge highlight
+  cx.strokeStyle=C.white; cx.lineWidth=3; cx.lineCap='round';
+  cx.beginPath(); cx.moveTo(K.lipX-55, K.groundY-2); cx.quadraticCurveTo(K.lipX-12, K.lipY+4, K.lipX, K.lipY); cx.stroke();
+
+  // landing deck tint + sweet spot
+  cx.fillStyle='rgba(94,196,160,.22)';
+  rr(K.landX0+8, K.landY-4, (K.landX1-K.landX0)*0.45, 18, 6); cx.fill();
+  cx.strokeStyle='rgba(94,196,160,.55)'; cx.lineWidth=2; cx.setLineDash([4,4]);
+  rr(K.landX0+8, K.landY-4, (K.landX1-K.landX0)*0.45, 18, 6); cx.stroke(); cx.setLineDash([]);
+  cx.fillStyle=C.mint; cx.font='bold 10px system-ui,sans-serif'; cx.textAlign='left';
+  cx.fillText('ZONE', K.landX0+14, K.landY-10);
+
+  // edge trees (atmosphere — not a corridor)
+  tree(24, K.groundY-8, 28);
+  tree(W-28, K.landY-4, 32);
+  tree(W-70, K.landY+6, 22);
+
+  if(dim){ cx.fillStyle='rgba(21,32,43,.55)'; cx.fillRect(0,0,W,H); }
+  return K;
+}
+
+/* ---- Flight arc ---- */
+function arcPoint(K, t){
+  // t 0 at lip → 1 at landing; peak near 0.45
+  const x0=K.lipX, y0=K.lipY-4;
+  const x1=K.landX0+36, y1=K.landY-6;
+  const peakH = H*0.34;
+  const x = x0 + (x1-x0)*t;
+  const y = y0 + (y1-y0)*t - Math.sin(Math.PI*t)*peakH;
+  return {x,y};
+}
+function drawArc(K, upTo){
+  cx.setLineDash([6,8]);
+  cx.strokeStyle='rgba(255,255,255,.45)'; cx.lineWidth=2.5;
+  cx.beginPath();
+  for(let i=0;i<=40;i++){
+    const t=i/40; const p=arcPoint(K,t);
+    if(i===0) cx.moveTo(p.x,p.y); else cx.lineTo(p.x,p.y);
+  }
+  cx.stroke(); cx.setLineDash([]);
+  // flown portion
+  cx.strokeStyle='rgba(74,159,216,.75)'; cx.lineWidth=4; cx.lineCap='round';
+  cx.beginPath();
+  const steps=Math.floor(40*upTo);
+  for(let i=0;i<=steps;i++){
+    const t=i/40; const p=arcPoint(K,t);
+    if(i===0) cx.moveTo(p.x,p.y); else cx.lineTo(p.x,p.y);
+  }
+  cx.stroke();
+}
+
+/* ---- Rider silhouette ---- */
+function drawRider(x,y,s,look,opts){
+  opts=opts||{}; look=look||CAST[0];
+  const rot = opts.rot||0;
+  cx.save(); cx.translate(x,y); cx.rotate(rot); cx.scale(s,s);
+
+  cx.fillStyle='rgba(21,32,43,.14)';
+  cx.beginPath(); cx.ellipse(0,20,18,4,0,0,Math.PI*2); cx.fill();
+
+  // board
+  cx.fillStyle=look.board;
+  rr(-30,12,60,8,3); cx.fill();
+  cx.fillStyle='rgba(255,255,255,.25)';
+  cx.fillRect(-16,13.5,8,5); cx.fillRect(8,13.5,8,5);
+
+  // legs
+  cx.fillStyle='#243040';
+  cx.beginPath(); cx.moveTo(-6,2); cx.lineTo(-12,14); cx.lineTo(-6,15); cx.lineTo(-1,4); cx.fill();
+  cx.beginPath(); cx.moveTo(6,2); cx.lineTo(13,14); cx.lineTo(7,15); cx.lineTo(1,4); cx.fill();
+
+  // jacket
+  cx.fillStyle=look.jacket;
+  rr(-11,-10,22,17,6); cx.fill();
+  cx.fillStyle='rgba(255,255,255,.18)';
+  cx.beginPath(); cx.moveTo(-5,-10); cx.lineTo(0,-4); cx.lineTo(5,-10); cx.fill();
+
+  // arms / grab
+  cx.strokeStyle=look.jacket; cx.lineWidth=5; cx.lineCap='round';
+  if(opts.grab){
+    cx.beginPath(); cx.moveTo(-10,-2); cx.lineTo(-6,10); cx.stroke();
+    cx.beginPath(); cx.moveTo(10,-2); cx.lineTo(4,12); cx.stroke();
+  } else {
+    cx.beginPath(); cx.moveTo(-10,-2); cx.lineTo(-20,-10); cx.stroke();
+    cx.beginPath(); cx.moveTo(10,-2); cx.lineTo(20,-4); cx.stroke();
+  }
+
+  // head + helmet
+  cx.fillStyle=C.skin;
+  cx.beginPath(); cx.arc(0,-16,7.5,0,Math.PI*2); cx.fill();
+  cx.fillStyle=look.hair;
+  cx.beginPath(); cx.ellipse(0,-19,9,6.5,0,Math.PI,0); cx.fill();
+  cx.fillStyle='rgba(30,40,55,.8)';
+  rr(-7,-18,14,4.2,2); cx.fill();
+  cx.fillStyle='rgba(160,200,230,.4)';
+  rr(-6,-17.5,5.5,3.2,1.5); cx.fill();
+
+  cx.restore();
+}
+
+function castChip(x,y,w,h,look,active){
+  cx.fillStyle = active ? 'rgba(255,255,255,.16)' : 'rgba(255,255,255,.08)';
+  rr(x,y,w,h,12); cx.fill();
+  if(active){ cx.strokeStyle=look.accent; cx.lineWidth=2; rr(x,y,w,h,12); cx.stroke(); }
+  cx.save();
+  cx.beginPath(); cx.arc(x+20,y+h/2,13,0,Math.PI*2); cx.clip();
+  cx.fillStyle='#c8d8e6'; cx.fillRect(x+6,y+4,28,h-8);
+  drawRider(x+20, y+h/2+5, 0.5, look, {});
+  cx.restore();
+  cx.fillStyle=C.white; cx.font='bold 12px system-ui,sans-serif'; cx.textAlign='left'; cx.textBaseline='middle';
+  cx.fillText(look.name, x+40, y+h/2-5);
+  cx.fillStyle='rgba(197,212,232,.85)'; cx.font='10px system-ui,sans-serif';
+  cx.fillText(look.id==='you'?'player':'AI', x+40, y+h/2+9);
+}
+
+function drawSwitcher(){
+  const labels=['MENU','JUMP','BOARD'];
+  const keys=['menu','jump','leaderboard'];
+  const tw=72, gap=8, total=labels.length*tw+(labels.length-1)*gap;
+  const x0=(W-total)/2, y=H-36;
+  const map={MENU:'MENU',JUMP:'JUMP',LEADERBOARD:'BOARD'};
+  labels.forEach((lab,i)=>{
+    const x=x0+i*(tw+gap);
+    const on = (lab==='BOARD' ? state==='LEADERBOARD' : state===lab);
+    cx.fillStyle = on ? C.gold : 'rgba(21,32,43,.55)';
+    rr(x,y,tw,26,10); cx.fill();
+    cx.fillStyle = on ? C.ink : 'rgba(255,255,255,.75)';
+    cx.font='bold 11px system-ui,sans-serif'; cx.textAlign='center'; cx.textBaseline='middle';
+    cx.fillText(lab, x+tw/2, y+13);
+    hit[keys[i]]={x,y,w:tw,h:26};
+  });
+}
+
+/* ===================== SCREENS ===================== */
+function drawMenu(){
+  hit={};
+  const K = drawKickerScene(false);
+  // parked rider on approach
+  drawRider(K.lipX-90, K.groundY-18, 1.15, CAST[0], {rot:-0.12});
+  // faint arc preview
+  drawArc(K, 0);
+
+  panel(18, 16, W-36, 92);
+  cx.fillStyle=C.white; cx.font='bold 12px system-ui,sans-serif'; cx.textAlign='center';
+  cx.fillText('SKI SCHOOL', W/2, 38);
+  cx.fillStyle=C.gold; cx.font='bold 28px system-ui,sans-serif';
+  cx.fillText('BIG AIR', W/2, 70);
+  cx.fillStyle=C.mint; cx.font='12px system-ui,sans-serif';
+  cx.fillText('jump competition · best of 3', W/2, 92);
+
+  // event picker
+  const top=120, eh=52;
+  EVENTS.forEach((ev,i)=>{
+    const y=top+i*(eh+8);
+    const on=ev.id===eventId;
+    cx.fillStyle=on?'rgba(255,213,106,.22)':'rgba(21,32,43,.55)';
+    rr(20,y,W-40,eh,14); cx.fill();
+    if(on){ cx.strokeStyle=C.gold; cx.lineWidth=2; rr(20,y,W-40,eh,14); cx.stroke(); }
+    cx.fillStyle=C.white; cx.font='bold 16px system-ui,sans-serif'; cx.textAlign='left';
+    cx.fillText(ev.name, 38, y+22);
+    cx.fillStyle='rgba(197,212,232,.9)'; cx.font='11px system-ui,sans-serif';
+    cx.fillText(ev.tip, 38, y+40);
+    hit['ev'+i]={x:20,y,w:W-40,h:eh};
+  });
+
+  // cast row
+  const cy = top+3*(eh+8)+12;
+  cx.fillStyle='rgba(255,255,255,.7)'; cx.font='11px system-ui,sans-serif'; cx.textAlign='left';
+  cx.fillText('FIELD', 24, cy);
+  const chipW=(W-48)/2, chipH=44;
+  for(let i=0;i<4;i++){
+    const col=i%2, row=Math.floor(i/2);
+    castChip(20+col*(chipW+8), cy+10+row*(chipH+8), chipW, chipH, CAST[i], i===0);
+  }
+
+  btn(36, H-118, W-72, 56, '▶  DROP IN', C.gold, C.ink, 'play');
+  cx.fillStyle='rgba(21,32,43,.4)'; cx.font='11px system-ui,sans-serif'; cx.textAlign='center';
+  cx.fillText('vs AI · judged runs · no rails', W/2, H-48);
+
+  drawSwitcher();
+}
+
+function drawJump(){
+  hit={};
+  const K = drawKickerScene(false);
+  const peakT = 0.45;
+  drawArc(K, peakT);
+  const p = arcPoint(K, peakT);
+  // slight spin at peak
+  drawRider(p.x, p.y, Math.min(1.4, W/270), CAST[0], {rot:0.55, grab:true});
+
+  // height / distance callouts from rider
+  const heightM = 8.4;
+  const distM = 14.2;
+  // height line
+  cx.strokeStyle='rgba(255,213,106,.7)'; cx.lineWidth=1.5; cx.setLineDash([3,4]);
+  cx.beginPath(); cx.moveTo(p.x, p.y+18); cx.lineTo(p.x, K.groundY); cx.stroke();
+  cx.setLineDash([]);
+  cx.fillStyle=C.gold; cx.font='bold 12px system-ui,sans-serif'; cx.textAlign='left';
+  cx.fillText(heightM.toFixed(1)+' m H', p.x+8, (p.y+K.groundY)/2);
+
+  // distance bracket lip → rider x projected
+  cx.strokeStyle='rgba(94,196,160,.75)'; cx.lineWidth=2;
+  const dy = K.groundY+18;
+  cx.beginPath(); cx.moveTo(K.lipX, dy); cx.lineTo(p.x, dy); cx.stroke();
+  cx.beginPath(); cx.moveTo(K.lipX, dy-5); cx.lineTo(K.lipX, dy+5); cx.stroke();
+  cx.beginPath(); cx.moveTo(p.x, dy-5); cx.lineTo(p.x, dy+5); cx.stroke();
+  cx.fillStyle=C.mint; cx.font='bold 12px system-ui,sans-serif'; cx.textAlign='center';
+  cx.fillText(distM.toFixed(1)+' m', (K.lipX+p.x)/2, dy-8);
+
+  // HUD
+  panel(12,12,110,54);
+  cx.fillStyle=C.white; cx.font='bold 13px system-ui,sans-serif'; cx.textAlign='left';
+  cx.fillText('BIG AIR', 24, 32);
+  cx.fillStyle=C.gold; cx.font='11px system-ui,sans-serif';
+  cx.fillText('Attempt 2 / 3', 24, 50);
+
+  panel(W-122,12,110,54);
+  cx.fillStyle=C.mint; cx.font='bold 18px system-ui,sans-serif'; cx.textAlign='right';
+  cx.fillText(heightM.toFixed(1)+'m', W-22, 34);
+  cx.fillStyle='#c5d4e8'; cx.font='10px system-ui,sans-serif';
+  cx.fillText('HEIGHT', W-22, 50);
+
+  panel(W/2-64,12,128,36);
+  cx.fillStyle=C.white; cx.font='bold 14px system-ui,sans-serif'; cx.textAlign='center';
+  cx.fillText('DIST  '+distM.toFixed(1)+'m', W/2, 34);
+
+  // hold / spin meter — top band, clear of flight arc
+  panel(12, 74, W-24, 40, 'rgba(21,32,43,.78)');
+  cx.fillStyle='#c5d4e8'; cx.font='11px system-ui,sans-serif'; cx.textAlign='left';
+  cx.fillText('HOLD · spin / grab', 26, 90);
+  cx.fillStyle='rgba(255,255,255,.15)'; rr(26, 98, W-52, 8, 4); cx.fill();
+  cx.fillStyle=C.gold; rr(26, 98, (W-52)*0.62, 8, 4); cx.fill();
+
+  // grade tease — above landing, not over rider
+  panel(K.landX0-10, K.landY-48, 132, 28, 'rgba(21,32,43,.7)');
+  cx.fillStyle=C.steel; cx.font='bold 11px system-ui,sans-serif'; cx.textAlign='center';
+  cx.fillText('STOMP THE ZONE', K.landX0+56, K.landY-34);
+
+  // controls
+  btn(16, H-80, 100, 48, 'TAP POP', 'rgba(255,255,255,.18)', C.white, 'pop');
+  btn(W-116, H-80, 100, 48, 'HOLD', C.gold, C.ink, 'hold');
+  cx.fillStyle='rgba(21,32,43,.4)'; cx.font='10px system-ui,sans-serif'; cx.textAlign='center';
+  cx.fillText('pop at lip · hold for spin · stomp the zone', W/2, H-18);
+
+  drawSwitcher();
+}
+
+function drawLeaderboard(){
+  hit={};
+  drawKickerScene(true);
+
+  panel(18, 20, W-36, 70);
+  cx.fillStyle=C.white; cx.font='bold 12px system-ui,sans-serif'; cx.textAlign='center';
+  cx.fillText('BIG AIR · BEST OF 3', W/2, 42);
+  cx.fillStyle=C.gold; cx.font='bold 24px system-ui,sans-serif';
+  cx.fillText('LEADERBOARD', W/2, 70);
+
+  // your last attempt grade
+  panel(18, 104, W-36, 64, 'rgba(21,32,43,.82)');
+  cx.fillStyle=C.mint; cx.font='bold 18px system-ui,sans-serif'; cx.textAlign='left';
+  cx.fillText('GOOD', 36, 130);
+  cx.fillStyle='#c5d4e8'; cx.font='12px system-ui,sans-serif';
+  cx.fillText('8.4m H · 18.6m · 720 pts', 36, 150);
+  cx.fillStyle=C.gold; cx.font='bold 12px system-ui,sans-serif'; cx.textAlign='right';
+  cx.fillText('Attempt 2/3', W-36, 140);
+
+  const rows = [
+    {look:CAST[1], pts:910, best:'PERFECT', you:false},
+    {look:CAST[0], pts:720, best:'GOOD', you:true},
+    {look:CAST[2], pts:680, best:'GOOD', you:false},
+    {look:CAST[3], pts:540, best:'SKETCHY', you:false},
+    {look:CAST[4], pts:0, best:'BAIL', you:false}
+  ];
+  const top=184, rh=56;
+  rows.forEach((r,i)=>{
+    const y=top+i*rh;
+    cx.fillStyle = r.you ? 'rgba(255,213,106,.18)' : 'rgba(255,255,255,.08)';
+    rr(20,y,W-40,rh-8,12); cx.fill();
+    if(r.you){ cx.strokeStyle=C.gold; cx.lineWidth=2; rr(20,y,W-40,rh-8,12); cx.stroke(); }
+    cx.fillStyle=C.white; cx.font='bold 18px system-ui,sans-serif'; cx.textAlign='left';
+    cx.fillText(String(i+1), 34, y+30);
+    drawRider(78, y+28, 0.7, r.look, {});
+    cx.fillStyle=C.white; cx.font='bold 14px system-ui,sans-serif';
+    cx.fillText(r.look.name, 108, y+22);
+    cx.fillStyle='rgba(197,212,232,.85)'; cx.font='11px system-ui,sans-serif';
+    cx.fillText(r.best, 108, y+38);
+    cx.fillStyle=C.gold; cx.font='bold 16px system-ui,sans-serif'; cx.textAlign='right';
+    cx.fillText(r.pts?String(r.pts):'—', W-40, y+30);
+  });
+
+  btn(28, H-118, W-56, 50, 'ATTEMPT 3', C.gold, C.ink, 'again');
+  btn(28, H-60, W-56, 36, 'CHANGE EVENT', 'rgba(255,255,255,.14)', C.white, 'menu2');
+
+  drawSwitcher();
+}
+
+/* ---- input ---- */
+function ptr(e){
+  const t=e.changedTouches?e.changedTouches[0]:e;
+  return {x:t.clientX,y:t.clientY};
+}
+function inRect(p,r){ return r && p.x>=r.x && p.x<=r.x+r.w && p.y>=r.y && p.y<=r.y+r.h; }
+function setState(s){
+  state=s; animT=0; t0=performance.now();
+  announce(s==='MENU'?'Big Air menu': s==='JUMP'?'Jump attempt':'Leaderboard');
+}
+function onDown(e){
+  e.preventDefault();
+  const p=ptr(e);
+  if(inRect(p,hit.menu)||inRect(p,hit.menu2)){ setState('MENU'); return; }
+  if(inRect(p,hit.jump)){ setState('JUMP'); return; }
+  if(inRect(p,hit.leaderboard)){ setState('LEADERBOARD'); return; }
+  if(state==='MENU'){
+    for(let i=0;i<EVENTS.length;i++){
+      if(inRect(p,hit['ev'+i])){ eventId=EVENTS[i].id; return; }
+    }
+    if(inRect(p,hit.play)){ setState('JUMP'); return; }
+  }
+  if(state==='LEADERBOARD' && inRect(p,hit.again)){ setState('JUMP'); return; }
+  if(state==='JUMP' && (inRect(p,hit.pop)||inRect(p,hit.hold))){ setState('LEADERBOARD'); return; }
+}
+cv.addEventListener('mousedown', onDown, {passive:false});
+cv.addEventListener('touchstart', onDown, {passive:false});
+
+function frame(now){
+  animT=(now-t0)/1000;
+  cx.clearRect(0,0,W,H);
+  if(state==='MENU') drawMenu();
+  else if(state==='LEADERBOARD') drawLeaderboard();
+  else drawJump();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+const _q = new URLSearchParams(location.search);
+const shot=(_q.get('shot')||'').toLowerCase();
+if(shot==='jump') setState('JUMP');
+else if(shot==='leaderboard'||shot==='board') setState('LEADERBOARD');
+else if(shot==='menu') setState('MENU');
+window.__bigAir = {setState, state:()=>state, CAST, EVENTS};
+</script>
+</body></html>
