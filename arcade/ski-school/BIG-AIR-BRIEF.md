@@ -6,7 +6,7 @@
 - Ted **rejects** static side-view kicker graphics.
 - **NEW FEEL:** **Alto’s Adventure–style** physics terrain (inspiration only — **no copied art/IP, no llamas**). Hill Climb rhythm as secondary feel reference only.
 
-**This PR:** brief + canvas mocks + screenshots only. Tip `arcade/ski-school/index.html` stays as-is until Ted says rewrite.  
+**This PR:** Ted said **GO** — tip `arcade/ski-school/index.html` is now the playable Big Air swoop (replaces solo-lesson tip on this branch only). Mocks kept for history.  
 **Do not touch:** `arcade/release/`, `/arcade/play/`, QR, Boulder Dodge, Terrain Park, Halfpipe.
 
 Working title: **Ski School · Big Air** (hill / swoop)
@@ -154,10 +154,23 @@ Primary shot hooks: `descent` · `air` · `landing` · `leaderboard` · **`event
 
 ---
 
-## Done criteria (this iteration)
+## Playable tip (v0.2)
+
+| Item | Detail |
+|------|--------|
+| File | `arcade/ski-school/index.html` + `sw.js` (`ski-school-v0-2-0`) |
+| Loop | MENU (PLAY first) → RUN best of 3 → LEADERBOARD |
+| Select | Rider (6 neutral) + Board (tiered pop/spin/stab, pts unlock) → `localStorage` `skiSchool.ba` |
+| Controls | Hold = tuck on ground / spin in air; release to set board for stomp |
+| SFX | Web Audio whoosh / land grades / UI |
+| Shots | `?shot=menu\|rider\|board\|descent\|air\|landing\|leaderboard` |
+
+## Done criteria
 
 - [x] Brief: Alto swoop, XL finale at bottom, S/M/L/XL + table tiers, BD/TP contrast  
-- [x] `big-air-hill-mock.html` with live demo + shot hooks including **events** tier preview  
-- [x] Screenshots ~390×844 including jump-size tiers  
-- [x] Tip / release / hub / BD / TP / Halfpipe untouched  
+- [x] Hill mock + events tier preview  
+- [x] **Playable tip** replaces solo lessons on this branch  
+- [x] Rider + board select persisted  
+- [x] Size under ~70KB raw tip budget  
+- [x] Release / hub / BD / TP / Halfpipe untouched  
 - [x] PR #55 updated, unmerged  

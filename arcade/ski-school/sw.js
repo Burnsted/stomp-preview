@@ -1,5 +1,5 @@
-/* ski-school-v0-1-0 — network-first; tip cache only */
-const C='ski-school-v0-1-0';
+/* ski-school-v0-2-0 — network-first; tip cache only */
+const C='ski-school-v0-2-0';
 const ASSETS=['./','./index.html','./sw.js'];
 const OWN=k=>k.indexOf('ski-school-')===0;
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));});
