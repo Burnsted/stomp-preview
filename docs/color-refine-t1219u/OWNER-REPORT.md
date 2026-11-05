@@ -31,7 +31,7 @@
 
 ## Tip / PR
 
-- **Tip SHA:** _(filled after commit)_
+- **Tip SHA:** `32b549d1c2cb1a51e03799fd77da2a86d017380c`
 - **Draft PR:** _(filled after open)_
 - **Branch:** `cursor/color-refine-form7-t1219u-539b` → `main`
 
