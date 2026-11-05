@@ -1,37 +1,33 @@
-# Halfpipe Jam — Batch A notes
+# Halfpipe Jam — Batch A notes (Ted revision)
 
-## Tip inspection summary (avoid identity collision)
+## Structure (aligned with BD/TP family)
+- **10 story levels + Endless** with unlock chain
+- **5 lives**, wipeout −1♥, auto-retry; 0 lives → Retry L1 refill
+- **Board Locker** NOW / GOAL / NEXT (speed + amp + window ladder)
+- **Difficulty row** like BD/TP: Grom / Standard / Advanced (pace · win · weather intensity)
+- **localStorage** `halfpipeJam.progress` / `.pb` / `.mute`
 
-### Boulder Dodge tip (`arcade/boulder-dodge/` ~v0.7.12)
-- **Identity:** side-scroll survival — dodge rocks/wildlife/sleds/snowcats.
-- **Controls:** big JUMP (ground + optional 2× on late levels); hold-to-flip in air.
-- **Progress:** 10 story + Endless; Easy/Normal/Hard; **5 lives**; board locker via achievements; localStorage `boulderDodge.*`.
-- **Scoring:** distance, clears, near-misses, flips, pickups, storm atmosphere.
-- **SW:** `boulder-dodge-v0-7-12` tip cache (network-first HTML).
+## Progression identity (NOT obstacles)
+Level variety = **boards + weather conditions**:
+- Weather: Clear, Light Snow, Haze, Sunset, Wind Gusts, Storm Light
+- Readable effects: flakes, haze overlay, wind chevrons + air drift, friction
+- Skill core unchanged: pipe momentum / launch timing / grabs / spins / landings
+- No obstacle-dodge hazards
 
-### Terrain Park tip (`arcade/terrain-park/` ~v0.3.8)
-- **Identity:** side-scroll park line — grind boxes/rails, lips, kickers/tables/gaps/hips/QP.
-- **Controls:** JUMP / hold-flip; lip windows; grind friction; combo boost.
-- **Progress:** 10 lines + Endless; Easy/Normal/Hard; **5 lives** + late heart pickups; board locker by clears; purple dusk / cream / coral-amber UI.
-- **Scoring:** distance + grind/lip/flip/star/combo; per-level trick goals.
-- **SW:** `terrain-park-v0-3-8` tip cache.
+## Tip inspection (unchanged reference)
+- **BD:** survival dodge + board ladder via achievements
+- **TP:** park grind/lip/flip + board ladder via clears
+- **Halfpipe:** pipe jam — boards + weather only
 
-### Halfpipe Jam (this module) — distinct identity
-- **Not** a side-scroll obstacle/park line. Side-view **pipe oscillator**: auto L/R, momentum/amplitude, launch above lip, aerial rotations/grabs, landing timing.
-- Visual language **TP-adjacent** (purple dusk / cream / coral-amber) but own loop.
-- Difficulties named **Grom / Standard / Advanced** (gameplay windows only — no youth accounts).
-- Isolated path so TP tip size/behavior stay frozen.
+## Known issues
+- Weather tuning still coarse (Batch C)
+- Grab Indy vs Method stilized by hold length
+- Endless weather rotation every 45s — may want owner-chosen playlist later
+- No shared board locker with TP yet (separate keys)
 
-## Known issues (Batch A)
-- Pipe feel still coarse vs a polished Snowboard Party–class pipe; Batch C polish expected.
-- Grab classification is stylized (Indy vs Method by hold length), not full board-edge physics.
-- No board locker in Halfpipe yet (intentionally lean for size/scope).
-- Chrome/headless may show transient pointer dots in screenshots; not in-game art.
-- Challenges are implemented and completable; Free Jam is the high-score path after.
-
-## Owner decisions needed before any tip/release ship
-1. Keep Halfpipe as **optional module** (`arcade/halfpipe-jam/`) vs fold into TP tip later?
-2. Promote to tip URL / SW cache-bust when authorized (this PR must stay **UNMERGED** until then).
-3. Add board locker / shared progress with TP, or keep separate `halfpipeJam.*` keys?
-4. Session length (currently 90s) and challenge set finalization.
-5. Batches B–D still out of scope: BD upgrades, Halfpipe polish, consolidated review.
+## Owner decisions
+1. Keep optional module vs fold into TP tip later?
+2. Tip URL / SW promote only when authorized — PR stays UNMERGED
+3. Share board progress with TP or keep `halfpipeJam.*`?
+4. Finalize weather set + clear goals numbers
+5. Batches B–D still follow-ups

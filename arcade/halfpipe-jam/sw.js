@@ -1,5 +1,5 @@
-/* halfpipe-jam-v0-1-0 — network-first; tip cache only (leave release-* alone) */
-const C='halfpipe-jam-v0-1-0';
+/* halfpipe-jam-v0-2-0 — network-first; tip cache only (leave release-* alone) */
+const C='halfpipe-jam-v0-2-0';
 const ASSETS=['./','./index.html','./sw.js'];
 const OWN=k=>k.indexOf('halfpipe-jam-')===0;
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));});
