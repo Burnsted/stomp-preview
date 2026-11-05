@@ -1,10 +1,11 @@
-# Ski School · Big Air mock — size
+# Ski School · Big Air hill mock — size
 
 | File | Raw | gzip-9 |
 |------|-----|--------|
-| `arcade/ski-school/big-air-mock.html` | 19328 | 6261 |
-| `arcade/ski-school/BIG-AIR-BRIEF.md` | 5858 | 2978 |
+| `arcade/ski-school/big-air-hill-mock.html` | 29751 | 9827 |
+| `arcade/ski-school/BIG-AIR-BRIEF.md` | 6233 | 3092 |
+| `arcade/ski-school/big-air-mock.html` (prior static kicker) | 19328 | 6261 |
 
-Mock only (not tip). Soft STOMP tip budget ~**70KB raw**; gzip target **≪ 70KB**. This mock alone is ~27% of raw tip budget — headroom for judged scoring + AI field in a later tip rewrite.
+Tip budget ~70KB raw; gzip ≪ 70KB. Current **hill mock** is the feel reference.
 
-Screenshots (~390×844): `big-air-menu.png`, `big-air-jump.png`, `big-air-leaderboard.png`.
+Screenshots (~390×844): `hill-events.png` (S/M/L/XL/TABLE tiers), `hill-descent.png`, `hill-air.png`, `hill-landing.png`, `hill-leaderboard.png`.

@@ -1,144 +1,163 @@
 # Ski School · Big Air — concept brief (mocks only)
 
-**Status:** Ted rejected Race Day (too girl-themed / “trying too hard”; face carving without gates doesn’t work).  
-**New direction:** Slopestyle **jump competition** — BIG AIR, LONG JUMP, SLOPESTYLE.  
-**This PR:** brief + canvas mock + screenshots only. Tip `arcade/ski-school/index.html` stays as-is until Ted says rewrite.  
+**Status**
+- Ted rejected Race Day (girl-themed; face carve without gates).
+- Ted **likes** Big Air competition (judged BIG AIR / LONG JUMP / SLOPESTYLE + AI leaderboard).
+- Ted **rejects** static side-view kicker graphics.
+- **NEW FEEL:** **Alto’s Adventure–style** physics terrain (inspiration only — **no copied art/IP, no llamas**). Hill Climb rhythm as secondary feel reference only.
+
+**This PR:** brief + canvas mocks + screenshots only. Tip `arcade/ski-school/index.html` stays as-is until Ted says rewrite.  
 **Do not touch:** `arcade/release/`, `/arcade/play/`, QR, Boulder Dodge, Terrain Park, Halfpipe.
 
-Working title: **Ski School · Big Air**
+Working title: **Ski School · Big Air** (hill / swoop)
 
 ---
 
-## Locked loop
+## Locked competition wrapper
 
 ```
-MENU  →  JUMP (attempt)  →  LEADERBOARD
-  ↑______________ best of 3 ______________|
+EVENT SELECT  →  RUN (best of 3)  →  LEADERBOARD
+       ↑_________ rematch / next attempt _________|
 ```
 
-| Screen | Job |
-|--------|-----|
-| **MENU** | PLAY-first. Pick event: **BIG AIR** / **LONG JUMP** / **SLOPESTYLE**. Soft Alps, neutral mixed cast chips. No lesson ladder. |
-| **JUMP** | Hero side-view **kicker** fills the phone. Visible flight arc, height + distance readouts, landing grade. |
-| **LEADERBOARD** | Standings vs 3–4 AI riders after each attempt. Best of 3. Rematch / next event CTA. |
-
-Audience: general STOMP tip players (mixed cast — **no gendered theming**, no pastel “girl grom” styling).
+Session: **best of 3 attempts** vs 3–4 AI riders.  
+Cast: **neutral mixed** Soft Alps riders — no gendered pastel theming.
 
 ---
 
-## Events
+## Course layout (Alto-style swoop)
 
-| Event | Shape | Score |
-|-------|-------|-------|
-| **BIG AIR** | One huge kicker | Pop timing + spin/grab hold + stomp → judged points + landing grade |
-| **LONG JUMP** | Same kicker, distance focus | Measured meters; landing-zone sweet spot bonus |
-| **SLOPESTYLE** | 3 jumps in a run | Sum of jump scores across the line |
+**Core shape:** one **very large sweeping downhill swoop** that builds speed.  
+The **BIG AIR** jump sits at the **BOTTOM of that swoop** as the finale — not a mid-hill pop off a random crest.
 
-Mock default shot = **BIG AIR** mid-flight (hero beat).
+```
+  START ~~~~ long descending swoop (dips / rollers) ~~~~ FINALE JUMP → land
+```
+
+Inspiration only: Alto’s long glide + hangtime cadence. **Do not** copy Alto art, characters, UI, or llamas.
 
 ---
 
-## Controls (jump is the verb)
+## Events & jump size tiers
 
-| Input | When | Action |
-|-------|------|--------|
-| **TAP** (or POP) | Approach / lip | Timing for pop — early / perfect / late |
-| **HOLD** | In air | Spin / grab charge |
-| **RELEASE** | Pre-landing | Set rotation for stomp |
-| *(optional)* lean L/R in air | In air | Grab variant / board tweak — mock shows hold meter only |
+| Event | Course | Jump tier(s) |
+|-------|--------|----------------|
+| **BIG AIR** | Full swoop → **one XL finale** at the bottom | **XL** |
+| **LONG JUMP** | Swoop into a **single long table** | **L table** (long deck, distance score) |
+| **SLOPESTYLE** | Swoop with **multiple jumps along the run** | **S + M + L** (points sum); optional **XL** finale |
 
-No rails. No dodge. No face S-carve race.
+### Size tier vocabulary (show on event select / course preview)
+
+| Tier | Role | Feel |
+|------|------|------|
+| **S** | Small pop | Warm-up / combo seed |
+| **M** | Medium kicker | Solid air, 1 flip window |
+| **L** | Large kicker / short table | Big hangtime |
+| **XL** | Finale monster (bottom of swoop) | Hero air — Big Air event |
+| **TABLE** | Long flat deck (Long Jump) | Distance meter + stomp |
+
+Mock must show these tiers on **event-select / course preview** (screenshot).
+
+---
+
+## Feel / physics loop
+
+1. **DESCENT** — ride the long swoop; gravity + rollers build speed; snow spray; motion trail  
+2. **LAUNCH** — leave the feature (S/M/L/XL or table lip) into air  
+3. **AIR** — hold to **spin/flip**; release to set board angle; camera **zooms out** on big air  
+4. **LANDING** — board must **match the slope**; grade pop: `PERFECT` / `GOOD` / `SKETCHY` / `BAIL`  
+5. **LEADERBOARD** — standings vs AI; attempt counter  
+
+For **SLOPESTYLE**, steps 2–4 repeat on each sized jump; scores **add up**.
+
+---
+
+## Controls
+
+| Input | Ground | Air |
+|-------|--------|-----|
+| **HOLD** | Tuck / commit (mock may auto-accel on swoop) | **Spin / flip** |
+| **RELEASE** | — | Stop rotation; set board for stomp |
+| **TAP** (optional) | Small pop assist near lip | Grab flash |
+
+No rails. No dodge corridors. No left↔right face-carve race.
 
 ---
 
 ## Scoring & grades
 
-**Landing grade (always shown):** `PERFECT` · `GOOD` · `SKETCHY` · `BAIL`
+**Landing grade:** board-vs-slope angle error + vertical speed on touchdown.
 
 | Grade | Feel |
 |-------|------|
-| PERFECT | Stomp in sweet spot, rotation clean |
-| GOOD | Solid, small scrub |
-| SKETCHY | Hand drag / over-rotate |
-| BAIL | Butt / face plant — low or zero for that attempt |
+| **PERFECT** | Board matched to slope, soft touchdown |
+| **GOOD** | Small angle scrub |
+| **SKETCHY** | Hand / butt drag |
+| **BAIL** | Nose dig / over-rotate |
 
-**BIG AIR points** ≈ pop window × air tricks × landing multiplier.  
-**LONG JUMP** ≈ distance (m) + zone bonus − bail.  
-**SLOPESTYLE** ≈ sum of 3 jump scores.  
-**Session:** best of **3 attempts** vs AI field on a shared leaderboard.
-
----
-
-## Differentiator vs TP / BD / old Race Day
-
-| | Terrain Park | Boulder Dodge | Race Day (rejected) | **Big Air** |
-|--|--------------|---------------|---------------------|-------------|
-| Space | Endless scroll park | Corridor dodge | Open face carve race | **Side-view kicker** hero shot |
-| Features | Rails / boxes / mixed | Rocks / trees | Gate flags + S-trails | **One (or 3) jump(s)** |
-| Win | Feature stars / survive | Distance / lives | Place + carve stars | **Judged air / distance** vs AI |
-| Cast | Solo | Solo | Girl-grom themed | **Neutral mixed cast** |
-| Camera | Top-down-ish scroll | Down-pipe | Top-down face | **Side profile arc** |
-
-**MUST NOT** feel like TP (rails, endless park scroll) or BD (dodging).  
-**MUST NOT** lean on gendered pastel theming or left↔right face carving as the core verb.
+**BIG AIR** ≈ air time × flips × height off **XL finale** × landing mult  
+**LONG JUMP** ≈ horizontal distance across **table** × landing  
+**SLOPESTYLE** ≈ sum of S/M/L/(XL) launch scores on one run  
+Best of 3 vs AI field.
 
 ---
 
-## Jump hero beat (mock fidelity)
+## Differentiator vs BD / TP
 
-1. Soft Alps sky + peaks behind a **big side-view kicker** (approach → lip → table/void → landing).  
-2. Rider on a **visible parabolic arc** with dashed ghost path.  
-3. HUD: **HEIGHT** (m) · **DIST** (m) · hold/spin meter · attempt `2/3`.  
-4. Landing zone marks (sweet spot tint).  
-5. Grade chip pops on touchdown → leaderboard.
+| | Boulder Dodge | Terrain Park | **Big Air (Alto swoop)** |
+|--|---------------|--------------|---------------------------|
+| Space | Straight corridor | Endless park scroll | **One sweeping downhill swoop** |
+| Verb | Dodge rocks/trees | Grind rails / park features | **Speed on swoop → sized jumps → trick → stomp** |
+| Features | Obstacles | Rails / boxes / mixed park | **S/M/L/XL kickers + long table** only |
+| Camera | Down-pipe | Feature chase | **Follow + zoom-out on air** |
+| Win | Survive / distance | Feature stars | **Judged air/distance vs AI** |
 
----
-
-## Cast (neutral — fictional, no IP)
-
-| Chip | Look (mock) | Role |
-|------|-------------|------|
-| **YOU** | Blue jacket · charcoal board | Player |
-| **Kai** | Orange jacket · slate board | AI |
-| **Sam** | Forest jacket · cream board | AI |
-| **Rio** | Ink jacket · gold board | AI |
-| **Ash** *(optional 5th)* | Steel jacket · mint board | AI |
-
-Silhouettes: jacketed bodies, helmets/goggles, boards — readable, not stick figures. **No brand logos.** Soft Alps palette without pink-forward “girl” chrome.
+**MUST NOT** feel like BD (dodging) or TP (rails / park clutter).
 
 ---
 
 ## Art bar
 
-Match STOMP Soft Alps canvas-fidelity (vector on `<canvas>`):
+Vector `<canvas>` only — **no external images**:
 
-- Sky `#5b8fb5 → #b7cfe0`, snow `#e8f0f6`, ink `#15202b`, accent gold `#ffd56a`, mint `#5ec4a0`, coral `#e87a5d` (sparingly for grade/CTA — not cast theming)
-- Peaks + edge trees as atmosphere only  
-- Readable mobile UI (~390×844 portrait)  
-- **Not** painted AI art; **not** Race Day pastel-pink cast UI
+- Smooth **gradient sky**  
+- **Layered parallax** mountains / depth  
+- Procedural **rolling snow swoop** with visible **sized jump lips**  
+- **Snow-spray** particles, **motion trails**  
+- Rider silhouette with **visible board + rotation**  
+- **Landing grade pop**  
+- Neutral cast (blue / orange / forest / ink / steel)
 
 ---
 
-## Size / tech notes (for later tip rewrite)
+## Mock deliverables
+
+| File | Role |
+|------|------|
+| `arcade/ski-school/big-air-hill-mock.html` | **Current** feel — live demo + `?shot=descent\|air\|landing\|leaderboard\|events` |
+| `arcade/ski-school/big-air-mock.html` | Prior static-kicker mock (superseded) |
+| Screenshots | `hill-descent.png`, `hill-air.png`, `hill-landing.png`, `hill-leaderboard.png`, plus **tier preview** (`hill-events.png` or events frame in one of the four if combined) |
+
+Primary shot hooks: `descent` · `air` · `landing` · `leaderboard` · **`events`** (course preview / size tiers).
+
+---
+
+## Size / tech notes (later tip rewrite)
 
 | Item | Note |
 |------|------|
-| Mock file | `arcade/ski-school/big-air-mock.html` — single-file canvas (**19328 raw / 6261 gzip-9**) |
-| Tip budget | Soft STOMP embed ~**70KB raw**; keep **gzip ≪ 70KB** — target tip rewrite **≤ ~55KB raw / ≪ 70KB gzip** |
-| State machine | `MENU → JUMP → LEADERBOARD` (event sub-mode on MENU) |
-| Physics | Side-view ballistic arc + lip pop window + landing grade; AI = scored ghosts / canned attempts |
-| Persistence | Best attempt per event; field standings for session |
-| Out of scope until approve | Tip `index.html`, SW cache bump, play hub, release freezes |
-
-Screenshot hooks: `?shot=menu|jump|leaderboard`.
+| Hill mock | `big-air-hill-mock.html` — **29751** raw / **9827** gzip-9 |
+| Tip budget | Soft STOMP ~**70KB raw**; **gzip ≪ 70KB** — target rewrite **≤ ~55KB raw** |
+| Physics | Heightfield swoop; detach on sized lips; angular vel in air; slope-match landing |
+| AI | Scored ghosts on same hill seed |
+| Out of scope until approve | Tip `index.html`, SW, play hub, release freezes |
 
 ---
 
-## Done criteria (this PR)
+## Done criteria (this iteration)
 
-- [x] `BIG-AIR-BRIEF.md` — loop, controls, scoring, TP/BD contrast, size plan  
-- [x] `big-air-mock.html` — MENU / JUMP / LEADERBOARD  
-- [x] Artifacts: `big-air-menu.png`, `big-air-jump.png`, `big-air-leaderboard.png` (~390×844)  
-- [x] Race Day mock/brief/screens retired from PR  
-- [x] Tip playable untouched; no release / hub / BD / TP / Halfpipe edits  
-- [x] PR #55 updated (unmerged) for Ted review  
+- [x] Brief: Alto swoop, XL finale at bottom, S/M/L/XL + table tiers, BD/TP contrast  
+- [x] `big-air-hill-mock.html` with live demo + shot hooks including **events** tier preview  
+- [x] Screenshots ~390×844 including jump-size tiers  
+- [x] Tip / release / hub / BD / TP / Halfpipe untouched  
+- [x] PR #55 updated, unmerged  
