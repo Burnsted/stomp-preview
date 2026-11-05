@@ -1,5 +1,7 @@
 /** Fictional rider social state. No live accounts, payments, or youth features. */
 
+import type { PassAccessState } from "@/lib/stomp/pass-lifecycle-demo";
+
 export type Jacket = "purple-white" | "steel" | "black";
 export type Avatar = { name: string; jacket: Jacket };
 export type PassRole = "rider" | "viewer";
@@ -14,6 +16,11 @@ export type Trip = {
   invited: boolean;
   joined: boolean;
   attendance: Record<string, "in" | "out">;
+  /** Demo Trip Drop schedule anchors for Countdown / Today's Drop / Replay. */
+  startIso?: string;
+  scheduledEndAt?: string;
+  officialEndDate?: string | null;
+  status?: "scheduled" | "active" | "completed" | "cancelled";
 };
 
 export type DaySesh = {
@@ -47,6 +54,12 @@ export type SocialState = {
   avatar: Avatar | null;
   passRole: PassRole;
   passExpired: boolean;
+  /** Fictional Pass lifecycle surface (t1208u) — NOT a real entitlement. */
+  passAccessState: PassAccessState;
+  /** Demo Pass end ISO for lifecycle resolve. */
+  passEndIso: string | null;
+  /** History ids purged under deletion lifecycle — renewal must not restore. */
+  purgedHistoryIds: string[];
   trip: Trip;
   day: DaySesh | null;
   squads: Squad[];
@@ -65,6 +78,9 @@ export function seedSocial(): SocialState {
     avatar: null,
     passRole: "rider",
     passExpired: false,
+    passAccessState: "active",
+    passEndIso: "2027-06-01T00:00:00Z",
+    purgedHistoryIds: [],
     trip: {
       id: "trip-bc",
       name: "Beaver Creek Saturday",
@@ -75,6 +91,10 @@ export function seedSocial(): SocialState {
       invited: true,
       joined: false,
       attendance: { mira: "in" },
+      startIso: "2026-11-07T08:00:00Z",
+      scheduledEndAt: "2026-11-07T23:59:00Z",
+      officialEndDate: null,
+      status: "active",
     },
     day: null,
     squads: [
@@ -108,7 +128,20 @@ function fail(state: SocialState, error: string): SocialResult {
 }
 
 export function canPost(state: SocialState): boolean {
-  return state.passRole === "rider" && !state.passExpired && state.avatar !== null;
+  const lifecycleAllows =
+    state.passAccessState === "active" && !state.passExpired;
+  return state.passRole === "rider" && lifecycleAllows && state.avatar !== null;
+}
+
+/** Full history browse — Active Pass only (export-only / expired lock it). */
+export function canBrowseFullHistory(state: SocialState): boolean {
+  return state.passAccessState === "active" && !state.passExpired;
+}
+
+/** Report Card / export after expiry while inside export-only window. */
+export function canExportReportCard(state: SocialState): boolean {
+  if (state.passAccessState === "deletion_lifecycle") return false;
+  return true;
 }
 
 export function saveAvatar(state: SocialState, name: string, jacket: Jacket): SocialResult {
@@ -130,7 +163,9 @@ export function declineTrip(state: SocialState): SocialResult {
 
 export function joinTrip(state: SocialState): SocialResult {
   if (!state.avatar) return fail(state, "Make an avatar before you join.");
-  if (state.passExpired) return fail(state, "Rider Pass is expired. You can look, not join.");
+  if (state.passExpired || state.passAccessState !== "active") {
+    return fail(state, "Rider Pass is expired/locked. You can look and export, not join.");
+  }
   if (state.passRole === "viewer") return fail(state, "A viewer pass can’t join a trip.");
   if (!state.trip.invited) return fail(state, "That invite was declined.");
   if (state.trip.joined) return ok(state, "You’re already on this trip.");
@@ -300,19 +335,94 @@ export function cancelShare(state: SocialState): SocialResult {
 }
 
 export function setPass(state: SocialState, role: PassRole, expired: boolean): SocialResult {
+  const passAccessState: PassAccessState = expired ? "expired_locked" : "active";
   return ok(
-    { ...state, passRole: role, passExpired: expired },
-    expired ? "Pass expired. You can look and export. You can’t post or join." : `${role === "viewer" ? "Viewer" : "Rider"} pass is current.`,
+    {
+      ...state,
+      passRole: role,
+      passExpired: expired,
+      passAccessState,
+      // Demo: expiry anchors Pass end in the past so welcome-back / lifecycle agree.
+      passEndIso: expired ? "2026-06-01T00:00:00Z" : "2027-06-01T00:00:00Z",
+    },
+    expired
+      ? "Pass expired (fictional). Profile/history locked. Report Card + export still available during 12mo window."
+      : `${role === "viewer" ? "Viewer" : "Rider"} pass is current (fictional — not a real entitlement).`,
+  );
+}
+
+/** Advance demo Expired/locked → Export-only surface (same 12mo privileges). */
+export function enterPassExportOnly(state: SocialState): SocialResult {
+  if (state.passAccessState === "active") {
+    return fail(state, "Pass is still active — expire it before export-only.");
+  }
+  if (state.passAccessState === "deletion_lifecycle") {
+    return fail(state, "Export-only window ended — deletion lifecycle (jobs OFF).");
+  }
+  return ok(
+    { ...state, passExpired: true, passAccessState: "export_only" },
+    "Export-only (12mo fictional). Report Card + export; no full-history browse or new Rider participation.",
+  );
+}
+
+/** Demo: jump to deletion lifecycle warnings (jobs remain OFF). */
+export function enterPassDeletionLifecycle(state: SocialState): SocialResult {
+  return ok(
+    {
+      ...state,
+      passExpired: true,
+      passAccessState: "deletion_lifecycle",
+    },
+    "Deletion lifecycle warnings only. Physical deletion jobs OFF until separate owner Go.",
+  );
+}
+
+/**
+ * Demo renewal — restores Active going forward.
+ * Does not restore purgedHistoryIds.
+ */
+export function renewDemoPass(state: SocialState, newPassEndIso = "2028-01-01T00:00:00Z"): SocialResult {
+  const visibleHistory = state.history.filter((h) => !state.purgedHistoryIds.includes(h.id));
+  return ok(
+    {
+      ...state,
+      passExpired: false,
+      passAccessState: "active",
+      passEndIso: newPassEndIso,
+      history: visibleHistory,
+    },
+    "Renewal restores Active going forward. Previously purged history stays purged (fictional).",
   );
 }
 
 export function exportPack(state: SocialState): string {
+  if (!canExportReportCard(state)) {
+    return JSON.stringify(
+      {
+        denied: true,
+        reason: "deletion_lifecycle",
+        note: "Export window ended. Deletion jobs still OFF (fictional).",
+      },
+      null,
+      2,
+    );
+  }
+  const history = canBrowseFullHistory(state)
+    ? state.history
+    : state.history.map((h) => ({ id: h.id, label: h.label, source: h.source, exportOnly: true }));
   return JSON.stringify(
     {
       avatar: state.avatar,
-      pass: { role: state.passRole, expired: state.passExpired },
-      history: state.history,
-      note: "Demo export. Stays on this phone. Nothing was uploaded.",
+      pass: {
+        role: state.passRole,
+        expired: state.passExpired,
+        accessState: state.passAccessState,
+        fictionalOnly: true,
+        notARealEntitlement: true,
+      },
+      reportCard: history,
+      history: canBrowseFullHistory(state) ? state.history : undefined,
+      note: "Demo export / Report Card. Stays on this phone. Nothing was uploaded. Fictional Pass states ≠ real entitlements.",
     },
     null,
     2,

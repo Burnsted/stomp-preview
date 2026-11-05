@@ -435,7 +435,7 @@ describe("AF-DS-09…13 grace / view / records / campfire / isolation", () => {
     // @ts-expect-error DaySesh is not a Trip — viewerDownloadDeadline rejects it
     asViewerArg(sesh);
     const archive = riderArchiveClock(ID.rio, "2026-12-01T00:00:00Z");
-    expect(archive.kind).toBe("pass_archive_6mo");
+    expect(archive.kind).toBe("pass_export_only_12mo");
     expect(SUNRISE_SESH_ID).toBe("daysesh-sunrise-shred");
   });
 });

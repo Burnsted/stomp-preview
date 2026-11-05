@@ -31,6 +31,7 @@ import {
   VIEWER_MEDIA_MAX_DAYS,
   VIEWER_ONLY_MONTHS,
   RIDER_ARCHIVE_MONTHS,
+  PASS_EXPORT_ONLY_MONTHS,
   type ExtensionId,
   type StomperId,
 } from "../src/trips/index.js";
@@ -450,7 +451,8 @@ describe("AF-RC-09 Personal history/export → retention boundaries", () => {
     expect(CF.CAMPFIRE_MEDIA_MAX_DAYS).toBe(90);
     expect(VIEWER_MEDIA_MAX_DAYS).toBe(45);
     expect(VIEWER_ONLY_MONTHS).toBe(12);
-    expect(RIDER_ARCHIVE_MONTHS).toBe(6);
+    expect(RIDER_ARCHIVE_MONTHS).toBe(12);
+    expect(PASS_EXPORT_ONLY_MONTHS).toBe(12);
 
     const textExp = CF.textExpiresAt("2026-01-01T00:00:00Z");
     expect(textExp).toBe("2027-01-01T00:00:00Z");

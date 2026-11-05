@@ -247,7 +247,9 @@ describe("AF1–AF12 trip timing (fictional-peak)", () => {
 
   it("AF9 Archive clock from Pass expiry, unaffected by officialEndDate", () => {
     const archive = riderArchiveClock(ID.rio, "2026-12-13T00:00:00Z");
-    expect(archive.deadlineIso).toBe("2027-06-13T00:00:00Z");
+    // D2 t1208u: PASS_EXPORT_ONLY_MONTHS=12 supersedes prior 6mo archive deadline.
+    expect(archive.deadlineIso).toBe("2027-12-13T00:00:00Z");
+    expect(archive.kind).toBe("pass_export_only_12mo");
     expect(archive.anchorIso).toBe("2026-12-13T00:00:00Z");
     expect(archive.anchorIso).not.toBe("2026-12-16T23:59:00Z");
   });

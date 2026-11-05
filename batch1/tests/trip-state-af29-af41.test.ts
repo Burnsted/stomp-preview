@@ -399,7 +399,7 @@ describe("AF39–AF41 time, admin, retention independence", () => {
     const viewerOnly = clocks.find((c) => c.kind === "viewer_only_12mo")!;
     const never = clocks.find((c) => c.kind === "never_rider")!;
     const founder = clocks.find((c) => c.kind === "founder")!;
-    const archive = clocks.find((c) => c.kind === "pass_archive_6mo")!;
+    const archive = clocks.find((c) => c.kind === "pass_export_only_12mo")!;
 
     // Mutate one — others unchanged (separate clones)
     const mutated = { ...viewerOnly, deadlineIso: "2099-01-01T00:00:00Z" };

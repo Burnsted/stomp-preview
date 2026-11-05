@@ -146,6 +146,12 @@ export type RetentionKind =
   | "media_45d"
   | "viewer_download_45d"
   | "viewer_only_12mo"
+  /** D2 (t1208u) — 12 calendar-month export-only after Pass expiry. Supersedes pass_archive_6mo product meaning. */
+  | "pass_export_only_12mo"
+  /**
+   * @deprecated SUPERSEDED by pass_export_only_12mo (owner D2). Kept only for fixture migration reads.
+   * New clocks must use pass_export_only_12mo.
+   */
   | "pass_archive_6mo"
   | "never_rider"
   | "founder";
