@@ -36,4 +36,4 @@ Duration ~12.3s · includes `fictional-data-t1208u.test.ts` (CREWLINK_SHA green)
 
 ## CI
 
-Push draft PR after commit; report CI green or pinned pending with honest status. No merge.
+**GREEN** on tip `17c1a7c0b541e0e087074315688c7b4a4879ce19` — both `pr-verify` checks SUCCESS (batch1 typecheck+test, gb-phone typecheck+woz+build). No merge.
