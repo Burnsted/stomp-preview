@@ -7,7 +7,7 @@
 |---|---|
 | Base tip (PR #48 head) | `7bc585e87215b2043d66d222ecd75c88bffd73f9` |
 | Branch | `cursor/family-playtest-t1210u-af0f` |
-| Tip SHA | `43d639002dd3ec22bf80079ea66f40a42fc1d768` |
+| Feature tip | `92fbf2c32d80b410a38c5d3664df25d755a9975a` (playtest impl) · see branch HEAD for docs pins |
 | Draft PR | [#52](https://github.com/Burnsted/stomp-preview/pull/52) |
 | Priority | P0 Stability → P1 Useful demo → P2 Phone testing → P3 Feedback → P4 Preview prep |
 
