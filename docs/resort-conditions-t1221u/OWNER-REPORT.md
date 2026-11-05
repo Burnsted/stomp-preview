@@ -50,9 +50,9 @@ Under `gb-phone/screenshots/t1221u/` and `/opt/cursor/artifacts/t1221u/`:
 
 ## Tip / PR
 
-- **Tip SHA:** _(set after push)_  
+- **Tip SHA:** `03c39ce656eacabb4a670a48d40724b37409fe6e`  
 - **Draft PR:** _(set after open)_ — *DRAFT t1221u — resort conditions model + fiction UI + provider research (NO MERGE)*  
-- **Branch:** `cursor/resort-conditions-t1221u-94bf` → base `cursor/chrome-demote-t1220u-cfab` (or `main` if forge requires; stack intent is #59 tip)
+- **Branch:** `cursor/resort-conditions-t1221u-94bf` → base `cursor/chrome-demote-t1220u-cfab` (stack on #59 tip)
 
 ## Recommended next owner gate
 
