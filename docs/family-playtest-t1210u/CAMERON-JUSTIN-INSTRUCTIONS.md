@@ -4,7 +4,7 @@ This is a **family playtest preview**, not a finished app store build. Everythin
 
 ## Before you start
 
-1. Use the preview link Ted shares from the draft PR (when available). Do not expect App Store / Play Store.
+1. Open the live playtest (HTTPS): **https://burnsted.github.io/stomp-family-playtest/** — deployed SHA `332321c1cbe797a56281ede0836f84fe0f18985b`. Production arcade stays at https://burnsted.github.io/stomp-preview/ (untouched). Do not expect App Store / Play Store.
 2. Prefer a current Chrome (Android) or Safari (iPhone).
 3. If something looks stuck from an older try: tap **Reset Demo** on Home.
 

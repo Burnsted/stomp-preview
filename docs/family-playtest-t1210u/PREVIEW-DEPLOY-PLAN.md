@@ -1,6 +1,8 @@
 # Preview deploy plan — t1210u (**PLAN ONLY — DO NOT DEPLOY**)
 
-This document is a plan. **Do not** run Pages publish, merge to main, or flip production flags as part of t1210u.
+**LIVE (OWNER GO t1211u):** https://burnsted.github.io/stomp-family-playtest/ — SHA `332321c1cbe797a56281ede0836f84fe0f18985b`.
+
+Original note for t1210u: this document began as a plan. Production arcade Pages remain untouched.
 
 ## Proposed preview URL (candidate)
 
