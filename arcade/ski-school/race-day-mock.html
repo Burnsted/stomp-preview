@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#6a9cc4">
+<title>Ski School · Race Day — mock</title>
+<style>
+html,body{margin:0;height:100%;background:#15202b;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
+canvas{display:block;width:100vw;height:100vh}
+#live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.tag{position:fixed;left:8px;bottom:8px;z-index:5;font:11px/1.2 system-ui,sans-serif;color:rgba(255,255,255,.55);pointer-events:none}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="live" aria-live="polite"></div>
+<div class="tag">MOCK · not tip · Race Day</div>
+<script>
+'use strict';
+/* ============================================================
+   Ski School · Race Day — canvas-fidelity MOCK (not tip rewrite)
+   MENU → RACE → PODIUM | Soft Alps open face | gate flags | AI groms
+   ?shot=menu|race|podium
+   ============================================================ */
+
+const C = {
+  skyA:'#6a9cc4', skyB:'#c8dcec', snow:'#eef5fb', shade:'rgba(180,205,225,.28)',
+  ink:'#15202b', panel:'rgba(21,32,43,.88)', white:'#fff', pink:'#ff8fbf',
+  gold:'#ffd56a', mint:'#6ee7b7', coral:'#ff7a6e', lilac:'#b8a0ff',
+  orange:'#ff9f43', red:'#ff5c7a', peak:'#7f97ae', tree:'#355544',
+  trailP:'rgba(126,200,255,.55)', trailM:'rgba(255,122,110,.45)',
+  trailJ:'rgba(184,160,255,.45)', trailR:'rgba(110,231,183,.45)',
+  skin:'#f0c4a8', skin2:'#e8b898'
+};
+
+const CAST = [
+  {id:'you',  name:'YOU',  jacket:'#7ec8ff', board:'#ff8fbf', hair:'#2a1f3d', trail:C.trailP, accent:C.pink},
+  {id:'mira', name:'Mira', jacket:'#ff7a6e', board:'#6ee7b7', hair:'#3b2218', trail:C.trailM, accent:C.coral},
+  {id:'jules',name:'Jules',jacket:'#b8a0ff', board:'#ffd56a', hair:'#1e2433', trail:C.trailJ, accent:C.lilac},
+  {id:'ren',  name:'Ren',  jacket:'#6ee7b7', board:'#ff8fbf', hair:'#4a2c1a', trail:C.trailR, accent:C.mint}
+];
+
+const cv = document.getElementById('c'), cx = cv.getContext('2d');
+const live = document.getElementById('live');
+let W=390, H=844, dpr=1;
+let state = 'MENU'; // MENU | RACE | PODIUM
+let hit = {};
+let t0 = performance.now();
+let raceT = 0;
+
+function resize(){
+  dpr = Math.min(window.devicePixelRatio||1, 2);
+  const iw = innerWidth, ih = innerHeight;
+  cv.width = Math.floor(iw*dpr); cv.height = Math.floor(ih*dpr);
+  W = iw; H = ih;
+  cx.setTransform(dpr,0,0,dpr,0,0);
+}
+addEventListener('resize', resize); resize();
+function announce(s){ live.textContent = s; }
+
+function rr(x,y,w,h,r){
+  const R=Math.min(r,w/2,h/2);
+  cx.beginPath(); cx.moveTo(x+R,y); cx.arcTo(x+w,y,x+w,y+h,R); cx.arcTo(x+w,y+h,x,y+h,R);
+  cx.arcTo(x,y+h,x,y,R); cx.arcTo(x,y,x+w,y,R); cx.closePath();
+}
+function panel(x,y,w,h,a){ cx.fillStyle=a||C.panel; rr(x,y,w,h,14); cx.fill(); }
+function btn(x,y,w,h,label,fill,ink,key){
+  cx.fillStyle=fill; rr(x,y,w,h,16); cx.fill();
+  cx.fillStyle=ink||C.ink; cx.font='bold '+(h>52?20:16)+'px system-ui,sans-serif';
+  cx.textAlign='center'; cx.textBaseline='middle'; cx.fillText(label, x+w/2, y+h/2+1);
+  if(key) hit[key]={x,y,w,h};
+}
+
+/* ---- Soft Alps face ---- */
+function drawSkyPeaks(){
+  const g=cx.createLinearGradient(0,0,0,H*0.24);
+  g.addColorStop(0,C.skyA); g.addColorStop(1,C.skyB);
+  cx.fillStyle=g; cx.fillRect(0,0,W,H*0.24);
+  cx.fillStyle=C.peak;
+  cx.beginPath();
+  cx.moveTo(0,H*0.20); cx.lineTo(W*0.16,H*0.09); cx.lineTo(W*0.34,H*0.18);
+  cx.lineTo(W*0.52,H*0.06); cx.lineTo(W*0.72,H*0.16); cx.lineTo(W*0.88,H*0.08);
+  cx.lineTo(W,H*0.14); cx.lineTo(W,H*0.24); cx.lineTo(0,H*0.24); cx.fill();
+  cx.fillStyle='#fff';
+  [[W*0.16,H*0.09],[W*0.52,H*0.06],[W*0.88,H*0.08]].forEach(([x,y])=>{
+    cx.beginPath(); cx.moveTo(x-14,y+14); cx.lineTo(x,y); cx.lineTo(x+14,y+14); cx.fill();
+  });
+}
+function tree(x,y,s){
+  cx.fillStyle=C.tree;
+  cx.beginPath(); cx.moveTo(x,y-s); cx.lineTo(x-s*.52,y); cx.lineTo(x+s*.52,y); cx.fill();
+  cx.beginPath(); cx.moveTo(x,y-s*.58); cx.lineTo(x-s*.74,y+s*.34); cx.lineTo(x+s*.74,y+s*.34); cx.fill();
+  cx.fillStyle='#5a4030'; cx.fillRect(x-3,y+s*.28,6,10);
+  cx.fillStyle='#fff';
+  cx.beginPath(); cx.moveTo(x,y-s); cx.lineTo(x-9,y-s*.66); cx.lineTo(x+9,y-s*.66); cx.fill();
+}
+function drawFace(dim){
+  drawSkyPeaks();
+  cx.fillStyle=C.snow; cx.fillRect(0,H*0.2,W,H*0.8);
+  cx.fillStyle=C.shade;
+  for(let i=0;i<7;i++){
+    const y=H*0.26+i*H*0.11;
+    cx.beginPath(); cx.ellipse(W/2,y,W*0.56,16+i%2*3,0,0,Math.PI*2); cx.fill();
+  }
+  [0.30,0.44,0.58,0.72,0.86].forEach((fy,i)=>{
+    tree(20+(i%2)*7, H*fy, 22+i%3*4);
+    tree(W-20-(i%2)*7, H*fy+12, 24+i%2*4);
+  });
+  if(dim){ cx.fillStyle='rgba(21,32,43,.52)'; cx.fillRect(0,0,W,H); }
+}
+
+/* ---- Improved grom silhouette (beyond sticks) ---- */
+function drawGrom(x,y,s,look,opts){
+  opts=opts||{}; look=look||CAST[0];
+  const lean = opts.lean||0;
+  cx.save(); cx.translate(x,y); cx.rotate(lean); cx.scale(s,s);
+
+  // soft shadow
+  cx.fillStyle='rgba(21,32,43,.12)';
+  cx.beginPath(); cx.ellipse(0,22,22,5,0,0,Math.PI*2); cx.fill();
+
+  // board with tip/tail + binding hint
+  cx.fillStyle=look.board;
+  rr(-28,15,56,9,4); cx.fill();
+  cx.fillStyle='rgba(255,255,255,.35)';
+  cx.fillRect(-18,16.5,8,6); cx.fillRect(10,16.5,8,6);
+  if(opts.skid){
+    cx.fillStyle='rgba(255,255,255,.95)';
+    for(let i=0;i<9;i++){ cx.beginPath(); cx.arc(-24-i*3.5,19+(i%3),2.2,0,Math.PI*2); cx.fill(); }
+  }
+
+  // pants / legs (filled, not sticks)
+  cx.fillStyle='#243040';
+  cx.beginPath(); cx.moveTo(-7,4); cx.lineTo(-14,16); cx.lineTo(-8,17); cx.lineTo(-2,6); cx.fill();
+  cx.beginPath(); cx.moveTo(7,4); cx.lineTo(15,16); cx.lineTo(9,17); cx.lineTo(2,6); cx.fill();
+
+  // torso jacket with collar
+  cx.fillStyle=look.jacket;
+  rr(-12,-10,24,18,7); cx.fill();
+  cx.fillStyle='rgba(255,255,255,.22)';
+  cx.beginPath(); cx.moveTo(-6,-10); cx.lineTo(0,-4); cx.lineTo(6,-10); cx.fill();
+
+  // arms (filled sausage)
+  cx.strokeStyle=look.jacket; cx.lineWidth=5.5; cx.lineCap='round';
+  const aL = opts.armL!=null?opts.armL:-18-lean*10;
+  const aR = opts.armR!=null?opts.armR: 18+lean*10;
+  cx.beginPath(); cx.moveTo(-11,-2); cx.lineTo(aL,-8); cx.stroke();
+  cx.beginPath(); cx.moveTo(11,-2); cx.lineTo(aR,2); cx.stroke();
+  // mittens
+  cx.fillStyle=C.pink;
+  cx.beginPath(); cx.arc(aL,-8,3.2,0,Math.PI*2); cx.fill();
+  cx.beginPath(); cx.arc(aR,2,3.2,0,Math.PI*2); cx.fill();
+
+  // head
+  cx.fillStyle=opts.skin||C.skin;
+  cx.beginPath(); cx.arc(0,-16,8.2,0,Math.PI*2); cx.fill();
+
+  // hair / soft beanie
+  if(opts.beanie){
+    cx.fillStyle=opts.beanie;
+    cx.beginPath(); cx.ellipse(0,-20,9.2,7.2,0,Math.PI,0); cx.fill();
+    cx.fillStyle=C.white;
+    cx.beginPath(); cx.arc(7,-24,3.2,0,Math.PI*2); cx.fill();
+  } else {
+    cx.fillStyle=look.hair;
+    cx.beginPath(); cx.ellipse(0,-19,9.5,7,0,Math.PI,0); cx.fill();
+    // pony / side fall
+    cx.beginPath(); cx.moveTo(5,-17); cx.quadraticCurveTo(14,-6,10,2); cx.lineTo(7,2); cx.quadraticCurveTo(10,-6,4,-15); cx.fill();
+  }
+
+  // tiny goggles
+  cx.fillStyle='rgba(30,40,55,.75)';
+  rr(-7,-18,14,4.5,2); cx.fill();
+  cx.fillStyle='rgba(180,220,255,.45)';
+  rr(-6,-17.5,5.5,3.5,1.5); cx.fill();
+
+  cx.restore();
+}
+
+/* ---- Gate flags (soft poles — NOT BD rocks / NOT TP rails) ---- */
+function gateFlag(x,y,side,color){
+  // pole + soft base disc (readable, not a BD rock)
+  cx.fillStyle='rgba(120,140,160,.35)';
+  cx.beginPath(); cx.ellipse(x,y+2,6,3,0,0,Math.PI*2); cx.fill();
+  cx.strokeStyle='rgba(80,90,100,.7)'; cx.lineWidth=3;
+  cx.beginPath(); cx.moveTo(x,y); cx.lineTo(x,y-40); cx.stroke();
+  // soft triangular flag — larger for phone read
+  cx.fillStyle=color;
+  cx.beginPath();
+  if(side<0){ cx.moveTo(x,y-38); cx.lineTo(x-26,y-28); cx.lineTo(x,y-18); }
+  else { cx.moveTo(x,y-38); cx.lineTo(x+26,y-28); cx.lineTo(x,y-18); }
+  cx.fill();
+  cx.fillStyle='rgba(255,255,255,.4)';
+  cx.beginPath();
+  if(side<0){ cx.moveTo(x,y-36); cx.lineTo(x-12,y-30); cx.lineTo(x,y-24); }
+  else { cx.moveTo(x,y-36); cx.lineTo(x+12,y-30); cx.lineTo(x,y-24); }
+  cx.fill();
+}
+function drawGates(scroll){
+  // alternating soft gate pairs down the face — open middle, not corridor walls
+  const gates = [
+    {fy:0.34, side:-1}, {fy:0.46, side:1}, {fy:0.58, side:-1},
+    {fy:0.70, side:1}, {fy:0.82, side:-1}
+  ];
+  gates.forEach((g,i)=>{
+    const y = H*g.fy + Math.sin(scroll*0.4+i)*4;
+    const mid = W*0.5;
+    const amp = W*0.28;
+    const gx = mid + g.side*amp;
+    const col = g.side<0 ? C.pink : C.mint;
+    // pair: outer flag + inner soft twin for readability
+    gateFlag(gx, y, g.side, col);
+    gateFlag(gx - g.side*W*0.34, y+2, -g.side, col);
+  });
+}
+
+/* ---- S-trails ---- */
+function sPath(phase, ampScale, y0, y1, steps){
+  const pts=[];
+  for(let i=0;i<=steps;i++){
+    const t=i/steps;
+    const y=y0+(y1-y0)*t;
+    const amp=W*0.34*ampScale*(0.55+0.45*Math.sin(t*Math.PI));
+    const x=W*0.5 + Math.sin(phase + t*Math.PI*2.35)*amp;
+    pts.push({x,y});
+  }
+  return pts;
+}
+function strokeTrail(pts, color, width){
+  if(pts.length<2) return;
+  cx.strokeStyle=color; cx.lineWidth=width; cx.lineCap='round'; cx.lineJoin='round';
+  cx.beginPath(); cx.moveTo(pts[0].x,pts[0].y);
+  for(let i=1;i<pts.length;i++) cx.lineTo(pts[i].x,pts[i].y);
+  cx.stroke();
+}
+
+/* ---- Screen chips (switcher) ---- */
+function drawSwitcher(){
+  const labels=['MENU','RACE','PODIUM'];
+  const keys=['menu','race','podium'];
+  const tw=72, gap=8, total=labels.length*tw+(labels.length-1)*gap;
+  const x0=(W-total)/2, y=H-36;
+  labels.forEach((lab,i)=>{
+    const x=x0+i*(tw+gap);
+    const on = (state===lab);
+    cx.fillStyle = on ? 'rgba(255,143,191,.95)' : 'rgba(21,32,43,.55)';
+    rr(x,y,tw,26,10); cx.fill();
+    cx.fillStyle = on ? C.ink : 'rgba(255,255,255,.75)';
+    cx.font='bold 11px system-ui,sans-serif'; cx.textAlign='center'; cx.textBaseline='middle';
+    cx.fillText(lab, x+tw/2, y+13);
+    hit[keys[i]]={x,y,w:tw,h:26};
+  });
+}
+
+function castChip(x,y,w,h,look,label,active){
+  cx.fillStyle = active ? 'rgba(255,255,255,.18)' : 'rgba(255,255,255,.10)';
+  rr(x,y,w,h,12); cx.fill();
+  if(active){ cx.strokeStyle=look.accent; cx.lineWidth=2; rr(x,y,w,h,12); cx.stroke(); }
+  // mini avatar
+  cx.save();
+  cx.beginPath(); cx.arc(x+22,y+h/2,14,0,Math.PI*2); cx.clip();
+  cx.fillStyle='#d8e8f4'; cx.fillRect(x+8,y+4,28,h-8);
+  drawGrom(x+22, y+h/2+6, 0.55, look, {lean:-0.15, beanie: look.id==='jules'?C.lilac:null});
+  cx.restore();
+  cx.strokeStyle='rgba(255,255,255,.25)'; cx.lineWidth=1.5;
+  cx.beginPath(); cx.arc(x+22,y+h/2,14,0,Math.PI*2); cx.stroke();
+  cx.fillStyle=C.white; cx.font='bold 13px system-ui,sans-serif'; cx.textAlign='left'; cx.textBaseline='middle';
+  cx.fillText(label||look.name, x+42, y+h/2-6);
+  cx.fillStyle=look.accent; cx.font='11px system-ui,sans-serif';
+  cx.fillText(look.id==='you'?'player':'AI grom', x+42, y+h/2+10);
+}
+
+/* ===================== SCREENS ===================== */
+function drawMenu(){
+  hit={};
+  drawFace(false);
+  // ghost S + rival trails — lower face so cast chips stay clear
+  const preview = sPath(0.2, 1, H*0.48, H*0.78, 40);
+  strokeTrail(preview, 'rgba(255,143,191,.32)', 12);
+  strokeTrail(sPath(1.1, 0.85, H*0.50, H*0.76, 36), 'rgba(255,122,110,.22)', 8);
+  strokeTrail(sPath(2.0, 0.75, H*0.52, H*0.74, 36), 'rgba(184,160,255,.22)', 8);
+
+  drawGrom(preview[18].x, preview[18].y, Math.min(1.35,W/280), CAST[0], {lean:-0.32, skid:true});
+  drawGrom(W*0.64, H*0.58, 1.0, CAST[1], {lean:0.28});
+  drawGrom(W*0.30, H*0.64, 0.95, CAST[2], {lean:-0.18, beanie:C.lilac});
+
+  panel(20, 18, W-40, 100);
+  cx.fillStyle=C.white; cx.font='bold 13px system-ui,sans-serif'; cx.textAlign='center';
+  cx.fillText('SKI SCHOOL', W/2, 40);
+  cx.fillStyle=C.pink; cx.font='bold 30px system-ui,sans-serif';
+  cx.fillText('RACE DAY', W/2, 72);
+  cx.fillStyle=C.mint; cx.font='12px system-ui,sans-serif';
+  cx.fillText('carve the face · beat the groms', W/2, 96);
+
+  // cast chips — PLAY cast, not a lesson ladder
+  const chipW = (W-56)/2, chipH=48, top=132;
+  castChip(20, top, chipW, chipH, CAST[0], 'YOU', true);
+  castChip(28+chipW, top, chipW, chipH, CAST[1], 'Mira', false);
+  castChip(20, top+chipH+8, chipW, chipH, CAST[2], 'Jules', false);
+  castChip(28+chipW, top+chipH+8, chipW, chipH, CAST[3], 'Ren', false);
+
+  panel(20, top+chipH*2+18, W-40, 48, 'rgba(21,32,43,.72)');
+  cx.fillStyle='#c5d4e8'; cx.font='12px system-ui,sans-serif'; cx.textAlign='center';
+  cx.fillText('Open snow face · soft GATE flags', W/2, top+chipH*2+36);
+  cx.fillStyle=C.gold; cx.font='bold 12px system-ui,sans-serif';
+  cx.fillText('Win = place + clean carve ★', W/2, top+chipH*2+54);
+
+  btn(40, H-120, W-80, 58, '▶  RACE', C.pink, C.ink, 'play');
+  cx.fillStyle='rgba(21,32,43,.4)'; cx.font='11px system-ui,sans-serif';
+  cx.fillText('no lesson ladder · competition first', W/2, H-48);
+
+  drawSwitcher();
+}
+
+function drawRace(){
+  hit={};
+  const scroll = raceT*0.35;
+  drawFace(false);
+  drawGates(scroll);
+
+  // AI + player trails (S-curves across face)
+  const youPts = sPath(0.15+scroll*0.15, 1.0, H*0.28, H*0.72, 48);
+  const miraPts = sPath(1.05+scroll*0.12, 0.88, H*0.26, H*0.68, 48);
+  const julesPts = sPath(2.1+scroll*0.1, 0.78, H*0.30, H*0.66, 48);
+  const renPts = sPath(2.8+scroll*0.14, 0.92, H*0.24, H*0.62, 48);
+
+  strokeTrail(renPts, CAST[3].trail, 9);
+  strokeTrail(julesPts, CAST[2].trail, 10);
+  strokeTrail(miraPts, CAST[1].trail, 11);
+  strokeTrail(youPts, CAST[0].trail, 14);
+
+  // finish banner near bottom of visible face
+  const fy = H*0.78;
+  cx.fillStyle='rgba(255,213,106,.85)';
+  rr(W*0.18, fy-6, W*0.64, 10, 4); cx.fill();
+  cx.fillStyle=C.ink; cx.font='bold 10px system-ui,sans-serif'; cx.textAlign='center';
+  cx.fillText('FINISH', W/2, fy);
+
+  // riders — YOU slightly ahead for P2 feel / Mira leading
+  const you = youPts[34], mira = miraPts[38], jules = julesPts[30], ren = renPts[28];
+  drawGrom(ren.x, ren.y, 0.95, CAST[3], {lean:0.22});
+  drawGrom(jules.x, jules.y, 1.0, CAST[2], {lean:-0.25, beanie:C.lilac});
+  drawGrom(mira.x, mira.y, 1.1, CAST[1], {lean:0.3});
+  drawGrom(you.x, you.y, Math.min(1.35,W/280), CAST[0], {lean:-0.35, skid:false, armL:-20, armR:16});
+
+  // speed streaks near YOU
+  cx.strokeStyle='rgba(255,255,255,.35)'; cx.lineWidth=2;
+  for(let i=0;i<5;i++){
+    const sx=you.x-18-i*6, sy=you.y-20-i*8;
+    cx.beginPath(); cx.moveTo(sx,sy); cx.lineTo(sx-2,sy-14); cx.stroke();
+  }
+
+  // HUD — place badge
+  panel(12,12,86,56);
+  cx.fillStyle=C.gold; cx.font='bold 26px system-ui,sans-serif'; cx.textAlign='center';
+  cx.fillText('P2', 55, 40);
+  cx.fillStyle=C.mint; cx.font='10px system-ui,sans-serif';
+  cx.fillText('PLACE', 55, 56);
+
+  panel(W-118,12,106,56);
+  cx.fillStyle=C.white; cx.font='bold 14px system-ui,sans-serif'; cx.textAlign='right';
+  cx.fillText('88 km/h', W-22, 36);
+  cx.fillStyle=C.pink; cx.font='10px system-ui,sans-serif';
+  cx.fillText('SPEED', W-22, 52);
+
+  // carve stars
+  panel(W/2-70,12,140,36);
+  cx.fillStyle=C.gold; cx.font='bold 16px system-ui,sans-serif'; cx.textAlign='center';
+  cx.fillText('★★☆  CARVE', W/2, 34);
+
+  // coach / race chip
+  panel(W/2-120, H*0.22, 240, 32, 'rgba(21,32,43,.75)');
+  cx.fillStyle=C.white; cx.font='bold 12px system-ui,sans-serif';
+  cx.fillText('Thread the gates — stay wide S', W/2, H*0.22+16);
+
+  // controls (same language as tip)
+  btn(14, H-78, 74, 50, '◀ TOE', 'rgba(255,255,255,.22)', C.white, 'toe');
+  btn(W-88, H-78, 74, 50, 'HEEL ▶', 'rgba(255,255,255,.22)', C.white, 'heel');
+  btn(W/2-58, H-82, 116, 54, 'SKID', C.gold, C.ink, 'skid');
+
+  drawSwitcher();
+}
+
+function drawPodium(){
+  hit={};
+  drawFace(true);
+
+  // soft spotlight
+  const spot=cx.createRadialGradient(W/2,H*0.42,20,W/2,H*0.42,W*0.55);
+  spot.addColorStop(0,'rgba(255,213,106,.18)'); spot.addColorStop(1,'rgba(21,32,43,0)');
+  cx.fillStyle=spot; cx.fillRect(0,0,W,H);
+
+  panel(20, 24, W-40, 72);
+  cx.fillStyle=C.white; cx.font='bold 13px system-ui,sans-serif'; cx.textAlign='center';
+  cx.fillText('SKI SCHOOL · RACE DAY', W/2, 48);
+  cx.fillStyle=C.gold; cx.font='bold 26px system-ui,sans-serif';
+  cx.fillText('PODIUM', W/2, 78);
+
+  // blocks 2 / 1 / 3
+  const baseY = H*0.72;
+  const blocks = [
+    {place:2, look:CAST[0], h:90, x:W*0.18, label:'YOU', stars:2},
+    {place:1, look:CAST[1], h:130, x:W*0.42, label:'Mira', stars:3},
+    {place:3, look:CAST[2], h:70, x:W*0.66, label:'Jules', stars:1}
+  ];
+  // draw blocks
+  blocks.forEach(b=>{
+    const bw=W*0.2;
+    const by=baseY-b.h;
+    const cols={1:C.gold,2:'#c5d0dc',3:C.coral};
+    cx.fillStyle=cols[b.place];
+    rr(b.x, by, bw, b.h, 10); cx.fill();
+    cx.fillStyle=C.ink; cx.font='bold 28px system-ui,sans-serif'; cx.textAlign='center';
+    cx.fillText(String(b.place), b.x+bw/2, by+b.h/2+8);
+    drawGrom(b.x+bw/2, by-18, 1.15, b.look, {
+      lean: b.place===1?-0.1: b.place===2?0.15:-0.2,
+      beanie: b.look.id==='jules'?C.lilac:null
+    });
+    cx.fillStyle=C.white; cx.font='bold 13px system-ui,sans-serif';
+    cx.fillText(b.label, b.x+bw/2, by-48);
+    cx.fillStyle=C.gold; cx.font='12px system-ui,sans-serif';
+    cx.fillText('★'.repeat(b.stars)+'☆'.repeat(3-b.stars), b.x+bw/2, by-32);
+  });
+
+  panel(28, H*0.78, W-56, 54, 'rgba(21,32,43,.82)');
+  cx.fillStyle=C.mint; cx.font='bold 14px system-ui,sans-serif'; cx.textAlign='center';
+  cx.fillText('2nd place · ★★ carve bonus', W/2, H*0.78+22);
+  cx.fillStyle='#c5d4e8'; cx.font='11px system-ui,sans-serif';
+  cx.fillText('finish order + clean S through gates', W/2, H*0.78+42);
+
+  btn(40, H-118, W-80, 54, 'REMATCH', C.pink, C.ink, 'rematch');
+
+  drawSwitcher();
+}
+
+/* ---- input ---- */
+function ptr(e){
+  const t=e.changedTouches?e.changedTouches[0]:e;
+  return {x:t.clientX,y:t.clientY};
+}
+function inRect(p,r){ return r && p.x>=r.x && p.x<=r.x+r.w && p.y>=r.y && p.y<=r.y+r.h; }
+function setState(s){
+  state=s; raceT=0; t0=performance.now();
+  announce(s==='MENU'?'Race Day menu': s==='RACE'?'Race in progress':'Podium results');
+}
+function onDown(e){
+  e.preventDefault();
+  const p=ptr(e);
+  if(inRect(p,hit.menu)){ setState('MENU'); return; }
+  if(inRect(p,hit.race)){ setState('RACE'); return; }
+  if(inRect(p,hit.podium)){ setState('PODIUM'); return; }
+  if(state==='MENU' && inRect(p,hit.play)){ setState('RACE'); return; }
+  if(state==='PODIUM' && inRect(p,hit.rematch)){ setState('RACE'); return; }
+}
+cv.addEventListener('mousedown', onDown, {passive:false});
+cv.addEventListener('touchstart', onDown, {passive:false});
+
+/* ---- loop ---- */
+function frame(now){
+  raceT = (now-t0)/1000;
+  cx.clearRect(0,0,W,H);
+  if(state==='MENU') drawMenu();
+  else if(state==='PODIUM') drawPodium();
+  else drawRace();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* screenshot / deep-link hooks */
+const _q = new URLSearchParams(location.search);
+const shot = (_q.get('shot')||'').toLowerCase();
+if(shot==='race') setState('RACE');
+else if(shot==='podium') setState('PODIUM');
+else if(shot==='menu') setState('MENU');
+window.__raceDay = {setState, state:()=>state, CAST};
+</script>
+</body></html>
