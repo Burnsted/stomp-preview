@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#6a9cc4">
+<title>Ski School</title>
+<style>
+html,body{margin:0;height:100%;background:#15202b;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
+canvas{display:block;width:100vw;height:100vh}
+#live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="live" aria-live="polite"></div>
+<script>
+'use strict';
+/* ============================================================
+   Ski School v0.1 — tip-only Soft Alps face carve
+   DIFFERENTIATOR: open snow FACE · carve LEFT↔RIGHT in S-curves
+   NOT a down-the-pipe corridor (BD) · NOT a terrain park (TP)
+   ============================================================ */
+
+/* ---- knobs (tune feel here) ---- */
+const FACE_WIDTH = 0.86;      // usable lateral fraction of phone width
+const SKID_FRICTION = 2.8;    // how hard SKID scrubs speed
+const CARVE_LEAN = 2.4;       // lateral accel from TOE/HEEL
+const GRAVITY = 48;           // downward drift (lite — not a race)
+const BASE_VY = 72;           // resting descent speed
+const MAX_VY = 160;
+const MAX_VX = 210;
+const EDGE_PAD = 0.08;        // tree band as fraction of width
+const FORM_LATERAL = 1.35;    // lateral travel / descent for ★★★
+const FORM_STAR2 = 0.85;      // ★★ threshold
+const FORM_STAR1 = 0.45;      // ★ threshold
+const STOP_SPEED = 28;        // vy under this + in zone = stop clear
+const TRAIL_MAX = 90;
+const SPRAY_MAX = 48;
+const DT_CAP = 1/30;
+
+/* Soft Alps palette */
+const C = {
+  skyA:'#6a9cc4', skyB:'#c8dcec', snow:'#eef5fb', shade:'rgba(180,205,225,.28)',
+  ink:'#15202b', panel:'rgba(21,32,43,.88)', white:'#fff', pink:'#ff8fbf',
+  gold:'#ffd56a', mint:'#6ee7b7', orange:'#ff9f43', red:'#ff5c7a',
+  peak:'#7f97ae', tree:'#355544', trail:'rgba(255,143,191,.55)',
+  jacket:'#7ec8ff', board:'#ff8fbf', hair:'#2a1f3d', skin:'#f0c4a8'
+};
+
+const SKILL_DEFS = [
+  {id:'skid', name:'Skid', tip:'spray to slow'},
+  {id:'scarve', name:'S-Carve', tip:'NOW · left ↔ right'},
+  {id:'stop', name:'Stop', tip:'full skid halt'},
+  {id:'haul', name:'Haul', tip:'speed across face'},
+  {id:'ollie', name:'Ollie', tip:'pop off snow'},
+  {id:'park', name:'Park Pass', tip:'opens Terrain Park'}
+];
+
+const PK = 'skiSchool.progress', MUTE_K = 'skiSchool.mute';
+let PR; try{ PR = JSON.parse(localStorage.getItem(PK)||'null'); }catch(e){ PR=null; }
+if(!PR || !PR.done) PR = {done:{skid:true}, stars:{skid:3}, mute:false};
+function saveP(){ try{ localStorage.setItem(PK, JSON.stringify(PR)); }catch(e){} }
+let muted = localStorage.getItem(MUTE_K)==='1' || !!PR.mute;
+
+/* ---- canvas / layout ---- */
+const cv = document.getElementById('c'), cx = cv.getContext('2d');
+const live = document.getElementById('live');
+let W=390, H=844, dpr=1, scale=1;
+
+function resize(){
+  dpr = Math.min(window.devicePixelRatio||1, 2);
+  const iw = innerWidth, ih = innerHeight;
+  cv.width = Math.floor(iw*dpr); cv.height = Math.floor(ih*dpr);
+  scale = dpr;
+  W = iw; H = ih;
+  cx.setTransform(dpr,0,0,dpr,0,0);
+}
+addEventListener('resize', resize); resize();
+
+function announce(t){ live.textContent = t; }
+
+/* ---- state machine ---- */
+const ST = { MENU:'MENU', LESSON:'LESSON', SKILLS:'SKILLS', PAUSED:'PAUSED', CLEARED:'CLEARED' };
+let state = ST.MENU, prevState = ST.MENU;
+let lessonId = 'scarve'; // Lesson 2 default
+let hit = {}; // button rects for pointer
+
+/* lesson runtime */
+let P = null; // player
+let trail = [];
+let spray = [];
+let cones = [];
+let trees = [];
+let formStars = 0;
+let lateralAccum = 0, descentAccum = 0;
+let coachT = 4.5;
+let skidding = false, lean = 0; // -1 toe, +1 heel
+let keys = {toe:0, heel:0, skid:0};
+let clearMsg = '', clearStars = 0;
+let ghostPath = [];
+
+function faceX0(){ return W*EDGE_PAD; }
+function faceX1(){ return W*(1-EDGE_PAD); }
+function faceMid(){ return W*0.5; }
+
+function resetLesson(id){
+  lessonId = id || 'scarve';
+  const y0 = H*0.28;
+  P = {x:faceMid(), y:y0, vx:0, vy:BASE_VY, lean:0, boardA:0};
+  trail = [{x:P.x, y:P.y}];
+  spray = [];
+  lateralAccum = 0; descentAccum = 0; formStars = 0;
+  coachT = 4.5; skidding = false; lean = 0;
+  keys = {toe:0, heel:0, skid:0};
+  // edge trees + face cones (markers of LEFT/RIGHT extremes — not a corridor gate)
+  trees = [];
+  for(let i=0;i<5;i++){
+    const y = H*0.30 + i*H*0.13;
+    trees.push({x:18+(i%2)*6, y, s:20+i%3*3});
+    trees.push({x:W-18-(i%2)*6, y:y+12, s:22+i%2*3});
+  }
+  cones = [];
+  [0.34,0.50,0.66].forEach(fy=>{
+    cones.push({x:faceX0()+14, y:H*fy});
+    cones.push({x:faceX1()-14, y:H*fy});
+  });
+  // ghost S guide (future path hint)
+  ghostPath = [];
+  const gx0 = P.x, gy0 = P.y;
+  for(let t=0;t<=1;t+=0.02){
+    const y = gy0 + (H*0.92-gy0)*t;
+    const phase = t*Math.PI*2.2;
+    const amp = W*FACE_WIDTH*0.38*(0.55+0.45*Math.sin(t*Math.PI));
+    ghostPath.push({x: faceMid() + Math.sin(phase)*amp, y});
+  }
+  announce('Lesson: carve across the face');
+}
+
+function setState(s){
+  prevState = state; state = s;
+  if(s===ST.LESSON) resetLesson(lessonId);
+  if(s===ST.MENU) announce('Ski School menu');
+  if(s===ST.SKILLS) announce('Face skills');
+}
+
+function skillOpen(i){
+  if(i===0) return true;
+  const prev = SKILL_DEFS[i-1].id;
+  return !!PR.done[prev];
+}
+function skillDone(id){ return !!PR.done[id]; }
+
+function evalForm(){
+  const ratio = descentAccum>8 ? lateralAccum/descentAccum : 0;
+  if(ratio >= FORM_LATERAL) return 3;
+  if(ratio >= FORM_STAR2) return 2;
+  if(ratio >= FORM_STAR1) return 1;
+  return 0;
+}
+
+function clearLesson(){
+  clearStars = Math.max(1, evalForm());
+  formStars = clearStars;
+  clearMsg = clearStars>=3 ? 'Clean S-carve!' : clearStars>=2 ? 'Nice path' : 'Keep carving wider';
+  PR.done[lessonId] = true;
+  PR.stars[lessonId] = Math.max(PR.stars[lessonId]|0, clearStars);
+  // unlocking next is implicit via skillOpen
+  if(lessonId==='scarve' && !PR.done.skid){ PR.done.skid=true; PR.stars.skid=3; }
+  saveP();
+  setState(ST.CLEARED);
+  starChime(clearStars);
+  announce('Cleared with '+clearStars+' stars');
+}
+
+/* ---- Web Audio SFX ---- */
+let ac=null, noiseBuf=null, scrapeN=null, scrapeG=null;
+function ensureAC(){
+  try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==='suspended') ac.resume(); }catch(e){}
+  return ac;
+}
+function beep(f,d,type,v){
+  if(muted||!ensureAC())return;
+  try{
+    const o=ac.createOscillator(), g=ac.createGain();
+    o.type=type||'sine'; o.frequency.value=f;
+    g.gain.setValueAtTime(v||0.12, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+d);
+    o.connect(g).connect(ac.destination); o.start(); o.stop(ac.currentTime+d);
+  }catch(e){}
+}
+function mkNoise(sec){
+  const n=Math.floor(ac.sampleRate*sec), b=ac.createBuffer(1,n,ac.sampleRate), d=b.getChannelData(0);
+  for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*0.7;
+  return b;
+}
+function scrapeStart(){
+  if(muted||scrapeN||!ensureAC())return;
+  try{
+    if(!noiseBuf) noiseBuf=mkNoise(1.2);
+    const src=ac.createBufferSource(); src.buffer=noiseBuf; src.loop=true;
+    const bp=ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=780; bp.Q.value=0.65;
+    scrapeG=ac.createGain(); scrapeG.gain.value=0.0001;
+    src.connect(bp); bp.connect(scrapeG); scrapeG.connect(ac.destination); src.start();
+    scrapeN={src,bp}; scrapeG.gain.exponentialRampToValueAtTime(0.038, ac.currentTime+0.08);
+  }catch(e){ scrapeN=null; }
+}
+function scrapeStop(){
+  if(!scrapeN)return;
+  try{
+    const t=ac.currentTime;
+    if(scrapeG){ scrapeG.gain.cancelScheduledValues(t); scrapeG.gain.setValueAtTime(Math.max(0.0001,scrapeG.gain.value),t); scrapeG.gain.exponentialRampToValueAtTime(0.0001,t+0.08); }
+    const n=scrapeN; scrapeN=null; setTimeout(()=>{ try{n.src.stop();}catch(e){} },120);
+  }catch(e){ scrapeN=null; }
+}
+function carveWhoosh(){
+  if(muted||!ensureAC())return;
+  try{
+    const t=ac.currentTime, o=ac.createOscillator(), g=ac.createGain();
+    o.type='sine'; o.frequency.setValueAtTime(180,t); o.frequency.exponentialRampToValueAtTime(420,t+0.12); o.frequency.exponentialRampToValueAtTime(140,t+0.28);
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.14,t+0.04); g.gain.exponentialRampToValueAtTime(0.001,t+0.3);
+    o.connect(g).connect(ac.destination); o.start(t); o.stop(t+0.32);
+  }catch(e){}
+}
+function starChime(n){
+  for(let i=0;i<n;i++) setTimeout(()=>beep(660+i*160,0.14,'square',0.1), i*110);
+}
+function stopScrub(){ beep(90,0.35,'sawtooth',0.16); scrapeStop(); }
+
+let lastWhoosh=0;
+
+/* ---- input ---- */
+function ptr(e){
+  const t = e.changedTouches? e.changedTouches[0] : e;
+  return {x:t.clientX, y:t.clientY};
+}
+function inRect(p,r){ return r && p.x>=r.x && p.x<=r.x+r.w && p.y>=r.y && p.y<=r.y+r.h; }
+
+function onDown(e){
+  e.preventDefault(); ensureAC();
+  const p = ptr(e);
+  if(state===ST.MENU){
+    if(inRect(p, hit.lesson)){ setState(ST.LESSON); beep(520,0.08,'triangle',0.1); return; }
+    if(inRect(p, hit.skills)){ setState(ST.SKILLS); beep(440,0.08,'triangle',0.1); return; }
+    return;
+  }
+  if(state===ST.SKILLS){
+    if(inRect(p, hit.back)){ setState(ST.MENU); return; }
+    for(let i=0;i<SKILL_DEFS.length;i++){
+      const r = hit['sk'+i];
+      if(inRect(p,r) && skillOpen(i)){
+        const id = SKILL_DEFS[i].id;
+        if(id==='park'){ announce('Park Pass unlocks Terrain Park — tip only, not embedded'); beep(300,0.2,'sine',0.1); return; }
+        lessonId = id==='scarve'?'scarve':id;
+        setState(ST.LESSON);
+        return;
+      }
+    }
+    return;
+  }
+  if(state===ST.CLEARED){
+    if(inRect(p, hit.again)){ setState(ST.LESSON); return; }
+    if(inRect(p, hit.skills2)){ setState(ST.SKILLS); return; }
+    if(inRect(p, hit.menu)){ setState(ST.MENU); return; }
+    return;
+  }
+  if(state===ST.PAUSED){
+    if(inRect(p, hit.resume)){ state=ST.LESSON; announce('Resumed'); return; }
+    if(inRect(p, hit.menuP)){ scrapeStop(); setState(ST.MENU); return; }
+    return;
+  }
+  if(state===ST.LESSON){
+    if(inRect(p, hit.pause)){ state=ST.PAUSED; scrapeStop(); announce('Paused'); return; }
+    if(inRect(p, hit.mute)){ muted=!muted; try{localStorage.setItem(MUTE_K, muted?'1':'0');}catch(e){} if(muted) scrapeStop(); return; }
+    if(inRect(p, hit.toe)){ keys.toe=1; return; }
+    if(inRect(p, hit.heel)){ keys.heel=1; return; }
+    if(inRect(p, hit.skid)){ keys.skid=1; skidding=true; scrapeStart(); return; }
+    // tap left/right half as lean fallback
+    if(p.y > H*0.22 && p.y < H-90){
+      if(p.x < W*0.5) keys.toe=1; else keys.heel=1;
+    }
+  }
+}
+function onUp(e){
+  e.preventDefault();
+  if(state!==ST.LESSON) return;
+  const p = ptr(e);
+  // release all for simplicity on touch end
+  if(keys.skid){ keys.skid=0; skidding=false; scrapeStop(); stopScrub(); }
+  keys.toe=0; keys.heel=0;
+}
+function onMove(e){
+  if(state!==ST.LESSON || !e.touches || !e.touches.length) return;
+  e.preventDefault();
+  const p = ptr(e);
+  keys.toe=0; keys.heel=0;
+  if(inRect(p, hit.skid) || (keys.skid && inRect(p, hit.skid))){ keys.skid=1; skidding=true; if(!scrapeN) scrapeStart(); }
+  else if(keys.skid && !inRect(p, hit.skid)){ /* keep skid if finger still down on button area loosely */ }
+  if(inRect(p, hit.toe) || (p.y>H*0.22 && p.y<H-90 && p.x<W*0.42)) keys.toe=1;
+  if(inRect(p, hit.heel) || (p.y>H*0.22 && p.y<H-90 && p.x>W*0.58)) keys.heel=1;
+}
+
+cv.addEventListener('mousedown', onDown, {passive:false});
+cv.addEventListener('mouseup', onUp, {passive:false});
+cv.addEventListener('mouseleave', onUp, {passive:false});
+cv.addEventListener('touchstart', onDown, {passive:false});
+cv.addEventListener('touchend', onUp, {passive:false});
+cv.addEventListener('touchcancel', onUp, {passive:false});
+cv.addEventListener('touchmove', onMove, {passive:false});
+
+addEventListener('keydown', e=>{
+  ensureAC();
+  if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A') keys.toe=1;
+  if(e.key==='ArrowRight'||e.key==='d'||e.key==='D') keys.heel=1;
+  if(e.key===' '||e.key==='Shift'){ keys.skid=1; skidding=true; scrapeStart(); }
+  if(e.key==='p'||e.key==='P'){ if(state===ST.LESSON){state=ST.PAUSED;scrapeStop();} else if(state===ST.PAUSED) state=ST.LESSON; }
+  if(e.key==='m'||e.key==='M'){ muted=!muted; if(muted) scrapeStop(); }
+  if(e.key==='Escape'){ if(state===ST.LESSON||state===ST.PAUSED){scrapeStop();setState(ST.MENU);} else if(state===ST.SKILLS||state===ST.CLEARED) setState(ST.MENU); }
+});
+addEventListener('keyup', e=>{
+  if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A') keys.toe=0;
+  if(e.key==='ArrowRight'||e.key==='d'||e.key==='D') keys.heel=0;
+  if(e.key===' '||e.key==='Shift'){ keys.skid=0; skidding=false; scrapeStop(); }
+});
+
+/* ---- physics ---- */
+function step(dt){
+  if(state!==ST.LESSON || !P) return;
+  lean = (keys.heel?1:0) - (keys.toe?1:0);
+  const targetLean = lean * 0.55;
+  P.lean += (targetLean - P.lean)*Math.min(1, dt*8);
+
+  // lateral carve
+  P.vx += lean * CARVE_LEAN * 90 * dt;
+  // gravity-lite descent
+  let vyTarget = BASE_VY + Math.abs(P.vx)*0.12;
+  if(keys.skid){
+    vyTarget *= 0.35;
+    P.vx *= Math.max(0, 1 - SKID_FRICTION*dt);
+    // spray particles
+    for(let i=0;i<3;i++){
+      if(spray.length>SPRAY_MAX) spray.shift();
+      spray.push({x:P.x - Math.sign(P.vx||1)*8 - Math.random()*10, y:P.y+10+Math.random()*6, r:1.5+Math.random()*2.2, life:0.35+Math.random()*0.25});
+    }
+  }
+  P.vy += (vyTarget - P.vy)*Math.min(1, dt*3);
+  P.vy = Math.max(24, Math.min(MAX_VY, P.vy));
+  P.vx = Math.max(-MAX_VX, Math.min(MAX_VX, P.vx));
+
+  const ox=P.x, oy=P.y;
+  P.x += P.vx * dt;
+  P.y += P.vy * dt;
+
+  // soft edge bounce inside face (trees are soft walls)
+  const x0 = faceX0()+10, x1 = faceX1()-10;
+  if(P.x < x0){ P.x=x0; P.vx = Math.abs(P.vx)*0.4; }
+  if(P.x > x1){ P.x=x1; P.vx = -Math.abs(P.vx)*0.4; }
+
+  lateralAccum += Math.abs(P.x - ox);
+  descentAccum += Math.max(0, P.y - oy);
+  formStars = evalForm();
+
+  // trail
+  if(trail.length===0 || Math.hypot(P.x-trail[trail.length-1].x, P.y-trail[trail.length-1].y)>6){
+    trail.push({x:P.x, y:P.y});
+    if(trail.length>TRAIL_MAX) trail.shift();
+  }
+
+  // spray life
+  for(let i=spray.length-1;i>=0;i--){ spray[i].life-=dt; spray[i].x-=Math.sign(P.vx||1)*20*dt; if(spray[i].life<=0) spray.splice(i,1); }
+
+  // whoosh on direction change
+  if(Math.abs(lean)>0 && Math.sign(lean)!==Math.sign(P.boardA) && performance.now()-lastWhoosh>420){
+    carveWhoosh(); lastWhoosh=performance.now();
+  }
+  P.boardA += (P.lean - P.boardA)*Math.min(1,dt*6);
+
+  if(coachT>0) coachT-=dt;
+
+  // scrape pitch follow
+  if(scrapeN && scrapeN.bp) scrapeN.bp.frequency.value = 620 + Math.min(400, Math.abs(P.vx)*1.2);
+
+  // stop zone (above control row — scrub + halt here)
+  const zoneY = H*0.82, zoneH=48, zoneW=150;
+  const inZone = P.y>=zoneY && P.y<=zoneY+zoneH && Math.abs(P.x-faceMid())<zoneW/2;
+  if(inZone && P.vy < STOP_SPEED && (keys.skid || Math.hypot(P.vx,P.vy)<STOP_SPEED*1.2)){
+    clearLesson();
+    return;
+  }
+  // if past bottom without stop — still clear if form ok, else soft loop tip
+  if(P.y > H-40){
+    if(formStars>=1) clearLesson();
+    else { P.y = H*0.28; P.x = faceMid(); P.vx=0; trail=[{x:P.x,y:P.y}]; coachT=3; announce('Carve wider S — don’t go straight'); }
+  }
+}
+
+/* ---- draw helpers ---- */
+function rr(x,y,w,h,r){
+  const R=Math.min(r,w/2,h/2);
+  cx.beginPath(); cx.moveTo(x+R,y); cx.arcTo(x+w,y,x+w,y+h,R); cx.arcTo(x+w,y+h,x,y+h,R); cx.arcTo(x,y+h,x,y,R); cx.arcTo(x,y,x+w,y,R); cx.closePath();
+}
+function panel(x,y,w,h){ cx.fillStyle=C.panel; rr(x,y,w,h,14); cx.fill(); }
+function btn(x,y,w,h,label,fill,ink,key){
+  cx.fillStyle=fill; rr(x,y,w,h,14); cx.fill();
+  cx.fillStyle=ink||C.ink; cx.font='bold '+(h>50?18:15)+'px system-ui,sans-serif';
+  cx.textAlign='center'; cx.textBaseline='middle'; cx.fillText(label, x+w/2, y+h/2+1);
+  if(key) hit[key]={x,y,w,h};
+}
+function tree(x,y,s){
+  cx.fillStyle=C.tree;
+  cx.beginPath(); cx.moveTo(x,y-s); cx.lineTo(x-s*.5,y); cx.lineTo(x+s*.5,y); cx.fill();
+  cx.beginPath(); cx.moveTo(x,y-s*.55); cx.lineTo(x-s*.72,y+s*.32); cx.lineTo(x+s*.72,y+s*.32); cx.fill();
+  cx.fillStyle='#5a4030'; cx.fillRect(x-3,y+s*.28,6,10);
+  cx.fillStyle='#fff'; cx.beginPath(); cx.moveTo(x,y-s); cx.lineTo(x-9,y-s*.65); cx.lineTo(x+9,y-s*.65); cx.fill();
+}
+function cone(x,y){
+  cx.fillStyle=C.orange;
+  cx.beginPath(); cx.moveTo(x,y-16); cx.lineTo(x-7,y); cx.lineTo(x+7,y); cx.fill();
+  cx.fillStyle='#fff'; cx.fillRect(x-2.5,y-11,5,2.5);
+}
+function drawFace(dim){
+  const g=cx.createLinearGradient(0,0,0,H*0.22);
+  g.addColorStop(0,C.skyA); g.addColorStop(1,C.skyB);
+  cx.fillStyle=g; cx.fillRect(0,0,W,H*0.22);
+  cx.fillStyle=C.peak;
+  cx.beginPath();
+  cx.moveTo(0,H*0.18); cx.lineTo(W*0.18,H*0.1); cx.lineTo(W*0.36,H*0.17);
+  cx.lineTo(W*0.56,H*0.08); cx.lineTo(W*0.77,H*0.16); cx.lineTo(W,H*0.1);
+  cx.lineTo(W,H*0.22); cx.lineTo(0,H*0.22); cx.fill();
+  cx.fillStyle='#fff';
+  [[W*0.18,H*0.1],[W*0.56,H*0.08]].forEach(([x,y])=>{ cx.beginPath(); cx.moveTo(x-12,y+12); cx.lineTo(x,y); cx.lineTo(x+12,y+12); cx.fill(); });
+  cx.fillStyle=C.snow; cx.fillRect(0,H*0.2,W,H*0.8);
+  cx.fillStyle=C.shade;
+  for(let i=0;i<6;i++){ const y=H*0.28+i*H*0.12; cx.beginPath(); cx.ellipse(W/2,y,W*0.55,18,0,0,Math.PI*2); cx.fill(); }
+  // edge trees only — open middle face (never a corridor)
+  [0.32,0.48,0.64,0.8].forEach((fy,i)=>{
+    tree(22+(i%2)*6, H*fy, 22+i%3*4);
+    tree(W-22-(i%2)*6, H*fy+10, 24+i%2*4);
+  });
+  if(dim){ cx.fillStyle='rgba(21,32,43,.55)'; cx.fillRect(0,0,W,H); }
+}
+function drawRider(x,y,s,opts){
+  opts=opts||{};
+  cx.save(); cx.translate(x,y); cx.rotate(opts.lean||0); cx.scale(s,s);
+  // board
+  cx.fillStyle=opts.board||C.board; rr(-26,14,52,8,3); cx.fill();
+  if(opts.skid){
+    cx.fillStyle='rgba(255,255,255,.95)';
+    for(let i=0;i<8;i++){ cx.beginPath(); cx.arc(-22-i*4,18+(i%3),2.4,0,Math.PI*2); cx.fill(); }
+  }
+  // legs
+  cx.strokeStyle='#243040'; cx.lineWidth=5; cx.lineCap='round';
+  cx.beginPath(); cx.moveTo(-5,2); cx.lineTo(-12,14); cx.stroke();
+  cx.beginPath(); cx.moveTo(5,2); cx.lineTo(14,14); cx.stroke();
+  // jacket
+  cx.fillStyle=opts.jacket||C.jacket; rr(-10,-8,20,16,5); cx.fill();
+  // arms
+  cx.strokeStyle=opts.jacket||C.jacket; cx.lineWidth=4;
+  cx.beginPath(); cx.moveTo(-10,-2); cx.lineTo(opts.armL||-20,-10); cx.stroke();
+  cx.beginPath(); cx.moveTo(10,-2); cx.lineTo(opts.armR||20,4); cx.stroke();
+  // head + hair/helmet
+  cx.fillStyle=C.skin; cx.beginPath(); cx.arc(0,-14,7.5,0,Math.PI*2); cx.fill();
+  cx.fillStyle=opts.hair||C.hair;
+  cx.beginPath(); cx.ellipse(0,-17,8.5,6.5,0,Math.PI,0); cx.fill();
+  cx.beginPath(); cx.moveTo(6,-16); cx.quadraticCurveTo(14,-8,11,0); cx.lineTo(8,0); cx.quadraticCurveTo(10,-8,5,-14); cx.fill();
+  cx.restore();
+}
+function starsText(n){
+  return '★'.repeat(Math.max(0,n)) + '☆'.repeat(Math.max(0,3-n));
+}
+
+/* ---- screens ---- */
+function drawMenu(){
+  hit={};
+  drawFace(false);
+  // hint S-path
+  cx.strokeStyle='rgba(255,143,191,.35)'; cx.lineWidth=10; cx.lineCap='round'; cx.lineJoin='round';
+  cx.beginPath();
+  cx.moveTo(W*0.15,H*0.35); cx.bezierCurveTo(W*0.87,H*0.45,W*0.1,H*0.55,W*0.82,H*0.65); cx.bezierCurveTo(W*0.92,H*0.7,W*0.2,H*0.78,W/2,H*0.82);
+  cx.stroke();
+  drawRider(W*0.42, H*0.58, Math.min(1.5, W/280), {lean:-0.35, skid:true, jacket:C.pink, board:C.gold, hair:'#2a1f3d'});
+  panel(24,24,W-48,110);
+  cx.fillStyle=C.white; cx.font='bold 28px system-ui,sans-serif'; cx.textAlign='center'; cx.textBaseline='alphabetic';
+  cx.fillText('SKI SCHOOL', W/2, 62);
+  cx.font='13px system-ui,sans-serif'; cx.fillStyle=C.pink;
+  cx.fillText('carve the face · not a race', W/2, 88);
+  cx.fillStyle=C.mint; cx.font='12px system-ui,sans-serif';
+  cx.fillText('full phone · left ↔ right', W/2, 110);
+  btn(60, H-160, W-120, 56, 'LESSON', C.pink, C.ink, 'lesson');
+  btn(60, H-92, W-120, 42, 'SKILLS', 'rgba(255,255,255,.16)', C.white, 'skills');
+  cx.fillStyle='rgba(21,32,43,.5)'; cx.font='11px system-ui,sans-serif';
+  cx.fillText('v0.1 tip · differentiator: S-carve across face', W/2, H-22);
+}
+
+function drawLesson(){
+  hit={};
+  drawFace(false);
+  // ghost guide
+  if(ghostPath.length>1){
+    cx.setLineDash([8,10]); cx.strokeStyle='rgba(110,231,183,.45)'; cx.lineWidth=5; cx.lineCap='round';
+    cx.beginPath();
+    let started=false;
+    for(const g of ghostPath){
+      if(g.y < (P?P.y:0)+8) continue;
+      if(!started){ cx.moveTo(g.x,g.y); started=true; } else cx.lineTo(g.x,g.y);
+    }
+    if(started) cx.stroke();
+    cx.setLineDash([]);
+  }
+  // player trail
+  if(trail.length>1){
+    cx.strokeStyle=C.trail; cx.lineWidth=14; cx.lineCap='round'; cx.lineJoin='round';
+    cx.beginPath(); cx.moveTo(trail[0].x, trail[0].y);
+    for(let i=1;i<trail.length;i++) cx.lineTo(trail[i].x, trail[i].y);
+    cx.stroke();
+  }
+  // lesson trees already drawn via drawFace; cones mark face extremes
+  cones.forEach(c=>cone(c.x,c.y));
+  // stop zone
+  const zx=W/2-75, zy=H*0.82, zw=150, zh=44;
+  cx.fillStyle='rgba(255,92,122,.25)'; rr(zx,zy,zw,zh,8); cx.fill();
+  cx.strokeStyle=C.red; cx.lineWidth=2; cx.setLineDash([4,4]); rr(zx,zy,zw,zh,8); cx.stroke(); cx.setLineDash([]);
+  cx.fillStyle=C.red; cx.font='bold 12px system-ui,sans-serif'; cx.textAlign='center'; cx.textBaseline='middle';
+  cx.fillText('STOP ZONE', zx+zw/2, zy+zh/2);
+
+  spray.forEach(s=>{ cx.globalAlpha=Math.max(0,s.life/0.4); cx.fillStyle='#fff'; cx.beginPath(); cx.arc(s.x,s.y,s.r,0,Math.PI*2); cx.fill(); });
+  cx.globalAlpha=1;
+
+  if(P){
+    const sc = Math.min(1.4, W/280);
+    drawRider(P.x, P.y, sc, {
+      lean: P.lean,
+      skid: !!keys.skid,
+      jacket: C.jacket,
+      board: C.board,
+      armL: -16-lean*6,
+      armR: 18+lean*8
+    });
+  }
+
+  // coach chip
+  if(coachT>0){
+    panel(W/2-130, H*0.245, 260, 36);
+    cx.fillStyle=C.white; cx.font='bold 13px system-ui,sans-serif'; cx.textAlign='center'; cx.textBaseline='middle';
+    cx.fillText('Carve across — don’t go straight ↓', W/2, H*0.245+18);
+  }
+
+  // HUD
+  panel(12,12,118,48);
+  cx.fillStyle=C.white; cx.font='bold 14px system-ui,sans-serif'; cx.textAlign='left'; cx.textBaseline='alphabetic';
+  const title = lessonId==='scarve'?'S-CARVE': lessonId==='skid'?'SKID': lessonId==='stop'?'STOP': lessonId==='haul'?'HAUL': lessonId==='ollie'?'OLLIE': 'LESSON';
+  cx.fillText(title, 22, 32);
+  cx.font='11px system-ui,sans-serif'; cx.fillStyle=C.pink;
+  cx.fillText(lessonId==='scarve'?'Lesson 2':'Lesson', 22, 48);
+
+  panel(W-100,12,88,48);
+  cx.fillStyle=C.gold; cx.font='bold 16px system-ui,sans-serif'; cx.textAlign='right';
+  cx.fillText(starsText(formStars), W-20, 34);
+  cx.font='10px system-ui,sans-serif'; cx.fillStyle=C.mint; cx.fillText('FORM', W-20, 48);
+
+  // tiny pause / mute
+  btn(W-52, 68, 40, 32, muted?'MUTE':'SND', 'rgba(21,32,43,.7)', C.white, 'mute');
+  btn(12, 68, 40, 32, '||', 'rgba(21,32,43,.7)', C.white, 'pause');
+
+  // controls
+  btn(14, H-70, 72, 52, '◀ TOE', 'rgba(255,255,255,.2)', C.white, 'toe');
+  btn(W-86, H-70, 72, 52, 'HEEL ▶', 'rgba(255,255,255,.2)', C.white, 'heel');
+  const skidFill = keys.skid ? '#ffe08a' : C.gold;
+  btn(W/2-58, H-74, 116, 56, 'SKID', skidFill, C.ink, 'skid');
+  cx.fillStyle='rgba(21,32,43,.45)'; cx.font='10px system-ui,sans-serif'; cx.textAlign='center'; cx.textBaseline='alphabetic';
+  cx.fillText('lean across the face · skid to scrub · stop in the zone', W/2, H-14);
+}
+
+function drawSkills(){
+  hit={};
+  drawFace(true);
+  panel(16,24,W-32,64);
+  cx.fillStyle=C.white; cx.font='bold 22px system-ui,sans-serif'; cx.textAlign='center'; cx.textBaseline='alphabetic';
+  cx.fillText('FACE SKILLS', W/2, 52);
+  cx.font='12px system-ui,sans-serif'; cx.fillStyle=C.pink;
+  cx.fillText('earn these · then the park', W/2, 72);
+
+  const top=104, rowH=Math.min(96, (H-150)/SKILL_DEFS.length);
+  SKILL_DEFS.forEach((sk,i)=>{
+    const y=top+i*rowH, open=skillOpen(i), done=skillDone(sk.id);
+    const next = open && !done;
+    cx.fillStyle = open ? 'rgba(255,255,255,.12)' : 'rgba(0,0,0,.4)';
+    rr(28,y,W-56,rowH-10,14); cx.fill();
+    cx.strokeStyle = done?C.gold:(next?C.mint:'rgba(255,255,255,.12)');
+    cx.lineWidth = open?2.5:1; cx.stroke();
+    hit['sk'+i]={x:28,y,w:W-56,h:rowH-10};
+    cx.fillStyle=C.white; cx.font='bold 18px system-ui,sans-serif'; cx.textAlign='left'; cx.textBaseline='alphabetic';
+    const label = (open?'':'🔒 ')+sk.name;
+    cx.fillText(label, 48, y+32);
+    cx.font='13px system-ui,sans-serif'; cx.fillStyle=open?'#c5d4e8':'#7a8898';
+    const tip = next && sk.id==='scarve' ? 'NOW · left ↔ right' : sk.tip;
+    cx.fillText(tip, 48, y+54);
+    if(done){
+      cx.fillStyle=C.gold; cx.font='bold 14px system-ui,sans-serif'; cx.textAlign='right';
+      cx.fillText(starsText(PR.stars[sk.id]|0 || 3), W-48, y+44);
+    } else if(next){
+      cx.fillStyle=C.pink; cx.font='bold 12px system-ui,sans-serif'; cx.textAlign='right';
+      cx.fillText('NEXT', W-48, y+44);
+    }
+  });
+  btn(W/2-60, H-48, 120, 36, '← MENU', 'rgba(255,255,255,.14)', C.white, 'back');
+  cx.fillStyle='rgba(255,255,255,.6)'; cx.font='11px system-ui,sans-serif'; cx.textAlign='center';
+  cx.fillText('Park Pass is the bridge into Terrain Park — not a copy of it', W/2, H-10);
+}
+
+function drawPaused(){
+  drawLesson();
+  cx.fillStyle='rgba(21,32,43,.72)'; cx.fillRect(0,0,W,H);
+  panel(W/2-120, H/2-90, 240, 180);
+  cx.fillStyle=C.white; cx.font='bold 22px system-ui,sans-serif'; cx.textAlign='center';
+  cx.fillText('PAUSED', W/2, H/2-50);
+  btn(W/2-90, H/2-20, 180, 48, 'RESUME', C.mint, C.ink, 'resume');
+  btn(W/2-90, H/2+40, 180, 42, 'MENU', 'rgba(255,255,255,.16)', C.white, 'menuP');
+}
+
+function drawCleared(){
+  drawFace(false);
+  if(trail.length>1){
+    cx.strokeStyle=C.trail; cx.lineWidth=14; cx.lineCap='round';
+    cx.beginPath(); cx.moveTo(trail[0].x,trail[0].y);
+    for(let i=1;i<trail.length;i++) cx.lineTo(trail[i].x,trail[i].y);
+    cx.stroke();
+  }
+  panel(W/2-140, H*0.28, 280, 200);
+  cx.fillStyle=C.white; cx.font='bold 24px system-ui,sans-serif'; cx.textAlign='center';
+  cx.fillText('CLEARED', W/2, H*0.28+42);
+  cx.fillStyle=C.gold; cx.font='bold 28px system-ui,sans-serif';
+  cx.fillText(starsText(clearStars), W/2, H*0.28+84);
+  cx.fillStyle=C.mint; cx.font='14px system-ui,sans-serif';
+  cx.fillText(clearMsg, W/2, H*0.28+118);
+  cx.fillStyle='#c5d4e8'; cx.font='12px system-ui,sans-serif';
+  cx.fillText('FORM from S-path · not speed', W/2, H*0.28+148);
+  btn(60, H-180, W-120, 52, 'AGAIN', C.gold, C.ink, 'again');
+  btn(60, H-118, W-120, 44, 'SKILLS', C.pink, C.ink, 'skills2');
+  btn(60, H-66, W-120, 40, 'MENU', 'rgba(255,255,255,.16)', C.white, 'menu');
+}
+
+/* ---- loop ---- */
+let last = performance.now();
+function frame(now){
+  const dt = Math.min(DT_CAP, (now-last)/1000); last=now;
+  step(dt);
+  cx.clearRect(0,0,W,H);
+  if(state===ST.MENU) drawMenu();
+  else if(state===ST.SKILLS) drawSkills();
+  else if(state===ST.PAUSED) drawPaused();
+  else if(state===ST.CLEARED) drawCleared();
+  else drawLesson();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* debug / screenshot hooks — tip only */
+const _q = new URLSearchParams(location.search);
+if(_q.get('shot')==='lesson') setState(ST.LESSON);
+else if(_q.get('shot')==='skills') setState(ST.SKILLS);
+else if(_q.get('shot')==='cleared'){ resetLesson('scarve'); trail=ghostPath.map(p=>({x:p.x,y:p.y})); clearStars=2; clearMsg='Nice path'; setState(ST.CLEARED); }
+window.__ski = {setState, ST, state:()=>state, PR, step, clearLesson};
+
+if('serviceWorker' in navigator){
+  addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
+}
+</script>
+</body></html>
