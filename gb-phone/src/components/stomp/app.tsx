@@ -19,7 +19,7 @@ import { PlaylistFab } from "@/components/stomp/playlist-chrome";
 import { ExploreDemoScreen } from "@/components/stomp/playtest/explore-demo";
 import { FeedbackPanel } from "@/components/stomp/playtest/feedback-panel";
 import { MeetSeshScreen } from "@/components/stomp/playtest/meet-sesh";
-import { PlaytestHomeChrome } from "@/components/stomp/playtest/playtest-chrome";
+import { PlaytestBottomChrome } from "@/components/stomp/playtest/playtest-chrome";
 import { ScreenErrorBoundary } from "@/components/stomp/playtest/screen-error-boundary";
 import { TripChoiceScreen } from "@/components/stomp/playtest/trip-choice";
 import { PlaytestWelcome } from "@/components/stomp/playtest/welcome";
@@ -100,7 +100,6 @@ export function StompApp() {
             {screen === "greet" ? <Greet /> : null}
             {screen === "greet" ? <GreetCrewToolsHint /> : null}
             {screen === "greet" ? <AvatarHomeDock /> : null}
-            {screen === "greet" ? <PlaytestHomeChrome /> : null}
             {screen === "crew" ? <CrewLink /> : null}
             {screen === "home" ? <Home /> : null}
             {screen === "run" ? <Run /> : null}
@@ -130,7 +129,7 @@ export function StompApp() {
           </ScreenErrorBoundary>
           {!hideChrome && !avatarScreens ? <MiniPlayerUi /> : null}
           {!avatarScreens ? <PlaylistFab /> : null}
-          {showNav ? <BottomNav /> : null}
+          {showNav ? <BottomNav playtestTools={<PlaytestBottomChrome />} /> : null}
         </div>
       </div>
     </div>

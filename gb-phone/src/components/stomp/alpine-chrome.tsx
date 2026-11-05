@@ -155,7 +155,12 @@ export function AlpineTopBar({
 }
 
 /** Five primary tabs — HOME | MAP | MUSIC | STATS | CREW */
-export function BottomNav() {
+export function BottomNav({
+  playtestTools,
+}: {
+  /** Quiet Feedback / Reset strip — sits above tab labels, same chrome unit. */
+  playtestTools?: ReactNode;
+} = {}) {
   const screen = useStomp((s) => s.screen);
   const setScreen = useStomp((s) => s.setScreen);
   const active = tabForScreen(screen);
@@ -166,27 +171,30 @@ export function BottomNav() {
       aria-label="Primary"
       className="alpine-bottom-nav pointer-events-auto absolute inset-x-0 bottom-0 z-40 mx-auto w-full max-w-md"
     >
-      <div className="pointer-events-auto mx-3 mb-[max(0.5rem,env(safe-area-inset-bottom))] grid grid-cols-5 gap-1 rounded-2xl alpine-glass px-1 py-1.5">
-        {PRIMARY_TABS.map((tab) => {
-          const Icon = tab.Icon;
-          const on = active === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              data-testid={`nav-${tab.id}`}
-              aria-current={on ? "page" : undefined}
-              onClick={() => setScreen(tab.screen)}
-              className={
-                "flex flex-col items-center gap-0.5 rounded-xl py-2 text-[10px] font-bold tracking-wide " +
-                (on ? "bg-accent/20 text-accent" : "text-snow/70")
-              }
-            >
-              <Icon className="size-5" aria-hidden="true" strokeWidth={on ? 2.5 : 2} />
-              {tab.label.toUpperCase()}
-            </button>
-          );
-        })}
+      <div className="pointer-events-auto mx-3 mb-[max(0.5rem,env(safe-area-inset-bottom))] flex flex-col gap-1">
+        {playtestTools}
+        <div className="grid grid-cols-5 gap-1 rounded-2xl alpine-glass px-1 py-1.5">
+          {PRIMARY_TABS.map((tab) => {
+            const Icon = tab.Icon;
+            const on = active === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                data-testid={`nav-${tab.id}`}
+                aria-current={on ? "page" : undefined}
+                onClick={() => setScreen(tab.screen)}
+                className={
+                  "flex flex-col items-center gap-0.5 rounded-xl py-2 text-[10px] font-bold tracking-wide " +
+                  (on ? "bg-accent/20 text-accent" : "text-snow/70")
+                }
+              >
+                <Icon className="size-5" aria-hidden="true" strokeWidth={on ? 2.5 : 2} />
+                {tab.label.toUpperCase()}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );

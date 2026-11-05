@@ -1,7 +1,7 @@
 /**
  * Branded first-visit welcome (t1215u) — Form #7 B&W.
  * Primary: Create Your STOMPER → adult AvatarOnboard.
- * Secondary: Explore Demo. Does NOT edit greet.tsx.
+ * Quiet Reset only — no secondary demo-entry CTA. Does NOT edit greet.tsx.
  */
 import { useState } from "react";
 import { Form7Brand } from "@/components/stomp/brand/form7-brand";
@@ -36,7 +36,7 @@ export function PlaytestWelcome() {
         <DemoSimBadge label="Family playtest · simulated" testId="welcome-sim-badge" />
         <Form7Brand tone="onDark" size="lg" testId="welcome-form7-brand" className="mt-6" />
         <p className="mt-2 max-w-[18rem] text-sm leading-relaxed text-white/70">
-          Build your STOMPER, meet Session, then pick a Trip Drop — all local demo data on this phone.
+          Build your STOMPER, meet Session, then pick a Trip Drop — all local on this phone.
         </p>
       </div>
 
@@ -51,26 +51,18 @@ export function PlaytestWelcome() {
         </button>
         <button
           type="button"
-          data-testid="welcome-explore-demo"
-          onClick={() => setScreen("explore-demo")}
-          className="h-12 w-full rounded-full bg-transparent text-sm font-semibold text-white ring-1 ring-white/35"
-        >
-          Explore Demo
-        </button>
-        <button
-          type="button"
           data-testid="welcome-reset-demo"
           onClick={() => setConfirmReset(true)}
           className="h-10 w-full text-xs font-semibold text-white/55 underline-offset-2 hover:underline"
         >
-          Reset Demo
+          Reset
         </button>
         {confirmReset ? (
           <div
             data-testid="welcome-reset-confirm"
             className="rounded-2xl bg-white/10 p-3 text-sm ring-1 ring-white/20"
           >
-            <p className="font-semibold">Reset local demo?</p>
+            <p className="font-semibold">Reset local data?</p>
             <p className="mt-1 text-xs text-white/65">
               Clears STOMPER progress and returns to this welcome. Nothing is uploaded.
             </p>
@@ -98,7 +90,7 @@ export function PlaytestWelcome() {
           </div>
         ) : null}
         <p className="text-center text-[11px] text-white/45">
-          No accounts · no payments · fictional demo only
+          No accounts · no payments · fictional playtest only
         </p>
       </div>
     </div>

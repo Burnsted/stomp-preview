@@ -1,5 +1,6 @@
 /**
- * Explore Demo — obvious entry without forcing onboarding.
+ * Internal surface directory (retained for deep links / recovery).
+ * No primary-UI demo-entry CTA — family walkthrough uses normal tabs.
  */
 import { AlpineTopBar, GlassCard } from "@/components/stomp/alpine-chrome";
 import { DemoSimBadge } from "@/components/stomp/playtest/demo-sim-badge";
@@ -26,7 +27,7 @@ export function ExploreDemoScreen() {
   return (
     <div className="px-1 pb-28" data-testid="explore-demo">
       <AlpineTopBar
-        title="Explore"
+        title="Surfaces"
         showBack
         onBack={() =>
           setScreen(useAvatar.getState().onboardComplete ? "greet" : "welcome")
@@ -85,8 +86,8 @@ export function ExploreDemoScreen() {
         </ul>
 
         <GlassCard>
-          <p className="text-sm font-semibold">Stuck or messy demo data?</p>
-          <p className="mt-1 text-xs text-muted">Reset wipes local demo state and reseeds the family trip.</p>
+          <p className="text-sm font-semibold">Stuck or messy local data?</p>
+          <p className="mt-1 text-xs text-muted">Reset wipes local state and reseeds the family trip.</p>
           <button
             type="button"
             data-testid="explore-reset-demo"
@@ -95,7 +96,7 @@ export function ExploreDemoScreen() {
               resetDemoLocal();
             }}
           >
-            Reset Demo
+            Reset
           </button>
         </GlassCard>
       </div>
