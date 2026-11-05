@@ -50,7 +50,7 @@ Under `gb-phone/screenshots/t1221u/` and `/opt/cursor/artifacts/t1221u/`:
 
 ## Tip / PR
 
-- **Tip SHA:** `2089f0224765fd9e35e2ffac30cb070a9e55f60a`  
+- **Tip SHA:** `98f2d30a717cd7f68be7809b0f77c242c32932d9`  
 - **Draft PR:** [#60](https://github.com/Burnsted/stomp-preview/pull/60) — *DRAFT t1221u — resort conditions model + fiction UI + provider research (NO MERGE)*  
 - **Branch:** `cursor/resort-conditions-t1221u-94bf` → base `cursor/chrome-demote-t1220u-cfab` (stack on #59 tip)
 
