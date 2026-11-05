@@ -423,6 +423,11 @@ export const useStomp = create<State>()(
   ),
 );
 
+/** Dev / screenshot hook (t1223u). */
+if (typeof window !== "undefined" && import.meta.env?.DEV) {
+  (window as unknown as { __stompLine?: typeof useStomp }).__stompLine = useStomp;
+}
+
 export function crewPayload(code: string, name: string): string {
   return `STOMP|${code}|${name.replace(/[|\n]/g, " ").trim().slice(0, 24) || "Rider"}`;
 }

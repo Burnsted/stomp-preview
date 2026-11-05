@@ -6,6 +6,7 @@ import { HomeButton } from "@/components/stomp/chrome";
 import { HomeFeatureRows } from "@/components/stomp/home-feature-rows";
 import { HomeMapCard } from "@/components/stomp/home-map-card";
 import { HomePlaylistBlock } from "@/components/stomp/home-playlist-block";
+import { HomeStomperStage } from "@/components/stomp/avatar/home-stomper-stage";
 import { HomeTripStatus } from "@/components/stomp/home-trip-status";
 import { SessionMic } from "@/components/stomp/session-mic";
 import { useAvatar } from "@/lib/stomp/avatar/store";
@@ -23,9 +24,8 @@ const DEMO_LINEUPS = [
 ] as const;
 
 /**
- * Home — restored hierarchy (t1218u / t1222u).
- * Cinematic mountain hero + Form #7 · personal welcome + resort · Trip Drop ·
- * compact feature rows (no four-square color grid) · image-led lineups · map.
+ * Home — restored hierarchy (t1218u / t1222u / t1223u).
+ * After Stomper is established: Stomper-first hero with 3-pose cycle (t1223u).
  * Weather / mountain conditions live on Trails (Map tab) — not on Home (t1222u).
  * CrewLink below stays Invite-locked (byte-pinned).
  */
@@ -34,21 +34,29 @@ export function Greet() {
   const riderName = useStomp((state) => state.riderName);
   const chooseSession = useStomp((state) => state.chooseSession);
   const displayName = useAvatar((s) => s.config?.displayName);
+  const avatarConfig = useAvatar((s) => s.config);
+  const onboardComplete = useAvatar((s) => s.onboardComplete);
   const resortId = useHomeMountain((s) => s.resortId);
   const hydrateMountain = useHomeMountain((s) => s.hydrate);
   const [showPlans, setShowPlans] = useState(false);
   const today = DEMO_LINEUPS[0]!;
   const welcomeName = (displayName || riderName || "STOMPER").trim();
+  const stomperReady = onboardComplete && Boolean(avatarConfig);
 
   useEffect(() => {
     hydrateMountain();
   }, [hydrateMountain]);
 
   return (
-    <div className="relative overflow-hidden pb-28" data-testid="home-look-board" data-home-layout="t1218u">
-      {/* Cinematic mountain hero — Form #7 brand first */}
+    <div
+      className="relative overflow-hidden pb-28"
+      data-testid="home-look-board"
+      data-home-layout="t1218u"
+      data-stomper-stage={stomperReady ? "on" : "off"}
+    >
+      {/* Cinematic mountain hero — Form #7 brand first; Stomper stage when ready */}
       <section data-testid="home-zone-ride" className="relative" aria-label="Home hero">
-        <div className="relative min-h-[20rem] overflow-hidden">
+        <div className={`relative overflow-hidden ${stomperReady ? "min-h-[24rem]" : "min-h-[20rem]"}`}>
           <img
             src={PHOTOS.hero}
             alt=""
@@ -59,14 +67,23 @@ export function Greet() {
           <div className="relative px-5 pt-6">
             <Form7Brand tone="onDark" size="lg" testId="home-form7-brand" />
           </div>
-          <div className="relative px-5 pb-8 pt-16">
-            <p data-testid="home-personal-welcome" className="font-display text-4xl tracking-wide text-ink">
-              Welcome, {welcomeName}
-            </p>
-            <p data-testid="home-selected-resort" className="mt-2 text-sm text-ink/85">
+          {stomperReady && avatarConfig ? (
+            <HomeStomperStage config={avatarConfig} />
+          ) : (
+            <div className="relative px-5 pb-8 pt-16">
+              <p data-testid="home-personal-welcome" className="font-display text-4xl tracking-wide text-ink">
+                Welcome, {welcomeName}
+              </p>
+              <p data-testid="home-selected-resort" className="mt-2 text-sm text-ink/85">
+                {locationLineFor(resortId)}
+              </p>
+            </div>
+          )}
+          {stomperReady ? (
+            <p data-testid="home-selected-resort" className="relative px-5 pb-4 text-sm text-ink/85">
               {locationLineFor(resortId)}
             </p>
-          </div>
+          ) : null}
         </div>
         <div className="px-5 pt-2">
           <SessionMic />

@@ -72,6 +72,20 @@ Under `gb-phone/screenshots/t1221u/` — Home-hero conditions shots are **obsole
 | FICTION · SAMPLE never LIVE; LIVE gated off | Kept |
 | NO MERGE / NO Pages / NO live keys | Kept |
 
+## Addendum — t1223u (Ted — Stomper 3-anim Home)
+
+**Ask:** After Stomper is established, Home **leads with the Stomper** cycling **3 animations** while waiting for the next button prompt — no weather over that moment.
+
+| Change | Status |
+| --- | --- |
+| Home Stomper stage when `onboardComplete` + config | Done — `HomeStomperStage` in hero |
+| 3-pose cycle from existing kit | Done — `idle` → `wave` → `celebrate` (`home-pose-cycle.ts`) |
+| Quiet next CTA (Trip Drop) | Done — Form #7 `bg-cta`, glove-friendly |
+| Corner dock demoted to quiet chrome | Done — locker + ID only (no competing avatar) |
+| t1222u: no Home weather; Trails keeps conditions | Preserved |
+| Screenshots | `gb-phone/screenshots/t1223u/` + `/opt/cursor/artifacts/t1223u/` |
+| Tests | `tests/woz/home-stomper-stage-t1223u.test.tsx` |
+
 ## Recommended next owner gate
 
 Approve Stage 1 only: NWS weather adapter + lat/lon table, still no OpenSnow spend, still link-only maps. Separate authorization for paid snow/ops keys or any deploy.

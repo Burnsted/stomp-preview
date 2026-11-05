@@ -1,8 +1,8 @@
 /**
  * Home avatar dock — sibling to Greet (does NOT edit greet.tsx).
- * Shows canonical AvatarConfig on the Home tab.
+ * t1223u: when Stomper is ready, hero hosts the stage — dock keeps quiet chrome only
+ * (theme + locker + ID), no competing corner avatar.
  */
-import { AvatarRenderer } from "@/components/stomp/avatar/avatar-renderer";
 import { ThemeToggle } from "@/components/stomp/avatar/theme-toggle";
 import { isAvatarFlagOn } from "@/lib/stomp/avatar/flags";
 import { useAvatar } from "@/lib/stomp/avatar/store";
@@ -18,24 +18,10 @@ export function AvatarHomeDock() {
     return (
       <div
         data-testid="avatar-home-dock"
+        data-mode="quiet-chrome"
         className="pointer-events-auto absolute top-16 right-3 z-30 flex flex-col items-end gap-2"
       >
         <ThemeToggle testId="home-theme-toggle" />
-        <button
-          type="button"
-          data-testid="home-avatar-open-id"
-          onClick={() => setScreen("stomper-id")}
-          className="rounded-3xl ring-2 ring-accent/50"
-          aria-label="Open STOMPER ID"
-        >
-          <AvatarRenderer
-            config={config}
-            size={72}
-            interactive
-            showBackground
-            testId="home-canonical-avatar"
-          />
-        </button>
         <button
           type="button"
           data-testid="home-open-locker"
@@ -44,6 +30,14 @@ export function AvatarHomeDock() {
         >
           LOCKER
         </button>
+        <button
+          type="button"
+          data-testid="home-avatar-open-id"
+          onClick={() => setScreen("stomper-id")}
+          className="rounded-full bg-navy/80 px-3 py-1 text-[10px] font-bold tracking-widest text-muted ring-1 ring-line"
+        >
+          ID
+        </button>
       </div>
     );
   }
@@ -51,6 +45,7 @@ export function AvatarHomeDock() {
   return (
     <div
       data-testid="avatar-home-dock"
+      data-mode="create"
       className="pointer-events-auto absolute top-16 right-3 z-30 flex flex-col items-end gap-2"
     >
       <ThemeToggle testId="home-theme-toggle" />
