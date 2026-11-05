@@ -17,7 +17,15 @@ export const PRIMARY_TABS = [
 export type PrimaryTabId = (typeof PRIMARY_TABS)[number]["id"];
 
 export function tabForScreen(screen: Screen): PrimaryTabId | null {
-  if (screen === "greet" || screen === "home" || screen === "session" || screen === "run") return "home";
+  if (
+    screen === "greet" ||
+    screen === "home" ||
+    screen === "session" ||
+    screen === "run" ||
+    screen === "explore-demo" ||
+    screen === "feedback"
+  )
+    return "home";
   if (screen === "map" || screen === "stash" || screen === "guide" || screen === "log") return "map";
   if (screen === "playlist" || screen === "favorites" || screen === "offline") return "music";
   // Bag of Tricks is a feature surface (home tile), not a 5th tab — keep nav chrome, no Bag tab highlight.

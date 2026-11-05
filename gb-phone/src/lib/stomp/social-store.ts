@@ -19,7 +19,6 @@ import {
   renewDemoPass,
   rideDay,
   saveAvatar,
-  seedSocial,
   setAttendance,
   setPass,
   stageShare,
@@ -29,6 +28,7 @@ import {
   type PassRole,
   type SocialState,
 } from "@/lib/stomp/social";
+import { seedFamilyPlaytestSocial } from "@/lib/stomp/playtest/demo-seed";
 
 type SocialStore = SocialState & {
   run: (result: { state: SocialState }) => void;
@@ -58,7 +58,7 @@ type SocialStore = SocialState & {
 };
 
 export const useSocial = create<SocialStore>((set, get) => ({
-  ...seedSocial(),
+  ...seedFamilyPlaytestSocial(),
   run: (result) => set(result.state),
   saveAvatar: (name, jacket) => get().run(saveAvatar(get(), name, jacket)),
   previewTrip: () => get().run(previewTrip(get())),

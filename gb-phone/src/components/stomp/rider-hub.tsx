@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
 import { useSessionRouter } from "@/components/stomp/session-mic";
+import { DemoSimBadge } from "@/components/stomp/playtest/demo-sim-badge";
+import { ResetDemoButton } from "@/components/stomp/playtest/playtest-chrome";
 import {
   buildCrewPortraitComposite,
   decideWelcomeBack,
@@ -8,6 +10,8 @@ import {
   type CharacterSlotLabel,
 } from "@/lib/stomp/pass-lifecycle-demo";
 import { savedHistoryFromSocial } from "@/lib/stomp/demo-history";
+import { FAMILY_BOARDS } from "@/lib/stomp/playtest/demo-seed";
+import { slotLabelForMember } from "@/lib/stomp/playtest/character-labels";
 import { buildClipsFirstProfile } from "@/lib/stomp/stomper-profile";
 import {
   emptyQuickShareSheet,
@@ -26,6 +30,7 @@ import type { Trip } from "@woz/trips/types.js";
 const PANELS = ["Profile", "Avatar", "Trip", "Day", "Squad", "Pass", "History"] as const;
 type Panel = (typeof PANELS)[number];
 
+/** Family playtest: slot labels only — never invent display names in UI. */
 const FICTION_PORTRAIT: {
   id: string;
   slotLabel: CharacterSlotLabel;
@@ -38,7 +43,7 @@ const FICTION_PORTRAIT: {
   {
     id: "slot-w2",
     slotLabel: "Woman 2",
-    firstName: "Alex",
+    firstName: null,
     ageBand: "adult",
     portraitConsent: true,
     guardianPortraitAllowed: false,
@@ -47,7 +52,16 @@ const FICTION_PORTRAIT: {
   {
     id: "slot-m1",
     slotLabel: "Man 1",
-    firstName: "Blake",
+    firstName: null,
+    ageBand: "adult",
+    portraitConsent: true,
+    guardianPortraitAllowed: false,
+    avatarAvailable: true,
+  },
+  {
+    id: "slot-w3",
+    slotLabel: "Woman 3",
+    firstName: null,
     ageBand: "adult",
     portraitConsent: true,
     guardianPortraitAllowed: false,
@@ -105,6 +119,7 @@ export function RiderHub({ initial = "Profile" }: { initial?: Panel }) {
         bagTrickCount: social.history.length,
         clips: social.history.map((h) => ({ id: h.id, label: h.label, source: h.source })),
         joinedSquadNames: social.squads.filter((s) => s.joined).map((s) => s.name),
+        boards: FAMILY_BOARDS,
         profileLocked: social.passAccessState !== "active" || social.passExpired,
         canAccessReportCard: social.passAccessState !== "deletion_lifecycle",
         founderChromeFiction: false,
@@ -158,8 +173,12 @@ export function RiderHub({ initial = "Profile" }: { initial?: Panel }) {
 
   return (
     <div className="px-4 pt-2 pb-28" data-testid="rider-hub">
-      <h1 className="font-display text-4xl tracking-wide">Rider</h1>
+      <div className="flex items-center gap-2">
+        <h1 className="font-display text-4xl tracking-wide">Rider</h1>
+        <DemoSimBadge label="Simulated" />
+      </div>
       <p className="mt-1 text-sm text-white/50">Demo on this phone. No live accounts. Fictional Pass ≠ real entitlement.</p>
+      <ResetDemoButton className="mt-2" />
       <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm" data-testid="rider-hub-panels">
         {PANELS.map((item) => (
           <button key={item} type="button" onClick={() => setPanel(item)} className={panel === item ? "font-semibold" : "text-white/45"}>
@@ -241,9 +260,26 @@ export function RiderHub({ initial = "Profile" }: { initial?: Panel }) {
           }}
         >
           <label className="block text-sm text-white/60">
-            Name
-            <input value={name} onChange={(event) => setName(event.target.value)} className="mt-1 h-11 w-full rounded-xl bg-black/40 px-3 text-white ring-1 ring-white/15 outline-none" />
+            Character label (Woman / Man / Grom N)
+            <input
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder="Woman 2"
+              className="mt-1 h-11 w-full rounded-xl bg-black/40 px-3 text-white ring-1 ring-white/15 outline-none"
+            />
           </label>
+          <div className="mt-2 flex flex-wrap gap-2 text-xs">
+            {(["Woman 2", "Man 1", "Woman 3", "Man 2"] as const).map((slot) => (
+              <button
+                key={slot}
+                type="button"
+                onClick={() => setName(slot)}
+                className="rounded-full bg-white/10 px-2 py-1 text-white/70"
+              >
+                {slot}
+              </button>
+            ))}
+          </div>
           <div className="mt-3 flex flex-col gap-1 text-sm">
             {JACKETS.map((row) => (
               <button key={row.id} type="button" onClick={() => setJacket(row.id)} className={"text-left " + (jacket === row.id ? "font-semibold" : "text-white/50")}>
@@ -261,7 +297,7 @@ export function RiderHub({ initial = "Profile" }: { initial?: Panel }) {
         <section className="mt-4 text-sm" data-testid="trip-drop-panel">
           <p className="font-semibold">{social.trip.name}</p>
           <p className="text-white/55">
-            {social.trip.place} · {social.trip.day} · host {social.trip.hostId}
+            {social.trip.place} · {social.trip.day} · host {slotLabelForMember(social.trip.hostId)}
           </p>
           <p className="mt-2 font-semibold" data-testid="trip-drop-visual-state">
             {tripVisual.label}
@@ -275,31 +311,29 @@ export function RiderHub({ initial = "Profile" }: { initial?: Panel }) {
           ) : null}
           <p className="mt-2 text-white/55">
             {social.trip.joined ? "Joined" : "Invited — preview until you join"}
-            {social.trip.cohosts.length ? ` · co-host ${social.trip.cohosts.join(", ")}` : ""}
+            {social.trip.cohosts.length
+              ? ` · co-host ${social.trip.cohosts.map(slotLabelForMember).join(", ")}`
+              : ""}
           </p>
           <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
             <button type="button" onClick={() => social.previewTrip()}>Preview</button>
             <button type="button" onClick={() => social.joinTrip()}>Join</button>
             <button type="button" onClick={() => social.declineTrip()}>Decline</button>
             <button type="button" onClick={() => social.hostTrip()}>Host</button>
-            <button type="button" onClick={() => social.addCohost("kai")}>Add Kai as co-host</button>
+            <button type="button" onClick={() => social.addCohost("man-1")}>
+              Add Man 1 as co-host
+            </button>
             <button type="button" onClick={() => social.setAttendance("you", "in")}>I'm in</button>
             <button type="button" onClick={() => social.setAttendance("you", "out")}>I'm out</button>
           </div>
           <div className="mt-4" data-testid="crew-portrait">
-            <p className="text-xs tracking-widest text-white/40">CREW PORTRAIT · CONSENT-SAFE</p>
+            <p className="text-xs tracking-widest text-white/40">CREW PORTRAIT · SLOT LABELS ONLY</p>
             <ul className="mt-2 flex flex-col gap-1">
               {portrait.participants.map((p, i) => (
                 <li key={FICTION_PORTRAIT[i]?.id ?? i}>
-                  {p.mode === "named" ? (
-                    <>
-                      <span className="text-white/45">{p.slotLabel}</span> {p.firstName}
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-white/45">{p.slotLabel}</span> {p.label}
-                      <span className="text-white/35"> · {p.reason}</span>
-                    </>
+                  <span className="font-semibold">{p.slotLabel}</span>
+                  {p.mode === "named" ? null : (
+                    <span className="text-white/35"> · {p.reason}</span>
                   )}
                 </li>
               ))}
@@ -317,13 +351,16 @@ export function RiderHub({ initial = "Profile" }: { initial?: Panel }) {
           </label>
           <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
             <button type="button" onClick={() => social.startDay(dayName, "Beaver Creek")}>Plan</button>
-            <button type="button" onClick={() => social.inviteDay("mira")}>Invite Mira</button>
+            <button type="button" onClick={() => social.inviteDay("woman-2")}>
+              Invite Woman 2
+            </button>
             <button type="button" onClick={() => social.rideDay()}>Ride</button>
             <button type="button" onClick={() => social.finishDay()}>Finish</button>
           </div>
           {social.day ? (
             <p className="mt-3 text-white/55">
-              {social.day.name} · {social.day.status} · {social.day.riders.join(", ")}
+              {social.day.name} · {social.day.status} ·{" "}
+              {social.day.riders.map(slotLabelForMember).join(", ")}
             </p>
           ) : (
             <p className="mt-3 text-white/45">No day planned. Your squad stays either way.</p>
@@ -338,7 +375,10 @@ export function RiderHub({ initial = "Profile" }: { initial?: Panel }) {
               <li key={row.id} className="flex items-center justify-between gap-3">
                 <span>
                   {row.name}
-                  <span className="text-white/45"> · {row.members.join(", ") || "empty"}</span>
+                  <span className="text-white/45">
+                    {" "}
+                    · {row.members.map(slotLabelForMember).join(", ") || "empty"}
+                  </span>
                 </span>
                 {row.joined ? (
                   <button type="button" onClick={() => social.leaveSquad(row.id)}>Leave</button>
@@ -362,7 +402,8 @@ export function RiderHub({ initial = "Profile" }: { initial?: Panel }) {
               {notes.map((note) => (
                 <li key={note.id}>
                   <p>
-                    <span className="text-white/45">{note.from}</span> {note.kind === "text" ? note.text : `${note.kind}: ${note.text}`}
+                    <span className="text-white/45">{slotLabelForMember(note.from)}</span>{" "}
+                    {note.kind === "text" ? note.text : `${note.kind}: ${note.text}`}
                   </p>
                   <div className="flex gap-3 text-white/45">
                     <button type="button" onClick={() => social.reactNote(note.id, "stomp")}>

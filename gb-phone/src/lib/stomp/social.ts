@@ -73,6 +73,10 @@ export type SocialResult = { ok: true; state: SocialState } | { ok: false; state
 
 const ME = "you";
 
+/**
+ * Canonical social seed (lifecycle + unit tests).
+ * Family playtest uses `seedFamilyPlaytestSocial()` via social-store / Reset Demo.
+ */
 export function seedSocial(): SocialState {
   return {
     avatar: null,
@@ -86,11 +90,11 @@ export function seedSocial(): SocialState {
       name: "Beaver Creek Saturday",
       place: "Beaver Creek",
       day: "Saturday",
-      hostId: "mira",
+      hostId: "woman-2",
       cohosts: [],
       invited: true,
       joined: false,
-      attendance: { mira: "in" },
+      attendance: { "woman-2": "in" },
       startIso: "2026-11-07T08:00:00Z",
       scheduledEndAt: "2026-11-07T23:59:00Z",
       officialEndDate: null,
@@ -98,14 +102,14 @@ export function seedSocial(): SocialState {
     },
     day: null,
     squads: [
-      { id: "north", name: "North Crew", members: ["mira", "kai"], joined: false },
-      { id: "lot", name: "Lot Crew", members: ["kai"], joined: false },
+      { id: "north", name: "North Crew", members: ["woman-2", "man-1"], joined: false },
+      { id: "lot", name: "Lot Crew", members: ["man-1"], joined: false },
     ],
     notes: [
       {
         id: "n1",
         squadId: "north",
-        from: "mira",
+        from: "woman-2",
         text: "Lodge steps after last chair.",
         kind: "text",
         reactions: [],

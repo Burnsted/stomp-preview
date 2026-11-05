@@ -20,6 +20,7 @@ import {
   Waves,
 } from "lucide-react";
 import { AlpineWordmark, FavHeart, GlassCard, HeySessionCompact } from "@/components/stomp/alpine-chrome";
+import { DemoSimBadge } from "@/components/stomp/playtest/demo-sim-badge";
 import {
   BAG_TAGLINE,
   BEGINNER_LEARN,
@@ -77,6 +78,7 @@ function BagHeader({
       )}
       <h1 className="min-w-0 flex-1 truncate font-display text-3xl tracking-wide text-ink">{title}</h1>
       <div className="ml-auto flex items-center gap-2">
+        <DemoSimBadge label="Demo" testId="bag-demo-badge" />
         {right}
         <HeySessionCompact />
       </div>
@@ -1152,6 +1154,7 @@ function HubShell({ children }: { children: React.ReactNode }) {
         <div className="flex items-center gap-2">
           <Layers className="size-5 text-lime" aria-hidden="true" />
           <h1 className="font-display text-4xl tracking-wide text-ink">Bag of Tricks</h1>
+          <DemoSimBadge label="Demo" testId="bag-demo-badge" />
         </div>
         <p className="mt-1 text-sm text-muted">{BAG_TAGLINE}</p>
       </div>

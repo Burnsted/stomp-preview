@@ -78,7 +78,7 @@ describe("rider social", () => {
     const hosting = hostTrip(named.state);
     assert.equal(hosting.ok, true);
     if (!hosting.ok) return;
-    const co = addCohost(hosting.state, "kai");
+    const co = addCohost(hosting.state, "man-1");
     assert.equal(co.ok, true);
     const joined = joinSquad(named.state, "north");
     if (!joined.ok) return;

@@ -187,7 +187,7 @@ describe("t1208u Profile / Squad Quick Share / Crew portrait / Founder", () => {
       squadId: "north",
       title: "1.4s air",
       kind: "photo",
-      recipients: ["mira"],
+      recipients: ["woman-2"],
     });
     expect(sheet.open).toBe(true);
     expect(sheet.nativeDeliveryClaimed).toBe(false);

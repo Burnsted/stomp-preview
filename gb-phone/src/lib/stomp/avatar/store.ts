@@ -5,6 +5,7 @@
  */
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { createSafeJSONStorage } from "@/lib/stomp/playtest/safe-storage";
 import { isAvatarFlagOn } from "@/lib/stomp/avatar/flags";
 import {
   BACKGROUNDS,
@@ -63,7 +64,12 @@ function writeRiderSlice(starterId: string, slice: RiderPersistedSlice): void {
     memory.set(riderLockerStorageKey(starterId), raw);
     return;
   }
-  localStorage.setItem(riderLockerStorageKey(starterId), raw);
+  try {
+    localStorage.setItem(riderLockerStorageKey(starterId), raw);
+  } catch {
+    // Quota / private mode — keep in-memory so the session stays usable.
+    memory.set(riderLockerStorageKey(starterId), raw);
+  }
 }
 
 function persistActiveRiderConfig(config: AvatarConfig | null, unlocks: UnlockRecord[]): void {
@@ -140,19 +146,7 @@ function emptyDraft(): Draft {
   };
 }
 
-const storage = createJSONStorage(() =>
-  typeof window === "undefined"
-    ? {
-        getItem: (k: string) => memory.get(k) ?? null,
-        setItem: (k: string, v: string) => {
-          memory.set(k, v);
-        },
-        removeItem: (k: string) => {
-          memory.delete(k);
-        },
-      }
-    : localStorage,
-);
+const storage = createJSONStorage(() => createSafeJSONStorage());
 
 const TAP_CYCLE: Pose[] = ["wave", "fist-pump", "board-lift", "celebrate", "turn", "idle"];
 

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent, type PointerEvent } from "
 import { holdListen, readAudioRoute, type AudioRoute } from "@/lib/stomp/audio-route";
 import { useMusicSources } from "@/lib/stomp/music-sources";
 import { routeSession, speakSession, type SessionAct, type SessionMode } from "@/lib/stomp/session-voice";
+import { slotLabelForMember } from "@/lib/stomp/playtest/character-labels";
 import { useSocial } from "@/lib/stomp/social-store";
 import { useStomp } from "@/lib/stomp/store";
 
@@ -19,7 +20,7 @@ export function useSessionRouter() {
     let say = act.say;
     if (act.social === "catchup") {
       const last = useSocial.getState().notes.at(-1);
-      say = last ? `${last.from} said ${last.text}` : "No messages.";
+      say = last ? `${slotLabelForMember(last.from)} said ${last.text}` : "No messages.";
     } else if (act.social === "share") {
       useSocial.getState().stageShare("north", "1.4s air", "photo");
       say = useSocial.getState().notice || say;

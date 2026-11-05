@@ -4,6 +4,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { findTrick, isLanded, type TrickStatus } from "@/lib/stomp/goals";
 import type { Band } from "@/lib/stomp/library";
 import { publicUrl } from "@/lib/public-url";
+import { createSafeJSONStorage } from "@/lib/stomp/playtest/safe-storage";
 
 export type Screen =
   | "greet"
@@ -28,7 +29,9 @@ export type Screen =
   | "stomper-id"
   | "avatar-locker"
   | "trip-hub"
-  | "grom-onboard";
+  | "grom-onboard"
+  | "explore-demo"
+  | "feedback";
 
 export type Landing = {
   id: string;
@@ -156,21 +159,7 @@ type State = {
   advanceCue: () => void;
 };
 
-const memory = new Map<string, string>();
-
-const storage = createJSONStorage(() =>
-  typeof window === "undefined"
-    ? {
-        getItem: (key: string) => memory.get(key) ?? null,
-        setItem: (key: string, value: string) => {
-          memory.set(key, value);
-        },
-        removeItem: (key: string) => {
-          memory.delete(key);
-        },
-      }
-    : localStorage,
-);
+const storage = createJSONStorage(() => createSafeJSONStorage());
 
 export const useStomp = create<State>()(
   persist(
@@ -359,7 +348,36 @@ export const useStomp = create<State>()(
       merge: (persisted, current) => {
         const saved = (persisted ?? {}) as Partial<State>;
         const band = saved.band === "intermediate" || saved.band === "advanced" ? saved.band : "beginner";
-        const screen = saved.screen && saved.screen !== "home" ? saved.screen : "greet";
+        // Invalid / stale screens fall back to Home (greet) — never crash on unknown ids.
+        const knownScreens = new Set<string>([
+          "greet",
+          "home",
+          "run",
+          "map",
+          "log",
+          "guide",
+          "stash",
+          "playlist",
+          "favorites",
+          "offline",
+          "goals",
+          "park",
+          "crew",
+          "session",
+          "stompers",
+          "bag",
+          "hub",
+          "woz",
+          "avatar-onboard",
+          "stomper-id",
+          "avatar-locker",
+          "trip-hub",
+          "grom-onboard",
+          "explore-demo",
+          "feedback",
+        ]);
+        const rawScreen = saved.screen && saved.screen !== "home" ? saved.screen : "greet";
+        const screen = knownScreens.has(String(rawScreen)) ? (rawScreen as Screen) : "greet";
         const trickStatus = { ...(saved.trickStatus ?? {}) };
         for (const id of saved.stomped ?? []) {
           if (!trickStatus[id]) trickStatus[id] = "landed";
@@ -367,13 +385,20 @@ export const useStomp = create<State>()(
         const stomped = Object.entries(trickStatus)
           .filter(([, status]) => isLanded(status))
           .map(([id]) => id);
+        const landings = Array.isArray(saved.landings) ? saved.landings : current.landings;
+        const clips = Array.isArray(saved.clips) ? saved.clips : current.clips;
+        const stashes = Array.isArray(saved.stashes) ? saved.stashes : current.stashes;
         return {
           ...current,
           ...saved,
+          landings,
+          clips,
+          stashes,
+          screen,
           stomped,
           trickStatus,
-          studied: saved.studied ?? [],
-          crew: saved.crew ?? [],
+          studied: Array.isArray(saved.studied) ? saved.studied : [],
+          crew: Array.isArray(saved.crew) ? saved.crew : [],
           selfie: saved.selfie ?? "",
           riderName: saved.riderName || "Rider",
           riderCode: saved.riderCode ?? "",
@@ -384,7 +409,6 @@ export const useStomp = create<State>()(
           meetup: saved.meetup ?? "",
           tomorrow: saved.tomorrow ?? "",
           band,
-          screen,
         };
       },
     },
