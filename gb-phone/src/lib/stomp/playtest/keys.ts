@@ -21,6 +21,9 @@ export const PLAYTEST_STORAGE_KEYS = [
 ] as const;
 
 export const PLAYTEST_STORAGE_PREFIXES = [
+  /** Per-modular-rider locker slices (`riderLockerStorageKey`). */
+  "stomp-avatar-locker-rider:",
+  /** Legacy mistyped prefix — keep clearing if any old keys linger. */
   "stomp-avatar-rider-",
   "stomp.woz.",
   "stomp.playtest.",

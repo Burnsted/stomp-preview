@@ -10,7 +10,7 @@ import { BagOfTricks } from "@/components/stomp/bag-of-tricks";
 import { FavoritesScreen } from "@/components/stomp/favorites-screen";
 import { CrewLink, Greet } from "@/components/stomp/greet";
 import { Home } from "@/components/stomp/home";
-import { ClipMap } from "@/components/stomp/map";
+import { TrailMapScreen } from "@/components/stomp/trail-map-screen";
 import { MiniPlayerUi } from "@/components/stomp/mini-player-ui";
 import { AirLog, Guide, Playlist, StashPins } from "@/components/stomp/more";
 import { OfflineScreen } from "@/components/stomp/offline-screen";
@@ -104,7 +104,7 @@ export function StompApp() {
             {screen === "crew" ? <CrewLink /> : null}
             {screen === "home" ? <Home /> : null}
             {screen === "run" ? <Run /> : null}
-            {screen === "map" ? <ClipMap /> : null}
+            {screen === "map" ? <TrailMapScreen /> : null}
             {screen === "log" ? <AirLog /> : null}
             {screen === "guide" ? <Guide /> : null}
             {screen === "stash" ? <StashPins /> : null}

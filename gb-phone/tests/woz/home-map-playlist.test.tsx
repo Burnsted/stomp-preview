@@ -100,8 +100,10 @@ describe("Greet home UX — map HARD LOCK", () => {
   it("renders look-board home density + secondary map without pill soup", () => {
     render(<StompApp />);
     expect(screen.getByTestId("home-look-board")).toBeTruthy();
+    expect(screen.getByTestId("home-look-board").getAttribute("data-home-layout")).toBe("t1218u");
     expect(screen.getByTestId("home-zone-ride")).toBeTruthy();
     expect(screen.getByTestId("home-zone-features")).toBeTruthy();
+    expect(screen.getByTestId("home-feature-rows")).toBeTruthy();
     expect(screen.getByTestId("home-zone-today")).toBeTruthy();
     expect(screen.getByTestId("home-zone-lineups")).toBeTruthy();
     expect(screen.getByTestId("home-zone-quick")).toBeTruthy();
@@ -111,6 +113,8 @@ describe("Greet home UX — map HARD LOCK", () => {
     expect(screen.getByTestId("home-zone-playlist")).toBeTruthy();
     expect(screen.getByTestId("home-map-card")).toBeTruthy();
     expect(screen.getByTestId("home-playlist-block")).toBeTruthy();
+    // Four colored feature squares removed
+    expect(screen.queryByTestId("home-four-square-grid")).toBeNull();
     expect(screen.queryByRole("button", { name: "The line" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Airtime" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Guide" })).toBeNull();

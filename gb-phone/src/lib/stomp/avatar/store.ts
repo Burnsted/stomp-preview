@@ -187,23 +187,27 @@ export const useAvatar = create<AvatarState>()(
         const s = starterById(starterId);
         if (!s) return;
         if (s.ageBand === "grom" && !isAvatarFlagOn("gromFlowEnabled")) return;
-        // Prefer previously saved per-rider layers when switching modular starters.
-        const saved = isModularPrototypeStarter(starterId)
-          ? get().riderConfigs[starterId] ?? readRiderSlice(starterId)?.config
-          : undefined;
+        const st = get();
+        // Restore order: riderConfigs → per-rider key → active config (same starter) → factory.
+        // Never clobber a continuing white-and-orange (or any) saved look with starter defaults.
+        const saved =
+          (isModularPrototypeStarter(starterId)
+            ? st.riderConfigs[starterId] ?? readRiderSlice(starterId)?.config
+            : undefined) ??
+          (st.config?.starterId === starterId ? st.config : undefined);
         const cfg =
           saved ??
           configFromStarter(s, {
             stomperId: "draft",
             stylePath: s.styleHint,
           });
-        set((st) => ({
+        set((prev) => ({
           draft: {
-            ...st.draft,
+            ...prev.draft,
             starterId,
-            stylePath: s.styleHint,
+            stylePath: saved?.stylePath ?? s.styleHint,
             // Preserve user-entered name; never fill from starter template label.
-            displayName: st.draft.displayName,
+            displayName: prev.draft.displayName || saved?.displayName || "",
             layers: cfg.layers,
             backgroundId: cfg.backgroundId,
             step: 2,
@@ -221,12 +225,15 @@ export const useAvatar = create<AvatarState>()(
         }
         const fromMap = st.riderConfigs[starterId];
         const fromKey = readRiderSlice(starterId)?.config;
+        const fromActive = st.config?.starterId === starterId ? st.config : undefined;
         const next =
           fromMap ??
           fromKey ??
+          fromActive ??
           configFromStarter(s, {
             stomperId: st.config?.stomperId ?? `rider-${starterId}`,
             displayName: st.config?.displayName ?? "",
+            stylePath: s.styleHint,
           });
         const riderConfigs = {
           ...st.riderConfigs,
