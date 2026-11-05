@@ -109,9 +109,9 @@ describe("t1210u feedback + safe storage", () => {
 });
 
 describe("t1210u playtest chrome + shell wiring present", () => {
-  it("app.tsx mounts Explore/Feedback/Reset chrome without editing greet", () => {
+  it("app.tsx mounts bottom Feedback/Reset chrome without editing greet", () => {
     const app = readFileSync(`${process.cwd()}/src/components/stomp/app.tsx`, "utf8");
-    expect(app).toContain("PlaytestHomeChrome");
+    expect(app).toContain("PlaytestBottomChrome");
     expect(app).toContain("ExploreDemoScreen");
     expect(app).toContain("FeedbackPanel");
     expect(app).toContain("ScreenErrorBoundary");

@@ -94,9 +94,11 @@ describe("t1219u no pink/lime primary CTAs", () => {
     }
   });
 
-  it("Explore Demo + Create STOMPER use Form #7 cta tokens (or welcome white/black)", () => {
+  it("Create STOMPER + quiet Reset confirm use Form #7 cta tokens (or welcome white/black)", () => {
     const chrome = readSrc("src/components/stomp/playtest/playtest-chrome.tsx");
-    expect(chrome).toMatch(/data-testid="explore-demo-entry"[\s\S]*?bg-cta/);
+    expect(chrome).not.toMatch(/Explore Demo/);
+    expect(chrome).not.toMatch(/explore-demo-entry/);
+    expect(chrome).toMatch(/data-testid="reset-demo-confirm-yes"[\s\S]*?bg-cta/);
     expect(chrome).toMatch(/text-cta-fg/);
     expect(chrome).not.toMatch(/bg-pink/);
 
@@ -107,11 +109,14 @@ describe("t1219u no pink/lime primary CTAs", () => {
     expect(welcome).toMatch(/data-testid="welcome-create-stomper"[\s\S]*?bg-white[\s\S]*?text-black/);
   });
 
-  it("Feedback secondary stays ghost/outline — not a loud lime fill", () => {
+  it("Feedback secondary stays ghost/text — not a loud lime fill", () => {
     const chrome = readSrc("src/components/stomp/playtest/playtest-chrome.tsx");
-    expect(chrome).toMatch(/data-testid="feedback-entry"[\s\S]*?ring-1 ring-line/);
-    expect(chrome).not.toMatch(/data-testid="feedback-entry"[\s\S]*?bg-lime/);
-    expect(chrome).not.toMatch(/data-testid="feedback-entry"[\s\S]*?bg-pink/);
+    const feedbackBtn = chrome.match(
+      /data-testid="feedback-entry"[\s\S]*?className="([^"]+)"/,
+    )?.[1];
+    expect(feedbackBtn).toBeTruthy();
+    expect(feedbackBtn).toMatch(/text-accent/);
+    expect(feedbackBtn).not.toMatch(/bg-lime|bg-pink|bg-cta/);
   });
 });
 

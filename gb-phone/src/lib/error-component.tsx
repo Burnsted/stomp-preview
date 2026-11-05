@@ -61,7 +61,7 @@ export function AppErrorComponent({ error }: ErrorComponentProps) {
         </button>
       </div>
       <p className="max-w-sm text-xs text-zinc-400">
-        Family playtest tip: use Reset Demo on Home if local demo data looks stuck.
+        Family playtest tip: use Reset at the bottom of Home if local data looks stuck.
       </p>
     </main>
   );

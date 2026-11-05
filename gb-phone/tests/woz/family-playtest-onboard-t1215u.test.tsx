@@ -165,7 +165,8 @@ describe("t1215u UI journey", () => {
     expect(screen.getByTestId("welcome-create-stomper").textContent).toMatch(
       /Create Your STOMPER/,
     );
-    expect(screen.getByTestId("welcome-explore-demo")).toBeTruthy();
+    expect(screen.queryByTestId("welcome-explore-demo")).toBeNull();
+    expect(screen.queryByText("Explore Demo")).toBeNull();
     fireEvent.click(screen.getByTestId("welcome-create-stomper"));
     expect(useStomp.getState().screen).toBe("avatar-onboard");
     expect(screen.getByTestId("avatar-onboard-1")).toBeTruthy();

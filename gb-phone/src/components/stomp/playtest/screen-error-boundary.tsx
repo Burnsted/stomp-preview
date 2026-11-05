@@ -54,7 +54,7 @@ export class ScreenErrorBoundary extends Component<Props, State> {
       >
         <p className="font-display text-2xl tracking-wide text-ink">That screen hiccuped</p>
         <p className="max-w-sm text-sm text-muted">
-          Demo recovered. Nothing left this phone. You can go Home or Reset Demo.
+          Recovered. Nothing left this phone. You can go Home or Reset.
         </p>
         <p className="max-w-sm break-words text-xs text-muted/80">
           {this.state.error.message || "Unexpected render error"}
@@ -74,7 +74,7 @@ export class ScreenErrorBoundary extends Component<Props, State> {
             onClick={this.recoverReset}
             className="h-11 rounded-full bg-snow px-5 text-sm font-semibold text-ink ring-1 ring-line"
           >
-            Reset Demo
+            Reset
           </button>
         </div>
       </div>
