@@ -1,5 +1,5 @@
-/* bd-release-v0-7-12 — playtest freeze; release cache only */
-const C='bd-release-v0-7-12';
+/* bd-release-v0-8-5-trees — playtest freeze; release cache only */
+const C='bd-release-v0-8-5-trees';
 const ASSETS=['./','./index.html','./sw.js'];
 const OWN=k=>k.indexOf('bd-release-')===0;
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));});
