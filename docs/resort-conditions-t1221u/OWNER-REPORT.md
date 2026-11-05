@@ -55,7 +55,7 @@ Under `gb-phone/screenshots/t1221u/` — Home-hero conditions shots are **obsole
 
 ## Tip / PR
 
-- **Tip SHA:** _(set after push)_  
+- **Tip SHA:** `9abf479c7767e1cbae7e4a200a512624eca0af60`  
 - **Draft PR:** [#60](https://github.com/Burnsted/stomp-preview/pull/60) — *DRAFT t1221u — resort conditions model + fiction UI + provider research (NO MERGE)* (+ t1222u placement correction)  
 - **Branch:** `cursor/resort-conditions-t1221u-94bf` → base `cursor/chrome-demote-t1220u-cfab` (stack on #59 tip)
 
