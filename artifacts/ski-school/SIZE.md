@@ -2,11 +2,11 @@
 
 | File | Raw | gzip-9 |
 |------|-----|--------|
-| `arcade/ski-school/index.html` | 38048 | 12692 |
+| `arcade/ski-school/index.html` | 38031 | 12691 |
 | `arcade/ski-school/sw.js` | 1205 | 589 |
-| **Total** | **39253** | **13174** |
+| **Total** | **39236** | **13174** |
 
-Soft STOMP embed budget: **~70KB raw**. Usage: **56%**. Headroom: **30747** bytes.
+Soft STOMP embed budget: **~70KB raw**. Usage: **56%**. Headroom: **30764** bytes.
 
 Cache bust: `slopestyle-ba-v0-2-2`
 

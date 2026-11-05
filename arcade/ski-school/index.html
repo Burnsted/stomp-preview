@@ -548,8 +548,8 @@ function drawMenu(){
   cx.fillStyle=C.steel; cx.font='10px system-ui,sans-serif';
   cx.fillText('P'+board().pop.toFixed(2)+' S'+board().spin.toFixed(2), W/2+80, ry+chipH*0.72);
 
-  // mute/stats just above safe bottom (still tappable, not under home indicator)
-  const muteY=contentBottom()-18;
+  // pts / mute sit between event list and rider/board chips (above safe pad)
+  const muteY=ry-14;
   cx.fillStyle='rgba(255,255,255,.55)'; cx.font='11px system-ui,sans-serif'; cx.textAlign='center';
   cx.fillText(PR.pts+' pts · ★'+PR.stars+(muted?' · MUTE':' · SND'), W/2, muteY);
   hit.mute={x:W/2-50,y:muteY-14,w:100,h:26};
