@@ -1,4 +1,4 @@
-# Ski School · Big Air — concept brief (mocks only)
+# Slopestyle / Big Air — concept brief (mocks only)
 
 **Status**
 - Ted rejected Race Day (girl-themed; face carve without gates).
@@ -9,7 +9,7 @@
 **This PR:** Ted said **GO** — tip `arcade/ski-school/index.html` is now the playable Big Air swoop (replaces solo-lesson tip on this branch only). Mocks kept for history.  
 **Do not touch:** `arcade/release/`, `/arcade/play/`, QR, Boulder Dodge, Terrain Park, Halfpipe.
 
-Working title: **Ski School · Big Air** (hill / swoop)
+Product name: **Slopestyle / Big Air** (path still `arcade/ski-school/` for preview URL stability)
 
 ---
 
@@ -158,7 +158,7 @@ Primary shot hooks: `descent` · `air` · `landing` · `leaderboard` · **`event
 
 | Item | Detail |
 |------|--------|
-| File | `arcade/ski-school/index.html` + `sw.js` (`ski-school-v0-2-0`) |
+| File | `arcade/ski-school/index.html` + `sw.js` (`slopestyle-ba-v0-2-1`) |
 | Loop | MENU (PLAY first) → RUN best of 3 → LEADERBOARD |
 | Select | Rider (6 neutral) + Board (tiered pop/spin/stab, pts unlock) → `localStorage` `skiSchool.ba` |
 | Controls | Hold = tuck on ground / spin in air; release to set board for stomp |

@@ -1,7 +1,7 @@
-/* ski-school-v0-2-0 — network-first; tip cache only */
-const C='ski-school-v0-2-0';
+/* slopestyle-ba-v0-2-1 — network-first; tip cache only (path still arcade/ski-school/) */
+const C='slopestyle-ba-v0-2-1';
 const ASSETS=['./','./index.html','./sw.js'];
-const OWN=k=>k.indexOf('ski-school-')===0;
+const OWN=k=>k.indexOf('ski-school-')===0||k.indexOf('slopestyle-ba-')===0;
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>OWN(k)&&k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',e=>{
