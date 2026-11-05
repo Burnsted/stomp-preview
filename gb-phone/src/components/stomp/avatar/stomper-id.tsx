@@ -127,13 +127,23 @@ export function StomperIdScreen() {
         {showPost ? (
           <section className="mt-5" data-testid="post-id-crew-paths">
             <p className="font-display text-3xl tracking-wide">What’s next?</p>
-            <p className="mt-1 text-sm text-muted">Crew is optional. Preserve Invite — never forced.</p>
+            <p className="mt-1 text-sm text-muted">
+              Meet Session, then choose a Trip Drop — Crew Invite stays optional.
+            </p>
             <div className="mt-3 flex flex-col gap-2">
+              <button
+                type="button"
+                data-testid="post-meet-sesh"
+                onClick={() => setScreen("meet-sesh")}
+                className="h-12 w-full rounded-full bg-pink font-semibold text-snow"
+              >
+                Meet Sesh →
+              </button>
               <button
                 type="button"
                 data-testid="post-create-crew"
                 onClick={() => setScreen("stompers")}
-                className="h-12 w-full rounded-full bg-pink font-semibold text-snow"
+                className="h-12 w-full rounded-full bg-snow/10 font-semibold ring-1 ring-line"
               >
                 Create Crew
               </button>
@@ -141,7 +151,7 @@ export function StomperIdScreen() {
                 type="button"
                 data-testid="post-join-crew"
                 onClick={() => setScreen("stompers")}
-                className="h-12 w-full rounded-full bg-teal font-semibold text-navy"
+                className="h-12 w-full rounded-full bg-snow/10 font-semibold ring-1 ring-line"
               >
                 Join Crew
               </button>
@@ -158,11 +168,11 @@ export function StomperIdScreen() {
                 data-testid="post-continue-solo"
                 onClick={() => {
                   setShowPost(false);
-                  setScreen("greet");
+                  setScreen("trip-choice");
                 }}
                 className="h-12 w-full rounded-full bg-lime font-semibold text-navy"
               >
-                Continue Solo
+                Skip to Trip Drop
               </button>
             </div>
           </section>

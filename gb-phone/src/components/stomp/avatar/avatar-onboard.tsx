@@ -61,7 +61,7 @@ export function AvatarOnboard() {
   if (step === 4) return <Screen4Personalize />;
   if (step === 3) return <Screen3Vibe />;
   if (step === 2) return <Screen2Look />;
-  return <Screen1Starter onSkip={() => setScreen("greet")} />;
+  return <Screen1Starter onSkip={() => setScreen("welcome")} />;
 }
 
 function Screen1Starter({ onSkip }: { onSkip: () => void }) {

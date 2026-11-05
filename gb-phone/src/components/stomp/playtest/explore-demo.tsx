@@ -25,7 +25,13 @@ export function ExploreDemoScreen() {
 
   return (
     <div className="px-1 pb-28" data-testid="explore-demo">
-      <AlpineTopBar title="Explore" showBack onBack={() => setScreen("greet")} />
+      <AlpineTopBar
+        title="Explore"
+        showBack
+        onBack={() =>
+          setScreen(useAvatar.getState().onboardComplete ? "greet" : "welcome")
+        }
+      />
       <div className="space-y-3 px-4 pt-2">
         <div className="flex items-center gap-2">
           <DemoSimBadge label="Family playtest" />

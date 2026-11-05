@@ -31,7 +31,10 @@ export type Screen =
   | "trip-hub"
   | "grom-onboard"
   | "explore-demo"
-  | "feedback";
+  | "feedback"
+  | "welcome"
+  | "meet-sesh"
+  | "trip-choice";
 
 export type Landing = {
   id: string;
@@ -164,7 +167,9 @@ const storage = createJSONStorage(() => createSafeJSONStorage());
 export const useStomp = create<State>()(
   persist(
     (set) => ({
-      screen: "greet",
+      // First-time fictional visitors land on branded welcome (t1215u).
+      // Returning completed profiles are routed to greet/Home after rehydrate.
+      screen: "welcome",
       running: false,
       runStartedAt: null,
       boardStowed: true,
@@ -348,7 +353,7 @@ export const useStomp = create<State>()(
       merge: (persisted, current) => {
         const saved = (persisted ?? {}) as Partial<State>;
         const band = saved.band === "intermediate" || saved.band === "advanced" ? saved.band : "beginner";
-        // Invalid / stale screens fall back to Home (greet) — never crash on unknown ids.
+        // Invalid / stale screens fall back to welcome — entry resolver may promote to Home.
         const knownScreens = new Set<string>([
           "greet",
           "home",
@@ -375,9 +380,12 @@ export const useStomp = create<State>()(
           "grom-onboard",
           "explore-demo",
           "feedback",
+          "welcome",
+          "meet-sesh",
+          "trip-choice",
         ]);
-        const rawScreen = saved.screen && saved.screen !== "home" ? saved.screen : "greet";
-        const screen = knownScreens.has(String(rawScreen)) ? (rawScreen as Screen) : "greet";
+        const rawScreen = saved.screen && saved.screen !== "home" ? saved.screen : "welcome";
+        const screen = knownScreens.has(String(rawScreen)) ? (rawScreen as Screen) : "welcome";
         const trickStatus = { ...(saved.trickStatus ?? {}) };
         for (const id of saved.stomped ?? []) {
           if (!trickStatus[id]) trickStatus[id] = "landed";

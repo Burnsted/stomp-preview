@@ -55,7 +55,8 @@ export function resetDemoLocal(): { ok: true; seedVersion: string } {
     /* ignore */
   }
   useStomp.setState({
-    screen: "greet",
+    // First-time journey again after Reset Demo (t1215u).
+    screen: "welcome",
     running: false,
     runStartedAt: null,
     boardStowed: true,
@@ -121,7 +122,7 @@ export function resetDemoLocal(): { ok: true; seedVersion: string } {
     writeDemoLastActive("2026-01-15T12:00:00Z");
   }
 
-  useStomp.getState().setScreen("greet");
+  useStomp.getState().setScreen("welcome");
   return { ok: true, seedVersion: PLAYTEST_SEED_VERSION };
 }
 

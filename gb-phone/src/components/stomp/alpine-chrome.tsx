@@ -24,7 +24,10 @@ export function tabForScreen(screen: Screen): PrimaryTabId | null {
     screen === "session" ||
     screen === "run" ||
     screen === "explore-demo" ||
-    screen === "feedback"
+    screen === "feedback" ||
+    screen === "welcome" ||
+    screen === "meet-sesh" ||
+    screen === "trip-choice"
   )
     return "home";
   if (screen === "map" || screen === "stash" || screen === "guide" || screen === "log") return "map";

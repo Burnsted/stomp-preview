@@ -18,15 +18,20 @@ import { Goals, TerrainPark } from "@/components/stomp/park";
 import { PlaylistFab } from "@/components/stomp/playlist-chrome";
 import { ExploreDemoScreen } from "@/components/stomp/playtest/explore-demo";
 import { FeedbackPanel } from "@/components/stomp/playtest/feedback-panel";
+import { MeetSeshScreen } from "@/components/stomp/playtest/meet-sesh";
 import { PlaytestHomeChrome } from "@/components/stomp/playtest/playtest-chrome";
 import { ScreenErrorBoundary } from "@/components/stomp/playtest/screen-error-boundary";
+import { TripChoiceScreen } from "@/components/stomp/playtest/trip-choice";
+import { PlaytestWelcome } from "@/components/stomp/playtest/welcome";
 import { RiderHub } from "@/components/stomp/rider-hub";
 import { TodaySession } from "@/components/stomp/session";
 import { Stompers } from "@/components/stomp/stompers";
 import { Run } from "@/components/stomp/run";
 import { WozLab } from "@/components/stomp/woz-lab";
 import { GreetCrewToolsHint } from "@/components/stomp/woz-entry";
+import { useAvatar } from "@/lib/stomp/avatar/store";
 import { applyTheme, useTheme } from "@/lib/stomp/avatar/theme";
+import { resolvePlaytestEntry } from "@/lib/stomp/playtest/entry";
 import { useStomp } from "@/lib/stomp/store";
 import { startGbInviteMirror } from "@/lib/stomp/woz-bridge/invite-mirror-gb";
 
@@ -37,9 +42,23 @@ export function StompApp() {
   useEffect(() => {
     let stop: (() => void) | undefined;
     let cancelled = false;
-    // Woz: mirror GB Invite accept/revoke into Crew Tools (read-only observer, started after GB rehydrate).
-    void Promise.resolve(useStomp.persist.rehydrate()).then(() => {
-      if (!cancelled) stop = startGbInviteMirror();
+    // Rehydrate STOMP + avatar, then apply first-visit / returning / partial entry.
+    void Promise.all([
+      Promise.resolve(useStomp.persist.rehydrate()),
+      Promise.resolve(useAvatar.persist.rehydrate()),
+    ]).then(() => {
+      if (cancelled) return;
+      const avatar = useAvatar.getState();
+      const stomp = useStomp.getState();
+      const next = resolvePlaytestEntry({
+        onboardComplete: avatar.onboardComplete,
+        hasConfig: Boolean(avatar.config),
+        draftStep: avatar.draft.step,
+        draftStarterId: avatar.draft.starterId,
+        persistedScreen: stomp.screen,
+      });
+      if (next) stomp.setScreen(next);
+      stop = startGbInviteMirror();
     });
     return () => {
       cancelled = true;
@@ -52,23 +71,32 @@ export function StompApp() {
   }, [theme]);
 
   const hideChrome = screen === "greet" ? false : false;
+  const journeyFocus =
+    screen === "welcome" ||
+    screen === "avatar-onboard" ||
+    screen === "grom-onboard" ||
+    screen === "meet-sesh" ||
+    screen === "trip-choice";
   const showNav =
     screen !== "run" &&
     screen !== "woz" &&
-    screen !== "avatar-onboard" &&
-    screen !== "grom-onboard";
+    !journeyFocus;
   const avatarScreens =
     screen === "avatar-onboard" ||
     screen === "stomper-id" ||
     screen === "avatar-locker" ||
     screen === "trip-hub" ||
-    screen === "grom-onboard";
+    screen === "grom-onboard" ||
+    screen === "welcome" ||
+    screen === "meet-sesh" ||
+    screen === "trip-choice";
 
   return (
     <div className="min-h-dvh alpine-shell" data-theme={theme}>
       <div className="mx-auto min-h-dvh w-full max-w-md md:py-6">
         <div className="relative min-h-dvh overflow-hidden bg-transparent md:min-h-[calc(100dvh-3rem)] md:rounded-4xl md:shadow-2xl md:ring-1 md:ring-line">
           <ScreenErrorBoundary label={screen}>
+            {screen === "welcome" ? <PlaytestWelcome /> : null}
             {screen === "greet" ? <Greet /> : null}
             {screen === "greet" ? <GreetCrewToolsHint /> : null}
             {screen === "greet" ? <AvatarHomeDock /> : null}
@@ -97,6 +125,8 @@ export function StompApp() {
             {screen === "grom-onboard" ? <GromOnboard /> : null}
             {screen === "explore-demo" ? <ExploreDemoScreen /> : null}
             {screen === "feedback" ? <FeedbackPanel /> : null}
+            {screen === "meet-sesh" ? <MeetSeshScreen /> : null}
+            {screen === "trip-choice" ? <TripChoiceScreen /> : null}
           </ScreenErrorBoundary>
           {!hideChrome && !avatarScreens ? <MiniPlayerUi /> : null}
           {!avatarScreens ? <PlaylistFab /> : null}
