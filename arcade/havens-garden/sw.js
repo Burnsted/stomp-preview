@@ -1,5 +1,5 @@
-/* havens-garden-v0-4 — network-first; tip cache only */
-const C='havens-garden-v0-4';
+/* havens-garden-v0-5 — network-first; tip cache only */
+const C='havens-garden-v0-5';
 const ASSETS=['./','./index.html','./sw.js'];
 const OWN=k=>k.indexOf('havens-garden-')===0;
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));});
