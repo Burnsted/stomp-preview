@@ -1,29 +1,29 @@
 'use strict';
 /* ============================================================
-   Haven's Garden v0.9-birthday-draft
+   Haven's Garden v0.9-ted-play
    Standalone birthday garden — NOT part of STOMP.
-   Fixes vs v0.8: walk-to-pick timing, bouquet-in-hands,
-   individual bed planting, greenhouse expand only when filled,
-   no-fail continue after Large, clean mid-loop resume.
+   Ted playtest: long pick (~20), Growing… (no night story),
+   collect-while-growing + return time-lapse, bed-anchored
+   flowers, cursor watering, Home/Back/Places menu.
    ============================================================ */
 
-const VER = 'v0.9-birthday-draft';
+const VER = 'v0.9-ted-play';
 const PK = 'havensGarden.v1';
 const MUTE_K = 'havensGarden.mute';
 const QUIET_K = 'havensGarden.quiet';
 
-const BOUQUET_GOAL = 3;
+const BOUQUET_GOAL = 20;
 const PICK_RADIUS = 64;
 const ARRIVE_RADIUS = 48;
-const TARGET_SPACING = 100;
-const SPAWN_INTERVAL = 1400;
-const SPAWN_HOLD = 16000;
+const TARGET_SPACING = 92;
+const SPAWN_INTERVAL = 1100;
+const SPAWN_HOLD = 24000;
 const GIRL_SPEED = 165;
-const MAX_FIELD = 7;
+const MAX_FIELD = 10;
 const MAX_PARTICLES = 100;
 const DPR_CAP = 2.5;
 const DT_CAP = 1 / 20;
-const SAFE_UI = 90;
+const SAFE_UI = 110;
 const OUTDOOR_SLOTS = 6;
 const DW = 780;
 const DH = 1688;
@@ -32,6 +32,7 @@ const CROSSFADE_SEC = 1.05; // ASSET-QA: ≥1s so painted TOD variants don't pop
 const FLOWER_POP_SEC = 0.4;
 const POLLINATOR_FLAP_MS = 120;
 const WALK_BOB_PX = 6; // ±6 on walk 02/04
+const GROWING_SEC = 1.45;
 
 /* Bed counts match painted interiors (ASSET-QA: large ≈10–11, not 12). */
 const GH_SIZES = [
@@ -58,7 +59,7 @@ const ST = { BOOT: 'BOOT', MENU: 'MENU', HOWTO: 'HOWTO', MEADOW: 'MEADOW', GREEN
 /* ---------- Save (compatible with havensGarden.v1) ---------- */
 function freshSave() {
   return {
-    v: 5,
+    v: 6,
     unlocked: 1,
     baskets: 0,
     outingDone: 0,
@@ -71,7 +72,7 @@ function freshSave() {
     taughtHow: 0,
     ghSize: 0,
     cycles: 0,
-    step: 'ready', // ready | plant | water | night | morning | upgrade
+    step: 'ready', // ready | plant | water | growing | upgrade
     beds: [],
     outdoorBeds: [],
     outdoorUnlocked: 0,
@@ -81,6 +82,8 @@ function freshSave() {
     dayPhase: 0,
     girlNX: 0.5,
     girlNY: 0.55,
+    awaitingReturnGrowth: 0,
+    leftForOuting: 0,
     ver: VER
   };
 }
@@ -95,12 +98,17 @@ function migrateSave(raw) {
   if (!Array.isArray(s.album)) s.album = [];
   if (!Array.isArray(s.bouquet)) s.bouquet = [];
   if (!Array.isArray(s.pots)) s.pots = [];
-  ['taughtPlant', 'taughtHow', 'ghSize', 'cycles', 'mute', 'quiet', 'outdoorUnlocked'].forEach((k) => {
+  ['taughtPlant', 'taughtHow', 'ghSize', 'cycles', 'mute', 'quiet', 'outdoorUnlocked',
+    'awaitingReturnGrowth', 'leftForOuting'].forEach((k) => {
     if (s[k] == null) s[k] = 0;
   });
   if (!s.step) s.step = 'ready';
-  // v0.8 used cycles-based upgrade; keep ghSize/beds, bump schema
-  s.v = Math.max(5, s.v | 0);
+  // Migrate removed night/morning story → growing/ready (keep progress)
+  if (s.step === 'night') s.step = 'growing';
+  if (s.step === 'morning') s.step = 'ready';
+  if (s.nurseryMode === 'night' || s.nurseryMode === 'morning') s.nurseryMode = s.step === 'growing' ? 'growing' : 'ready';
+  // Keep bouquet as-is (threshold migrated 3 → 20; partial progress stays)
+  s.v = Math.max(6, s.v | 0);
   s.ver = VER;
   // Trim / pad beds to painted capacity (L is 10, not legacy 12)
   const need = GH_SIZES[Math.min(2, s.ghSize | 0)].beds;
@@ -181,7 +189,7 @@ let particles = [];
 let arcs = [];
 let confetti = [];
 let pollinators = [];
-let bouquet = Array.isArray(SAVE.bouquet) ? SAVE.bouquet.slice(0, BOUQUET_GOAL) : [];
+let bouquet = Array.isArray(SAVE.bouquet) ? SAVE.bouquet.slice() : [];
 let spawnTypeIdx = 0;
 let spawnT = 0;
 let cue = '';
@@ -189,7 +197,7 @@ let party = { t: 0, kind: '' };
 let door = 0, doorDir = 0;
 let dayNight = SAVE.dayPhase || 0;
 let dayNightT = SAVE.dayPhase || 0;
-let nightAnim = 0, nightT = 0;
+let growAnim = 0, growT = 0;
 let growFlash = 0;
 let upgradeAnim = 0, upgradeT = 0;
 let plantAnim = 0, plantAnimT = 0, plantSpot = -1, plantIsOutdoor = 0;
@@ -211,10 +219,26 @@ girl.tx = girl.x; girl.ty = girl.y;
 /* Background crossfade (≥1s) between Franz TOD plates */
 let bgFrom = null, bgTo = null, bgBlend = 1, bgKey = 'day';
 let flowerPops = []; // {x,y,t,life} using flower-pop.png
-let interiorGrownVisual = 0; // 1 after morning bloom until next plant cycle resets
+
+/* Cursor watering can (follows finger; carried bed → bed) */
+let waterPtr = null;
+let wateringHeld = 0;
+
+/* Kid nav: Home / Back / Places menu */
+let placesOpen = 0;
+let navStack = [];
 
 let pointerId = null, lastPtr = null, dragging = 0;
 let loadProgress = 0;
+
+/** Map held count 0..20 → bouquet-0..3 art stages (fills up visually). */
+function bouquetArtStage(n) {
+  n = n == null ? bouquet.length : n;
+  if (n <= 0) return 0;
+  if (n >= BOUQUET_GOAL) return 3;
+  if (n >= Math.ceil(BOUQUET_GOAL * 2 / 3)) return 2;
+  return 1;
+}
 
 function gh() { return GH_SIZES[Math.min(2, SAVE.ghSize | 0)]; }
 function bedCount() { return gh().beds; }
@@ -261,13 +285,27 @@ function bedsTrulyFilled() {
   return filled >= n;
 }
 function skyMode() {
-  if (dayNight > 0.85) return 'night';
-  if (dayNight > 0.55) return 'night';
-  if (dayNight > 0.28) return 'sunset';
+  // No night story — keep daytime plates; Growing… uses a dark veil instead
+  if (dayNight > 0.55) return 'sunset';
   if (dayNight > 0.08 && dayNightT < dayNight) return 'sunrise';
-  // During morning flash / finishing night → sunrise
-  if (nurseryMode === 'morning' || (nightAnim && nightT > 2.0)) return 'sunrise';
   return 'day';
+}
+
+/** Cover-rect matching drawFullPlate — beds must sit on painted soil. */
+function plateCoverRect() {
+  const ir = DW / DH;
+  const cr = W / H;
+  let dw, dh, dx, dy;
+  if (cr > ir) {
+    dw = W; dh = W / ir; dx = 0; dy = (H - dh) / 2;
+  } else {
+    dh = H; dw = H * ir; dx = (W - dw) / 2; dy = 0;
+  }
+  return { dx, dy, dw, dh };
+}
+function plateToCanvas(nx, ny) {
+  const r = plateCoverRect();
+  return { x: r.dx + nx * r.dw, y: r.dy + ny * r.dh };
 }
 
 function ensureBgCrossfade(desiredKey, plateImg) {
@@ -324,26 +362,26 @@ function drawAnchored(img, x, y, h, face, bobY) {
   return true;
 }
 
-/** Normalized bed layouts (x,y as 0–1 of Franz 780×1688 plates), matched to painted interiors. */
+/** Normalized bed layouts (soil feet on Franz interiors — lower Y = in dirt, not mid-air). */
 const BED_LAYOUTS = {
-  // small: 2×2
+  // small: 2×2 soil beds
   S: [
-    [0.28, 0.58], [0.72, 0.58],
-    [0.28, 0.74], [0.72, 0.74]
+    [0.28, 0.64], [0.72, 0.64],
+    [0.28, 0.80], [0.72, 0.80]
   ],
   // medium: 8 beds along center path
   M: [
-    [0.26, 0.48], [0.74, 0.48],
-    [0.26, 0.58], [0.74, 0.58],
-    [0.26, 0.68], [0.74, 0.68],
-    [0.28, 0.78], [0.72, 0.78]
+    [0.26, 0.56], [0.74, 0.56],
+    [0.26, 0.66], [0.74, 0.66],
+    [0.26, 0.76], [0.74, 0.76],
+    [0.28, 0.84], [0.72, 0.84]
   ],
   // large: 10 beds (ASSET-QA ≈10–11)
   L: [
-    [0.22, 0.46], [0.50, 0.46], [0.78, 0.46],
-    [0.22, 0.58], [0.50, 0.58], [0.78, 0.58],
-    [0.22, 0.70], [0.50, 0.70], [0.78, 0.70],
-    [0.50, 0.80]
+    [0.22, 0.54], [0.50, 0.54], [0.78, 0.54],
+    [0.22, 0.64], [0.50, 0.64], [0.78, 0.64],
+    [0.22, 0.74], [0.50, 0.74], [0.78, 0.74],
+    [0.50, 0.84]
   ]
 };
 
@@ -351,13 +389,16 @@ function plantSpots() {
   const g = gh();
   const layout = BED_LAYOUTS[g.id] || BED_LAYOUTS.S;
   const r = X(g.id === 'L' ? 42 : g.id === 'M' ? 48 : 56);
-  return layout.slice(0, g.beds).map((p, i) => ({
-    x: p[0] * W,
-    y: p[1] * H,
-    r,
-    outdoor: 0,
-    i
-  }));
+  return layout.slice(0, g.beds).map((p, i) => {
+    const pt = plateToCanvas(p[0], p[1]);
+    return {
+      x: pt.x,
+      y: pt.y,
+      r,
+      outdoor: 0,
+      i
+    };
+  });
 }
 
 function outdoorSpots() {
@@ -421,12 +462,18 @@ function burstConfetti(n, cx0, cy0) {
   }
 }
 function startParty(kind) {
-  const dur = { full: 1.8, door: 1.4, plant: 1.5, water: 1.2, night: 1.2, morning: 2.2, upgrade: 2.8, grow: 1.6 }[kind] || 1.4;
+  const dur = { full: 1.8, door: 1.4, plant: 1.5, water: 1.2, grow: 1.6, upgrade: 2.8, bigger: 1.8 }[kind] || 1.4;
   party = { t: dur, kind };
-  burstConfetti(quiet ? 8 : (kind === 'upgrade' ? 36 : kind === 'morning' ? 26 : 16), W / 2, H * 0.4);
-  const map = { full: 'bouquetFull', door: 'door', plant: 'plant', water: 'water', night: 'night', morning: 'sunrise', upgrade: 'upgrade', grow: 'grow' };
+  burstConfetti(quiet ? 8 : (kind === 'upgrade' ? 36 : kind === 'bigger' ? 22 : 16), W / 2, H * 0.4);
+  const map = { full: 'bouquetFull', door: 'door', plant: 'plant', water: 'water', grow: 'grow', upgrade: 'upgrade', bigger: 'grow' };
   (AudioFX[map[kind]] || AudioFX.ui)();
   announce(kind);
+}
+
+function pushNav(place) {
+  const top = navStack[navStack.length - 1];
+  if (top !== place) navStack.push(place);
+  if (navStack.length > 8) navStack.shift();
 }
 
 /* ---------- Meadow flowers ---------- */
@@ -487,7 +534,7 @@ function doPick(f) {
   girlPose = 'pick';
   girlPoseT = 0.45;
   if (bouquet.length >= BOUQUET_GOAL) {
-    cue = 'Go home!';
+    cue = 'Go plant!';
     startParty('full');
   } else {
     cue = bouquet.length + ' / ' + BOUQUET_GOAL;
@@ -500,20 +547,21 @@ function startMeadow(resetBouquet) {
   flowers = []; particles = []; arcs = []; confetti = []; pollinators = []; flowerPops = [];
   pendingPick = null;
   girlPose = 'idle'; girlPoseT = 0;
+  wateringHeld = 0; waterPtr = null; placesOpen = 0;
   if (resetBouquet) bouquet = [];
   spawnTypeIdx = 0; spawnT = 0;
-  dayNight = 0; dayNightT = 0; nightAnim = 0;
-  cue = bouquet.length >= BOUQUET_GOAL ? 'Go home!' : (bouquet.length ? bouquet.length + ' / ' + BOUQUET_GOAL : 'Pick!');
+  dayNight = 0; dayNightT = 0; growAnim = 0; growT = 0;
+  cue = bouquet.length >= BOUQUET_GOAL ? 'Go plant!' : (bouquet.length ? bouquet.length + ' / ' + BOUQUET_GOAL : 'Pick!');
   girl.x = W * 0.5;
   girl.y = (fieldTop() + fieldBot()) / 2;
   girl.tx = girl.x; girl.ty = girl.y;
   girl.phase = 0; girl.squash = 1; girl.face = 1; girl.walking = 0;
   const pool = outingTypes();
-  for (let i = 0; i < Math.min(5, pool.length + 2); i++) spawnFlower({ force: 1, sp: pool[i % pool.length] });
+  for (let i = 0; i < Math.min(7, pool.length + 3); i++) spawnFlower({ force: 1, sp: pool[i % pool.length] });
   state = ST.MEADOW;
   nurseryMode = 'look';
-  SAVE.step = SAVE.step === 'plant' ? 'plant' : (emptyBedsWaiting() ? SAVE.step : SAVE.step);
-  if (SAVE.step === 'ready' || SAVE.step === 'plant') { /* keep */ }
+  if (SAVE.awaitingReturnGrowth) SAVE.leftForOuting = 1;
+  pushNav('meadow');
   announce('Flower field');
   AudioFX.ui();
   snapshotRuntime();
@@ -524,49 +572,82 @@ function closeDoor() { doorDir = -1; }
 
 function resolveNurseryMode() {
   if (SAVE.step === 'water') return 'water';
-  if (SAVE.step === 'night') return 'night';
-  if (SAVE.step === 'morning') return 'morning';
+  if (SAVE.step === 'growing') return 'growing';
   if (SAVE.step === 'upgrade') return 'upgrade';
-  if (bouquet.length) return 'plant';
-  if (SAVE.outdoorUnlocked && SAVE.step === 'ready') return 'look';
+  if (bouquet.length && emptyBedsWaiting()) return 'plant';
+  if (bouquet.length && !emptyBedsWaiting()) return 'look';
   return 'look';
 }
 
+function applyReturnTimeLapse() {
+  let grew = 0;
+  function bump(b) {
+    if (!b || !b.watered) return;
+    const before = b.grown | 0;
+    b.grown = Math.min(3, before + 1);
+    b.squash = 1.22;
+    b.pendingGrow = 0;
+    if (b.grown > before) grew++;
+  }
+  SAVE.beds.forEach(bump);
+  SAVE.outdoorBeds.forEach(bump);
+  SAVE.cycles = (SAVE.cycles | 0) + 1;
+  SAVE.awaitingReturnGrowth = 0;
+  SAVE.leftForOuting = 0;
+  if (grew) {
+    growFlash = 1;
+    cue = 'Bigger!';
+    startParty('bigger');
+    spawnPollinators();
+    AudioFX.grow();
+    if (bedsTrulyFilled() && (SAVE.ghSize | 0) < 2) setTimeout(() => doUpgrade(), 900);
+    else if (bedsTrulyFilled() && (SAVE.ghSize | 0) >= 2 && !SAVE.outdoorUnlocked) setTimeout(() => unlockOutdoor(), 900);
+  }
+}
+
 function enterGreenhouse(mode) {
+  placesOpen = 0;
+  wateringHeld = 0; waterPtr = null;
+  if (SAVE.awaitingReturnGrowth && SAVE.leftForOuting) applyReturnTimeLapse();
+
   nurseryMode = mode || resolveNurseryMode();
   nurseryView = 'enter';
   openDoor();
   plantAnim = 0; plantAnimT = 0; plantSpot = -1; plantIsOutdoor = 0;
-  nightAnim = 0; nightT = 0;
-  dayNight = nurseryMode === 'night' ? Math.max(dayNight, 0.5) : 0;
-  dayNightT = dayNight;
+  growAnim = 0; growT = 0;
+  dayNight = 0; dayNightT = 0;
+
   if (nurseryMode === 'plant') {
     cue = 'Plant!';
     SAVE.step = 'plant';
-    interiorGrownVisual = 0; // show empty interior while planting/growing
     if (!SAVE.taughtPlant) teach = 1;
     startParty('door');
   } else if (nurseryMode === 'water') {
     cue = 'Water!';
     teach = 0;
+    waterPtr = { x: W * 0.5, y: H * 0.58 };
     startParty('door');
-  } else if (nurseryMode === 'night') {
-    cue = 'Night…';
+  } else if (nurseryMode === 'growing') {
+    cue = 'Growing…';
     teach = 0;
+    beginGrowing();
   } else {
-    cue = '';
+    cue = cue === 'Bigger!' ? cue : (emptyBedsWaiting() ? 'Pick more!' : 'Look!');
     teach = 0;
     if (mode !== 'look') startParty('door');
   }
   state = ST.GREENHOUSE;
+  pushNav('greenhouse');
   announce('Greenhouse');
   snapshotRuntime();
 }
 
-function goHome() {
-  if (bouquet.length >= BOUQUET_GOAL || SAVE.step === 'water' || SAVE.step === 'night') {
-    if (SAVE.step === 'water' || SAVE.step === 'night') enterGreenhouse(SAVE.step);
-    else enterGreenhouse('plant');
+/** Meadow “go plant” when bouquet is full (or resume water/growing). */
+function goPlantHome() {
+  if (SAVE.step === 'water' || SAVE.step === 'growing') {
+    enterGreenhouse(SAVE.step);
+  } else if (bouquet.length >= BOUQUET_GOAL || bouquet.length > 0) {
+    enterGreenhouse(emptyBedsWaiting() ? 'plant' : resolveNurseryMode());
   } else {
     enterGreenhouse(resolveNurseryMode());
   }
@@ -595,29 +676,32 @@ function finishPlant() {
   const spot = plantSpot;
   const outdoor = plantIsOutdoor;
   if (flowerId && spot >= 0) {
-    const bed = { mix: [flowerId], watered: 0, grown: 0, squash: 1 };
+    const bed = { mix: [flowerId], watered: 0, grown: 0, squash: 1, pendingGrow: 0 };
     if (outdoor) SAVE.outdoorBeds[spot] = bed;
     else {
       SAVE.beds[spot] = bed;
       SAVE.pots.push({ mix: [flowerId], spot, outdoor: 0 });
     }
     const p = spotXY(spot, outdoor);
-    addPetals(p.x, p.y - 10, '#f078be', quiet ? 3 : 10);
+    addPetals(p.x, p.y - 4, '#f078be', quiet ? 3 : 10);
     startParty('plant');
   }
   plantAnim = 0;
   SAVE.taughtPlant = 1;
 
-  if (bouquet.length > 0) {
+  const canPlantMore = bouquet.length > 0 && emptyBedsWaiting();
+  if (canPlantMore) {
     cue = 'Plant!';
     nurseryMode = 'plant';
     SAVE.step = 'plant';
   } else {
+    // Beds full or bouquet empty → water what we just planted (leftover bouquet kept)
     SAVE.baskets = (SAVE.baskets | 0) + 1;
     SAVE.outingDone = (SAVE.outingDone | 0) + 1;
     SAVE.step = 'water';
     nurseryMode = 'water';
     cue = 'Water!';
+    waterPtr = { x: W * 0.5, y: H * 0.58 };
   }
   snapshotRuntime();
 }
@@ -628,17 +712,17 @@ function doWaterAt(spotIdx, outdoor) {
   b.watered = 1;
   b.squash = 0.78;
   const p = spotXY(spotIdx, outdoor);
-  addSpark(p.x, p.y - 8);
+  addSpark(p.x, p.y - 4);
   addPetals(p.x, p.y, '#96cdf0', quiet ? 3 : 8);
   girlPose = 'water';
   girlPoseT = 0.7;
   startParty('water');
   cue = 'Water!';
   if (allUnwateredDone()) {
-    SAVE.step = 'night';
-    nurseryMode = 'night';
-    cue = 'Night…';
-    beginNight();
+    SAVE.step = 'growing';
+    nurseryMode = 'growing';
+    cue = 'Growing…';
+    beginGrowing();
   }
   snapshotRuntime();
 }
@@ -651,53 +735,35 @@ function allUnwateredDone() {
   return all.length > 0 && all.every((b) => b.watered);
 }
 
-function beginNight() {
-  if (nightAnim) return;
-  nightAnim = 1;
-  nightT = 0;
-  dayNightT = 1;
-  cue = 'Night…';
-  nurseryView = 'sky';
-  door = 0; doorDir = 0;
-  AudioFX.night();
-  startParty('night');
+/** Dark “Growing…” beat — no Night/Wait/sleep/sunset-sunrise story. */
+function beginGrowing() {
+  if (growAnim) return;
+  growAnim = 1;
+  growT = 0;
+  cue = 'Growing…';
+  nurseryView = 'inside';
+  door = 1; doorDir = 0;
+  wateringHeld = 0;
+  AudioFX.grow();
+  startParty('grow');
   snapshotRuntime();
 }
 
-function finishNight() {
-  nightAnim = 0;
-  // Grow watered beds
+function finishGrowing() {
+  growAnim = 0;
   SAVE.beds.forEach((b) => {
-    if (b && b.watered) { b.grown = Math.min(3, (b.grown | 0) + 1); b.squash = 1.15; b.watered = 1; }
+    if (b && b.watered) { b.pendingGrow = 1; b.watered = 1; }
   });
   SAVE.outdoorBeds.forEach((b) => {
-    if (b && b.watered) { b.grown = Math.min(3, (b.grown | 0) + 1); b.squash = 1.15; }
+    if (b && b.watered) { b.pendingGrow = 1; }
   });
-  SAVE.cycles = (SAVE.cycles | 0) + 1;
-  SAVE.step = 'morning';
-  nurseryMode = 'morning';
-  cue = 'Grown!';
-  dayNightT = 0;
-  growFlash = 1;
+  SAVE.awaitingReturnGrowth = 1;
+  SAVE.leftForOuting = 0;
+  SAVE.step = 'ready';
+  nurseryMode = 'ready';
   nurseryView = 'inside';
-  interiorGrownVisual = 1;
-  spawnPollinators();
-  startParty('morning');
-  AudioFX.grow();
-
-  // FIX: expand only when current size beds are truly filled
-  if (bedsTrulyFilled() && (SAVE.ghSize | 0) < 2) {
-    setTimeout(() => doUpgrade(), 1000);
-  } else if (bedsTrulyFilled() && (SAVE.ghSize | 0) >= 2 && !SAVE.outdoorUnlocked) {
-    setTimeout(() => unlockOutdoor(), 1000);
-  } else {
-    setTimeout(() => {
-      SAVE.step = 'ready';
-      nurseryMode = 'ready';
-      cue = emptyBedsWaiting() ? 'Pick more!' : 'Pick blooms!';
-      snapshotRuntime();
-    }, 1600);
-  }
+  cue = 'Pick more!';
+  dayNight = 0; dayNightT = 0;
   snapshotRuntime();
 }
 
@@ -717,11 +783,11 @@ function doUpgrade() {
   growFlash = 1;
   snapshotRuntime();
   setTimeout(() => {
-    SAVE.step = 'ready';
-    nurseryMode = 'ready';
-    cue = 'Pick more!';
-    upgradeAnim = 0;
-    snapshotRuntime();
+  SAVE.step = 'ready';
+  nurseryMode = 'ready';
+  cue = 'Pick more!';
+  upgradeAnim = 0;
+  snapshotRuntime();
   }, 2600);
 }
 
@@ -737,22 +803,24 @@ function unlockOutdoor() {
   snapshotRuntime();
 }
 
-/** Collect a grown bloom to free a bed (also no-fail continue) */
+/** Collect a grown bloom to free a bed (no-fail — frees even if bouquet full). */
 function harvestBed(spotIdx, outdoor) {
   const b = outdoor ? outdoorAt(spotIdx) : bedAt(spotIdx);
   if (!b || !(b.grown > 0)) return;
-  if (bouquet.length >= BOUQUET_GOAL) return;
   const id = (b.mix && b.mix[0]) || 'daisy';
-  bouquet.push(id);
+  if (bouquet.length < BOUQUET_GOAL) bouquet.push(id);
+  if (SAVE.album.indexOf(id) < 0) SAVE.album.push(id);
   if (outdoor) SAVE.outdoorBeds[spotIdx] = null;
   else SAVE.beds[spotIdx] = null;
   const p = spotXY(spotIdx, outdoor);
   addPetals(p.x, p.y, spById(id).c, 8);
-  AudioFX.pick(bouquet.length);
-  cue = bouquet.length >= BOUQUET_GOAL ? 'Plant!' : 'Pick blooms!';
-  if (bouquet.length >= BOUQUET_GOAL) {
+  AudioFX.pick(Math.max(1, bouquet.length));
+  if (bouquet.length && emptyBedsWaiting()) {
     nurseryMode = 'plant';
     SAVE.step = 'plant';
+    cue = 'Plant!';
+  } else {
+    cue = emptyBedsWaiting() ? 'Pick more!' : 'Pick blooms!';
   }
   snapshotRuntime();
 }
@@ -777,12 +845,12 @@ function spawnPollinators() {
 }
 
 function resumeOuting() {
-  if (SAVE.step === 'water' || SAVE.step === 'night') {
-    cue = SAVE.step === 'water' ? 'Water!' : 'Night…';
+  if (SAVE.step === 'water' || growAnim || nurseryMode === 'growing') {
+    cue = growAnim || nurseryMode === 'growing' ? 'Growing…' : 'Water!';
     AudioFX.rustle();
     return;
   }
-  if (SAVE.step === 'plant' && bouquet.length) {
+  if (SAVE.step === 'plant' && bouquet.length && emptyBedsWaiting()) {
     cue = 'Plant!';
     AudioFX.rustle();
     return;
@@ -793,8 +861,101 @@ function resumeOuting() {
     startMeadow(false);
     door = 0; doorDir = 0;
     nurseryView = 'inside';
-    cue = emptyBedsWaiting() ? (bouquet.length ? 'Go home!' : 'Pick!') : 'Pick blooms!';
+    cue = bouquet.length >= BOUQUET_GOAL ? 'Go plant!' : (bouquet.length ? bouquet.length + ' / ' + BOUQUET_GOAL : 'Pick!');
   }, 320);
+}
+
+/* ---------- Kid navigation: Home / Back / Places ---------- */
+function goTitleHome() {
+  placesOpen = 0;
+  wateringHeld = 0; waterPtr = null;
+  growAnim = 0; plantAnim = 0; pendingPick = null;
+  dayNight = 0; dayNightT = 0;
+  snapshotRuntime();
+  state = ST.MENU;
+  pushNav('home');
+  cue = '';
+  announce('Home');
+  AudioFX.ui();
+}
+
+function goBackNav() {
+  placesOpen = 0;
+  if (growAnim || plantAnim || upgradeAnim) {
+    AudioFX.rustle();
+    return;
+  }
+  // Prefer explicit previous place
+  if (navStack.length > 1) {
+    navStack.pop();
+    const prev = navStack[navStack.length - 1];
+    if (prev === 'meadow') {
+      if (state === ST.GREENHOUSE) {
+        if (nurseryMode === 'water' || nurseryMode === 'growing' || (nurseryMode === 'plant' && bouquet.length && emptyBedsWaiting())) {
+          cue = nurseryMode === 'plant' ? 'Plant!' : (nurseryMode === 'water' ? 'Water!' : 'Growing…');
+          AudioFX.rustle();
+          navStack.push('greenhouse');
+          return;
+        }
+        resumeOuting();
+        return;
+      }
+      startMeadow(false);
+      return;
+    }
+    if (prev === 'greenhouse') {
+      enterGreenhouse(resolveNurseryMode());
+      door = 1; doorDir = 0; nurseryView = 'inside';
+      return;
+    }
+    if (prev === 'home' || prev === 'menu') {
+      goTitleHome();
+      return;
+    }
+  }
+  // Fallbacks by current scene
+  if (state === ST.HOWTO) { state = ST.MENU; pushNav('home'); AudioFX.ui(); return; }
+  if (state === ST.GREENHOUSE) {
+    if (nurseryMode === 'ready' || nurseryMode === 'look') { resumeOuting(); return; }
+    goTitleHome();
+    return;
+  }
+  if (state === ST.MEADOW || state === ST.PAUSED) { goTitleHome(); return; }
+  goTitleHome();
+}
+
+function openPlacesMenu() {
+  placesOpen = placesOpen ? 0 : 1;
+  AudioFX.ui();
+}
+
+function choosePlace(id) {
+  placesOpen = 0;
+  if (id === 'home') { goTitleHome(); return; }
+  if (id === 'meadow') {
+    if (state === ST.GREENHOUSE && (nurseryMode === 'water' || growAnim || (nurseryMode === 'plant' && bouquet.length && emptyBedsWaiting()))) {
+      cue = nurseryMode === 'plant' ? 'Plant first!' : (growAnim ? 'Growing…' : 'Water first!');
+      AudioFX.rustle();
+      return;
+    }
+    if (state === ST.GREENHOUSE) resumeOuting();
+    else startMeadow(false);
+    return;
+  }
+  if (id === 'greenhouse') {
+    goPlantHome();
+    door = 1; doorDir = 0; nurseryView = 'inside';
+    return;
+  }
+  if (id === 'play') {
+    if (state === ST.MENU || state === ST.HOWTO) {
+      if (!SAVE.taughtHow) { state = ST.HOWTO; howtoPage = 0; }
+      else startMeadow(false);
+    } else {
+      placesOpen = 0;
+    }
+    AudioFX.ui();
+  }
 }
 
 /* ---------- Drawing helpers ---------- */
@@ -872,7 +1033,7 @@ function drawHouseFull(open, time) {
 }
 
 function drawGirl(x, y, walking) {
-  const hold = Math.min(3, bouquet.length);
+  const holdStage = bouquetArtStage();
   const h = Y(320) * girl.squash;
   let img = null;
   let bob = 0;
@@ -902,10 +1063,9 @@ function drawGirl(x, y, walking) {
     cx.fillRect(x - h * 0.08, y - h * 0.55, h * 0.16, h * 0.35);
   }
 
-  // Bouquet overlay near hands (Franz bouquet-N). Show 1–3 while held;
-  // bouquet-0 (empty stems) only as a brief cue right after first approach.
-  if (hold > 0 && pose !== 'plant') {
-    const bq = Assets.bouquet(hold);
+  // Bouquet art stages 0–3 while holding; count goal is ~20
+  if (holdStage > 0 && pose !== 'plant') {
+    const bq = Assets.bouquet(holdStage);
     if (bq) {
       const bh = h * 0.38;
       const bx = x + girl.face * X(8);
@@ -942,40 +1102,55 @@ function drawFinger(x, y, a) {
 }
 
 function drawBouquetPips() {
-  // Picture-first progress under Haven — not a misleading HUD pile
+  // Compact fill-up meter: bouquet art stage + N / 20 (not 20 tiny pips)
   if (state !== ST.MEADOW && state !== ST.PAUSED) return;
-  const y = contentBottom() - 36;
-  const n = BOUQUET_GOAL;
-  const gap = 46;
-  const total = n * gap;
-  const bx = W / 2 - total / 2 + gap / 2;
-  cx.fillStyle = bouquet.length >= BOUQUET_GOAL ? 'rgba(255,230,140,.95)' : 'rgba(255,250,240,.88)';
-  rr(W / 2 - total / 2 - 18, y - 28, total + 36, 56, 16); cx.fill();
-  for (let i = 0; i < n; i++) {
-    const x = bx + i * gap;
-    cx.fillStyle = 'rgba(160,150,140,.25)';
-    cx.beginPath(); cx.arc(x, y, 16, 0, 7); cx.fill();
-    if (bouquet[i]) drawFlowerSprite(spById(bouquet[i]), x, y + 8, 0.55);
+  const y = contentBottom() - 44;
+  const full = bouquet.length >= BOUQUET_GOAL;
+  const bw = Math.min(W - 36, 280);
+  const bx = (W - bw) / 2;
+  cx.fillStyle = full ? 'rgba(255,230,140,.96)' : 'rgba(255,250,240,.92)';
+  rr(bx, y - 30, bw, 60, 18); cx.fill();
+  if (full) { cx.strokeStyle = '#ff9a2a'; cx.lineWidth = 3; rr(bx, y - 30, bw, 60, 18); cx.stroke(); }
+
+  const stage = bouquetArtStage();
+  const bq = Assets.bouquet(Math.max(1, stage));
+  if (bq && stage > 0) {
+    const bh = 48;
+    const bw2 = bh * (bq.width / bq.height);
+    cx.drawImage(bq, bx + 14, y - 24, bw2, bh);
+  } else {
+    cx.fillStyle = 'rgba(160,150,140,.3)';
+    cx.beginPath(); cx.arc(bx + 36, y, 16, 0, 7); cx.fill();
   }
-  hit.homeBar = bouquet.length >= BOUQUET_GOAL
-    ? { x: W / 2 - total / 2 - 18, y: y - 28, w: total + 36, h: 56 }
-    : null;
+
+  cx.fillStyle = '#2a2418';
+  cx.font = '800 22px Fredoka, system-ui, sans-serif';
+  cx.textAlign = 'left';
+  cx.fillText(bouquet.length + ' / ' + BOUQUET_GOAL, bx + 78, y + 8);
+  if (full) {
+    cx.font = '800 14px Fredoka, system-ui, sans-serif';
+    cx.fillStyle = '#a05010';
+    cx.fillText('Go plant!', bx + 78, y + 24);
+  }
+  hit.homeBar = full ? { x: bx, y: y - 30, w: bw, h: 60 } : null;
 }
 
-function drawHomeBtn() {
-  const x = W - 56, y = padT + 78;
-  const pulse = bouquet.length >= BOUQUET_GOAL ? 1 + Math.sin(performance.now() / 200) * 0.08 : 1;
+/** Greenhouse “go plant” button (when bouquet full) — top-right, clear of nav dock. */
+function drawGoPlantBtn() {
+  if (state !== ST.MEADOW && state !== ST.PAUSED) return;
+  if (bouquet.length < BOUQUET_GOAL) { hit.goPlant = null; return; }
+  const x = W - 58, y = padT + 86;
+  const pulse = 1 + Math.sin(performance.now() / 200) * 0.08;
   cx.save();
   cx.translate(x, y); cx.scale(pulse, pulse);
-  cx.fillStyle = bouquet.length >= BOUQUET_GOAL ? '#ffd24a' : 'rgba(255,250,240,.92)';
-  rr(-32, -32, 64, 64, 18); cx.fill();
-  if (bouquet.length >= BOUQUET_GOAL) { cx.strokeStyle = '#ff9a2a'; cx.lineWidth = 3; cx.stroke(); }
-  // house glyph
-  cx.fillStyle = '#fff'; cx.fillRect(-14, -6, 28, 22);
-  cx.strokeStyle = '#3c322d'; cx.lineWidth = 2; cx.strokeRect(-14, -6, 28, 22);
-  cx.beginPath(); cx.moveTo(-18, -6); cx.lineTo(0, -22); cx.lineTo(18, -6); cx.closePath(); cx.fill(); cx.stroke();
+  cx.fillStyle = '#ffd24a';
+  rr(-34, -34, 68, 68, 18); cx.fill();
+  cx.strokeStyle = '#ff9a2a'; cx.lineWidth = 3; cx.stroke();
+  cx.fillStyle = '#fff'; cx.fillRect(-14, -4, 28, 20);
+  cx.strokeStyle = '#3c322d'; cx.lineWidth = 2; cx.strokeRect(-14, -4, 28, 20);
+  cx.beginPath(); cx.moveTo(-18, -4); cx.lineTo(0, -20); cx.lineTo(18, -4); cx.closePath(); cx.fill(); cx.stroke();
   cx.restore();
-  hit.home = { x: x - 32, y: y - 32, w: 64, h: 64 };
+  hit.goPlant = { x: x - 34, y: y - 34, w: 68, h: 68 };
 }
 
 function drawChrome() {
@@ -989,7 +1164,7 @@ function drawChrome() {
   cx.font = '700 11px system-ui';
   cx.fillStyle = '#6a6258';
   cx.textAlign = 'right';
-  cx.fillText(VER.replace('v0.9-birthday-draft', 'v0.9') + ' · ' + gh().id, W - 100, padT + 30);
+  cx.fillText('v0.9 · ' + gh().id, W - 100, padT + 30);
 
   // Mute — large hit target
   const mx = W - 58, my = padT + 8;
@@ -1011,13 +1186,82 @@ function drawChrome() {
       rr(34, padT + 18, 5, 20, 1); cx.fill();
     }
   } else hit.pause = null;
+
+  drawNavDock();
+  if (placesOpen) drawPlacesMenu();
+}
+
+/** Thumb-reach nav dock: Back · Places · Home (safe-area bottom). */
+function drawNavDock() {
+  if (state === ST.BOOT) { hit.navBack = hit.navPlaces = hit.navHome = null; return; }
+  const btnH = 56;
+  const gap = 10;
+  const dockW = Math.min(W - 24, 360);
+  const x0 = (W - dockW) / 2;
+  const y = H - Math.max(padB, SAFE_UI) + 8;
+  const bw = (dockW - gap * 2) / 3;
+
+  const buttons = [
+    { id: 'navBack', label: 'Back', fill: '#7ec8ff' },
+    { id: 'navPlaces', label: 'Places', fill: '#c8a0ff' },
+    { id: 'navHome', label: 'Home', fill: '#5ecf7a' }
+  ];
+  buttons.forEach((b, i) => {
+    const x = x0 + i * (bw + gap);
+    cx.fillStyle = 'rgba(30,24,20,.18)';
+    rr(x + 2, y + 3, bw, btnH, 16); cx.fill();
+    cx.fillStyle = b.fill;
+    rr(x, y, bw, btnH, 16); cx.fill();
+    cx.fillStyle = '#1e1814';
+    cx.font = '800 17px Fredoka, system-ui, sans-serif';
+    cx.textAlign = 'center';
+    cx.fillText(b.label, x + bw / 2, y + 36);
+    hit[b.id] = { x, y, w: bw, h: btnH };
+  });
+}
+
+function drawPlacesMenu() {
+  const panelW = Math.min(W - 28, 340);
+  const panelH = 280;
+  const px = (W - panelW) / 2;
+  const py = Math.max(padT + 60, H * 0.22);
+  cx.fillStyle = 'rgba(30,24,20,.45)';
+  cx.fillRect(0, 0, W, H);
+  cx.fillStyle = 'rgba(255,250,240,.98)';
+  rr(px, py, panelW, panelH, 22); cx.fill();
+  cx.fillStyle = '#2a2418';
+  cx.font = '800 22px Fredoka, system-ui, sans-serif';
+  cx.textAlign = 'center';
+  cx.fillText('Where to?', W / 2, py + 36);
+
+  const items = [
+    { id: 'meadow', label: '🌸  Meadow', sub: 'Pick flowers', fill: '#9fe870' },
+    { id: 'greenhouse', label: '🏡  Greenhouse', sub: 'Plant & water', fill: '#7ec8ff' },
+    { id: 'play', label: '▶  Keep playing', sub: 'Stay here', fill: '#ffd24a' },
+    { id: 'home', label: '🏠  Start screen', sub: 'Title menu', fill: '#ffb4c8' }
+  ];
+  hit.places = [];
+  items.forEach((it, i) => {
+    const iy = py + 54 + i * 52;
+    const ih = 46;
+    cx.fillStyle = it.fill;
+    rr(px + 16, iy, panelW - 32, ih, 14); cx.fill();
+    cx.fillStyle = '#1e1814';
+    cx.font = '800 16px Fredoka, system-ui, sans-serif';
+    cx.textAlign = 'left';
+    cx.fillText(it.label, px + 28, iy + 20);
+    cx.font = '700 12px system-ui';
+    cx.fillStyle = '#4a4450';
+    cx.fillText(it.sub, px + 28, iy + 36);
+    hit.places.push({ id: it.id, x: px + 16, y: iy, w: panelW - 32, h: ih });
+  });
 }
 
 function drawParty() {
   if (party.t <= 0 && !confetti.length) return;
   const u = party.t > 0 ? Math.min(1, party.t) : 0;
   if (u > 0) {
-    const labels = { full: 'Go home!', door: 'Yay!', plant: 'Planted!', water: 'Splash!', night: 'Night…', morning: 'Grown!', upgrade: 'Bigger!', grow: 'Bloom!' };
+    const labels = { full: 'Go plant!', door: 'Yay!', plant: 'Planted!', water: 'Splash!', grow: 'Growing…', bigger: 'Bigger!', upgrade: 'Bigger!' };
     cx.save();
     cx.translate(W / 2, H * 0.34);
     cx.scale(1.05 + 0.15 * u, 1.05 + 0.15 * u);
@@ -1052,16 +1296,19 @@ function drawBedHighlight(s, highlight) {
 }
 
 function drawBedFlowers(s, b) {
-  if (!b || interiorGrownVisual) return; // grown plate already paints blooms
+  if (!b) return;
+  // Always sprite-draw in soil (bottom-center at bed feet). Never use mid-air Y.
   const grown = b.grown | 0;
   const mix = b.mix || ['daisy'];
-  const n = grown > 0 ? Math.min(2, Math.max(1, mix.length)) : 1;
-  const fs = grown > 0 ? 0.7 + grown * 0.08 : 0.5;
+  const n = 1;
+  // Time-lapse: each grown step is clearly bigger
+  const fs = grown <= 0 ? 0.38 : (0.48 + grown * 0.16);
   const sc = plantAnim && plantSpot === (s.i != null ? s.i : -1) && !!s.outdoor === !!plantIsOutdoor
     ? 0.45 + 0.55 * Math.min(1, plantAnimT / 0.7) : 1;
+  const squash = (b.squash != null ? b.squash : 1);
   for (let j = 0; j < n; j++) {
     const sp = spById(mix[j % mix.length]);
-    drawFlowerSprite(sp, s.x + (j - (n - 1) / 2) * s.r * 0.4, s.y - 4, fs * sc);
+    drawFlowerSprite(sp, s.x + (j - (n - 1) / 2) * s.r * 0.35, s.y, fs * sc * squash);
   }
 }
 
@@ -1084,9 +1331,9 @@ function drawPollinators() {
 }
 
 function drawInterior() {
-  const grown = !!interiorGrownVisual || nurseryMode === 'morning';
-  const plate = Assets.interior(SAVE.ghSize | 0, grown);
-  const key = 'int-' + gh().key + '-' + (grown ? 'grown' : 'empty');
+  // Always empty interior plate — growth shown via bed-anchored sprites (time-lapse sizes)
+  const plate = Assets.interior(SAVE.ghSize | 0, false);
+  const key = 'int-' + gh().key + '-empty';
   ensureBgCrossfade(key, plate);
   if (plate || bgFrom || bgTo) drawCrossfadedPlate(bgFrom, bgTo || plate, bgBlend);
   else {
@@ -1100,44 +1347,51 @@ function drawInterior() {
     const b = bedAt(i);
     const hl = (nurseryMode === 'plant' && !b && bouquet.length) ||
       (nurseryMode === 'water' && b && !b.watered) ||
-      ((nurseryMode === 'ready' || nurseryMode === 'look') && b && b.grown && bouquet.length < BOUQUET_GOAL && !emptyBedsWaiting());
+      ((nurseryMode === 'ready' || nurseryMode === 'look') && b && b.grown);
     drawBedHighlight(s, hl);
     drawBedFlowers(s, b);
-    hit.spots.push({ x: s.x - 50, y: s.y - 55, w: 100, h: 90, i, outdoor: 0 });
+    // Hit box rooted at soil feet (not floating high)
+    hit.spots.push({ x: s.x - 52, y: s.y - 70, w: 104, h: 88, i, outdoor: 0 });
   });
 
-  if (SAVE.outdoorUnlocked && (nurseryMode === 'plant' || nurseryMode === 'water' || nurseryMode === 'ready' || nurseryMode === 'look' || nurseryMode === 'morning')) {
+  if (SAVE.outdoorUnlocked && (nurseryMode === 'plant' || nurseryMode === 'water' || nurseryMode === 'ready' || nurseryMode === 'look')) {
     outdoorSpots().forEach((s) => {
       const b = outdoorAt(s.i);
-      const hl = (nurseryMode === 'plant' && !b && bouquet.length) || (nurseryMode === 'water' && b && !b.watered);
+      const hl = (nurseryMode === 'plant' && !b && bouquet.length) || (nurseryMode === 'water' && b && !b.watered) ||
+        ((nurseryMode === 'ready' || nurseryMode === 'look') && b && b.grown);
       drawBedHighlight(s, hl);
       drawBedFlowers(s, b);
-      hit.spots.push({ x: s.x - 50, y: s.y - 55, w: 100, h: 90, i: s.i, outdoor: 1 });
+      hit.spots.push({ x: s.x - 52, y: s.y - 70, w: 104, h: 88, i: s.i, outdoor: 1 });
     });
   }
 
-  // Haven on the center path
-  drawGirl(W * 0.5, H * 0.82, false);
+  // Haven on the center path (above bottom nav dock)
+  drawGirl(W * 0.5, H * 0.72, false);
 
   if (nurseryMode === 'water') {
-    const pulse = 1 + Math.sin(performance.now() / 200) * 0.08;
-    cx.save();
-    cx.translate(W - 72, H * 0.34); cx.scale(pulse, pulse);
-    cx.fillStyle = 'rgba(255,250,240,.96)';
-    rr(-48, -44, 96, 88, 18); cx.fill();
+    // Watering can follows finger like a cursor — carried bed to bed
+    const wx = waterPtr ? waterPtr.x : W * 0.5;
+    const wy = waterPtr ? waterPtr.y : H * 0.55;
     const can = Assets.get('wateringCan');
-    if (can) cx.drawImage(can, -40, -36, 80, 80);
+    const size = X(88);
+    cx.save();
+    cx.globalAlpha = 0.98;
+    if (can) cx.drawImage(can, wx - size * 0.45, wy - size * 0.55, size, size);
+    else {
+      cx.fillStyle = '#5ecf7a';
+      cx.beginPath(); cx.arc(wx, wy, 28, 0, 7); cx.fill();
+    }
     cx.restore();
-    hit.waterCan = { x: W - 120, y: H * 0.34 - 44, w: 96, h: 88 };
+    hit.waterCan = null;
     let need = SAVE.beds.findIndex((b) => b && !b.watered);
     let outdoor = 0;
     if (need < 0) {
       need = SAVE.outdoorBeds.findIndex((b) => b && !b.watered);
       outdoor = 1;
     }
-    if (need >= 0) {
+    if (need >= 0 && !wateringHeld) {
       const p = spotXY(need, outdoor);
-      drawFinger(p.x + 14, p.y - 10 + Math.sin(performance.now() / 350) * 8, 0.9);
+      drawFinger(p.x + 10, p.y - 8 + Math.sin(performance.now() / 350) * 8, 0.85);
     }
   }
 
@@ -1150,7 +1404,16 @@ function drawInterior() {
     }
   }
 
-  if (grown || nurseryMode === 'morning' || nurseryMode === 'ready' || nurseryMode === 'look') {
+  if (growAnim) {
+    const u = Math.min(1, growT / GROWING_SEC);
+    cx.fillStyle = `rgba(12, 18, 36, ${0.25 + 0.45 * u})`;
+    cx.fillRect(0, 0, W, H);
+    drawCue('Growing…');
+  }
+
+  const anyGrown = SAVE.beds.some((b) => b && (b.grown | 0) > 0) ||
+    SAVE.outdoorBeds.some((b) => b && (b.grown | 0) > 0);
+  if (anyGrown && (nurseryMode === 'ready' || nurseryMode === 'look')) {
     drawPollinators();
   }
 }
@@ -1189,11 +1452,11 @@ function drawMeadow() {
     }
   }
   drawBouquetPips();
-  drawHomeBtn();
+  drawGoPlantBtn();
   drawCue(cue);
   drawParty();
   if (bouquet.length >= BOUQUET_GOAL) {
-    drawFinger(W - 56, padT + 110 + Math.sin(performance.now() / 300) * 8, 0.85);
+    drawFinger(W - 56, padT + 120 + Math.sin(performance.now() / 300) * 8, 0.85);
   }
   if (state === ST.PAUSED) {
     cx.fillStyle = 'rgba(30,24,20,.4)'; cx.fillRect(0, 0, W, H);
@@ -1211,21 +1474,21 @@ function drawMeadow() {
 
 function drawGreenhouse() {
   const mode = skyMode();
-  if (nurseryView === 'sky' || (nurseryMode === 'night' && nightAnim)) {
-    drawHouseFull(false, mode);
-    drawCue(cue || 'Night…');
-  } else if (nurseryView === 'enter' || nurseryView === 'exit' || upgradeAnim) {
-    drawHouseFull(door > 0.3, mode === 'night' ? 'night' : 'day');
+  if (nurseryView === 'enter' || nurseryView === 'exit' || upgradeAnim) {
+    drawHouseFull(door > 0.3, 'day');
     if (door > 0.85 && nurseryView === 'enter' && !upgradeAnim) nurseryView = 'inside';
   } else {
     drawInterior();
   }
 
-  const canLeave = nurseryMode === 'ready' || nurseryMode === 'look' ||
-    (nurseryMode === 'morning' && SAVE.step === 'ready') ||
-    (nurseryMode === 'upgrade' && !upgradeAnim && SAVE.step === 'ready');
+  const canLeave = !growAnim && (nurseryMode === 'ready' || nurseryMode === 'look' ||
+    (nurseryMode === 'upgrade' && !upgradeAnim && SAVE.step === 'ready'));
+  // Sit above the Home/Back/Places dock
   const gy = contentBottom() - 78;
-  const label = canLeave ? 'Pick more!' : (nurseryMode === 'plant' ? 'Plant first' : (nurseryMode === 'water' ? 'Water first' : 'Wait…'));
+  const label = canLeave ? 'Pick more!'
+    : (nurseryMode === 'plant' ? 'Plant first'
+      : (nurseryMode === 'water' ? 'Water first'
+        : (growAnim || nurseryMode === 'growing' ? 'Growing…' : 'Soon…')));
   cx.fillStyle = canLeave ? '#5ecf7a' : 'rgba(160,150,140,.45)';
   rr(W / 2 - 110, gy, 220, 58, 18); cx.fill();
   cx.fillStyle = '#fff';
@@ -1234,7 +1497,7 @@ function drawGreenhouse() {
   cx.fillText(label, W / 2, gy + 36);
   hit.gate = { x: W / 2 - 110, y: gy, w: 220, h: 58 };
 
-  if (cue && nurseryView !== 'sky') drawCue(cue);
+  if (cue && !growAnim) drawCue(cue);
   drawParty();
 }
 
@@ -1277,7 +1540,7 @@ function drawMenu() {
   rr(32, by, W / 2 - 44, 56, 16); cx.fill();
   cx.fillStyle = '#2a2418';
   cx.font = '800 15px Fredoka, system-ui, sans-serif';
-  cx.fillText('Home', 32 + (W / 2 - 44) / 2, by + 34);
+  cx.fillText('Greenhouse', 32 + (W / 2 - 44) / 2, by + 34);
   hit.nursery = { x: 32, y: by, w: W / 2 - 44, h: 56 };
 
   cx.fillStyle = '#c8a0ff';
@@ -1293,11 +1556,11 @@ function drawHowTo() {
   rr(18, padT + 60, W - 36, contentBottom() - padT - 80, 20); cx.fill();
   const steps = [
     { t: 'Tap a flower', d: 'Haven walks there, then picks it.' },
-    { t: 'Hold three', d: 'Flowers stay in her hands.' },
-    { t: 'Go home', d: 'The greenhouse doors open.' },
+    { t: 'Pick lots!', d: 'Fill a big bouquet — about twenty.' },
+    { t: 'Go plant', d: 'Tap Home or the glowing house.' },
     { t: 'Plant each one', d: 'Tap empty beds, one by one.' },
-    { t: 'Water', d: 'Give every bed a drink.' },
-    { t: 'Night → bloom', d: 'Morning brings bees & butterflies!' }
+    { t: 'Water', d: 'Drag the watering can onto each bed.' },
+    { t: 'Growing…', d: 'Then pick more — flowers get bigger!' }
   ];
   const s = steps[howtoPage % steps.length];
   cx.fillStyle = '#2a2418';
@@ -1316,9 +1579,12 @@ function drawHowTo() {
     drawFinger(W * 0.62, H * 0.42, 0.8);
   } else if (howtoPage === 1) {
     const prev = bouquet;
-    bouquet = ['tulip', 'daisy', 'sunflower'];
+    bouquet = new Array(12).fill('daisy');
     drawGirl(W * 0.5, H * 0.55, false);
     bouquet = prev;
+    cx.fillStyle = '#2a2418';
+    cx.font = '800 18px Fredoka, system-ui, sans-serif';
+    cx.fillText('12 / 20', W / 2, H * 0.62);
   } else if (howtoPage === 2) {
     const img = Assets.greenhouse(0, true, 'day');
     if (img) {
@@ -1327,18 +1593,21 @@ function drawHowTo() {
       cx.drawImage(img, W / 2 - w / 2, H * 0.32, w, h);
     }
   } else if (howtoPage === 3) {
-    drawBedHighlight({ x: W * 0.5, y: H * 0.52, r: X(70) }, true);
+    drawBedHighlight({ x: W * 0.5, y: H * 0.58, r: X(70) }, true);
+    drawFlowerSprite(SPECIES[1], W * 0.5, H * 0.58, 0.55);
     const plant = Assets.get('havenPlant');
-    if (plant) drawAnchored(plant, W * 0.5, H * 0.58, Y(260), 1, 0);
+    if (plant) drawAnchored(plant, W * 0.35, H * 0.62, Y(220), 1, 0);
   } else if (howtoPage === 4) {
     const can = Assets.get('wateringCan');
-    if (can) cx.drawImage(can, W / 2 - 60, H * 0.4, 120, 120);
+    if (can) cx.drawImage(can, W / 2 - 40, H * 0.42, 90, 90);
+    drawFinger(W / 2 + 20, H * 0.5, 0.8);
   } else {
-    drawFlowerSprite(SPECIES[0], W * 0.3, H * 0.52, 1);
-    drawFlowerSprite(SPECIES[1], W * 0.5, H * 0.54, 1);
-    drawFlowerSprite(SPECIES[2], W * 0.7, H * 0.52, 1);
-    const bee = Assets.get('bee01');
-    if (bee) cx.drawImage(bee, W * 0.55, H * 0.38, 48, 48);
+    drawFlowerSprite(SPECIES[0], W * 0.3, H * 0.56, 0.45);
+    drawFlowerSprite(SPECIES[1], W * 0.5, H * 0.56, 0.7);
+    drawFlowerSprite(SPECIES[2], W * 0.7, H * 0.56, 0.95);
+    cx.fillStyle = '#6a6258';
+    cx.font = '700 13px system-ui';
+    cx.fillText('Bigger each visit!', W / 2, H * 0.64);
   }
 
   cx.fillStyle = '#5ecf7a';
@@ -1447,13 +1716,9 @@ function update(dt) {
       plantAnimT += dt;
       if (plantAnimT >= 0.7) finishPlant();
     }
-    if (nightAnim) {
-      nightT += dt;
-      // sunset → night over ~1.2s, hold, then sunrise
-      if (nightT < 1.2) dayNightT = Math.min(1, nightT / 1.2);
-      else if (nightT < 2.2) dayNightT = 1;
-      else dayNightT = 0; // sunrise/day
-      if (nightT >= 3.2) finishNight();
+    if (growAnim) {
+      growT += dt;
+      if (growT >= GROWING_SEC) finishGrowing();
     }
     pollinators.forEach((p) => {
       p.phase += dt * 2.4;
@@ -1464,6 +1729,7 @@ function update(dt) {
       if (p.kind === 'butterfly' && Math.random() < dt * 0.08) AudioFX.flutter();
     });
     SAVE.beds.forEach((b) => { if (b && b.squash != null) b.squash += (1 - b.squash) * Math.min(1, dt * 4); });
+    SAVE.outdoorBeds.forEach((b) => { if (b && b.squash != null) b.squash += (1 - b.squash) * Math.min(1, dt * 4); });
   }
 
   arcs.forEach((a) => {
@@ -1498,6 +1764,22 @@ function toggleMute() {
   AudioFX.ui();
 }
 
+function handleNavTap(p) {
+  if (placesOpen) {
+    for (const item of (hit.places || [])) {
+      if (inRect(p, item)) { choosePlace(item.id); return true; }
+    }
+    // Tap outside closes menu
+    placesOpen = 0;
+    AudioFX.ui();
+    return true;
+  }
+  if (inRect(p, hit.navHome)) { goTitleHome(); return true; }
+  if (inRect(p, hit.navBack)) { goBackNav(); return true; }
+  if (inRect(p, hit.navPlaces)) { openPlacesMenu(); return true; }
+  return false;
+}
+
 function onDown(e) {
   e.preventDefault();
   AudioFX.ensure();
@@ -1506,8 +1788,10 @@ function onDown(e) {
   pointerId = p.id; lastPtr = p; dragging = 0;
 
   if (inRect(p, hit.mute)) { toggleMute(); return; }
-
   if (state === ST.BOOT) return;
+
+  // Home / Back / Places always available (except boot)
+  if (handleNavTap(p)) return;
 
   if (state === ST.HOWTO) {
     if (inRect(p, hit.howto)) {
@@ -1545,7 +1829,7 @@ function onDown(e) {
 
   if (state === ST.MEADOW) {
     if (inRect(p, hit.pause)) { prevState = state; state = ST.PAUSED; snapshotRuntime(); AudioFX.ui(); return; }
-    if (inRect(p, hit.home) || inRect(p, hit.homeBar)) { goHome(); return; }
+    if (inRect(p, hit.goPlant) || inRect(p, hit.homeBar)) { goPlantHome(); return; }
     const f = nearestFlower(p.x, p.y, PICK_RADIUS);
     if (f) { requestPick(f); dragging = 1; return; }
     if (p.y < fieldBot() + 10 && p.y > fieldTop()) {
@@ -1558,11 +1842,11 @@ function onDown(e) {
   }
 
   if (state === ST.GREENHOUSE) {
-    if (plantAnim || nightAnim || upgradeAnim) return;
+    if (plantAnim || growAnim || upgradeAnim) return;
     if (inRect(p, hit.gate)) {
-      if (nurseryMode === 'plant' && bouquet.length) { cue = 'Plant!'; AudioFX.rustle(); return; }
-      if (nurseryMode === 'water' || nurseryMode === 'night') {
-        cue = nurseryMode === 'water' ? 'Water!' : 'Night…';
+      if (nurseryMode === 'plant' && bouquet.length && emptyBedsWaiting()) { cue = 'Plant!'; AudioFX.rustle(); return; }
+      if (nurseryMode === 'water' || nurseryMode === 'growing') {
+        cue = nurseryMode === 'water' ? 'Water!' : 'Growing…';
         AudioFX.rustle();
         return;
       }
@@ -1570,10 +1854,11 @@ function onDown(e) {
       return;
     }
     if (nurseryMode === 'water') {
+      wateringHeld = 1;
+      waterPtr = { x: p.x, y: p.y };
       for (const s of (hit.spots || [])) {
         if (inRect(p, s)) { doWaterAt(s.i, s.outdoor); return; }
       }
-      AudioFX.rustle();
       return;
     }
     if (nurseryMode === 'plant' && nurseryView === 'inside') {
@@ -1581,13 +1866,14 @@ function onDown(e) {
         if (inRect(p, s)) {
           const occupied = s.outdoor ? outdoorAt(s.i) : bedAt(s.i);
           if (!occupied) { doPlantAt(s.i, s.outdoor); return; }
+          if (occupied && occupied.grown) { harvestBed(s.i, s.outdoor); return; }
         }
       }
       AudioFX.rustle();
       return;
     }
-    // Harvest grown blooms when beds full (no-fail continue)
-    if ((nurseryMode === 'ready' || nurseryMode === 'look' || nurseryMode === 'morning') && !emptyBedsWaiting()) {
+    // Harvest grown blooms to free beds (no-fail continue)
+    if (nurseryMode === 'ready' || nurseryMode === 'look') {
       for (const s of (hit.spots || [])) {
         if (inRect(p, s)) {
           const b = s.outdoor ? outdoorAt(s.i) : bedAt(s.i);
@@ -1601,7 +1887,18 @@ function onDown(e) {
 function onMove(e) {
   e.preventDefault();
   const p = ptr(e);
-  if (pointerId == null || p.id !== pointerId || state !== ST.MEADOW || !lastPtr) return;
+  if (pointerId == null || p.id !== pointerId || !lastPtr) return;
+
+  if (state === ST.GREENHOUSE && nurseryMode === 'water' && wateringHeld) {
+    waterPtr = { x: p.x, y: p.y };
+    for (const s of (hit.spots || [])) {
+      if (inRect(p, s)) doWaterAt(s.i, s.outdoor);
+    }
+    lastPtr = p;
+    return;
+  }
+
+  if (state !== ST.MEADOW) { lastPtr = p; return; }
   const f = nearestFlower(p.x, p.y, PICK_RADIUS * 0.85);
   if (f && bouquet.length < BOUQUET_GOAL) requestPick(f);
   else if (dragging) {
@@ -1615,7 +1912,7 @@ function onUp(e) {
   e.preventDefault();
   const p = ptr(e);
   if (p.id !== pointerId) return;
-  pointerId = null; lastPtr = null; dragging = 0;
+  pointerId = null; lastPtr = null; dragging = 0; wateringHeld = 0;
 }
 
 cv.addEventListener('pointerdown', onDown, { passive: false });
@@ -1626,34 +1923,29 @@ addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
 
 /* ---------- Resume / visibility ---------- */
 function tryResumeFromSave() {
-  bouquet = Array.isArray(SAVE.bouquet) ? SAVE.bouquet.slice(0, BOUQUET_GOAL) : [];
-  dayNight = SAVE.dayPhase || 0;
-  dayNightT = dayNight;
+  bouquet = Array.isArray(SAVE.bouquet) ? SAVE.bouquet.slice() : [];
+  dayNight = 0;
+  dayNightT = 0;
   nurseryMode = SAVE.nurseryMode || resolveNurseryMode();
 
-  // Mid-loop recovery
-  if (SAVE.step === 'water' || SAVE.step === 'night' || SAVE.step === 'morning' || SAVE.step === 'upgrade' ||
+  // Mid-loop recovery (night/morning already migrated in migrateSave)
+  if (SAVE.step === 'water' || SAVE.step === 'growing' || SAVE.step === 'upgrade' ||
       (SAVE.step === 'plant' && bouquet.length) || SAVE.scene === 'greenhouse') {
     state = ST.GREENHOUSE;
-    if (SAVE.step === 'night') {
-      nurseryMode = 'night';
-      beginNight();
-    } else if (SAVE.step === 'morning') {
-      nurseryMode = 'morning';
+    pushNav('greenhouse');
+    if (SAVE.step === 'growing') {
+      nurseryMode = 'growing';
       nurseryView = 'inside';
-      cue = 'Grown!';
-      spawnPollinators();
-      setTimeout(() => {
-        if (bedsTrulyFilled() && (SAVE.ghSize | 0) < 2) doUpgrade();
-        else if (bedsTrulyFilled() && (SAVE.ghSize | 0) >= 2 && !SAVE.outdoorUnlocked) unlockOutdoor();
-        else { SAVE.step = 'ready'; nurseryMode = 'ready'; cue = 'Pick more!'; snapshotRuntime(); }
-      }, 800);
+      beginGrowing();
     } else if (SAVE.step === 'water') {
       nurseryMode = 'water'; nurseryView = 'inside'; cue = 'Water!'; door = 1;
+      waterPtr = { x: W * 0.5, y: H * 0.58 };
     } else if (SAVE.step === 'plant') {
       nurseryMode = 'plant'; nurseryView = 'inside'; cue = 'Plant!'; door = 1;
     } else {
+      nurseryMode = resolveNurseryMode();
       nurseryView = 'inside'; door = 1;
+      cue = SAVE.awaitingReturnGrowth ? 'Pick more!' : cue;
     }
     girl.x = W * (SAVE.girlNX || 0.2);
     girl.y = H * (SAVE.girlNY || 0.62);
@@ -1720,27 +2012,27 @@ function applyShot(name) {
     case 'bouquet1':
       startMeadow(false);
       bouquet = ['tulip'];
-      cue = '1 / 3';
+      cue = '1 / ' + BOUQUET_GOAL;
       break;
     case 'bouquet2':
       startMeadow(false);
-      bouquet = ['tulip', 'daisy'];
-      cue = '2 / 3';
+      bouquet = new Array(10).fill(0).map((_, i) => SPECIES[i % SPECIES.length].id);
+      cue = '10 / ' + BOUQUET_GOAL;
       break;
     case 'bouquet3':
       startMeadow(false);
-      bouquet = ['tulip', 'daisy', 'sunflower'];
-      cue = 'Go home!';
+      bouquet = new Array(BOUQUET_GOAL).fill(0).map((_, i) => SPECIES[i % SPECIES.length].id);
+      cue = 'Go plant!';
       break;
     case 'gh-open':
-      bouquet = ['tulip', 'daisy', 'sunflower'];
+      bouquet = new Array(BOUQUET_GOAL).fill(0).map((_, i) => SPECIES[i % SPECIES.length].id);
       SAVE.step = 'plant';
       enterGreenhouse('plant');
       door = 1; doorDir = 0; nurseryView = 'enter';
       setTimeout(() => { nurseryView = 'inside'; }, 100);
       break;
     case 'plant':
-      bouquet = ['tulip', 'daisy', 'sunflower'];
+      bouquet = new Array(Math.min(4, BOUQUET_GOAL)).fill(0).map((_, i) => SPECIES[i % SPECIES.length].id);
       SAVE.beds = [];
       while (SAVE.beds.length < n) SAVE.beds.push(null);
       SAVE.step = 'plant';
@@ -1789,6 +2081,8 @@ function applyShot(name) {
       door = 1; nurseryView = 'inside';
       break;
     case 'sunset':
+    case 'night':
+    case 'growing':
       bouquet = [];
       SAVE.beds = [
         { mix: ['tulip'], watered: 1, grown: 0 },
@@ -1796,22 +2090,15 @@ function applyShot(name) {
         { mix: ['sunflower'], watered: 1, grown: 0 },
         null
       ];
+      SAVE.step = 'growing';
       state = ST.GREENHOUSE;
-      nurseryMode = 'night';
-      nurseryView = 'sky';
-      dayNight = 0.45; dayNightT = 0.45;
-      cue = 'Night…';
-      break;
-    case 'night':
-      bouquet = [];
-      SAVE.ghSize = 0;
-      state = ST.GREENHOUSE;
-      nurseryMode = 'night';
-      nurseryView = 'sky';
-      dayNight = 1; dayNightT = 1;
-      cue = 'Night…';
+      nurseryMode = 'growing';
+      nurseryView = 'inside';
+      door = 1;
+      beginGrowing();
       break;
     case 'sunrise':
+    case 'bigger':
       bouquet = [];
       SAVE.beds = [
         { mix: ['tulip'], watered: 1, grown: 2 },
@@ -1819,13 +2106,12 @@ function applyShot(name) {
         { mix: ['sunflower'], watered: 1, grown: 2 },
         { mix: ['bluebell'], watered: 1, grown: 1 }
       ];
-      SAVE.step = 'morning';
-      enterGreenhouse('morning');
+      SAVE.step = 'ready';
+      enterGreenhouse('look');
       door = 1; nurseryView = 'inside';
       dayNight = 0; dayNightT = 0;
-      cue = 'Grown!';
+      cue = 'Bigger!';
       growFlash = 0.8;
-      interiorGrownVisual = 1;
       spawnPollinators();
       break;
     case 'bees':
@@ -1838,8 +2124,7 @@ function applyShot(name) {
       enterGreenhouse('look');
       door = 1; nurseryView = 'inside';
       nurseryMode = 'ready';
-      cue = 'Grown!';
-      interiorGrownVisual = 1;
+      cue = 'Bigger!';
       spawnPollinators();
       break;
     case 'gh-small':
@@ -1905,8 +2190,9 @@ async function boot() {
   }
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js?v=0.9-batch1-franz').catch(() => {});
+    navigator.serviceWorker.register('./sw.js?v=0.9-ted-play').catch(() => {});
   }
+  if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));
 }
 
 boot();
