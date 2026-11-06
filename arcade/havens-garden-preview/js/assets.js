@@ -4,32 +4,40 @@
 */
 'use strict';
 
-const ASSET_VER = 'cbn-v2';
+const ASSET_VER = 'cbn-v2e';
 
 const CBN_PAGE_STEMS = [
+  'page-13-one-daisy',
+  'page-14-one-honey-jar',
+  'page-15-simple-bee',
+  'page-16-simple-butterfly',
+  'page-17-simple-ladybug',
+  'page-18-watering-can',
+  'page-19-small-hive',
+  'page-20-one-tulip',
   'page-01-bee-close-easy',
-  'page-01-bee-close-hard',
   'page-02-bees-and-flowers-easy',
-  'page-02-bees-and-flowers-hard',
   'page-03-ladybug-daisy-easy',
-  'page-03-ladybug-daisy-hard',
   'page-04-butterfly-sunflower-easy',
-  'page-04-butterfly-sunflower-hard',
   'page-05-grasshopper-grass-easy',
-  'page-05-grasshopper-grass-hard',
   'page-06-hive-close-easy',
-  'page-06-hive-close-hard',
   'page-07-honey-jars-easy',
-  'page-07-honey-jars-hard',
   'page-08-flower-basket-easy',
-  'page-08-flower-basket-hard',
   'page-09-watering-can-tulips-easy',
-  'page-09-watering-can-tulips-hard',
   'page-10-greenhouse-rows-easy',
-  'page-10-greenhouse-rows-hard',
   'page-11-meadow-path-easy',
-  'page-11-meadow-path-hard',
   'page-12-bug-net-flowers-easy',
+  'page-01-bee-close-hard',
+  'page-02-bees-and-flowers-hard',
+  'page-03-ladybug-daisy-hard',
+  'page-04-butterfly-sunflower-hard',
+  'page-05-grasshopper-grass-hard',
+  'page-06-hive-close-hard',
+  'page-07-honey-jars-hard',
+  'page-08-flower-basket-hard',
+  'page-09-watering-can-tulips-hard',
+  'page-10-greenhouse-rows-hard',
+  'page-11-meadow-path-hard',
   'page-12-bug-net-flowers-hard'
 ];
 
