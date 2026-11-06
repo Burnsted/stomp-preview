@@ -8,7 +8,7 @@
 |---|---|
 | Branch | `cursor/stomper-ingest-t1225u-bfa0` |
 | Base / starting_ref | `9339cc6b30df13beb445c90682d17536d8471db0` (draft PR #60 tip) |
-| Tip SHA | *(pin after t1228u push)* |
+| Tip SHA | `2e83fc55a09390ad283e4ec8e8643bca48c6bcc2` |
 | Stack | New isolated draft PR #70 from #60 tip — **does not push onto #60** |
 | Draft PR | https://github.com/Burnsted/stomp-preview/pull/70 |
 | Follow-up | **t1228u** Hey Session FAB Trails clearance (same draft PR) |
