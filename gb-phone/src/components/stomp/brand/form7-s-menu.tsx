@@ -1,11 +1,13 @@
 /**
- * Form #7 S universal menu sheet (t1230u).
+ * Form #7 S universal menu sheet (t1230u / t1236u).
  * Opens from the S mark after STOMPER creation; closes via Back, outside tap, or destination.
- * Does not replace five-tab nav, onboarding, or Hey Session FAB.
+ * Does not replace five-tab nav, onboarding, or Hey Sesh FAB.
+ * t1236u: first two items are Invite Friends / Start a Sesh and Upload a Past Sesh.
  */
 import { useEffect } from "react";
 import { ChevronLeft, X } from "lucide-react";
 import { useBag } from "@/lib/stomp/bag";
+import { useSocialActions } from "@/lib/stomp/social-actions";
 import { S_MENU_DESTINATIONS, useSMenu } from "@/lib/stomp/s-menu";
 import { useStomp } from "@/lib/stomp/store";
 
@@ -14,6 +16,8 @@ export function Form7SMenu() {
   const closeMenu = useSMenu((s) => s.closeMenu);
   const setPendingHubPanel = useSMenu((s) => s.setPendingHubPanel);
   const setScreen = useStomp((s) => s.setScreen);
+  const openInviteSesh = useSocialActions((s) => s.openInviteSesh);
+  const openUploadPast = useSocialActions((s) => s.openUploadPast);
 
   useEffect(() => {
     if (!open) return;
@@ -32,12 +36,22 @@ export function Form7SMenu() {
   function go(destId: string) {
     const dest = S_MENU_DESTINATIONS.find((d) => d.id === destId);
     if (!dest) return;
+    if (dest.socialAction === "invite-sesh") {
+      closeMenu();
+      openInviteSesh();
+      return;
+    }
+    if (dest.socialAction === "upload-past") {
+      closeMenu();
+      openUploadPast();
+      return;
+    }
     if (dest.hubPanel) setPendingHubPanel(dest.hubPanel);
     if (dest.screen === "bag") {
       useBag.getState().openHub("my-bag");
     }
     closeMenu();
-    setScreen(dest.screen);
+    if (dest.screen) setScreen(dest.screen);
   }
 
   return (
@@ -88,6 +102,7 @@ export function Form7SMenu() {
                 type="button"
                 data-testid={`form7-s-menu-item-${dest.id}`}
                 data-closest-only={dest.closestOnly ? "true" : "false"}
+                data-social-action={dest.socialAction ?? ""}
                 onClick={() => go(dest.id)}
                 className="flex min-h-12 w-full items-center rounded-2xl px-3 text-left text-base font-semibold text-snow hover:bg-snow/10"
               >

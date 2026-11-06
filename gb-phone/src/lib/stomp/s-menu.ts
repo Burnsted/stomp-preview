@@ -1,7 +1,8 @@
 /**
- * Form #7 S — universal navigation menu (t1230u).
+ * Form #7 S — universal navigation menu (t1230u / t1236u).
  * S mark is the trigger; destinations reuse existing screens only.
  * Active only after completed STOMPER creation (onboardComplete).
+ * t1236u: first two actions are social — Invite/Start Sesh + Upload Past Sesh.
  */
 import { create } from "zustand";
 import type { Screen } from "@/lib/stomp/store";
@@ -16,12 +17,16 @@ export type HubPanel =
   | "Pass"
   | "History";
 
+export type SMenuSocialAction = "invite-sesh" | "upload-past";
+
 export type SMenuDestination = {
   id: string;
   label: string;
-  screen: Screen;
+  screen?: Screen;
   /** When screen is hub, select this panel after navigate. */
   hubPanel?: HubPanel;
+  /** t1236u social-first actions — open preview sheets, not blank invent pages. */
+  socialAction?: SMenuSocialAction;
   /**
    * When true, destination is the closest real screen — not a dedicated page.
    * Documented as a gap in OWNER-REPORT / RESORT docs, not a blank invent.
@@ -31,13 +36,27 @@ export type SMenuDestination = {
 };
 
 /**
- * Menu destinations — wire to real routes already in the app.
+ * Menu destinations — social actions first, then real routes already in the app.
  * Settings → STOMPER Locker (theme + appearance; no dedicated Settings screen).
  * Help → Feedback panel (closest real help/feedback surface).
  * Boards → Rider Hub Profile (Boards section lives under Profile).
  */
 export const S_MENU_DESTINATIONS: readonly SMenuDestination[] = [
+  {
+    id: "invite-sesh",
+    label: "Invite Friends / Start a Sesh",
+    socialAction: "invite-sesh",
+    note: "Opens preview sheet → Crew invite (local) or Start Sesh (fiction Day Sesh + Session screen).",
+  },
+  {
+    id: "upload-past",
+    label: "Upload a Past Sesh",
+    socialAction: "upload-past",
+    note: "Preview only — stages a local clip / Squad share draft. No network upload.",
+  },
   { id: "profile", label: "Profile", screen: "hub", hubPanel: "Profile" },
+  { id: "squad", label: "Squad", screen: "hub", hubPanel: "Squad" },
+  { id: "trip", label: "Trip Drops", screen: "trip-hub" },
   { id: "locker", label: "STOMPER Locker", screen: "avatar-locker" },
   {
     id: "boards",
@@ -48,8 +67,6 @@ export const S_MENU_DESTINATIONS: readonly SMenuDestination[] = [
     note: "Boards section lives on Rider Hub → Profile (no separate Boards screen).",
   },
   { id: "bag", label: "Bag of Tricks", screen: "bag" },
-  { id: "trip", label: "Trip Drops", screen: "trip-hub" },
-  { id: "squad", label: "Squad", screen: "hub", hubPanel: "Squad" },
   {
     id: "settings",
     label: "Settings",

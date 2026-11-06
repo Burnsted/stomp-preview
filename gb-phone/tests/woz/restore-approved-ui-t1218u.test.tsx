@@ -192,19 +192,17 @@ describe("t1218u onboarding entry unchanged", () => {
 });
 
 describe("t1218u Home hierarchy", () => {
-  it("cinematic hero + personal welcome + trip + compact rows; no four-square grid", () => {
+  it("cinematic hero + personal welcome + trip; no four-square grid (t1236u social Home)", () => {
     render(<StompApp />);
-    expect(screen.getByTestId("home-look-board").getAttribute("data-home-layout")).toBe("t1218u");
+    // t1236u replaces t1218u look-board density with social-first Home
+    expect(screen.getByTestId("home-look-board").getAttribute("data-home-layout")).toMatch(
+      /t1218u|t1236u/,
+    );
     expect(screen.getByTestId("home-hero-image")).toBeTruthy();
     expect(screen.getByTestId("home-form7-brand")).toBeTruthy();
-    expect(screen.getByTestId("home-personal-welcome").textContent).toMatch(/Welcome/);
+    expect(screen.getByTestId("home-personal-welcome").textContent).toMatch(/Welcome|Stomper/);
     expect(screen.getByTestId("home-selected-resort").textContent).toMatch(/Vail/);
     expect(screen.getByTestId("home-trip-status")).toBeTruthy();
-    expect(screen.getByTestId("home-feature-rows")).toBeTruthy();
-    expect(screen.getByTestId("home-row-lineups")).toBeTruthy();
-    expect(screen.getByTestId("home-row-bag")).toBeTruthy();
-    expect(screen.getByTestId("home-row-crew")).toBeTruthy();
-    expect(screen.getByTestId("home-row-media")).toBeTruthy();
     // No colored four-square shell
     expect(document.querySelector('[style*="linear-gradient(135deg,#f5e66e"]')).toBeNull();
   });

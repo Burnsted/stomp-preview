@@ -129,7 +129,21 @@
   border: 1px solid rgba(154, 166, 184, 0.45);
 }
 
-/* t1224u — little-snowboarder Hey Session FAB (Form #7 steel, not a mid-page pill) */
+/* t1236u — rotating Home backgrounds (subtle fade; reduced-motion skips) */
+@keyframes home-bg-fade-in {
+  from { opacity: 0.35; }
+  to { opacity: 1; }
+}
+.home-bg-fade-in {
+  animation: home-bg-fade-in 700ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-bg-fade-in {
+    animation: none;
+  }
+}
+
+/* t1224u / t1236u — little-snowboarder Hey Sesh FAB (Form #7 steel, not a mid-page pill) */
 .hey-session-fab {
   background: radial-gradient(circle at 35% 30%, #2a3548 0%, #121820 55%, #0a0e14 100%);
   box-shadow:

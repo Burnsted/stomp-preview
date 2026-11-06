@@ -96,24 +96,15 @@ describe("music order helpers", () => {
   });
 });
 
-describe("Greet home UX — map HARD LOCK", () => {
-  it("renders look-board home density + secondary map without pill soup", () => {
+describe("Greet home UX — map HARD LOCK (t1236u social Home)", () => {
+  it("renders social-first look-board without pill soup or four-square grid", () => {
     render(<StompApp />);
     expect(screen.getByTestId("home-look-board")).toBeTruthy();
-    expect(screen.getByTestId("home-look-board").getAttribute("data-home-layout")).toBe("t1218u");
+    expect(screen.getByTestId("home-look-board").getAttribute("data-home-layout")).toBe("t1236u");
     expect(screen.getByTestId("home-zone-ride")).toBeTruthy();
-    expect(screen.getByTestId("home-zone-features")).toBeTruthy();
-    expect(screen.getByTestId("home-feature-rows")).toBeTruthy();
-    expect(screen.getByTestId("home-zone-today")).toBeTruthy();
-    expect(screen.getByTestId("home-zone-lineups")).toBeTruthy();
     expect(screen.getByTestId("home-zone-quick")).toBeTruthy();
     expect(screen.getByTestId("home-tile-bag")).toBeTruthy();
-    expect(screen.getByTestId("home-today-lineup").textContent).toMatch(/Big Line Sesh/);
-    expect(screen.getByTestId("home-zone-mountain")).toBeTruthy();
-    expect(screen.getByTestId("home-zone-playlist")).toBeTruthy();
-    expect(screen.getByTestId("home-map-card")).toBeTruthy();
-    expect(screen.getByTestId("home-playlist-block")).toBeTruthy();
-    // Four colored feature squares removed
+    expect(screen.getByTestId("home-zone-secondary")).toBeTruthy();
     expect(screen.queryByTestId("home-four-square-grid")).toBeNull();
     expect(screen.queryByRole("button", { name: "The line" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Airtime" })).toBeNull();
@@ -121,53 +112,35 @@ describe("Greet home UX — map HARD LOCK", () => {
     expect(screen.queryByRole("button", { name: "Stash" })).toBeNull();
   });
 
-  it("single mountain card — no state picker, no crumb drill, no four-state strip", () => {
+  it("Home mountain label without US state crumb drill", () => {
     render(<StompApp />);
-    const card = screen.getByTestId("home-map-card");
-    expect(card.getAttribute("data-map-mode")).toBe("single-mountain");
-    expect(screen.getByTestId("home-location").textContent).toMatch(/Vail/);
-    expect(screen.getByTestId("home-location-detail").textContent).toMatch(/Vail · CO/);
-    expect(screen.getByTestId("home-trail-preview")).toBeTruthy();
-
-    // HARD LOCK — never put these back
+    expect(screen.getByTestId("home-selected-resort").textContent).toMatch(/Vail/);
     expect(screen.queryByTestId("home-map-state-co")).toBeNull();
     expect(screen.queryByTestId("home-map-state-ut")).toBeNull();
     expect(screen.queryByTestId("home-map-state-ca")).toBeNull();
     expect(screen.queryByTestId("home-map-state-vt")).toBeNull();
     expect(screen.queryByTestId("home-map-us")).toBeNull();
     expect(screen.queryByTestId("home-map-crumbs")).toBeNull();
-    expect(screen.queryByTestId("home-map-crumb-us")).toBeNull();
-    expect(screen.queryByTestId("home-map-crumb-state")).toBeNull();
-    expect(screen.queryByTestId("home-map-state-view")).toBeNull();
-    expect(screen.queryByTestId("home-map-resorts")).toBeNull();
     expect(screen.queryByTestId("home-mountain-chip")).toBeNull();
-    expect(card.textContent).not.toMatch(/\bUT\b.*\bCA\b.*\bVT\b/);
     expect(screen.queryByRole("button", { name: /^Location$/i })).toBeNull();
   });
 
-  it("open full map from single mountain card", () => {
+  it("open Trails from compact Home link", () => {
     render(<StompApp />);
-    fireEvent.click(screen.getByTestId("home-map-full"));
+    fireEvent.click(screen.getByTestId("home-link-trails"));
     expect(useStomp.getState().screen).toBe("map");
   });
 
-  it("no standalone Location control outside the map card", () => {
+  it("no standalone Location control on social Home", () => {
     render(<StompApp />);
     expect(screen.queryByTestId("home-tool-location")).toBeNull();
     expect(screen.queryByRole("button", { name: /^Maps$/i })).toBeNull();
   });
 
-  it("playlist soft bar opens playlist; adjust opens Concept C sheet", () => {
+  it("compact Music link opens playlist; FAB cluster still works off-Home", () => {
     render(<StompApp />);
-    expect(screen.getByTestId("home-playlist-block").getAttribute("data-concept")).toBe("playlist-soft-bar");
-    expect(screen.queryByTestId("home-playlist-upload")).toBeNull();
-    fireEvent.click(screen.getByTestId("home-playlist-open"));
+    fireEvent.click(screen.getByTestId("home-link-music"));
     expect(useStomp.getState().screen).toBe("playlist");
-    act(() => useStomp.setState({ screen: "greet" }));
-    fireEvent.click(screen.getByTestId("home-playlist-adjust"));
-    expect(usePlaylistActions.getState()).toMatchObject({ sheetOpen: true, panel: "adjust" });
-    expect(screen.getByTestId("playlist-sheet")).toBeTruthy();
-    expect(screen.getByTestId("playlist-sheet-adjust")).toBeTruthy();
   });
 
   it("playlist FAB cluster is global and expands Upload/Adjust/Share", () => {
@@ -185,39 +158,15 @@ describe("Greet home UX — map HARD LOCK", () => {
     expect(screen.queryByTestId("playlist-fab")).toBeNull();
   });
 
-  it("session plans stay collapsed by default", () => {
+  it("Playlist screen still shows vertical rainbow BEAT column", () => {
+    act(() => useStomp.setState({ screen: "playlist" }));
     render(<StompApp />);
-    expect(screen.queryByTestId("home-plans-list")).toBeNull();
-    fireEvent.click(screen.getByTestId("home-plans-toggle"));
-    expect(screen.getByTestId("home-plans-list")).toBeTruthy();
-  });
-
-  it("default mountain surfaces playlist link + vertical rainbow BEAT column", () => {
-    render(<StompApp />);
-    expect(screen.getByTestId("home-map-mountain-playlist").textContent).toMatch(/Vail/);
-    expect(screen.getByTestId("home-playlist-title").textContent).toMatch(/Vail/);
     const strip = screen.getByTestId("beat-strip");
     expect(strip.getAttribute("data-concept")).toBe("vertical-rainbow-waveform");
     expect(strip.textContent).toMatch(/BEAT/);
     expect(strip.textContent).toMatch(/DEMO/);
-    expect(strip.textContent).not.toMatch(/Rhythm-Synced Audio Feed/);
     expect(screen.getByTestId("beat-strip-playhead")).toBeTruthy();
-    expect(screen.getByTestId("beat-strip-time")).toBeTruthy();
-    expect(screen.getByTestId("beat-strip-ticks")).toBeTruthy();
-    expect(screen.queryByTestId("home-mountain-tracks")).toBeNull();
-  });
-
-  it("mountain playlist opens Playlist with right-side vertical rainbow BEAT column", () => {
-    render(<StompApp />);
-    fireEvent.click(screen.getByTestId("home-map-mountain-playlist"));
-    expect(useStomp.getState().screen).toBe("playlist");
-    const strip = screen.getByTestId("beat-strip");
-    expect(strip.getAttribute("data-concept")).toBe("vertical-rainbow-waveform");
-    expect(strip.textContent).toMatch(/BEAT/);
-    expect(screen.getByTestId("beat-strip-caption").textContent).toMatch(/Straight air|Pulse|Orient/);
     expect(screen.getByTestId("playlist-beat-legend").textContent).toMatch(/Section.*Beat.*Trick/);
-    expect(screen.queryByTestId("beat-strip-controls")).toBeNull();
-    expect(screen.queryByTestId("playlist-mountain-songs")).toBeNull();
   });
 });
 

@@ -93,7 +93,7 @@ export function SessionVoicePrompt({
   const micHint = !route
     ? "Checking phone audio…"
     : route.speechIn
-      ? "Hold the snowboarder · say Hey Session or Yo Session"
+      ? "Hold the snowboarder · say Hey Sesh or Yo Sesh"
       : "No mic here — type below if you need it";
 
   return (
@@ -110,8 +110,8 @@ export function SessionVoicePrompt({
             <input
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
-              placeholder="Yo Session, drop in"
-              aria-label="Type a Session command"
+              placeholder="Yo Sesh, drop in"
+              aria-label="Type a Sesh command"
               className="h-10 min-w-0 flex-1 rounded-full bg-snow/90 px-3 text-sm ring-1 ring-line outline-none"
             />
             <button type="submit" className="h-10 rounded-full bg-ink px-3 text-sm font-semibold text-snow">

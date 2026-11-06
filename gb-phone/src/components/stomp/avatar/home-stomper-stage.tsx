@@ -17,7 +17,14 @@ import { useAvatar } from "@/lib/stomp/avatar/store";
 import type { AvatarConfig } from "@/lib/stomp/avatar/types";
 import { useStomp } from "@/lib/stomp/store";
 
-export function HomeStomperStage({ config }: { config: AvatarConfig }) {
+export function HomeStomperStage({
+  config,
+  /** t1236u social-first: drop oversized Trip Drop CTA; keep quiet next link. */
+  compact = false,
+}: {
+  config: AvatarConfig;
+  compact?: boolean;
+}) {
   const activePose = useAvatar((s) => s.activePose);
   const setPose = useAvatar((s) => s.setPose);
   const reducedMotion = useAvatar((s) => s.reducedMotion);
@@ -48,46 +55,60 @@ export function HomeStomperStage({ config }: { config: AvatarConfig }) {
       data-testid="home-stomper-stage"
       data-pose={activePose}
       data-pose-cycle={HOME_POSE_CYCLE.join("|")}
-      className="relative flex flex-col items-center px-5 pb-6 pt-4"
+      data-compact={compact ? "true" : "false"}
+      className="relative flex flex-col items-center px-5 pb-4 pt-3"
     >
-      <p className="self-start font-display text-3xl tracking-wide text-ink">
-        <span data-testid="home-personal-welcome">Welcome, {name}</span>
+      <p className="self-start font-display text-3xl tracking-wide text-snow">
+        <span data-testid="home-personal-welcome">{name}</span>
       </p>
       <p className="mt-1 self-start text-xs font-bold tracking-widest text-accent">YOUR STOMPER</p>
 
       <div
         data-testid="home-stomper-anim"
-        className="mt-4 flex flex-col items-center"
+        className="mt-3 flex flex-col items-center"
         aria-live="polite"
         aria-label={`Stomper pose ${activePose}`}
       >
         <AvatarRenderer
           config={config}
-          size={200}
+          size={compact ? 180 : 200}
           interactive
           showBackground
           testId="home-stomper-avatar"
         />
-        <p data-testid="home-stomper-pose-label" className="mt-2 text-[10px] font-semibold uppercase tracking-widest text-muted">
+        <p data-testid="home-stomper-pose-label" className="mt-2 text-[10px] font-semibold uppercase tracking-widest text-snow/70">
           {reducedMotion ? "idle" : activePose}
         </p>
       </div>
 
-      <button
-        type="button"
-        data-testid="home-stomper-next"
-        onClick={() => setScreen("hub")}
-        className="mt-5 flex min-h-12 w-full max-w-xs items-center justify-between gap-3 rounded-2xl bg-cta px-4 font-semibold text-cta-fg"
-      >
-        <span className="text-left">
-          <span className="block text-[10px] font-bold tracking-widest opacity-80">NEXT</span>
-          <span className="block">Trip Drop</span>
-        </span>
-        <ChevronRight className="size-5 shrink-0" aria-hidden="true" />
-      </button>
-      <p className="mt-2 text-center text-xs text-muted text-pretty">
-        Stomper is ready · tap when you are
-      </p>
+      {compact ? (
+        <button
+          type="button"
+          data-testid="home-stomper-next"
+          onClick={() => setScreen("hub")}
+          className="mt-3 text-sm font-semibold text-accent"
+        >
+          Trip Drop ›
+        </button>
+      ) : (
+        <>
+          <button
+            type="button"
+            data-testid="home-stomper-next"
+            onClick={() => setScreen("hub")}
+            className="mt-5 flex min-h-12 w-full max-w-xs items-center justify-between gap-3 rounded-2xl bg-cta px-4 font-semibold text-cta-fg"
+          >
+            <span className="text-left">
+              <span className="block text-[10px] font-bold tracking-widest opacity-80">NEXT</span>
+              <span className="block">Trip Drop</span>
+            </span>
+            <ChevronRight className="size-5 shrink-0" aria-hidden="true" />
+          </button>
+          <p className="mt-2 text-center text-xs text-muted text-pretty">
+            Stomper is ready · tap when you are
+          </p>
+        </>
+      )}
     </div>
   );
 }

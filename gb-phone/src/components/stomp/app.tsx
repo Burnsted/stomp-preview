@@ -8,8 +8,9 @@ import { StomperIdScreen } from "@/components/stomp/avatar/stomper-id";
 import { TripHubScreen } from "@/components/stomp/avatar/trip-hub";
 import { BagOfTricks } from "@/components/stomp/bag-of-tricks";
 import { FavoritesScreen } from "@/components/stomp/favorites-screen";
-import { CrewLink, Greet } from "@/components/stomp/greet";
+import { CrewLink } from "@/components/stomp/greet";
 import { Home } from "@/components/stomp/home";
+import { SocialHome } from "@/components/stomp/social-home";
 import { TrailMapScreen } from "@/components/stomp/trail-map-screen";
 import { MiniPlayerUi } from "@/components/stomp/mini-player-ui";
 import { AirLog, Guide, Playlist, StashPins } from "@/components/stomp/more";
@@ -17,6 +18,7 @@ import { OfflineScreen } from "@/components/stomp/offline-screen";
 import { Goals, TerrainPark } from "@/components/stomp/park";
 import { Form7SMenu } from "@/components/stomp/brand/form7-s-menu";
 import { HeySessionFab } from "@/components/stomp/hey-session-fab";
+import { SocialActionSheets } from "@/components/stomp/social-action-sheets";
 import { PlaylistFab } from "@/components/stomp/playlist-chrome";
 import { ExploreDemoScreen } from "@/components/stomp/playtest/explore-demo";
 import { FeedbackPanel } from "@/components/stomp/playtest/feedback-panel";
@@ -139,7 +141,8 @@ export function StompApp() {
         <div className="relative min-h-dvh overflow-hidden bg-transparent md:min-h-[calc(100dvh-3rem)] md:rounded-4xl md:shadow-2xl md:ring-1 md:ring-line">
           <ScreenErrorBoundary label={screen}>
             {screen === "welcome" ? <PlaytestWelcome /> : null}
-            {screen === "greet" ? <Greet /> : null}
+            {/* t1236u: social-first Home — greet.tsx / CrewLink untouched */}
+            {screen === "greet" ? <SocialHome /> : null}
             {screen === "greet" ? <GreetCrewToolsHint /> : null}
             {screen === "greet" ? <AvatarHomeDock /> : null}
             {screen === "crew" ? <CrewLink /> : null}
@@ -170,10 +173,11 @@ export function StompApp() {
             {screen === "trip-choice" ? <TripChoiceScreen /> : null}
           </ScreenErrorBoundary>
           {!hideChrome && !avatarScreens ? <MiniPlayerUi /> : null}
-          {/* t1224u: little-snowboarder Hey Session FAB — every chrome page, bottom-right */}
+          {/* t1224u/t1236u: little-snowboarder Hey Sesh FAB — every chrome page, bottom-right */}
           <HeySessionFab />
-          {/* t1230u: Form #7 S universal menu — not a hamburger; FAB remains primary Session control */}
+          {/* t1230u: Form #7 S universal menu — not a hamburger; FAB remains primary Sesh control */}
           <Form7SMenu />
+          <SocialActionSheets />
           {!avatarScreens ? <PlaylistFab /> : null}
           {showNav ? <BottomNav playtestTools={<PlaytestBottomChrome />} /> : null}
         </div>

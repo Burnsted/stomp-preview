@@ -1,10 +1,12 @@
 /**
- * Premium alpine chrome — Form #7 monochrome wordmark, glass cards, compact Hey SESSION.
+ * Premium alpine chrome — Form #7 monochrome wordmark, glass cards.
  * Does not replace CrewLink / greet Invite lock.
+ * t1236u: text ‹ Back sits immediately below the shared header when history exists.
  */
 import type { ReactNode } from "react";
 import { BarChart3, Home, Map as MapIcon, Music2, Users } from "lucide-react";
 import { Form7Brand } from "@/components/stomp/brand/form7-brand";
+import { ScreenBackLink } from "@/components/stomp/screen-back-link";
 import { useStomp, type Screen } from "@/lib/stomp/store";
 
 export const PRIMARY_TABS = [
@@ -95,7 +97,7 @@ export function GlassCard({
 }
 
 /**
- * Legacy header chip — no longer the primary Hey Session control (t1224u).
+ * Legacy header chip — no longer the primary Hey Sesh control (t1224u / t1236u).
  * Primary = little-snowboarder FAB bottom-right (`HeySessionFab`).
  * Kept exported only so older call sites can be cleared without a hard break.
  */
@@ -111,7 +113,7 @@ export function HeySessionCompact({ onActivate }: { onActivate?: () => void }) {
       }}
       className="hey-session-pill inline-flex h-9 items-center rounded-full px-3 text-[11px] font-bold tracking-widest text-snow"
     >
-      HEY SESSION
+      HEY SESH
     </button>
   );
 }
@@ -123,36 +125,45 @@ export function AlpineTopBar({
   right,
 }: {
   title?: string;
+  /** @deprecated t1236u — use automatic ScreenBackLink under the header instead. */
   showBack?: boolean;
   onBack?: () => void;
   right?: ReactNode;
 }) {
   const setScreen = useStomp((s) => s.setScreen);
+  const goBack = useStomp((s) => s.goBack);
   return (
-    <header
-      data-testid="alpine-topbar"
-      className="flex items-center gap-2 px-4 pt-5 pb-2"
-    >
+    <div data-testid="alpine-topbar-wrap">
+      <header
+        data-testid="alpine-topbar"
+        className="flex items-center gap-2 px-4 pt-5 pb-2"
+      >
+        {/* Form #7 always present in shared headers (Create + playtest surfaces). */}
+        <AlpineWordmark onClick={() => setScreen("greet")} size="sm" />
+        {title ? (
+          <h1 className="ml-1 font-display text-3xl tracking-wide text-ink">{title}</h1>
+        ) : (
+          <span className="flex-1" />
+        )}
+        {/* t1224u: no header HEY SESH chip — snowboarder FAB is the primary control */}
+        <div className="ml-auto flex items-center gap-2">{right}</div>
+      </header>
+      {/* t1236u: one text ‹ Back under header — showBack (step) wins; else history */}
       {showBack ? (
-        <button
-          type="button"
-          data-testid="alpine-back"
-          onClick={() => (onBack ? onBack() : setScreen("greet"))}
-          className="text-sm font-semibold text-snow"
-        >
-          ← BACK
-        </button>
-      ) : null}
-      {/* Form #7 always present in shared headers (Create + playtest surfaces). */}
-      <AlpineWordmark onClick={() => setScreen("greet")} size="sm" />
-      {title ? (
-        <h1 className="ml-1 font-display text-3xl tracking-wide text-ink">{title}</h1>
+        <div className="px-4 pb-1" data-testid="alpine-back-row">
+          <button
+            type="button"
+            data-testid="alpine-back"
+            onClick={() => (onBack ? onBack() : goBack())}
+            className="min-h-11 px-0 text-left text-sm font-semibold text-ink/90"
+          >
+            ‹ Back
+          </button>
+        </div>
       ) : (
-        <span className="flex-1" />
+        <ScreenBackLink />
       )}
-      {/* t1224u: no header HEY SESSION chip — snowboarder FAB is the primary control */}
-      <div className="ml-auto flex items-center gap-2">{right}</div>
-    </header>
+    </div>
   );
 }
 

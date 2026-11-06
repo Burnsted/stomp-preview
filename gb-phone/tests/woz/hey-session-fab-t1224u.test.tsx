@@ -92,7 +92,7 @@ describe("t1224u Hey Session snowboarder FAB", () => {
     render(<HeySessionFab />);
     const fab = screen.getByTestId("hey-session-fab");
     expect(fab).toBeTruthy();
-    expect(fab.getAttribute("aria-label") || "").toMatch(/Hey Session/i);
+    expect(fab.getAttribute("aria-label") || "").toMatch(/Hey Sesh|Hey Session/i);
     expect(fab.className).toMatch(/hey-session-fab/);
     expect(fab.className).not.toMatch(/w-full/);
     // Compact circular FAB — not the old full-width mid-page pill
@@ -137,7 +137,7 @@ describe("t1224u Hey Session snowboarder FAB", () => {
     render(<AlpineTopBar title="Trails" />);
     expect(screen.queryByTestId("hey-session-compact")).toBeNull();
     expect(readSrc("src/components/stomp/alpine-chrome.tsx")).toMatch(
-      /no header HEY SESSION chip/,
+      /no header HEY SESH chip|no header HEY SESSION chip/,
     );
   });
 });

@@ -169,10 +169,11 @@ describe("t1219u Home hierarchy — no four-square grid", () => {
     expect(rows).not.toMatch(/\bbg-orange\b/);
   });
 
-  it("mounted Home shows feature rows without four-square tile grid", () => {
+  it("mounted Home shows no four-square tile grid (t1236u social Home)", () => {
     useStomp.setState({ screen: "greet" });
     render(<StompApp />);
-    expect(screen.getByTestId("home-feature-rows")).toBeTruthy();
+    expect(screen.getByTestId("home-look-board")).toBeTruthy();
     expect(screen.queryByTestId("home-tile-grid")).toBeNull();
+    expect(screen.queryByTestId("home-four-square-grid")).toBeNull();
   });
 });

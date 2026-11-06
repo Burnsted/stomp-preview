@@ -141,15 +141,12 @@ describe("five-tab primary nav", () => {
 });
 
 describe("ice-blue trail Concept A", () => {
-  it("home trail preview uses ice concept on single mountain card", () => {
+  it("Trails keeps official map link card; Home stays social-first without map dashboard", () => {
     act(() => useHomeMountain.getState().selectResort("vail"));
+    act(() => useStomp.setState({ screen: "map" }));
     render(<StompApp />);
-    const trail = screen.getByTestId("home-trail-preview");
-    // t1218u: invented ice SVG replaced by official-map link card (or authorized embed).
-    expect(["official-link-card", "official-embed"]).toContain(trail.getAttribute("data-concept"));
     expect(screen.getByTestId("official-map-link-card")).toBeTruthy();
     expect(screen.getByTestId("official-map-link")).toBeTruthy();
-    expect(screen.getByTestId("home-map-card").getAttribute("data-map-mode")).toBe("single-mountain");
     expect(screen.queryByTestId("home-map-state-co")).toBeNull();
     expect(screen.queryByTestId("home-map-crumbs")).toBeNull();
     expect(screen.queryByTestId("home-map-us")).toBeNull();

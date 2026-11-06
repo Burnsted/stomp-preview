@@ -1,8 +1,16 @@
 /**
- * Hey Session little-snowboarder FAB (t1224u).
+ * Hey Sesh little-snowboarder FAB (t1224u / t1228u clearance / t1236u rename).
  * Fixed bottom-right on every chrome page — Form #7 steel, not a mid-page pill
- * and not a header HEY SESSION chip. Hold to speak; preserves SessionMic routing.
+ * and not a header chip. Hold to speak; preserves SessionMic routing.
+ *
+ * t1228u/t1236u clearance: sit above mini-player + Feedback/Reset strip + tab bar
+ * (~12.75rem). Trails official-map CTA clears via page padding — FAB stays corner.
+ * t1236u: rider-facing name is Sesh (not Session mix); optional drag within bounds.
  */
+/** Shared bottom offset — clears player (~4.75rem) + playtest tools + tabs. */
+export const HEY_SESSION_FAB_BOTTOM_CLASS =
+  "pb-[max(12.75rem,calc(env(safe-area-inset-bottom)+11.5rem))]";
+
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { holdListen } from "@/lib/stomp/audio-route";
 import { useSessionRouter } from "@/components/stomp/session-mic";
@@ -39,6 +47,10 @@ export function HeySessionFab() {
   const screen = useStomp((s) => s.screen);
   const [holding, setHolding] = useState(false);
   const [note, setNote] = useState("");
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const drag = useRef<{ px: number; py: number; ox: number; oy: number; moved: boolean } | null>(
+    null,
+  );
   const heard = useRef("");
   const holdingRef = useRef(false);
   const listen = useRef<ReturnType<typeof holdListen> | null>(null);
@@ -67,6 +79,13 @@ export function HeySessionFab() {
     holdingRef.current = true;
     setHolding(true);
     setNote("Listening…");
+    drag.current = {
+      px: event.clientX,
+      py: event.clientY,
+      ox: offset.x,
+      oy: offset.y,
+      moved: false,
+    };
     const next = holdListen((partial) => {
       heard.current = partial;
     });
@@ -74,28 +93,54 @@ export function HeySessionFab() {
     if (!next.available) setNote("No mic · type below if shown");
   }
 
+  function move(event: PointerEvent<HTMLButtonElement>) {
+    if (!drag.current || !holdingRef.current) return;
+    const dx = event.clientX - drag.current.px;
+    const dy = event.clientY - drag.current.py;
+    if (Math.abs(dx) + Math.abs(dy) > 10) drag.current.moved = true;
+    if (!drag.current.moved) return;
+    // Keep within a modest pad so the FAB stays usable and clear of edges.
+    const nextX = Math.max(-220, Math.min(12, drag.current.ox + dx));
+    const nextY = Math.max(-220, Math.min(40, drag.current.oy + dy));
+    setOffset({ x: nextX, y: nextY });
+  }
+
   function end() {
     if (!holdingRef.current) return;
+    const wasDrag = Boolean(drag.current?.moved);
+    drag.current = null;
     holdingRef.current = false;
     setHolding(false);
     const text = listen.current?.stop() || heard.current.trim();
     listen.current = null;
+    if (wasDrag) {
+      setNote("");
+      return;
+    }
     window.setTimeout(() => {
       if (text) {
         const act = apply(text, "command");
         setNote(act.say);
       } else {
-        setNote("Say Hey Session or Yo Session");
+        setNote("Say Hey Sesh or Yo Sesh");
       }
     }, 280);
   }
 
   return (
     <div
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-35 mx-auto flex w-full max-w-md justify-end px-3 pb-[max(10.5rem,calc(env(safe-area-inset-bottom)+9.25rem))]"
+      className={
+        "pointer-events-none fixed inset-x-0 bottom-0 z-35 mx-auto flex w-full max-w-md justify-end px-3 " +
+        HEY_SESSION_FAB_BOTTOM_CLASS
+      }
       data-testid="hey-session-fab-root"
+      data-fab-clearance="player-chrome-tabs"
     >
-      <div className="pointer-events-none flex flex-col items-end gap-1">
+      <div
+        className="pointer-events-none flex flex-col items-end gap-1"
+        style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}
+        data-testid="hey-session-fab-draggable"
+      >
         {note ? (
           <p
             data-testid="hey-session-fab-note"
@@ -104,12 +149,20 @@ export function HeySessionFab() {
             {note}
           </p>
         ) : null}
+        {/* Caption above the mark so the stack does not drip into player chrome. */}
+        <span
+          data-testid="hey-session-fab-caption"
+          className="pointer-events-none text-[9px] font-bold tracking-widest text-accent"
+        >
+          HEY SESH
+        </span>
         <button
           type="button"
           data-testid="hey-session-fab"
-          aria-label={holding ? "Listening to Session" : "Hey Session — hold to speak"}
+          aria-label={holding ? "Listening to Sesh" : "Hey Sesh — hold to speak"}
           aria-pressed={holding}
           onPointerDown={begin}
+          onPointerMove={move}
           onPointerUp={end}
           onPointerCancel={end}
           className={
@@ -118,14 +171,8 @@ export function HeySessionFab() {
           }
         >
           <SnowboarderMark />
-          <span className="sr-only">Hey Session</span>
+          <span className="sr-only">Hey Sesh</span>
         </button>
-        <span
-          data-testid="hey-session-fab-caption"
-          className="pointer-events-none text-[9px] font-bold tracking-widest text-accent"
-        >
-          HEY SESSION
-        </span>
       </div>
     </div>
   );

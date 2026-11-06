@@ -4,6 +4,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { findTrick, isLanded, type TrickStatus } from "@/lib/stomp/goals";
 import type { Band } from "@/lib/stomp/library";
 import { publicUrl } from "@/lib/public-url";
+import { pushScreenHistory } from "@/lib/stomp/nav-history";
 import { createSafeJSONStorage } from "@/lib/stomp/playtest/safe-storage";
 
 export type Screen =
@@ -114,6 +115,8 @@ export type CrewMate = {
 
 type State = {
   screen: Screen;
+  /** In-memory previous screens for text ‹ Back (t1236u) — not persisted. */
+  screenHistory: Screen[];
   running: boolean;
   runStartedAt: number | null;
   boardStowed: boolean;
@@ -137,6 +140,8 @@ type State = {
   meetup: string;
   tomorrow: string;
   setScreen: (screen: Screen) => void;
+  /** Pop previous screen when history exists (t1236u). */
+  goBack: () => void;
   setBand: (band: Band) => void;
   startRun: () => void;
   endRun: () => void;
@@ -170,6 +175,7 @@ export const useStomp = create<State>()(
       // First-time fictional visitors land on branded welcome (t1215u).
       // Returning completed profiles are routed to greet/Home after rehydrate.
       screen: "welcome",
+      screenHistory: [],
       running: false,
       runStartedAt: null,
       boardStowed: true,
@@ -224,17 +230,38 @@ export const useStomp = create<State>()(
       discover: false,
       meetup: "",
       tomorrow: "",
-      setScreen: (screen) => set({ screen }),
+      setScreen: (screen) =>
+        set((state) => {
+          if (screen === state.screen) return state;
+          return {
+            screen,
+            screenHistory: pushScreenHistory(state.screenHistory, state.screen, screen),
+          };
+        }),
+      goBack: () =>
+        set((state) => {
+          if (state.screenHistory.length === 0) return state;
+          const screenHistory = [...state.screenHistory];
+          const prev = screenHistory.pop()!;
+          return { screen: prev, screenHistory };
+        }),
       setBand: (band) => set({ band }),
       startRun: () =>
-        set({
+        set((state) => ({
           running: true,
           runStartedAt: Date.now(),
           boardStowed: true,
           cueIndex: 0,
           screen: "run",
-        }),
-      endRun: () => set({ running: false, runStartedAt: null, screen: "greet" }),
+          screenHistory: pushScreenHistory(state.screenHistory, state.screen, "run"),
+        })),
+      endRun: () =>
+        set((state) => ({
+          running: false,
+          runStartedAt: null,
+          screen: "greet",
+          screenHistory: pushScreenHistory(state.screenHistory, state.screen, "greet"),
+        })),
       toggleStow: () => set((state) => ({ boardStowed: !state.boardStowed })),
       logLanding: (seconds) =>
         set((state) => {
@@ -301,6 +328,7 @@ export const useStomp = create<State>()(
           activeSession: id,
           sessionDone: state.activeSession === id ? state.sessionDone : [],
           screen: "session",
+          screenHistory: pushScreenHistory(state.screenHistory, state.screen, "session"),
         })),
       toggleStep: (id) =>
         set((state) => ({
@@ -403,6 +431,8 @@ export const useStomp = create<State>()(
           clips,
           stashes,
           screen,
+          // t1236u: never restore back-stack from disk
+          screenHistory: [],
           stomped,
           trickStatus,
           studied: Array.isArray(saved.studied) ? saved.studied : [],
