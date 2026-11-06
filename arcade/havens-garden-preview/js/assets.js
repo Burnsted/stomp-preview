@@ -1,43 +1,76 @@
-/* Haven's Garden — Franz batch-2 locked asset paths
-   Backgrounds: 585×1266 .webp | Sprites/icon: .png
-   Drop-in: replace files under assets/ with the same names.
+/* Haven's Garden — Franz production art v1 (+ Franz batch-2 greenhouse/flowers fallback)
+   Plates: 585×1266 .webp | Character/props: RGBA PNG
 */
 'use strict';
 
-const ASSET_VER = 'go-v1';
+const ASSET_VER = 'prod-v1';
 
-/** Locked Franz paths (exact) + Ted-approved concept plates. */
-const AssetPaths = {
-  // concept comps (coloring-book energy)
-  conceptMeadow: 'assets/concept/01b-meadow-wider.jpg',
-  conceptHavenMotion: 'assets/concept/02-haven-in-motion.jpg',
-  conceptBugs: 'assets/concept/03b-bug-chase-wider.jpg',
-  conceptGreenhouse: 'assets/concept/05b-greenhouse-wider.jpg',
-  conceptCounter: 'assets/concept/06b-side-counter-wider.jpg',
-  conceptHive: 'assets/concept/11-hive-and-jars.jpg',
-  conceptRows: 'assets/concept/12-greenhouse-color-rows.jpg',
-  conceptShop: 'assets/concept/13-shop-upgrades.jpg',
-  cbnEasyMeadow: 'assets/cbn/07-color-easy-meadow.jpg',
-  cbnMidGreenhouse: 'assets/cbn/08-color-mid-greenhouse.jpg',
-  cbnHardHive: 'assets/cbn/09-color-harder-hive.jpg',
-  cbnLadder: 'assets/cbn/10-color-ladder-15.jpg',
-  // character
+const CBN_PAGE_STEMS = [
+  'page-01-easy-meadow',
+  'page-02-easy-meadow-path',
+  'page-03-easy-flower-bug',
+  'page-04-easy-hill-flower',
+  'page-05-easy-bees-flowers',
+  'page-06-mid-greenhouse',
+  'page-07-mid-flower-rows',
+  'page-08-mid-hive',
+  'page-09-mid-greenhouse-water',
+  'page-10-mid-color-rows',
+  'page-11-hard-hive-hex',
+  'page-12-hard-flower-rows',
+  'page-13-hard-greenhouse',
+  'page-14-hard-garden-beds',
+  'page-15-hard-butterfly-field'
+];
+
+function cbnAssetKey(stem, kind) {
+  // kind: page | ink | mask
+  const safe = stem.replace(/-/g, '_');
+  if (kind === 'page') return 'cbn_' + safe;
+  if (kind === 'ink') return 'cbnInk_' + safe;
+  return 'cbnMask_' + safe;
+}
+
+function buildCbnPaths() {
+  const out = {};
+  CBN_PAGE_STEMS.forEach((stem) => {
+    out[cbnAssetKey(stem, 'page')] = 'assets/cbn/' + stem + '.webp';
+    out[cbnAssetKey(stem, 'ink')] = 'assets/cbn-source/' + stem + '-ink.png';
+    out[cbnAssetKey(stem, 'mask')] = 'assets/cbn-source/' + stem + '-regions.png';
+  });
+  out.cbnLadder = 'assets/cbn/ladder-contact.jpg';
+  return out;
+}
+
+/** Production v1 drop-ins + legacy Franz paths kept for greenhouse nursery / flowers. */
+const AssetPaths = Object.assign({
+  // production plates (empty — no Haven, no 2/20 UI)
+  plateMeadow: 'assets/plates/meadow-day.webp',
+  plateGreenhouse: 'assets/plates/greenhouse-color-rows.webp',
+  plateHive: 'assets/plates/hive-yard.webp',
+  plateShop: 'assets/plates/shop-stand.webp',
+  // production character key poses
+  havenRun: 'assets/character/haven-run.png',
+  havenJump: 'assets/character/haven-jump.png',
+  havenPick: 'assets/character/haven-pick.png',
+  havenChase: 'assets/character/haven-chase.png',
+  havenSkip: 'assets/character/haven-skip.png',
+  havenPlant: 'assets/character/haven-plant.png',
+  // legacy Franz poses (fallback only)
   havenFront: 'assets/character/haven-front.png',
   havenThreeQuarter: 'assets/character/haven-three-quarter.png',
   havenWalk01: 'assets/character/haven-walk-01.png',
   havenWalk02: 'assets/character/haven-walk-02.png',
   havenWalk03: 'assets/character/haven-walk-03.png',
   havenWalk04: 'assets/character/haven-walk-04.png',
-  havenPick: 'assets/character/haven-pick.png',
-  havenPlant: 'assets/character/haven-plant.png',
   havenWater: 'assets/character/haven-water.png',
-  // bouquet (0–3 stages + optional full armful at ~20)
+  // bouquet stages (Franz)
   bouquet0: 'assets/bouquet/bouquet-0.png',
   bouquet1: 'assets/bouquet/bouquet-1.png',
   bouquet2: 'assets/bouquet/bouquet-2.png',
   bouquet3: 'assets/bouquet/bouquet-3.png',
   bouquetFull: 'assets/bouquet/bouquet-full.png',
-  // meadow (webp 585×1266)
+  // legacy meadow TOD (fallback under plate)
   meadowDay: 'assets/meadow/meadow-day.webp',
   meadowSunset: 'assets/meadow/meadow-sunset.webp',
   meadowNight: 'assets/meadow/meadow-night.webp',
@@ -48,15 +81,34 @@ const AssetPaths = {
   flowerSunflower: 'assets/flowers/flower-sunflower.png',
   flowerBluebell: 'assets/flowers/flower-bluebell.png',
   flowerPop: 'assets/flowers/flower-pop.png',
-  // props (compact watering can for finger-follow)
+  // production props
   wateringCan: 'assets/props/watering-can.png',
+  basket: 'assets/props/basket.png',
+  bugNet: 'assets/props/bug-net.png',
+  shovelBig: 'assets/props/shovel-big.png',
+  multiPickBasket: 'assets/props/multi-pick-basket.png',
+  // production bugs
+  bugLadybug: 'assets/bugs/ladybug.png',
+  bugGrasshopper: 'assets/bugs/grasshopper.png',
+  bugBee: 'assets/bugs/bee.png',
+  bugButterfly: 'assets/bugs/butterfly.png',
+  // legacy flap bees (pollinators)
   bee01: 'assets/props/bee-01.png',
   bee02: 'assets/props/bee-02.png',
   butterfly01: 'assets/props/butterfly-01.png',
   butterfly02: 'assets/props/butterfly-02.png',
-  // icon (512×512 source)
+  // hive
+  hive: 'assets/hive/hive.png',
+  jarFull: 'assets/hive/jar-full.png',
+  jarEmpty: 'assets/hive/jar-empty.png',
+  // concept comps (optional reference / fallback)
+  conceptMeadow: 'assets/concept/01b-meadow-wider.jpg',
+  conceptHive: 'assets/concept/11-hive-and-jars.jpg',
+  conceptShop: 'assets/concept/13-shop-upgrades.jpg',
+  conceptRows: 'assets/concept/12-greenhouse-color-rows.jpg',
+  // icon
   appIcon: 'assets/icon/app-icon.png'
-};
+}, buildCbnPaths());
 
 const GH_SIZES_KEYS = ['small', 'medium', 'large'];
 const GH_DOORS = ['closed', 'open'];
@@ -68,8 +120,7 @@ function buildGreenhousePaths() {
   for (const size of GH_SIZES_KEYS) {
     for (const door of GH_DOORS) {
       for (const time of GH_TIMES) {
-        const key = `gh_${size}_${door}_${time}`;
-        out[key] = `assets/greenhouse/gh-${size}-${door}-${time}.webp`;
+        out[`gh_${size}_${door}_${time}`] = `assets/greenhouse/gh-${size}-${door}-${time}.webp`;
       }
     }
   }
@@ -92,6 +143,7 @@ const Assets = {
   ready: false,
   map: Object.create(null),
   missing: [],
+  layout: null,
 
   loadImage(src) {
     return new Promise((resolve) => {
@@ -106,7 +158,6 @@ const Assets = {
   async loadAll(onProgress) {
     const entries = Object.entries(AssetManifest);
     let done = 0;
-    // Load in small parallel batches for faster boot
     const batch = 8;
     for (let i = 0; i < entries.length; i += batch) {
       const slice = entries.slice(i, i + batch);
@@ -119,6 +170,10 @@ const Assets = {
       done += slice.length;
       if (onProgress) onProgress(done / entries.length, slice[slice.length - 1][1]);
     }
+    try {
+      const r = await fetch('assets/asset-layout.json?v=' + ASSET_VER);
+      if (r.ok) this.layout = await r.json();
+    } catch (e) {}
     this.ready = true;
     return this;
   },
@@ -127,7 +182,6 @@ const Assets = {
     return this.map[key] || null;
   },
 
-  /** Franz flower file key from species id (aliases for old saves). */
   flowerKey(id) {
     const alias = {
       daisy: 'flowerDaisy', tulip: 'flowerTulip', sunflower: 'flowerSunflower', bluebell: 'flowerBluebell',
@@ -138,35 +192,22 @@ const Assets = {
     return alias[id] || 'flowerDaisy';
   },
 
-  flower(id) {
-    return this.get(this.flowerKey(id));
-  },
-
-  flowerPop() {
-    return this.get('flowerPop');
-  },
+  flower(id) { return this.get(this.flowerKey(id)); },
+  flowerPop() { return this.get('flowerPop'); },
 
   bouquet(n) {
-    // n: 0–3 stage, or 'full' / >=20 for armful
     if (n === 'full' || (typeof n === 'number' && n >= 20)) {
       return this.get('bouquetFull') || this.get('bouquet3');
     }
-    const k = 'bouquet' + Math.max(0, Math.min(3, n | 0));
-    return this.get(k);
+    return this.get('bouquet' + Math.max(0, Math.min(3, n | 0)));
   },
+  bouquetFull() { return this.get('bouquetFull') || this.get('bouquet3'); },
 
-  bouquetFull() {
-    return this.get('bouquetFull') || this.get('bouquet3');
-  },
-
-  /** size: 'S'|'M'|'L'|0|1|2, open:bool, time:'day'|'sunset'|'night'|'sunrise' */
   greenhouse(size, open, time) {
     const sizeKey = typeof size === 'number'
       ? GH_SIZES_KEYS[Math.max(0, Math.min(2, size))]
       : ({ S: 'small', M: 'medium', L: 'large', small: 'small', medium: 'medium', large: 'large' }[size] || 'small');
-    const door = open ? 'open' : 'closed';
-    const t = time || 'day';
-    return this.get(`gh_${sizeKey}_${door}_${t}`);
+    return this.get(`gh_${sizeKey}_${open ? 'open' : 'closed'}_${time || 'day'}`);
   },
 
   interior(size, grown) {
@@ -177,16 +218,34 @@ const Assets = {
   },
 
   meadow(time) {
-    const map = { day: 'meadowDay', sunset: 'meadowSunset', night: 'meadowNight', sunrise: 'meadowSunrise' };
-    return this.get(map[time] || 'meadowDay');
+    // Prefer empty production plate (no baked Haven)
+    return this.get('plateMeadow') || this.get(({ day: 'meadowDay', sunset: 'meadowSunset', night: 'meadowNight', sunrise: 'meadowSunrise' }[time] || 'meadowDay'));
   },
 
+  /** Production key poses: run/skip alternate for walk; chase when netting. */
   walkFrame(i) {
+    const prod = [this.get('havenRun'), this.get('havenSkip'), this.get('havenChase'), this.get('havenJump')];
+    if (prod[0]) return prod[((i % 4) + 4) % 4] || prod[0];
     const frames = ['havenWalk01', 'havenWalk02', 'havenWalk03', 'havenWalk04'];
     return this.get(frames[((i % 4) + 4) % 4]);
-  }
+  },
+
+  pose(name) {
+    const map = {
+      idle: 'havenSkip', run: 'havenRun', jump: 'havenJump', pick: 'havenPick',
+      chase: 'havenChase', skip: 'havenSkip', plant: 'havenPlant', water: 'havenPlant',
+      front: 'havenSkip', walk: 'havenRun'
+    };
+    const k = map[name] || 'havenSkip';
+    return this.get(k) || this.get('havenFront');
+  },
+
+  cbnPage(stem) { return this.get(cbnAssetKey(stem, 'page')); },
+  cbnInk(stem) { return this.get(cbnAssetKey(stem, 'ink')); },
+  cbnMask(stem) { return this.get(cbnAssetKey(stem, 'mask')); }
 };
 
 window.Assets = Assets;
 window.AssetManifest = AssetManifest;
 window.AssetPaths = AssetPaths;
+window.CBN_PAGE_STEMS = CBN_PAGE_STEMS;
