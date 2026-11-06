@@ -1,5 +1,5 @@
-/* Haven's Garden v0.9-cbn2e — network-first HTML; concept comps + systems */
-const CACHE = 'havens-garden-preview-v0.9-cbn2e';
+/* Haven's Garden v0.9-birthday-polish — cache-first assets; network-first HTML/JS */
+const CACHE = 'havens-garden-preview-v0.9-birthday-polish';
 const PRECACHE = [
   './',
   './index.html',
@@ -8,24 +8,21 @@ const PRECACHE = [
   './js/assets.js',
   './js/audio.js',
   './js/systems.js',
+  './js/nursery.js',
   './js/game.js',
+  './assets/greenhouse/bed-map.json',
   './assets/icon/app-icon.png',
   './assets/icon/app-icon-192.png',
   './assets/icon/app-icon-512.png',
-  './assets/character/haven-front.png',
-  './assets/meadow/meadow-day.webp',
-  './assets/bouquet/bouquet-full.png',
-  './assets/concept/01b-meadow-wider.jpg',
-  './assets/concept/03b-bug-chase-wider.jpg',
-  './assets/concept/11-hive-and-jars.jpg',
-  './assets/concept/13-shop-upgrades.jpg',
   './assets/plates/meadow-day.webp',
   './assets/character/haven-run.png',
   './assets/props/basket.png',
+  './assets/props/watering-can.png',
   './assets/bugs/bee.png',
-  './assets/cbn/contact-12-subjects.jpg',
-  './assets/cbn/page-13-one-daisy.webp',
-  './assets/cbn/page-01-bee-close-easy.webp'
+  './assets/interior/int-small-empty.webp',
+  './assets/interior/int-medium-empty.webp',
+  './assets/interior/int-large-empty.webp',
+  './assets/cbn/page-13-one-daisy.webp'
 ];
 
 const OWN = (k) => k.indexOf('havens-garden-') === 0;
@@ -55,7 +52,7 @@ self.addEventListener('fetch', (e) => {
     u.pathname.endsWith('/') ||
     u.pathname.endsWith('/sw.js');
 
-  if (isHTML) {
+  if (isHTML || u.pathname.endsWith('.js')) {
     e.respondWith(
       fetch(e.request)
         .then((r) => {
@@ -68,20 +65,7 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Network-first for JS so v0.9-cbn2e ships promptly; fall back to cache
-  if (u.pathname.endsWith('.js')) {
-    e.respondWith(
-      fetch(e.request)
-        .then((r) => {
-          const clone = r.clone();
-          caches.open(CACHE).then((c) => c.put(e.request, clone));
-          return r;
-        })
-        .catch(() => caches.match(e.request))
-    );
-    return;
-  }
-
+  // Cache-first for art so offline PWA works after install
   e.respondWith(
     caches.match(e.request).then((cached) => {
       if (cached) return cached;
@@ -89,7 +73,7 @@ self.addEventListener('fetch', (e) => {
         const clone = r.clone();
         caches.open(CACHE).then((c) => c.put(e.request, clone));
         return r;
-      });
+      }).catch(() => cached);
     })
   );
 });
