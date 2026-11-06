@@ -39,19 +39,17 @@ export function Wordmark({
   tone?: "ink" | "snow";
   onClick?: () => void;
 }) {
-  /** Form #7 monochrome lockup — snow tone = onDark hero; ink = theme auto. */
-  const mark = (
-    <Form7Brand
-      testId="chrome-wordmark"
-      tone={tone === "snow" ? "onDark" : "auto"}
-      size="lg"
-    />
-  );
-  if (!onClick) return <p className="leading-none">{mark}</p>;
+  /** Form #7 monochrome lockup — snow tone = onDark hero; ink = theme auto.
+   * t1230u: S is the menu trigger inside Form7Brand; onClick is wordmark-only. */
   return (
-    <button type="button" onClick={onClick} className="leading-none">
-      {mark}
-    </button>
+    <div className="leading-none">
+      <Form7Brand
+        testId="chrome-wordmark"
+        tone={tone === "snow" ? "onDark" : "auto"}
+        size="lg"
+        onWordmarkClick={onClick}
+      />
+    </div>
   );
 }
 

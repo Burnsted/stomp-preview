@@ -51,6 +51,18 @@ export const RESORT_TRAIL_MAPS: ResortTrailMap[] = [
       "Same Vail Resorts content Terms of Use — no public embed grant located for third-party apps.",
   },
   {
+    resortId: "breckenridge",
+    resortName: "Breckenridge",
+    operator: "Vail Resorts",
+    officialMapPageUrl:
+      "https://www.breckenridge.com/the-mountain/about-the-mountain/trail-maps.aspx",
+    authorizedImageUrl: null,
+    permission: "link-only",
+    attribution: "Trail map © Vail Resorts / Breckenridge. Link only — not embedded.",
+    licenseNotes:
+      "Same Vail Resorts content Terms of Use — no public embed grant located for third-party apps.",
+  },
+  {
     resortId: "keystone",
     resortName: "Keystone",
     operator: "Vail Resorts",

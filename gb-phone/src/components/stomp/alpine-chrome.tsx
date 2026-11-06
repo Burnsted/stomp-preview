@@ -49,7 +49,12 @@ export function tabForScreen(screen: Screen): PrimaryTabId | null {
   return null;
 }
 
-/** Form #7 brand lockup — theme-aware B&W (replaces lime condensed wordmark). */
+/**
+ * Form #7 brand lockup — theme-aware B&W (replaces lime condensed wordmark).
+ * t1230u: S mark is the universal menu trigger (inside Form7Brand).
+ * Optional onClick applies to the STOMP wordmark only — never wraps S in a nested button.
+ * Do not add a redundant menu glyph beside the S.
+ */
 export function AlpineWordmark({
   onClick,
   size = "md",
@@ -59,18 +64,13 @@ export function AlpineWordmark({
   size?: "sm" | "md" | "lg";
   tone?: "auto" | "onDark" | "onLight";
 }) {
-  const mark = (
+  return (
     <Form7Brand
       testId="alpine-wordmark"
       tone={tone}
       size={size}
+      onWordmarkClick={onClick}
     />
-  );
-  if (!onClick) return mark;
-  return (
-    <button type="button" onClick={onClick} className="leading-none" aria-label="STOMP home">
-      {mark}
-    </button>
   );
 }
 

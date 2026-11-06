@@ -3,8 +3,13 @@
  * Black mark on light UI · White mark on dark UI.
  * Wordmark: bold wide sans (NOT lime condensed Anton).
  * No tagline under the logo.
+ *
+ * t1230u: the S mark is the universal menu trigger (independently tappable).
+ * Artwork itself is unchanged — same rounded-square S + STOMP lockup.
  */
 import { useTheme } from "@/lib/stomp/avatar/theme";
+import { useAvatar } from "@/lib/stomp/avatar/store";
+import { sMenuAriaLabel, useSMenu } from "@/lib/stomp/s-menu";
 
 export type Form7Tone = "auto" | "onDark" | "onLight";
 
@@ -20,7 +25,7 @@ function resolveOnDark(tone: Form7Tone, theme: "light" | "dark"): boolean {
   return theme !== "light";
 }
 
-/** Rounded-square S mark (Form #7). */
+/** Rounded-square S mark (Form #7). Artwork locked — do not redesign. */
 export function Form7Mark({
   onDark,
   sizePx = 28,
@@ -61,6 +66,7 @@ export function Form7Mark({
 /**
  * Form #7 lockup: S-mark + STOMP wordmark.
  * Default tone=auto follows html[data-theme]. Use onDark for hero photos.
+ * S opens the universal menu after STOMPER creation; inactive before.
  */
 export function Form7Brand({
   tone = "auto",
@@ -69,6 +75,9 @@ export function Form7Brand({
   wordmarkOnly = false,
   className = "",
   testId = "form7-brand",
+  onWordmarkClick,
+  /** When false, S is visible but never opens the menu (tests / forced inactive). */
+  menuEnabled,
 }: {
   tone?: Form7Tone;
   size?: keyof typeof SIZE;
@@ -77,31 +86,86 @@ export function Form7Brand({
   wordmarkOnly?: boolean;
   className?: string;
   testId?: string;
+  /** Optional home / back navigation on the wordmark only (not the S). */
+  onWordmarkClick?: () => void;
+  menuEnabled?: boolean;
 }) {
   const theme = useTheme((s) => s.theme);
   const onDark = resolveOnDark(tone, theme);
   const dim = SIZE[size];
   const color = onDark ? "text-white" : "text-black";
+  const onboardComplete = useAvatar((s) => s.onboardComplete);
+  const hasConfig = useAvatar((s) => Boolean(s.config));
+  const menuOpen = useSMenu((s) => s.open);
+  const openMenu = useSMenu((s) => s.openMenu);
+  const closeMenu = useSMenu((s) => s.closeMenu);
+
+  const creationComplete = onboardComplete && hasConfig;
+  const menuActive = (menuEnabled ?? true) && creationComplete;
+  const aria = sMenuAriaLabel(menuActive);
+
+  function onSActivate() {
+    if (!menuActive) return;
+    if (menuOpen) closeMenu();
+    else openMenu();
+  }
+
+  const mark = !wordmarkOnly ? (
+    <button
+      type="button"
+      data-testid="form7-s-menu-trigger"
+      data-menu-active={menuActive ? "true" : "false"}
+      aria-label={aria}
+      aria-haspopup={menuActive ? "dialog" : undefined}
+      aria-expanded={menuActive ? menuOpen : undefined}
+      aria-disabled={menuActive ? undefined : true}
+      disabled={false}
+      onClick={onSActivate}
+      className={
+        "inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl " +
+        (menuActive ? "cursor-pointer" : "cursor-default opacity-90")
+      }
+    >
+      <Form7Mark onDark={onDark} sizePx={dim.mark} />
+    </button>
+  ) : null;
+
+  const wordmark = !markOnly ? (
+    onWordmarkClick ? (
+      <button
+        type="button"
+        data-testid="form7-wordmark"
+        onClick={onWordmarkClick}
+        aria-label="STOMP home"
+        className={
+          "font-sans font-black uppercase tracking-[0.06em] " + dim.text + " " + color
+        }
+      >
+        STOMP
+      </button>
+    ) : (
+      <span
+        data-testid="form7-wordmark"
+        className={
+          // Wide bold sans — Form #7, not condensed Anton / lime
+          "font-sans font-black uppercase tracking-[0.06em] " + dim.text + " " + color
+        }
+      >
+        STOMP
+      </span>
+    )
+  ) : null;
 
   return (
     <span
       data-testid={testId}
       data-form7-tone={onDark ? "onDark" : "onLight"}
+      data-s-menu-active={menuActive ? "true" : "false"}
       className={"inline-flex items-center " + dim.gap + " leading-none " + className}
       aria-label="STOMP"
     >
-      {!wordmarkOnly ? <Form7Mark onDark={onDark} sizePx={dim.mark} /> : null}
-      {!markOnly ? (
-        <span
-          data-testid="form7-wordmark"
-          className={
-            // Wide bold sans — Form #7, not condensed Anton / lime
-            "font-sans font-black uppercase tracking-[0.06em] " + dim.text + " " + color
-          }
-        >
-          STOMP
-        </span>
-      ) : null}
+      {mark}
+      {wordmark}
     </span>
   );
 }

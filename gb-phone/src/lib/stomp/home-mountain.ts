@@ -20,6 +20,7 @@ export const DEMO_STATES: DemoState[] = [
 export const DEMO_RESORTS: DemoResort[] = [
   { id: "beaver-creek", stateId: "co", name: "Beaver Creek" },
   { id: "vail", stateId: "co", name: "Vail" },
+  { id: "breckenridge", stateId: "co", name: "Breckenridge" },
   { id: "keystone", stateId: "co", name: "Keystone" },
   { id: "park-city", stateId: "ut", name: "Park City" },
   { id: "snowbird", stateId: "ut", name: "Snowbird" },

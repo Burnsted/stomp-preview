@@ -3,9 +3,11 @@
  * + mountain conditions for selected / default resort (t1221u / t1222u).
  * Weather belongs here — not on Home (Ted t1222u).
  * t1224u: Home mountain label; Hey Session = bottom-right snowboarder FAB (not header chip).
+ * t1230u: official resort branding (authorized logo or text fallback) beside name.
  */
 import { AlpineTopBar } from "@/components/stomp/alpine-chrome";
 import { HomeMountainLabel } from "@/components/stomp/home-mountain-label";
+import { ResortBrandMark } from "@/components/stomp/resort-brand-mark";
 import { MapResortConditionsStrip } from "@/components/stomp/resort-conditions-panel";
 import { SessionVoicePrompt } from "@/components/stomp/session-mic";
 import { TrailMapViewer } from "@/components/stomp/trail-map-viewer";
@@ -27,13 +29,21 @@ export function TrailMapScreen() {
       <header className="mt-2 px-1">
         <h1 className="font-display text-4xl tracking-wide text-ink">Trails</h1>
         {resort ? (
-          <HomeMountainLabel
-            resortId={resortId}
-            suffix=" · official source only"
-            className="mt-1"
-            nameClassName="text-sm text-muted"
-            nameTestId="trail-map-location"
-          />
+          <>
+            <HomeMountainLabel
+              resortId={resortId}
+              suffix=" · official source only"
+              className="mt-1"
+              nameClassName="text-sm text-muted"
+              nameTestId="trail-map-location"
+            />
+            <ResortBrandMark
+              resortId={resortId}
+              surface="dark"
+              className="mt-3"
+              testId="trails-resort-brand"
+            />
+          </>
         ) : (
           <p data-testid="trail-map-location" className="mt-1 text-sm text-muted">
             Choose a resort for map + conditions

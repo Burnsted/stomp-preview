@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSessionRouter } from "@/components/stomp/session-mic";
 import { DemoSimBadge } from "@/components/stomp/playtest/demo-sim-badge";
 import { ResetDemoButton } from "@/components/stomp/playtest/playtest-chrome";
@@ -22,6 +22,7 @@ import {
   type QuickShareSheetState,
 } from "@/lib/stomp/squad-quick-share";
 import { resolveTripDropVisual } from "@/lib/stomp/pass-lifecycle-demo";
+import { useSMenu } from "@/lib/stomp/s-menu";
 import { exportPack, type Jacket } from "@/lib/stomp/social";
 import { useSocial } from "@/lib/stomp/social-store";
 import { AVATAR_FLAGS } from "@/lib/stomp/avatar/flags";
@@ -99,6 +100,11 @@ export function RiderHub({ initial = "Profile" }: { initial?: Panel }) {
   const social = useSocial();
   const { apply } = useSessionRouter();
   const [panel, setPanel] = useState<Panel>(initial);
+  // t1230u: Form #7 S menu can deep-link to a hub panel (Profile / Squad / …).
+  useEffect(() => {
+    const pending = useSMenu.getState().consumePendingHubPanel();
+    if (pending) setPanel(pending);
+  }, []);
   const [name, setName] = useState(social.avatar?.name ?? "");
   const [jacket, setJacket] = useState<Jacket>(social.avatar?.jacket ?? "purple-white");
   const [dayName, setDayName] = useState("Park lap");

@@ -15,6 +15,7 @@ import { MiniPlayerUi } from "@/components/stomp/mini-player-ui";
 import { AirLog, Guide, Playlist, StashPins } from "@/components/stomp/more";
 import { OfflineScreen } from "@/components/stomp/offline-screen";
 import { Goals, TerrainPark } from "@/components/stomp/park";
+import { Form7SMenu } from "@/components/stomp/brand/form7-s-menu";
 import { HeySessionFab } from "@/components/stomp/hey-session-fab";
 import { PlaylistFab } from "@/components/stomp/playlist-chrome";
 import { ExploreDemoScreen } from "@/components/stomp/playtest/explore-demo";
@@ -161,6 +162,8 @@ export function StompApp() {
           {!hideChrome && !avatarScreens ? <MiniPlayerUi /> : null}
           {/* t1224u: little-snowboarder Hey Session FAB — every chrome page, bottom-right */}
           <HeySessionFab />
+          {/* t1230u: Form #7 S universal menu — not a hamburger; FAB remains primary Session control */}
+          <Form7SMenu />
           {!avatarScreens ? <PlaylistFab /> : null}
           {showNav ? <BottomNav playtestTools={<PlaytestBottomChrome />} /> : null}
         </div>

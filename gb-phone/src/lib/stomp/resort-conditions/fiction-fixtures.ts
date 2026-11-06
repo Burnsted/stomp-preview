@@ -153,6 +153,47 @@ export const FICTION_CONDITIONS_BY_RESORT: Record<string, ResortConditions> = {
     staleAfterIso: FICTION_STALE_AFTER,
     honestyNote: FICTION_NOTE,
   },
+  breckenridge: {
+    resortId: "breckenridge",
+    resortName: "Breckenridge",
+    provenance: "fiction",
+    fetchState: "ready",
+    weather: {
+      elevationFt: 12150,
+      temp: 16,
+      tempUnit: "F",
+      windSpeed: 14,
+      windUnit: "mph",
+      windGust: 26,
+      summary: "Cold alpine · high peaks in cloud",
+      forecast: "Light snow overnight · windy above tree line",
+    },
+    snow: {
+      snowfall24h: 4,
+      snowfall48h: 7,
+      baseDepth: 36,
+      depthUnit: "in",
+      surface: "Packed powder / variable",
+    },
+    liftsTrails: {
+      liftsOpen: 28,
+      liftsTotal: 35,
+      trailsOpen: 155,
+      trailsTotal: 187,
+      operatingStatus: "Open",
+    },
+    trailMap: trailMapRef("breckenridge"),
+    sources: [
+      {
+        id: "fiction-breckenridge",
+        label: "STOMP fiction fixture · Breckenridge",
+        url: null,
+      },
+    ],
+    updatedAtIso: FICTION_UPDATED_AT,
+    staleAfterIso: FICTION_STALE_AFTER,
+    honestyNote: FICTION_NOTE,
+  },
 };
 
 /** Minimal unavailable shell when no fiction fixture exists for a resort. */
