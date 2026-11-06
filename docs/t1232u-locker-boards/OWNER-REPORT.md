@@ -8,9 +8,9 @@
 |---|---|
 | Branch | `cursor/t1232u-locker-boards-customization-2547` |
 | Starting ref | `2d831cefc12ba0a1dead1fed189c669bd75ee6cf` (draft PR **#73** tip — Form #7 S menu + resort text branding; CI green run `42220897290`) |
-| Tip SHA | `92e7339ad83e6d604d45ffdb99e8110953d8d912` (this docs pin; PR head tracks branch tip) |
+| Tip SHA | `e9e67b1832d9f0be604f2235a8be6a2d2be2bb8b` |
 | Isolated | **NEW** draft PR — does **not** push onto PR #73 or PR #70. Do not merge. |
-| Draft PR title | DRAFT t1232u — Locker/Boards customization (NO MERGE) |
+| Draft PR | https://github.com/Burnsted/stomp-preview/pull/75 — *DRAFT t1232u — Locker/Boards customization (NO MERGE)* |
 
 ### SHA split (documented)
 
