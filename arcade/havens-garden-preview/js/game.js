@@ -1511,7 +1511,7 @@ function drawHiveScene() {
   cx.fillText('Pour a jar', W / 2, padT + 230);
   hit.hivePour = { x: 40, y: padT + 200, w: W - 80, h: 48 };
 
-  drawGirl(W * 0.5, contentBottom() - 20, false);
+  // Concept plate already shows Haven — no second sprite overlay
   if (cue) drawCue(cue);
 }
 
@@ -1756,56 +1756,90 @@ function drawPlateOffset(img, ox, oy, alpha) {
   cx.restore();
 }
 
-/** Living open field: coloring-book plate + scrolling grass (camera follows Haven). */
+/** Living open field — kid coloring-book meadow (NO concept plate: those bake Haven in). */
 function drawLivingField(mode, opts) {
   opts = opts || {};
   mode = mode || 'day';
-  const concept = Assets.get('conceptMeadow');
-  const plate = concept || Assets.meadow(mode);
-  // Soft sky — kid coloring-book, not painterly bands
   const sky = mode === 'sunset' ? '#fa8c5a' : mode === 'sunrise' ? '#ffd6a0' : '#8ec8f5';
   cx.fillStyle = sky;
   cx.fillRect(0, 0, W, H);
 
-  // Single wide plate with gentle parallax (NO hard tiling / band seams)
-  if (plate) {
-    const ox = ((-cam.x * 0.18 + (opts.drift || 0) * 0.12) % (W * 0.35));
-    const oy = (-cam.y * 0.06) % (H * 0.08);
-    drawPlateOffset(plate, ox, oy - H * 0.02, 1);
-    // Soft edge fade so the plate never reads as a postage stamp
-    const edge = cx.createLinearGradient(0, playfieldBot() - 80, 0, playfieldBot());
-    edge.addColorStop(0, 'rgba(120, 180, 80, 0)');
-    edge.addColorStop(1, 'rgba(90, 150, 55, 0.55)');
-    cx.fillStyle = edge;
-    cx.fillRect(0, playfieldBot() - 80, W, 80);
+  // Soft cartoon clouds (parallax)
+  const drift = (opts.drift || 0) + cam.x * 0.02;
+  cx.fillStyle = 'rgba(255,255,255,0.85)';
+  for (let i = 0; i < 4; i++) {
+    const cx0 = ((i * 140 - drift * (0.4 + i * 0.05)) % (W + 120)) - 40;
+    const cy0 = padT + 70 + (i % 3) * 28;
+    cx.beginPath();
+    cx.ellipse(cx0, cy0, 36, 16, 0, 0, 7);
+    cx.ellipse(cx0 + 22, cy0 + 4, 28, 14, 0, 0, 7);
+    cx.ellipse(cx0 - 18, cy0 + 6, 22, 12, 0, 0, 7);
+    cx.fill();
   }
 
-  // Ground wash + path hint under playfield (camera-follow living field)
-  const g0 = playfieldTop() + (playfieldBot() - playfieldTop()) * 0.22;
-  const grd = cx.createLinearGradient(0, g0, 0, playfieldBot());
-  grd.addColorStop(0, 'rgba(110, 170, 70, 0.12)');
-  grd.addColorStop(0.4, 'rgba(90, 150, 55, 0.45)');
-  grd.addColorStop(1, 'rgba(70, 130, 45, 0.78)');
-  cx.fillStyle = grd;
-  cx.fillRect(0, g0, W, playfieldBot() - g0 + 4);
+  // Rolling hills — single soft shapes, not tiled bands
+  const hillShift = (-cam.x * 0.12) % W;
+  const midY = (playfieldTop() + playfieldBot()) * 0.42;
+  cx.fillStyle = '#7ecf6a';
+  cx.beginPath();
+  cx.moveTo(-40, H);
+  for (let x = -40; x <= W + 40; x += 40) {
+    const wx = x - hillShift;
+    const y = midY + Math.sin(wx * 0.01 + 1.2) * 28 + Math.cos(wx * 0.007) * 18;
+    cx.lineTo(x, y);
+  }
+  cx.lineTo(W + 40, H);
+  cx.closePath();
+  cx.fill();
+  cx.fillStyle = '#6bbb58';
+  cx.beginPath();
+  cx.moveTo(-40, H);
+  for (let x = -40; x <= W + 40; x += 36) {
+    const wx = x - (-cam.x * 0.28) % W;
+    const y = midY + 50 + Math.sin(wx * 0.014) * 22;
+    cx.lineTo(x, y);
+  }
+  cx.lineTo(W + 40, H);
+  cx.closePath();
+  cx.fill();
 
-  // Distant greenhouse landmark
+  // Dirt path ribbon in screen space following camera
+  const pathY = midY + 90;
+  cx.strokeStyle = '#d2b48c';
+  cx.lineWidth = 48;
+  cx.lineCap = 'round';
+  cx.beginPath();
+  const px0 = W * 0.5 - (girl.x - cam.x) * 0.15;
+  cx.moveTo(px0 - 80, playfieldBot() + 10);
+  cx.quadraticCurveTo(px0 - 20, pathY + 40, px0 + 30, pathY);
+  cx.quadraticCurveTo(px0 + 90, pathY - 50, px0 + 40, midY + 10);
+  cx.stroke();
+  cx.strokeStyle = '#c4a574';
+  cx.lineWidth = 28;
+  cx.stroke();
+
+  // Distant greenhouse landmark (optional)
   const ghImg = Assets.greenhouse(SAVE.ghSize | 0, false, 'day');
   if (ghImg) {
     const lx = FIELD_W * 0.78, ly = FIELD_H * 0.40;
     const sx = (lx - cam.x) * 0.45 + W * 0.5;
     const sy = (ly - cam.y) * 0.35 + (playfieldTop() + playfieldBot()) * 0.42;
-    const h = Y(210);
+    const h = Y(200);
     const w = h * (ghImg.width / ghImg.height);
-    if (sx > -w && sx < W + w) cx.drawImage(ghImg, sx - w / 2, sy - h, w, h);
+    if (sx > -w && sx < W + w) {
+      cx.save();
+      cx.globalAlpha = 0.9;
+      cx.drawImage(ghImg, sx - w / 2, sy - h, w, h);
+      cx.restore();
+    }
   }
 
-  // Near grass tufts (world space) — sell motion as she walks
+  // Near grass tufts (world space) — camera-follow living field
   grassTufts.forEach((t) => {
     const s = worldToScreen(t.x, t.y);
     if (s.x < -40 || s.x > W + 40 || s.y < playfieldTop() || s.y > playfieldBot() + 20) return;
     const bob = Math.sin(performance.now() / 420 + t.phase) * 2;
-    cx.fillStyle = `hsla(${t.hue}, 45%, 38%, 0.55)`;
+    cx.fillStyle = `hsla(${t.hue}, 50%, 36%, 0.7)`;
     cx.beginPath();
     cx.ellipse(s.x, s.y + bob, t.w * 0.5, t.h * 0.5, 0, 0, 7);
     cx.fill();
@@ -3282,4 +3316,14 @@ async function boot() {
 }
 
 boot();
-window.HavensGarden = { VER, applyShot, snapshotRuntime, getState: () => state, SAVE };
+window.HavensGarden = {
+  VER, applyShot, snapshotRuntime, getState: () => state, SAVE,
+  getBouquet: () => bouquet.slice(),
+  getExtras: () => EX(),
+  startMeadow, enterGreenhouse, enterHive, enterShop, enterCbnMap, openCbnPage,
+  buyUpgrade, hiveHarvest, hivePourJar, doPlantAt, doWaterAt, doPick,
+  tryCatchBugAt, spawnFieldBugs, goTitleHome, choosePlace, flowerPoints,
+  getBugs: () => fieldBugs.map((b) => b.kind),
+  getGirl: () => ({ x: girl.x, y: girl.y, face: girl.face }),
+  ST
+};
