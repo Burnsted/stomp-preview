@@ -4,7 +4,7 @@
 */
 'use strict';
 
-const ASSET_VER = 'birthday-preview';
+const ASSET_VER = 'birthday-haven-move';
 
 const CBN_PAGE_STEMS = [
   'page-13-one-daisy',
@@ -240,12 +240,13 @@ const Assets = {
     return this.get('plateMeadow') || this.get(({ day: 'meadowDay', sunset: 'meadowSunset', night: 'meadowNight', sunrise: 'meadowSunrise' }[time] || 'meadowDay'));
   },
 
-  /** Production key poses: run/skip alternate for walk; chase when netting. */
+  /** Prefer Franz walk-01..04 cycle; fall back to run/skip if missing. */
   walkFrame(i) {
-    const prod = [this.get('havenRun'), this.get('havenSkip'), this.get('havenChase'), this.get('havenJump')];
-    if (prod[0]) return prod[((i % 4) + 4) % 4] || prod[0];
     const frames = ['havenWalk01', 'havenWalk02', 'havenWalk03', 'havenWalk04'];
-    return this.get(frames[((i % 4) + 4) % 4]);
+    const w = this.get(frames[((i % 4) + 4) % 4]);
+    if (w) return w;
+    const alt = [this.get('havenRun'), this.get('havenSkip'), this.get('havenRun'), this.get('havenSkip')];
+    return alt[((i % 4) + 4) % 4] || this.get('havenRun');
   },
 
   pose(name) {
