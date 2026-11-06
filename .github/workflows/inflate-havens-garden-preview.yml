@@ -12,28 +12,31 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Inflate havens-garden-preview tree
+      - name: Download and unpack preview zip
         run: |
+          set -euo pipefail
+          PAGE_URL=$(tr -d '[:space:]' < arcade/havens-garden-preview/.packed/download-page-url.txt)
+          echo "Fetching page $PAGE_URL"
+          curl -fsSL --max-time 60 "$PAGE_URL" -o /tmp/hgp-page.html
+          DL_URL=$(python3 - <<'PY'
+          import re
+          from pathlib import Path
+          html = Path('/tmp/hgp-page.html').read_text()
+          m = re.search(r'href="(https://tmpfiles\.org/dl/[^"]+havens-garden-preview\.zip)"', html)
+          if not m:
+              raise SystemExit('download link not found on tmpfiles page')
+          print(m.group(1))
+          PY
+          )
+          echo "Downloading $DL_URL"
+          curl -fsSL --max-time 180 "$DL_URL" -o /tmp/havens-garden-preview.zip
           python3 - <<'PY'
-          import base64, json, pathlib, shutil, tarfile, tempfile, zlib
+          import pathlib, shutil, zipfile
           root = pathlib.Path('arcade/havens-garden-preview')
           packed = root / '.packed'
-          manifest = json.loads((packed / 'manifest.json').read_text())
-          n = int(manifest['chunks'])
-          parts = []
-          for i in range(n):
-              p = packed / f'chunk{i:03d}.b64'
-              parts.append(p.read_text().strip())
-          b64 = ''.join(parts)
-          raw = zlib.decompress(base64.b64decode(b64))
-          print('inflated tar bytes', len(raw))
-          with tempfile.TemporaryDirectory() as td:
-              tar_path = pathlib.Path(td) / 'game.tar'
-              tar_path.write_bytes(raw)
-              extract_dir = pathlib.Path(td) / 'out'
-              extract_dir.mkdir()
-              with tarfile.open(tar_path, 'r') as tf:
-                  tf.extractall(extract_dir)
+          with zipfile.ZipFile('/tmp/havens-garden-preview.zip') as zf:
+              names = zf.namelist()
+              print('zip entries', len(names))
               for child in list(root.iterdir()):
                   if child.name == '.packed':
                       continue
@@ -41,26 +44,36 @@ jobs:
                       shutil.rmtree(child)
                   else:
                       child.unlink()
-              for child in extract_dir.iterdir():
-                  dest = root / child.name
-                  if child.is_dir():
-                      shutil.copytree(child, dest)
+              zf.extractall('/tmp/hgp-extract')
+          extracted = pathlib.Path('/tmp/hgp-extract/havens-garden-preview')
+          if not extracted.is_dir():
+              extracted = pathlib.Path('/tmp/hgp-extract')
+          for child in extracted.iterdir():
+              dest = root / child.name
+              if dest.exists():
+                  if dest.is_dir():
+                      shutil.rmtree(dest)
                   else:
-                      shutil.copy2(child, dest)
+                      dest.unlink()
+              shutil.move(str(child), str(dest))
           index = (root / 'index.html').read_text(encoding='utf-8')
           assert '<!DOCTYPE html' in index or '<!doctype html' in index.lower()
           sw = (root / 'sw.js').read_text(encoding='utf-8')
           assert 'havens-garden-preview-v1-franz-batch1' in sw
           assert (root / 'assets/icon/app-icon.png').is_file()
-          assert (root / 'js/game.js').is_file()
           game = (root / 'js/game.js').read_text(encoding='utf-8')
-          assert "havensGarden.v1" in game
+          assert 'havensGarden.v1' in game
+          for p in packed.glob('chunk*.b64'):
+              p.unlink()
+          for p in [packed / '.agent-push-test.txt', packed / 'manifest.json']:
+              if p.exists():
+                  p.unlink()
           print('ok files', sum(1 for _ in root.rglob('*') if _.is_file()))
           PY
       - name: Commit inflated preview
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add arcade/havens-garden-preview
-          git diff --cached --quiet || git commit -m "feat(arcade): inflate havens-garden-preview Franz batch-1 [skip ci]"
+          git add -A arcade/havens-garden-preview
+          git diff --cached --quiet || git commit -m "feat(arcade): inflate havens-garden-preview Franz batch-1 phone draft"
           git push
