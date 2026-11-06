@@ -105,7 +105,7 @@ Under `gb-phone/screenshots/t1221u/` — Home-hero conditions shots are **obsole
 
 ## Tip / PR (t1224u)
 
-- **Tip SHA:** _(filled on commit)_
+- **Tip SHA:** `9b99d9d54c56dd028ebb52b793203873a5e86ed0`
 - **Draft PR:** [#60](https://github.com/Burnsted/stomp-preview/pull/60) — same draft; title/body include t1224u
 - **Branch:** `cursor/resort-conditions-t1221u-94bf` only (no separate PR)
 
