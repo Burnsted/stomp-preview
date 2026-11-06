@@ -83,21 +83,26 @@
     #bootTrack {
       width: min(240px, 60vw);
       height: 14px;
-      background: rgba(255, 250, 240, 0.9);
+      background: rgba(244, 235, 224, 0.35);
+      border: 2px solid rgba(60, 48, 36, 0.55);
       border-radius: 999px;
       overflow: hidden;
-      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.08);
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
     }
     #bootBar {
       height: 100%;
       width: 0%;
-      background: #5ecf7a;
+      background: rgba(94, 207, 122, 0.7);
       border-radius: 999px;
       transition: width 0.15s linear;
     }
     #boot small {
       margin-top: 14px;
-      color: #6a6258;
+      color: #3a342c;
+      text-shadow: 0 0 4px rgba(255, 250, 240, 0.9), 0 1px 0 rgba(255, 250, 240, 0.8);
+    }
+    #boot h1, #boot p {
+      text-shadow: 0 0 6px rgba(255, 250, 240, 0.92), 0 1px 0 rgba(255, 250, 240, 0.75);
     }
   </style>
 </head>
@@ -106,7 +111,7 @@
     <h1>Haven's Garden</h1>
     <p>Getting the meadow ready…</p>
     <div id="bootTrack"><div id="bootBar"></div></div>
-    <small>v0.9-birthday-haven-move</small>
+    <small>v0.9-birthday-ui-frost</small>
   </div>
   <canvas id="c" aria-label="Haven's Garden game"></canvas>
   <div id="live" aria-live="polite"></div>
