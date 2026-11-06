@@ -1,12 +1,12 @@
 'use strict';
 /* ============================================================
-   Haven's Garden v0.9-prod
+   Haven's Garden v0.9-cbn2
    Standalone birthday garden — NOT part of STOMP.
    Ted-locked comps: wide coloring-book field, basket plant,
    bugs+net, bees→hive→jars, color rows, CBN, shop.
    ============================================================ */
 
-const VER = 'v0.9-prod';
+const VER = 'v0.9-cbn2';
 const PK = 'havensGarden.v1';
 const MUTE_K = 'havensGarden.mute';
 const QUIET_K = 'havensGarden.quiet';
@@ -241,6 +241,8 @@ let cam = { x: FIELD_W * 0.5, y: FIELD_H * 0.55 };
 let titleDrift = 0;
 let netSwing = 0;
 let cbnSelected = 1;
+/** Per-page CBN paint cache: idBuf (Uint16), fill canvas, filled set signature. */
+const cbnPaintCache = Object.create(null);
 let shopFlash = '';
 let bouquet = Array.isArray(SAVE.bouquet) ? SAVE.bouquet.slice() : [];
 let spawnTypeIdx = 0;
@@ -1410,7 +1412,7 @@ function enterCbnMap() {
   placesOpen = 0;
   state = ST.CBNMAP;
   pushNav('color');
-  cue = 'Easy → Hard';
+  cue = 'Pick Easy or Hard';
   announce('Color');
   AudioFX.ui();
 }
@@ -1418,13 +1420,20 @@ function enterCbnMap() {
 function openCbnPage(idx) {
   idx = Math.max(0, Math.min(HGSystems.CBN_PAGES.length - 1, idx | 0));
   EX().cbnPage = idx;
-  const key = HGSystems.CBN_PAGES[idx].id;
+  const page = HGSystems.CBN_PAGES[idx];
+  const key = page.id;
   if (!EX().cbnFill[key]) EX().cbnFill[key] = {};
-  cbnSelected = 1;
+  const nums = Object.keys(page.palette || page.key || {}).map((n) => n | 0).filter((n) => n > 0).sort((a, b) => a - b);
+  cbnSelected = nums.length ? nums[0] : 1;
   state = ST.CBN;
   pushNav('cbn');
-  cue = HGSystems.CBN_PAGES[idx].title;
+  cue = page.title;
   AudioFX.ui();
+}
+
+function openCbnByStem(stem) {
+  const i = HGSystems.pageIndexById(stem);
+  if (i >= 0) openCbnPage(i);
 }
 
 function buyUpgrade(id) {
@@ -1559,41 +1568,179 @@ function drawShopScene() {
   }
 }
 
+function cbnPageColors(page) {
+  const src = (page && (page.palette || page.key)) || {};
+  return Object.keys(src).map((n) => n | 0).filter((n) => n > 0).sort((a, b) => a - b);
+}
+
+function cbnDecodeMask(stem) {
+  const cache = cbnPaintCache[stem] || (cbnPaintCache[stem] = {});
+  if (cache.idBuf && cache.mw) return cache;
+  const mask = Assets.cbnMask(stem);
+  if (!mask || !mask.naturalWidth) return null;
+  const mw = mask.naturalWidth, mh = mask.naturalHeight;
+  const mc = document.createElement('canvas');
+  mc.width = mw; mc.height = mh;
+  const mcx = mc.getContext('2d', { willReadFrequently: true });
+  mcx.imageSmoothingEnabled = false;
+  mcx.drawImage(mask, 0, 0);
+  const data = mcx.getImageData(0, 0, mw, mh).data;
+  const idBuf = new Uint16Array(mw * mh);
+  for (let i = 0, p = 0; i < idBuf.length; i++, p += 4) {
+    // RGB-packed 16-bit target id (R=hi, G=lo). Browser cannot keep raw I;16.
+    idBuf[i] = (data[p] << 8) | data[p + 1];
+  }
+  cache.idBuf = idBuf;
+  cache.mw = mw;
+  cache.mh = mh;
+  return cache;
+}
+
+function cbnEnsureFillCanvas(page, fill) {
+  const stem = page.stem || page.id;
+  const decoded = cbnDecodeMask(stem);
+  const cache = cbnPaintCache[stem] || (cbnPaintCache[stem] = {});
+  const sig = Object.keys(fill).sort().join(',') + '#' + Object.keys(fill).length;
+  if (cache.fillCanvas && cache.fillSig === sig) return cache.fillCanvas;
+  const mw = decoded ? decoded.mw : 585;
+  const mh = decoded ? decoded.mh : 1266;
+  const fc = cache.fillCanvas || document.createElement('canvas');
+  fc.width = mw; fc.height = mh;
+  const fcx = fc.getContext('2d');
+  fcx.fillStyle = '#ffffff';
+  fcx.fillRect(0, 0, mw, mh);
+  if (decoded && decoded.idBuf) {
+    const img = fcx.createImageData(mw, mh);
+    const out = img.data;
+    const idBuf = decoded.idBuf;
+    // paint white base already in canvas; build pixel buffer for filled ids only
+    for (let i = 0; i < idBuf.length; i++) {
+      const tid = idBuf[i];
+      if (!tid) continue;
+      const hex = fill[String(tid)];
+      if (!hex) continue;
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      const p = i * 4;
+      out[p] = r; out[p + 1] = g; out[p + 2] = b; out[p + 3] = 255;
+    }
+    // composite filled pixels over white
+    const tmp = document.createElement('canvas');
+    tmp.width = mw; tmp.height = mh;
+    const tcx = tmp.getContext('2d');
+    tcx.putImageData(img, 0, 0);
+    fcx.drawImage(tmp, 0, 0);
+  } else {
+    // fallback ellipses if mask missing
+    (page.regions || []).forEach((reg) => {
+      const col = fill[reg.id];
+      if (!col) return;
+      fcx.fillStyle = col;
+      fcx.beginPath();
+      fcx.ellipse(reg.x * mw, reg.y * mh, (reg.w * mw) / 2, (reg.h * mh) / 2, 0, 0, 7);
+      fcx.fill();
+    });
+  }
+  cache.fillCanvas = fc;
+  cache.fillSig = sig;
+  return fc;
+}
+
+function cbnPaintTarget(page, targetId, hex) {
+  const stem = page.stem || page.id;
+  const decoded = cbnDecodeMask(stem);
+  const cache = cbnPaintCache[stem] || (cbnPaintCache[stem] = {});
+  if (!decoded || !cache.fillCanvas) {
+    cache.fillSig = null;
+    return;
+  }
+  const { idBuf, mw, mh } = decoded;
+  const fcx = cache.fillCanvas.getContext('2d');
+  const img = fcx.getImageData(0, 0, mw, mh);
+  const out = img.data;
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const tid = targetId | 0;
+  for (let i = 0; i < idBuf.length; i++) {
+    if (idBuf[i] !== tid) continue;
+    const p = i * 4;
+    out[p] = r; out[p + 1] = g; out[p + 2] = b; out[p + 3] = 255;
+  }
+  fcx.putImageData(img, 0, 0);
+  const fill = EX().cbnFill[page.id] || {};
+  cache.fillSig = Object.keys(fill).sort().join(',') + '#' + Object.keys(fill).length;
+}
+
 function drawCbnMap() {
   const bg = Assets.get('cbnLadder');
-  if (bg) drawFullPlate(bg, 1);
+  if (bg) drawFullPlate(bg, 0.35);
   else {
     cx.fillStyle = '#fff8f0'; cx.fillRect(0, 0, W, H);
   }
-  cx.fillStyle = 'rgba(255,250,240,.9)';
-  rr(16, padT + 56, W - 32, 64, 16); cx.fill();
+  cx.fillStyle = 'rgba(255,250,240,.94)';
+  rr(16, padT + 52, W - 32, 70, 16); cx.fill();
   cx.fillStyle = '#2a2418';
   cx.font = '800 20px Fredoka, system-ui, sans-serif';
   cx.textAlign = 'center';
-  cx.fillText('Color · Easy → Hard', W / 2, padT + 88);
+  cx.fillText('Color by Number', W / 2, padT + 82);
   cx.font = '700 12px system-ui';
   cx.fillStyle = '#6a6258';
-  cx.fillText((EX().cbnDone || []).length + ' / ' + HGSystems.CBN_PAGES.length + ' done', W / 2, padT + 108);
+  const doneN = (EX().cbnDone || []).length;
+  cx.fillText(doneN + ' / ' + HGSystems.CBN_PAGES.length + ' pages · Easy / Hard', W / 2, padT + 106);
 
   hit.cbnLevels = [];
-  const cols = 3, rows = 5;
-  const gridTop = padT + 140;
-  const cellW = (W - 48) / cols;
-  const cellH = (contentBottom() - gridTop - 12) / rows;
-  for (let i = 0; i < HGSystems.CBN_PAGES.length; i++) {
-    const c = i % cols, r = (i / cols) | 0;
-    const x = 24 + c * cellW + 4;
-    const y = gridTop + r * cellH + 4;
-    const done = (EX().cbnDone || []).indexOf(HGSystems.CBN_PAGES[i].id) >= 0;
-    cx.fillStyle = done ? '#9fe870' : '#fff';
-    rr(x, y, cellW - 8, cellH - 8, 12); cx.fill();
-    cx.strokeStyle = '#1e1814'; cx.lineWidth = 2;
-    rr(x, y, cellW - 8, cellH - 8, 12); cx.stroke();
+  const subjects = HGSystems.CBN_SUBJECTS || [];
+  const top = padT + 136;
+  const bot = contentBottom() - 12;
+  const rowH = Math.min(56, (bot - top) / Math.max(1, subjects.length));
+  for (let i = 0; i < subjects.length; i++) {
+    const sub = subjects[i];
+    const y = top + i * rowH;
+    const h = rowH - 6;
+    cx.fillStyle = 'rgba(255,250,240,.96)';
+    rr(16, y, W - 32, h, 12); cx.fill();
+    cx.strokeStyle = 'rgba(30,24,20,.12)'; cx.lineWidth = 1;
+    rr(16, y, W - 32, h, 12); cx.stroke();
+
+    const pair = HGSystems.pagesForSubject(sub.id);
+    const easy = pair.find((p) => p.difficulty === 'easy');
+    const hard = pair.find((p) => p.difficulty === 'hard');
+    const easyDone = easy && (EX().cbnDone || []).indexOf(easy.id) >= 0;
+    const hardDone = hard && (EX().cbnDone || []).indexOf(hard.id) >= 0;
+
     cx.fillStyle = '#2a2418';
-    cx.font = '800 18px Fredoka, system-ui, sans-serif';
+    cx.font = '800 13px Fredoka, system-ui, sans-serif';
+    cx.textAlign = 'left';
+    cx.fillText(String(sub.index).padStart(2, '0') + '  ' + sub.title, 28, y + h / 2 + 4);
+
+    const btnW = 64, btnH = Math.min(34, h - 10);
+    const hardX = W - 28 - btnW;
+    const easyX = hardX - 10 - btnW;
+    const by = y + (h - btnH) / 2;
+
+    // Easy
+    cx.fillStyle = easyDone ? '#9fe870' : '#fff';
+    rr(easyX, by, btnW, btnH, 10); cx.fill();
+    cx.strokeStyle = '#1e1814'; cx.lineWidth = 1.5;
+    rr(easyX, by, btnW, btnH, 10); cx.stroke();
+    cx.fillStyle = '#2a2418';
+    cx.font = '800 12px Fredoka, system-ui, sans-serif';
     cx.textAlign = 'center';
-    cx.fillText(String(i + 1), x + (cellW - 8) / 2, y + (cellH - 8) / 2 + 6);
-    hit.cbnLevels.push({ i, x, y, w: cellW - 8, h: cellH - 8 });
+    cx.fillText('Easy', easyX + btnW / 2, by + btnH / 2 + 4);
+    if (easy) hit.cbnLevels.push({ i: HGSystems.pageIndexById(easy.id), x: easyX, y: by, w: btnW, h: btnH });
+
+    // Hard
+    cx.fillStyle = hardDone ? '#9fe870' : '#fff';
+    rr(hardX, by, btnW, btnH, 10); cx.fill();
+    cx.strokeStyle = '#1e1814'; cx.lineWidth = 1.5;
+    rr(hardX, by, btnW, btnH, 10); cx.stroke();
+    cx.fillStyle = '#2a2418';
+    cx.font = '800 12px Fredoka, system-ui, sans-serif';
+    cx.textAlign = 'center';
+    cx.fillText('Hard', hardX + btnW / 2, by + btnH / 2 + 4);
+    if (hard) hit.cbnLevels.push({ i: HGSystems.pageIndexById(hard.id), x: hardX, y: by, w: btnW, h: btnH });
   }
 }
 
@@ -1602,61 +1749,58 @@ function drawCbnPage() {
   if (!page) return;
   const fill = EX().cbnFill[page.id] || {};
   const stem = page.stem || page.id;
-  const bg = Assets.cbnPage(stem) || (page.bg ? Assets.get(page.bg) : null);
-  if (bg) drawFullPlate(bg, 1);
-  else {
-    cx.fillStyle = '#fffaf2'; cx.fillRect(0, 0, W, H);
-  }
 
   const top = padT + 52;
   const bot = contentBottom() - 70;
   const left = 12, right = W - 12;
   const pw = right - left, ph = bot - top;
 
-  // Paint filled regions (shape approx; hard pages still readable)
-  page.regions.forEach((reg) => {
-    const col = fill[reg.id];
-    if (!col) return;
-    if (reg.prefilled) return;
-    cx.fillStyle = col;
-    if (reg.shape === 'rect') {
-      cx.fillRect(left + reg.x * pw, top + reg.y * ph, reg.w * pw, reg.h * ph);
-    } else {
-      cx.beginPath();
-      cx.ellipse(left + reg.x * pw, top + reg.y * ph, (reg.w * pw) / 2, (reg.h * ph) / 2, 0, 0, 7);
-      cx.fill();
-    }
-  });
-  // Ink overlay keeps numbers / outlines crisp
+  // White page plate + mask fills + ink overlay (Franz compositing order)
+  cx.fillStyle = '#ffffff';
+  cx.fillRect(left, top, pw, ph);
+  const fillCanvas = cbnEnsureFillCanvas(page, fill);
+  if (fillCanvas) cx.drawImage(fillCanvas, left, top, pw, ph);
   const ink = Assets.cbnInk(stem);
-  if (ink) {
-    cx.save();
-    // cover plate area same as drawFullPlate math roughly via playfield box
-    cx.drawImage(ink, left, top, pw, ph);
-    cx.restore();
-  }
+  if (ink) cx.drawImage(ink, left, top, pw, ph);
+  // subtle frame
+  cx.strokeStyle = 'rgba(30,24,20,.18)';
+  cx.lineWidth = 2;
+  cx.strokeRect(left + 0.5, top + 0.5, pw - 1, ph - 1);
 
-  // Palette
-  const colors = Math.min(page.colors || 5, HGSystems.CBN_PALETTE.length);
-  const pwPill = Math.min(W - 24, colors * 44 + 16);
+  // title chip
+  cx.fillStyle = 'rgba(255,250,240,.92)';
+  rr(left, padT + 8, Math.min(pw, 280), 36, 12); cx.fill();
+  cx.fillStyle = '#2a2418';
+  cx.font = '800 13px Fredoka, system-ui, sans-serif';
+  cx.textAlign = 'left';
+  cx.fillText(page.title, left + 12, padT + 32);
+
+  // Palette — only colors this page uses (stable IDs, incl. white=9)
+  const colorNums = cbnPageColors(page);
+  const pwPill = Math.min(W - 24, colorNums.length * 44 + 16);
   const px0 = (W - pwPill) / 2;
   const py = contentBottom() - 58;
   cx.fillStyle = 'rgba(255,250,240,.96)';
   rr(px0, py, pwPill, 48, 16); cx.fill();
   hit.cbnPalette = [];
-  for (let i = 0; i < colors; i++) {
+  for (let i = 0; i < colorNums.length; i++) {
+    const n = colorNums[i];
     const cx0 = px0 + 20 + i * 44;
     const cy0 = py + 24;
-    cx.fillStyle = HGSystems.CBN_PALETTE[i];
+    const hex = HGSystems.colorHex(n, page);
+    cx.fillStyle = hex;
     cx.beginPath(); cx.arc(cx0, cy0, 16, 0, 7); cx.fill();
-    cx.strokeStyle = cbnSelected === (i + 1) ? '#1e1814' : 'rgba(0,0,0,0.2)';
-    cx.lineWidth = cbnSelected === (i + 1) ? 3 : 1;
-    cx.stroke();
-    cx.fillStyle = '#1e1814';
+    if (hex.toLowerCase() === '#ffffff') {
+      cx.strokeStyle = 'rgba(0,0,0,0.25)'; cx.lineWidth = 1; cx.stroke();
+    }
+    cx.strokeStyle = cbnSelected === n ? '#1e1814' : 'rgba(0,0,0,0.2)';
+    cx.lineWidth = cbnSelected === n ? 3 : 1;
+    cx.beginPath(); cx.arc(cx0, cy0, 16, 0, 7); cx.stroke();
+    cx.fillStyle = (n === 9 || hex.toLowerCase() === '#ffffff') ? '#1e1814' : '#1e1814';
     cx.font = '800 11px system-ui';
     cx.textAlign = 'center';
-    cx.fillText(String(i + 1), cx0, cy0 + 4);
-    hit.cbnPalette.push({ n: i + 1, x: cx0 - 18, y: cy0 - 18, w: 36, h: 36 });
+    cx.fillText(String(n), cx0, cy0 + 4);
+    hit.cbnPalette.push({ n, x: cx0 - 18, y: cy0 - 18, w: 36, h: 36 });
   }
   hit.cbnPageBox = { x: left, y: top, w: pw, h: ph, page };
 }
@@ -1672,55 +1816,56 @@ function cbnTap(p) {
   const nx = (p.x - box.x) / box.w;
   const ny = (p.y - box.y) / box.h;
   const page = box.page;
-  // Prefer region-mask sampling (Franz prod) when available
-  let picked = null;
   const stem = page.stem || page.id;
-  const mask = Assets.cbnMask(stem);
-  if (mask && mask.naturalWidth) {
-    try {
-      const mc = document.createElement('canvas');
-      mc.width = mask.naturalWidth; mc.height = mask.naturalHeight;
-      const mcx = mc.getContext('2d', { willReadFrequently: true });
-      mcx.imageSmoothingEnabled = false;
-      mcx.drawImage(mask, 0, 0);
-      const px = Math.max(0, Math.min(mask.naturalWidth - 1, (nx * mask.naturalWidth) | 0));
-      const py = Math.max(0, Math.min(mask.naturalHeight - 1, (ny * mask.naturalHeight) | 0));
-      const d = mcx.getImageData(px, py, 1, 1).data;
-      const rid = (d[0] << 16) | (d[1] << 8) | d[2];
-      if (rid > 0) {
-        const n = (page.regionColor && page.regionColor[rid]) || null;
-        if (n) picked = page.regions.find((r) => (r.id | 0) === rid) || { id: String(rid), n };
-      }
-    } catch (e) {}
+  let picked = null;
+
+  const decoded = cbnDecodeMask(stem);
+  if (decoded && decoded.idBuf) {
+    const px = Math.max(0, Math.min(decoded.mw - 1, (nx * decoded.mw) | 0));
+    const py = Math.max(0, Math.min(decoded.mh - 1, (ny * decoded.mh) | 0));
+    const tid = decoded.idBuf[py * decoded.mw + px] | 0;
+    if (tid > 0) {
+      const n = (page.regionColor && (page.regionColor[tid] || page.regionColor[String(tid)])) || null;
+      picked = (page.regions || []).find((r) => (r.id | 0) === tid) || (n ? { id: String(tid), n: n | 0 } : null);
+      if (picked && !picked.n && n) picked = { id: String(tid), n: n | 0, hex: HGSystems.colorHex(n, page) };
+    }
   }
   if (!picked) {
-    for (let i = page.regions.length - 1; i >= 0; i--) {
+    for (let i = (page.regions || []).length - 1; i >= 0; i--) {
       const reg = page.regions[i];
       if (!HGSystems.hitRegion(reg, nx, ny)) continue;
       picked = reg;
       break;
     }
   }
-  if (picked) {
-    const reg = picked;
-    if (reg.n !== cbnSelected) { cue = 'Color ' + reg.n; AudioFX.rustle(); return; }
-    const fill = EX().cbnFill[page.id] || (EX().cbnFill[page.id] = {});
-    fill[reg.id] = (page.key && page.key[reg.n]) || HGSystems.CBN_PALETTE[reg.n - 1];
-    AudioFX.plant();
-    // Complete? (ignore prefilled greens)
-    const paintables = page.regions.filter((r) => !r.prefilled);
-    const done = paintables.length ? paintables.every((r) => fill[r.id]) : page.regions.every((r) => fill[r.id]);
-    if (done) {
-      if ((EX().cbnDone || []).indexOf(page.id) < 0) EX().cbnDone.push(page.id);
-      addFlowerPoints(5);
-      cue = 'Done!';
-      startParty('bigger');
-      snapshotRuntime();
-      setTimeout(() => { if (state === ST.CBN) enterCbnMap(); }, 900);
-    }
-    snapshotRuntime();
-    return;
+  if (!picked) return;
+
+  const reg = picked;
+  if ((reg.n | 0) !== (cbnSelected | 0)) { cue = 'Color ' + reg.n; AudioFX.rustle(); return; }
+  const fill = EX().cbnFill[page.id] || (EX().cbnFill[page.id] = {});
+  const hex = reg.hex || (page.key && page.key[String(reg.n)]) || HGSystems.colorHex(reg.n, page);
+  const already = !!fill[reg.id];
+  fill[reg.id] = hex;
+  if (!already) cbnPaintTarget(page, reg.id, hex);
+  else {
+    const cache = cbnPaintCache[stem];
+    if (cache) cache.fillSig = null;
   }
+  AudioFX.plant();
+
+  const paintables = (page.regions || []).filter((r) => !r.prefilled);
+  const done = paintables.length
+    ? paintables.every((r) => fill[r.id])
+    : Object.keys(page.regionColor || {}).every((id) => fill[id]);
+  if (done) {
+    if ((EX().cbnDone || []).indexOf(page.id) < 0) EX().cbnDone.push(page.id);
+    addFlowerPoints(5);
+    cue = 'Done!';
+    startParty('bigger');
+    snapshotRuntime();
+    setTimeout(() => { if (state === ST.CBN) enterCbnMap(); }, 900);
+  }
+  snapshotRuntime();
 }
 
 /* ---------- Drawing helpers ---------- */
@@ -3284,7 +3429,7 @@ async function boot() {
   }
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js?v=0.9-prod').catch(() => {});
+    navigator.serviceWorker.register('./sw.js?v=0.9-cbn2').catch(() => {});
   }
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));
 }
