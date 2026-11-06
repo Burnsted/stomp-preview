@@ -1,0 +1,125 @@
+{
+  "page": 19,
+  "subject": "small-hive",
+  "difficulty": "extra-easy",
+  "width": 585,
+  "height": 1266,
+  "target_count": 8,
+  "palette": {
+    "1": {
+      "name": "Sunshine",
+      "hex": "#FFD63C"
+    },
+    "3": {
+      "name": "Leaf green",
+      "hex": "#83C363"
+    },
+    "6": {
+      "name": "Clay / gold",
+      "hex": "#D49A5C"
+    },
+    "8": {
+      "name": "Deep brown",
+      "hex": "#795542"
+    }
+  },
+  "regions": [
+    {
+      "id": 1,
+      "x": 290,
+      "y": 296,
+      "r": 29.61,
+      "area": 4744,
+      "cx": 290.51538785834737,
+      "cy": 301.4285413153457,
+      "color_number": 1,
+      "color_hex": "#FFD63C",
+      "target_id": 1
+    },
+    {
+      "id": 2,
+      "x": 292,
+      "y": 393,
+      "r": 28.0,
+      "area": 15109,
+      "cx": 291.6934277582898,
+      "cy": 383.5266397511417,
+      "color_number": 6,
+      "color_hex": "#D49A5C",
+      "target_id": 2
+    },
+    {
+      "id": 3,
+      "x": 292,
+      "y": 493,
+      "r": 30.0,
+      "area": 25592,
+      "cx": 292.011761487965,
+      "cy": 480.41118318224443,
+      "color_number": 1,
+      "color_hex": "#FFD63C",
+      "target_id": 3
+    },
+    {
+      "id": 4,
+      "x": 292,
+      "y": 590,
+      "r": 40.0,
+      "area": 36051,
+      "cx": 292.07064991262376,
+      "cy": 584.7700202490915,
+      "color_number": 6,
+      "color_hex": "#D49A5C",
+      "target_id": 4
+    },
+    {
+      "id": 5,
+      "x": 173,
+      "y": 747,
+      "r": 64.0,
+      "area": 64686,
+      "cx": 282.8683177194447,
+      "cy": 736.7052839872615,
+      "color_number": 1,
+      "color_hex": "#FFD63C",
+      "target_id": 5
+    },
+    {
+      "id": 6,
+      "x": 292,
+      "y": 878,
+      "r": 24.0,
+      "area": 25528,
+      "cx": 291.98292071450953,
+      "cy": 872.4983939204011,
+      "color_number": 8,
+      "color_hex": "#795542",
+      "target_id": 6
+    },
+    {
+      "id": 7,
+      "x": 292,
+      "y": 775,
+      "r": 49.0,
+      "area": 12516,
+      "cx": 291.49384787472036,
+      "cy": 772.0508149568552,
+      "color_number": 8,
+      "color_hex": "#795542",
+      "target_id": 7
+    },
+    {
+      "id": 8,
+      "x": 413,
+      "y": 705,
+      "r": 17.69,
+      "area": 2929,
+      "cx": 407.1334926596108,
+      "cy": 706.4322294298395,
+      "color_number": 3,
+      "color_hex": "#83C363",
+      "target_id": 8
+    }
+  ],
+  "note": "Original hand-authored vector coloring-book illustration. 16-bit grayscale target-ID mask; 0 is non-target. Stable shared palette IDs. Compose fills below RGBA ink overlay. Unnumbered paper remains white."
+}

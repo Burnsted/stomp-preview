@@ -1,5 +1,5 @@
-/* Haven's Garden v0.9-cbn2 — network-first HTML; concept comps + systems */
-const CACHE = 'havens-garden-preview-v0.9-cbn2';
+/* Haven's Garden v0.9-cbn2e — network-first HTML; concept comps + systems */
+const CACHE = 'havens-garden-preview-v0.9-cbn2e';
 const PRECACHE = [
   './',
   './index.html',
@@ -24,6 +24,7 @@ const PRECACHE = [
   './assets/props/basket.png',
   './assets/bugs/bee.png',
   './assets/cbn/contact-12-subjects.jpg',
+  './assets/cbn/page-13-one-daisy.webp',
   './assets/cbn/page-01-bee-close-easy.webp'
 ];
 
@@ -67,7 +68,7 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Network-first for JS so v0.9-cbn2 ships promptly; fall back to cache
+  // Network-first for JS so v0.9-cbn2e ships promptly; fall back to cache
   if (u.pathname.endsWith('.js')) {
     e.respondWith(
       fetch(e.request)

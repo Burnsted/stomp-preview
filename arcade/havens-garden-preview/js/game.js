@@ -1,12 +1,12 @@
 'use strict';
 /* ============================================================
-   Haven's Garden v0.9-cbn2
+   Haven's Garden v0.9-cbn2e
    Standalone birthday garden — NOT part of STOMP.
    Ted-locked comps: wide coloring-book field, basket plant,
    bugs+net, bees→hive→jars, color rows, CBN, shop.
    ============================================================ */
 
-const VER = 'v0.9-cbn2';
+const VER = 'v0.9-cbn2e';
 const PK = 'havensGarden.v1';
 const MUTE_K = 'havensGarden.mute';
 const QUIET_K = 'havensGarden.quiet';
@@ -1412,7 +1412,7 @@ function enterCbnMap() {
   placesOpen = 0;
   state = ST.CBNMAP;
   pushNav('color');
-  cue = 'Pick Easy or Hard';
+  cue = 'Extra easy → Easy → Hard';
   announce('Color');
   AudioFX.ui();
 }
@@ -1675,73 +1675,69 @@ function cbnPaintTarget(page, targetId, hex) {
 
 function drawCbnMap() {
   const bg = Assets.get('cbnLadder');
-  if (bg) drawFullPlate(bg, 0.35);
+  if (bg) drawFullPlate(bg, 0.28);
   else {
     cx.fillStyle = '#fff8f0'; cx.fillRect(0, 0, W, H);
   }
   cx.fillStyle = 'rgba(255,250,240,.94)';
-  rr(16, padT + 52, W - 32, 70, 16); cx.fill();
+  rr(16, padT + 48, W - 32, 64, 16); cx.fill();
   cx.fillStyle = '#2a2418';
-  cx.font = '800 20px Fredoka, system-ui, sans-serif';
+  cx.font = '800 18px Fredoka, system-ui, sans-serif';
   cx.textAlign = 'center';
-  cx.fillText('Color by Number', W / 2, padT + 82);
-  cx.font = '700 12px system-ui';
+  cx.fillText('Color by Number', W / 2, padT + 74);
+  cx.font = '700 11px system-ui';
   cx.fillStyle = '#6a6258';
   const doneN = (EX().cbnDone || []).length;
-  cx.fillText(doneN + ' / ' + HGSystems.CBN_PAGES.length + ' pages · Easy / Hard', W / 2, padT + 106);
+  cx.fillText(doneN + ' / ' + HGSystems.CBN_PAGES.length + ' · Extra easy → Easy → Hard', W / 2, padT + 96);
 
   hit.cbnLevels = [];
-  const subjects = HGSystems.CBN_SUBJECTS || [];
-  const top = padT + 136;
-  const bot = contentBottom() - 12;
-  const rowH = Math.min(56, (bot - top) / Math.max(1, subjects.length));
-  for (let i = 0; i < subjects.length; i++) {
-    const sub = subjects[i];
-    const y = top + i * rowH;
-    const h = rowH - 6;
-    cx.fillStyle = 'rgba(255,250,240,.96)';
-    rr(16, y, W - 32, h, 12); cx.fill();
-    cx.strokeStyle = 'rgba(30,24,20,.12)'; cx.lineWidth = 1;
-    rr(16, y, W - 32, h, 12); cx.stroke();
+  const sections = [
+    { label: 'Extra easy', diff: 'extra-easy', hint: '~30s' },
+    { label: 'Easy', diff: 'easy', hint: '' },
+    { label: 'Hard', diff: 'hard', hint: '' }
+  ];
+  let y = padT + 120;
+  const bot = contentBottom() - 8;
+  const pagesByDiff = {
+    'extra-easy': HGSystems.CBN_PAGES.filter((p) => p.difficulty === 'extra-easy'),
+    'easy': HGSystems.CBN_PAGES.filter((p) => p.difficulty === 'easy'),
+    'hard': HGSystems.CBN_PAGES.filter((p) => p.difficulty === 'hard')
+  };
+  const totalRows = sections.reduce((n, s) => n + 1 + Math.ceil((pagesByDiff[s.diff] || []).length / 4), 0);
+  const rowH = Math.min(44, Math.max(30, (bot - y) / Math.max(1, totalRows)));
 
-    const pair = HGSystems.pagesForSubject(sub.id);
-    const easy = pair.find((p) => p.difficulty === 'easy');
-    const hard = pair.find((p) => p.difficulty === 'hard');
-    const easyDone = easy && (EX().cbnDone || []).indexOf(easy.id) >= 0;
-    const hardDone = hard && (EX().cbnDone || []).indexOf(hard.id) >= 0;
-
+  sections.forEach((sec) => {
+    const list = pagesByDiff[sec.diff] || [];
     cx.fillStyle = '#2a2418';
-    cx.font = '800 13px Fredoka, system-ui, sans-serif';
+    cx.font = '800 12px Fredoka, system-ui, sans-serif';
     cx.textAlign = 'left';
-    cx.fillText(String(sub.index).padStart(2, '0') + '  ' + sub.title, 28, y + h / 2 + 4);
-
-    const btnW = 64, btnH = Math.min(34, h - 10);
-    const hardX = W - 28 - btnW;
-    const easyX = hardX - 10 - btnW;
-    const by = y + (h - btnH) / 2;
-
-    // Easy
-    cx.fillStyle = easyDone ? '#9fe870' : '#fff';
-    rr(easyX, by, btnW, btnH, 10); cx.fill();
-    cx.strokeStyle = '#1e1814'; cx.lineWidth = 1.5;
-    rr(easyX, by, btnW, btnH, 10); cx.stroke();
-    cx.fillStyle = '#2a2418';
-    cx.font = '800 12px Fredoka, system-ui, sans-serif';
-    cx.textAlign = 'center';
-    cx.fillText('Easy', easyX + btnW / 2, by + btnH / 2 + 4);
-    if (easy) hit.cbnLevels.push({ i: HGSystems.pageIndexById(easy.id), x: easyX, y: by, w: btnW, h: btnH });
-
-    // Hard
-    cx.fillStyle = hardDone ? '#9fe870' : '#fff';
-    rr(hardX, by, btnW, btnH, 10); cx.fill();
-    cx.strokeStyle = '#1e1814'; cx.lineWidth = 1.5;
-    rr(hardX, by, btnW, btnH, 10); cx.stroke();
-    cx.fillStyle = '#2a2418';
-    cx.font = '800 12px Fredoka, system-ui, sans-serif';
-    cx.textAlign = 'center';
-    cx.fillText('Hard', hardX + btnW / 2, by + btnH / 2 + 4);
-    if (hard) hit.cbnLevels.push({ i: HGSystems.pageIndexById(hard.id), x: hardX, y: by, w: btnW, h: btnH });
-  }
+    cx.fillText(sec.label + (sec.hint ? '  ' + sec.hint : '') + '  (' + list.length + ')', 22, y + rowH * 0.7);
+    y += rowH;
+    const cols = 4;
+    const gap = 6;
+    const cellW = (W - 32 - gap * (cols - 1)) / cols;
+    const cellH = rowH - 4;
+    list.forEach((page, i) => {
+      const c = i % cols;
+      const r = (i / cols) | 0;
+      const x = 16 + c * (cellW + gap);
+      const yy = y + r * rowH;
+      const done = (EX().cbnDone || []).indexOf(page.id) >= 0;
+      cx.fillStyle = done ? '#9fe870' : '#fff';
+      rr(x, yy, cellW, cellH, 10); cx.fill();
+      cx.strokeStyle = '#1e1814'; cx.lineWidth = 1.25;
+      rr(x, yy, cellW, cellH, 10); cx.stroke();
+      cx.fillStyle = '#2a2418';
+      cx.font = '800 11px Fredoka, system-ui, sans-serif';
+      cx.textAlign = 'center';
+      const label = page.subjectIndex ? String(page.subjectIndex) : String(i + 1);
+      const short = (page.title || '').split('·')[0].trim();
+      const show = short.length > 10 ? label : short;
+      cx.fillText(show.length > 11 ? label : show, x + cellW / 2, yy + cellH / 2 + 4);
+      hit.cbnLevels.push({ i: HGSystems.pageIndexById(page.id), x, y: yy, w: cellW, h: cellH });
+    });
+    y += Math.ceil(list.length / cols) * rowH + 4;
+  });
 }
 
 function drawCbnPage() {
@@ -3429,7 +3425,7 @@ async function boot() {
   }
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js?v=0.9-cbn2').catch(() => {});
+    navigator.serviceWorker.register('./sw.js?v=0.9-cbn2e').catch(() => {});
   }
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));
 }
