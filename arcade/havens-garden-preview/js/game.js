@@ -1,13 +1,13 @@
 'use strict';
 /* ============================================================
-   Haven's Garden v0.9-nursery
+   Haven's Garden v0.9-grow
    Standalone birthday garden — NOT part of STOMP.
-   Play loop first: pick ~20 → plant into dense nursery beds
-   (≈6 flowers each) → water → Growing… → pick more.
+   Small meadow cuttings → plant tiny → Growing… time-lapse
+   makes them bigger. Empty nursery until she plants.
    Batch-2 art kept; no new Franz files.
    ============================================================ */
 
-const VER = 'v0.9-nursery';
+const VER = 'v0.9-grow';
 const PK = 'havensGarden.v1';
 const MUTE_K = 'havensGarden.mute';
 const QUIET_K = 'havensGarden.quiet';
@@ -36,6 +36,11 @@ const POLLINATOR_FLAP_MS = 120;
 const WALK_BOB_PX = 6; // ±6 on walk 02/04
 const GROWING_SEC = 1.45;
 const WATER_CAN_CSS = 52; // ~44–60 CSS px finger-follow can
+
+/* Drawn size (drawFlowerSprite s). Hit targets stay generous (PICK_RADIUS). */
+const MEADOW_FLOWER_DRAW = 0.34;   // little wildflowers / cuttings in the field
+const BED_SCALE_PLANTED = 0.18;    // just planted — young / seedling
+const BED_SCALE_GROWN = [0.18, 0.46, 0.70, 0.92]; // grown 0..3 after time-lapse
 
 /* Dense nursery bed counts — packed grid on the soil floor (drawn beds if plates lack patches). */
 const GH_SIZES = [
@@ -1059,28 +1064,33 @@ function rr(x, y, w, h, r) {
   cx.closePath();
 }
 
-/** Bottom-center flower sprite (Franz). */
+/** Bottom-center flower sprite (Franz). `s` is relative size (meadow ~0.34, planted ~0.18, grown ~0.9). */
 function drawFlowerSprite(sp, x, y, s) {
   const img = Assets.flower(sp.id);
-  const h = 90 * s * Math.min(SX, SY) * 1.6;
+  const h = 88 * s * Math.min(SX, SY) * 1.35;
   if (img) {
     drawAnchored(img, x, y, h, 1, 0);
     return;
   }
   cx.strokeStyle = '#3c8237';
-  cx.lineWidth = Math.max(2, 6 * s);
-  cx.beginPath(); cx.moveTo(x, y); cx.lineTo(x, y - 28 * s); cx.stroke();
+  cx.lineWidth = Math.max(1.5, 4 * s);
+  cx.beginPath(); cx.moveTo(x, y); cx.lineTo(x, y - 22 * s); cx.stroke();
   cx.fillStyle = sp.c;
-  cx.beginPath(); cx.arc(x, y - 36 * s, 16 * s, 0, 7); cx.fill();
+  cx.beginPath(); cx.arc(x, y - 28 * s, 12 * s, 0, 7); cx.fill();
+}
+
+function bedFlowerDrawScale(grown) {
+  const g = Math.max(0, Math.min(3, grown | 0));
+  return BED_SCALE_GROWN[g] != null ? BED_SCALE_GROWN[g] : BED_SCALE_PLANTED;
 }
 
 function drawFlowerPops() {
   flowerPops.forEach((p) => {
     const u = Math.min(1, p.t / p.life);
-    const scale = 0.6 + 0.6 * u; // 0.6 → 1.2
+    const scale = 0.35 + 0.35 * u; // small pop puff
     const alpha = 1 - u;
     const img = Assets.flowerPop();
-    const h = Y(120) * scale;
+    const h = Y(56) * scale;
     cx.save();
     cx.globalAlpha = Math.max(0, alpha);
     if (img) drawAnchored(img, p.x, p.y, h, 1, 0);
@@ -1405,24 +1415,43 @@ function drawBedHighlight(s, highlight) {
 
 function drawBedFlowers(s, b) {
   if (!b) return;
-  // Up to 6 flowers in 2 rows × 3 — each foot bottom-center anchored in the dirt
+  // Up to 6 flowers in 2 rows × 3 — each foot bottom-center anchored in the dirt.
+  // grown 0 = just planted (tiny); bigger only after Growing… / return time-lapse.
   const grown = b.grown | 0;
   const mix = bedMix(b);
   const n = mix.length;
   if (!n) return;
-  const base = grown <= 0 ? 0.28 : (0.34 + grown * 0.11);
+  const base = bedFlowerDrawScale(grown);
   const planting = plantAnim && plantSpot === (s.i != null ? s.i : -1) && !!s.outdoor === !!plantIsOutdoor;
   const squash = (b.squash != null ? b.squash : 1);
   for (let j = 0; j < n; j++) {
     const col = j % 3;
     const row = (j / 3) | 0;
-    const ox = (col - 1) * s.r * 0.52;
-    const oy = (row - 0.35) * s.r * 0.42;
+    const ox = (col - 1) * s.r * 0.48;
+    const oy = (row - 0.35) * s.r * 0.38;
     let sc = 1;
-    if (planting && j === n - 1) sc = 0.45 + 0.55 * Math.min(1, plantAnimT / 0.7);
+    if (planting && j === n - 1) sc = 0.35 + 0.65 * Math.min(1, plantAnimT / 0.7);
     const sp = spById(mix[j]);
     drawFlowerSprite(sp, s.x + ox, s.y + oy, base * sc * squash);
   }
+}
+
+/** Mask Franz empty-plate painted blooms — bare soil until she plants into beds. */
+function drawNurserySoilFloor() {
+  const r = plateCoverRect();
+  const x0 = r.dx + r.dw * 0.05;
+  const x1 = r.dx + r.dw * 0.95;
+  const y0 = r.dy + r.dh * 0.46;
+  const y1 = r.dy + r.dh * 0.93;
+  const g = cx.createLinearGradient(0, y0, 0, y1);
+  g.addColorStop(0, 'rgba(176, 142, 96, 0.94)');
+  g.addColorStop(0.4, 'rgba(138, 100, 58, 0.96)');
+  g.addColorStop(1, 'rgba(112, 78, 44, 0.97)');
+  cx.fillStyle = g;
+  cx.fillRect(x0, y0, x1 - x0, y1 - y0);
+  // Center path (lighter dirt) — beds sit on either side
+  cx.fillStyle = 'rgba(190, 156, 112, 0.45)';
+  cx.fillRect(W * 0.40, y0 + 8, W * 0.20, y1 - y0 - 16);
 }
 
 function drawPollinators() {
@@ -1445,15 +1474,20 @@ function drawPollinators() {
 }
 
 function drawInterior() {
-  // Always empty interior plate — growth shown via bed-anchored sprites (time-lapse sizes)
+  // ALWAYS empty Franz interior — never the grown plate (painted blooms ≠ her plants).
+  // Growth is sprites only, sized by bed.grown after Growing… / return time-lapse.
   const plate = Assets.interior(SAVE.ghSize | 0, false);
   const key = 'int-' + gh().key + '-empty';
   ensureBgCrossfade(key, plate);
+  // Snap blend when entering empty nursery so a prior plate can't flash painted flowers
+  if (bgKey === key && bgBlend < 1 && !(bgFrom && bgFrom !== plate)) bgBlend = 1;
   if (plate || bgFrom || bgTo) drawCrossfadedPlate(bgFrom, bgTo || plate, bgBlend);
   else {
     cx.fillStyle = '#cdaf82';
     cx.fillRect(0, 0, W, H);
   }
+  // Cover any leftover painted blooms on the empty plate — unused beds are bare soil
+  drawNurserySoilFloor();
 
   hit.spots = [];
   plantSpots().forEach((s, i) => {
@@ -1549,15 +1583,16 @@ function drawMeadow() {
     if (f.state === 'gone' || f.state === 'pop') return;
     let sc = f.scale;
     if (sc < 0.05) return;
+    // Soft glow marks the generous kid tap target; sprite stays a little wildflower
     if (f.state === 'blooming' || f.state === 'open') {
-      const glow = pendingPick === f ? 0.45 : 0.22;
+      const glow = pendingPick === f ? 0.40 : 0.18;
       cx.fillStyle = `rgba(255,255,200,${glow})`;
-      cx.beginPath(); cx.ellipse(f.x, f.y + Y(6), X(28) * sc, Y(12) * sc, 0, 0, 7); cx.fill();
+      cx.beginPath(); cx.ellipse(f.x, f.y + Y(4), X(30), Y(14), 0, 0, 7); cx.fill();
     }
-    drawFlowerSprite(f.sp, f.x, f.y, sc * 1.05);
+    drawFlowerSprite(f.sp, f.x, f.y, sc * MEADOW_FLOWER_DRAW);
   });
   drawFlowerPops();
-  arcs.forEach((a) => drawFlowerSprite(a.sp, a.x, a.y, 0.5 + 0.2 * (1 - a.u)));
+  arcs.forEach((a) => drawFlowerSprite(a.sp, a.x, a.y, MEADOW_FLOWER_DRAW * (0.55 + 0.25 * (1 - a.u))));
   particles.forEach((p) => {
     cx.globalAlpha = Math.max(0, 1 - p.t / p.life);
     cx.fillStyle = p.col;
@@ -1697,7 +1732,7 @@ function drawHowTo() {
 
   // mini illustration
   if (howtoPage === 0) {
-    drawFlowerSprite(SPECIES[0], W * 0.62, H * 0.52, 1.15);
+    drawFlowerSprite(SPECIES[0], W * 0.62, H * 0.52, MEADOW_FLOWER_DRAW);
     drawGirl(W * 0.32, H * 0.55, false);
     drawFinger(W * 0.62, H * 0.42, 0.8);
   } else if (howtoPage === 1) {
@@ -1719,7 +1754,7 @@ function drawHowTo() {
     const demo = { x: W * 0.55, y: H * 0.58, r: X(58), i: 0, outdoor: 0 };
     drawBedSoil(demo);
     drawBedHighlight(demo, true);
-    drawBedFlowers(demo, { mix: ['tulip', 'daisy', 'sunflower', 'bluebell', 'daisy', 'tulip'], grown: 0, squash: 1 });
+    drawBedFlowers(demo, { mix: ['tulip', 'daisy', 'sunflower', 'bluebell', 'daisy', 'tulip'], grown: 0, watered: 0, squash: 1 });
     const plant = Assets.get('havenPlant');
     if (plant) drawAnchored(plant, W * 0.28, H * 0.62, Y(220), 1, 0);
   } else if (howtoPage === 4) {
@@ -1727,12 +1762,13 @@ function drawHowTo() {
     if (can) cx.drawImage(can, W / 2 - 40, H * 0.42, 90, 90);
     drawFinger(W / 2 + 20, H * 0.5, 0.8);
   } else {
-    drawFlowerSprite(SPECIES[0], W * 0.3, H * 0.56, 0.45);
-    drawFlowerSprite(SPECIES[1], W * 0.5, H * 0.56, 0.7);
-    drawFlowerSprite(SPECIES[2], W * 0.7, H * 0.56, 0.95);
+    // Planted → grown sizes (same ladder as beds)
+    drawFlowerSprite(SPECIES[0], W * 0.3, H * 0.56, BED_SCALE_GROWN[0]);
+    drawFlowerSprite(SPECIES[1], W * 0.5, H * 0.56, BED_SCALE_GROWN[1]);
+    drawFlowerSprite(SPECIES[2], W * 0.7, H * 0.56, BED_SCALE_GROWN[3]);
     cx.fillStyle = '#6a6258';
     cx.font = '700 13px system-ui';
-    cx.fillText('Bigger each visit!', W / 2, H * 0.64);
+    cx.fillText('Bigger after Growing…!', W / 2, H * 0.64);
   }
 
   cx.fillStyle = '#5ecf7a';
@@ -1774,6 +1810,11 @@ function update(dt) {
     if (ghEnterT >= CROSSFADE_SEC + 0.2 && !upgradeAnim) {
       nurseryView = 'inside';
       ghEnterT = -1;
+      // Snap to empty interior — don't carry open-GH window blooms into the nursery
+      bgFrom = null;
+      bgTo = Assets.interior(SAVE.ghSize | 0, false);
+      bgBlend = 1;
+      bgKey = 'int-' + gh().key + '-empty';
     }
   }
   // Greenhouse exit: open → dissolve closed → meadow
@@ -2330,7 +2371,7 @@ async function boot() {
   }
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js?v=0.9-nursery').catch(() => {});
+    navigator.serviceWorker.register('./sw.js?v=0.9-grow').catch(() => {});
   }
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));
 }
