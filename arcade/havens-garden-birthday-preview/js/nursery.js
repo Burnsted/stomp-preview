@@ -1,11 +1,11 @@
 'use strict';
-/* Haven's Garden — Franz greenhouse-layers-v1 runtime.
-   Capacities: small 12 | medium 24 (20 active) | large 30 | outdoor 12.
-   Composite: plateNoLip → soil → plants → front_lip. Never both plate versions. */
+/* Haven's Garden — greenhouse-v2 (Ted-approved illustration masters).
+   Capacities: small 12 | medium 20 | large 30 | outdoor 12.
+   Render: empty plate → growth sprites at rootAnchors. No soil/lip overlays. */
 
 const HGNursery = (() => {
   const SIZE_KEYS = ['small', 'medium', 'large'];
-  const BASE = 'assets/greenhouse-layers-v1/';
+  const BASE = 'assets/greenhouse-v2/';
   const PLATE_W = 585;
   const PLATE_H = 1266;
   let map = null;
@@ -18,7 +18,7 @@ const HGNursery = (() => {
     return m ? (m[1] | 0) : 0;
   }
 
-  function normalizeFranzSize(raw, key) {
+  function normalizeSize(raw, key) {
     const slots = (raw.slots || []).map((s, i) => {
       const hb = s.hitBounds || { x: 0, y: 0, w: 66, h: 66 };
       const ra = s.rootAnchor || { x: hb.x + hb.w / 2, y: hb.y + hb.h * 0.65 };
@@ -27,7 +27,7 @@ const HGNursery = (() => {
         id: s.id || (key + '_s' + i),
         bedId: s.bedId,
         planter: bedIndexFromId(s.bedId),
-        slot: s.grid ? (s.grid.row * 2 + s.grid.col) : (i % 6),
+        slot: s.grid ? (s.grid.col | 0) : (i % 6),
         grid: s.grid || null,
         active: s.active !== false && !s.unavailable,
         nx: ra.x / PLATE_W,
@@ -42,7 +42,7 @@ const HGNursery = (() => {
         hitNy: hb.y / PLATE_H,
         hitNw: hb.w / PLATE_W,
         hitNh: hb.h / PLATE_H,
-        plantScale: s.recommendedPlantScale != null ? s.recommendedPlantScale : 0.28,
+        plantScale: s.recommendedPlantScale != null ? s.recommendedPlantScale : 0.7,
         drawOrder: s.drawOrder != null ? s.drawOrder : i
       };
     });
@@ -55,10 +55,10 @@ const HGNursery = (() => {
         ny: sb.y / PLATE_H,
         nw: sb.w / PLATE_W,
         nh: sb.h / PLATE_H,
-        soilBounds: sb,
-        layers: b.layers || null
+        soilBounds: sb
       };
     });
+    const plateRel = (raw.plateNoLip || raw.plate || 'plates/medium-empty.webp').replace(/^\.\//, '');
     const active = slots.filter((s) => s.active).length;
     return {
       id: ({ small: 'S', medium: 'M', large: 'L', outdoor: 'O' }[key] || 'S'),
@@ -66,15 +66,11 @@ const HGNursery = (() => {
       kind: raw.kind || 'greenhouse-interior',
       plateSize: raw.plateSize || [PLATE_W, PLATE_H],
       phoneScale: raw.phoneScale != null ? raw.phoneScale : (390 / PLATE_W),
-      plate: raw.plate ? BASE + raw.plate.replace(/^\.\//, '') : null,
-      plateNoLip: raw.plateNoLip ? BASE + raw.plateNoLip.replace(/^\.\//, '') : null,
-      layers: {
-        soilDry: raw.layers && raw.layers.soilDry ? BASE + raw.layers.soilDry : null,
-        soilWet: raw.layers && raw.layers.soilWet ? BASE + raw.layers.soilWet : null,
-        frontLip: raw.layers && raw.layers.frontLip ? BASE + raw.layers.frontLip : null
-      },
+      plate: BASE + plateRel,
+      plateNoLip: BASE + plateRel,
+      layers: { soilDry: null, soilWet: null, frontLip: null },
       planterCount: planters.length,
-      slotsPerPlanter: raw.slotsPerBed || 6,
+      slotsPerPlanter: raw.slotsPerBed || 5,
       slotCount: slots.length,
       activeCount: active,
       capacityTarget: raw.capacityTarget != null ? raw.capacityTarget : active,
@@ -92,18 +88,14 @@ const HGNursery = (() => {
       img.decoding = 'async';
       img.onload = () => { imgCache[src] = img; resolve(img); };
       img.onerror = () => { console.warn('[nursery] missing', src); resolve(null); };
-      img.src = src + (src.includes('?') ? '&' : '?') + 'v=' + (window.HavensGarden && HavensGarden.VER ? HavensGarden.VER : 'layers');
+      const ver = (window.HavensGarden && HavensGarden.VER) ? HavensGarden.VER : 'ghv2';
+      img.src = src + (src.includes('?') ? '&' : '?') + 'v=' + ver;
     });
   }
 
   async function warmImages(sz) {
     if (!sz) return;
-    await Promise.all([
-      loadImg(sz.plateNoLip),
-      loadImg(sz.layers.soilDry),
-      loadImg(sz.layers.soilWet),
-      loadImg(sz.layers.frontLip)
-    ]);
+    await loadImg(sz.plateNoLip || sz.plate);
   }
 
   async function load(baseUrl) {
@@ -119,20 +111,20 @@ const HGNursery = (() => {
         fetch(root + 'maps/growth.json').then((r) => { if (!r.ok) throw new Error('growth map'); return r.json(); })
       ]);
       map = {
-        version: 1,
-        pack: 'greenhouse-layers-v1',
+        version: 2,
+        pack: 'greenhouse-v2',
         plate: { w: PLATE_W, h: PLATE_H },
         sizes: {
-          small: normalizeFranzSize(small, 'small'),
-          medium: normalizeFranzSize(medium, 'medium'),
-          large: normalizeFranzSize(large, 'large')
+          small: normalizeSize(small, 'small'),
+          medium: normalizeSize(medium, 'medium'),
+          large: normalizeSize(large, 'large')
         },
-        outdoor: normalizeFranzSize(outdoor, 'outdoor')
+        outdoor: normalizeSize(outdoor, 'outdoor')
       };
       growth = {
         species: growthRaw.species || 'daisy',
         stages: (growthRaw.stages || []).map((st) => Object.assign({}, st, {
-          file: BASE + String(st.file || '').replace(/^\.\//, '')
+          file: root + String(st.file || '').replace(/^\.\//, '')
         }))
       };
       await Promise.all([
@@ -142,7 +134,7 @@ const HGNursery = (() => {
       ]);
       return map;
     })().catch((e) => {
-      console.warn('[nursery] Franz pack load failed', e);
+      console.warn('[nursery] greenhouse-v2 load failed', e);
       loadPromise = null;
       throw e;
     });
@@ -160,7 +152,7 @@ const HGNursery = (() => {
 
   function slotCount(ghSize) {
     const sz = sizeForGh(ghSize);
-    return sz ? sz.slotCount : [12, 24, 30][Math.min(2, ghSize | 0)];
+    return sz ? sz.slotCount : [12, 20, 30][Math.min(2, ghSize | 0)];
   }
 
   function activeSlotIndices(ghSize) {
@@ -198,8 +190,8 @@ const HGNursery = (() => {
     if (!sz) {
       return [
         { id: 'S', key: 'small', beds: 12, cols: 6, rows: 2 },
-        { id: 'M', key: 'medium', beds: 24, cols: 6, rows: 4 },
-        { id: 'L', key: 'large', beds: 30, cols: 6, rows: 5 }
+        { id: 'M', key: 'medium', beds: 20, cols: 5, rows: 4 },
+        { id: 'L', key: 'large', beds: 30, cols: 8, rows: 4 }
       ][Math.min(2, ghSize | 0)];
     }
     return {
@@ -207,7 +199,7 @@ const HGNursery = (() => {
       key: sz.key,
       beds: sz.slotCount,
       activeBeds: sz.activeCount,
-      cols: sz.slotsPerPlanter || 6,
+      cols: sz.slotsPerPlanter || 5,
       rows: sz.planterCount || 1,
       planters: sz.planters,
       slots: sz.slots
@@ -220,12 +212,12 @@ const HGNursery = (() => {
 
   function layerImages(sz) {
     if (!sz) return { plateNoLip: null, soilDry: null, soilWet: null, frontLip: null };
-    warmImages(sz); // kick off if cold
+    warmImages(sz);
     return {
-      plateNoLip: img(sz.plateNoLip),
-      soilDry: img(sz.layers.soilDry),
-      soilWet: img(sz.layers.soilWet),
-      frontLip: img(sz.layers.frontLip)
+      plateNoLip: img(sz.plateNoLip || sz.plate),
+      soilDry: null,
+      soilWet: null,
+      frontLip: null
     };
   }
 
@@ -240,13 +232,10 @@ const HGNursery = (() => {
     return st ? img(st.file) : null;
   }
 
-  /**
-   * Remesh SAVE.beds into Franz slots without losing flowers.
-   * Explodes multi-flower mix clusters into one plant per active slot.
-   */
+  /** Remesh SAVE.beds into pack slots without losing flowers (1 plant / active slot). */
   function migrateBedsArray(oldBeds, ghSize) {
     const sz = ghSize < 0 ? outdoorDef() : sizeForGh(ghSize);
-    const targetLen = sz ? sz.slotCount : [12, 24, 30][Math.min(2, Math.max(0, ghSize | 0))];
+    const targetLen = sz ? sz.slotCount : [12, 20, 30][Math.min(2, Math.max(0, ghSize | 0))];
     const active = sz
       ? sz.slots.filter((s) => s.active).map((s) => s.i)
       : Array.from({ length: Math.min(targetLen, [12, 20, 30][Math.min(2, Math.max(0, ghSize | 0))]) }, (_, i) => i);
@@ -283,7 +272,6 @@ const HGNursery = (() => {
         }
       }
       if (!placed) {
-        // Nearest open: merge into first active as last resort (should be rare)
         const idx = active[0] | 0;
         if (!next[idx]) next[idx] = plants[fi];
         else {

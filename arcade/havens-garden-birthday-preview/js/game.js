@@ -1,6 +1,6 @@
 'use strict';
 /* ============================================================
-   Haven's Garden v0.9-birthday-preview
+   Haven's Garden v0.9-birthday-polish
    Standalone birthday garden — NOT part of STOMP.
    Ted-locked comps: wide coloring-book field, basket plant,
    bugs+net, bees→hive→jars, color rows, CBN, shop.
@@ -13,7 +13,7 @@ const MUTE_K = 'havensGarden.mute';
 const QUIET_K = 'havensGarden.quiet';
 
 const BOUQUET_GOAL = 20;
-/** Franz layers v1: one plant per slot (66×66 hit). Clusters explode on migrate. */
+/** Greenhouse v2: one plant per slot (66×66 hit → 44 CSS @390). Clusters explode on migrate. */
 const FLOWERS_PER_BED = 1;
 const PICK_RADIUS = 72;
 const ARRIVE_RADIUS = 52;
@@ -51,12 +51,12 @@ const MEADOW_FLOWER_DRAW = 0.34;   // little wildflowers / cuttings in the field
 const BED_SCALE_PLANTED = 0.18;    // just planted — young / seedling
 const BED_SCALE_GROWN = [0.18, 0.46, 0.70, 0.92]; // grown 0..3 after time-lapse
 
-/* Greenhouse sizes — driven by assets/greenhouse/bed-map.json (Franz layers pack).
-   Fallback counts match Franz shape: S 2×6=12, M 4×6=24 (20 active), L 5×6=30. */
+/* Greenhouse sizes — driven by greenhouse-v2 maps (Ted illustration masters).
+   S12 / M20 / L30 (+ outdoor 12). */
 const GH_SIZES = [
   { id: 'S', key: 'small', beds: 12, cols: 6, rows: 2 },
-  { id: 'M', key: 'medium', beds: 24, cols: 6, rows: 4 },
-  { id: 'L', key: 'large', beds: 30, cols: 6, rows: 5 }
+  { id: 'M', key: 'medium', beds: 20, cols: 5, rows: 4 },
+  { id: 'L', key: 'large', beds: 30, cols: 8, rows: 4 }
 ];
 
 /* Franz flowers + aliases so old album/save ids still resolve. */
@@ -2446,7 +2446,7 @@ function drawWoodenPlanter(pr) {
 }
 
 function drawBedSoil(_s) {
-  /* Franz pack: soil comes from soil_dry/soil_wet layers — no code soil dots. */
+  /* greenhouse-v2: soil is painted on the empty plate — never code dots/rects. */
 }
 
 function nurseryPlanterRects() {
@@ -2478,7 +2478,7 @@ function drawBedHighlight(s, highlight) {
   cx.fill();
 }
 
-/** Daisy growth set (seedling→leaves→bud→bloom) rooted at Franz rootAnchor. */
+/** Daisy growth set (seedling→leaves→bud→bloom) rooted at slot rootAnchor. */
 function drawBedFlowers(s, b) {
   if (!b) return;
   const grown = b.grown | 0;
@@ -2493,11 +2493,11 @@ function drawBedFlowers(s, b) {
   const stage = window.HGNursery && HGNursery.ready() ? HGNursery.growthStage(grown) : null;
   const gimg = window.HGNursery && HGNursery.ready() ? HGNursery.growthImg(grown) : null;
   if (gimg && stage && stage.size) {
-    const sc = (s.plantScale || 0.28) * squash * pop * (r.dw / DW);
+    const sc = (s.plantScale || 0.7) * squash * pop * (r.dw / DW);
     const dw = stage.size[0] * sc;
     const dh = stage.size[1] * sc;
     const ax = (stage.rootAnchor && stage.rootAnchor.x != null) ? stage.rootAnchor.x / stage.size[0] : 0.5;
-    const ay = (stage.rootAnchor && stage.rootAnchor.y != null) ? stage.rootAnchor.y / stage.size[1] : 0.92;
+    const ay = (stage.rootAnchor && stage.rootAnchor.y != null) ? stage.rootAnchor.y / stage.size[1] : 0.94;
     cx.drawImage(gimg, s.x - ax * dw + sway, s.y - ay * dh, dw, dh);
     return;
   }
@@ -2508,26 +2508,22 @@ function drawBedFlowers(s, b) {
 }
 
 function drawNurserySoilFloor() {
-  /* Removed: opaque code soil mask + procedural planters. Franz soil layers only. */
+  /* No opaque code soil — greenhouse-v2 empty plate already has wooden beds + soil. */
 }
 
-/** plateNoLip → soil → plants → front_lip (never both plate versions). */
+/** greenhouse-v2: empty plate → plants only (no soil/lip layers, no code soil masks). */
 function drawFranzComposite(sz, bedsArr, outdoorFlag) {
   if (!sz || !window.HGNursery) return false;
   HGNursery.warmImages(sz);
   const layers = HGNursery.layerImages(sz);
   const plate = layers.plateNoLip;
   if (!plate) return false;
-  const key = 'franz-' + sz.key + '-nolip';
+  const key = 'ghv2-' + sz.key;
   ensureBgCrossfade(key, plate);
   if (bgKey === key && bgBlend < 1 && !(bgFrom && bgFrom !== plate)) bgBlend = 1;
   drawCrossfadedPlate(bgFrom, bgTo || plate, bgBlend);
 
-  const anyWet = (bedsArr || []).some((b) => b && b.watered);
-  const soil = anyWet && layers.soilWet ? layers.soilWet : layers.soilDry;
-  if (soil) drawFullPlate(soil, 1);
-
-  const spots = outdoorFlag ? outdoorSpots() : plantSpots();
+  const spots = (outdoorFlag ? outdoorSpots() : plantSpots()).slice().sort((a, b) => a.y - b.y);
   spots.forEach((s) => {
     const b = outdoorFlag ? outdoorAt(s.i) : bedAt(s.i);
     let hl = (nurseryMode === 'plant' && bouquet.length && bedHasRoom(b) && !(b && b.grown)) ||
@@ -2542,8 +2538,6 @@ function drawFranzComposite(sz, bedsArr, outdoorFlag) {
       i: s.i, outdoor: outdoorFlag ? 1 : 0, planter: s.planter
     });
   });
-
-  if (layers.frontLip) drawFullPlate(layers.frontLip, 1);
   return true;
 }
 
@@ -3016,14 +3010,14 @@ function update(dt) {
     if (ghEnterT >= CROSSFADE_SEC + 0.2 && !upgradeAnim) {
       nurseryView = 'inside';
       ghEnterT = -1;
-      // Snap to Franz plateNoLip (never lipped plate / painted blooms)
+      // Snap to greenhouse-v2 empty plate
       bgFrom = null;
       if (window.HGNursery && HGNursery.ready()) {
         const sz = HGNursery.sizeForGh(SAVE.ghSize | 0);
         HGNursery.warmImages(sz);
         const layers = HGNursery.layerImages(sz);
         bgTo = layers.plateNoLip || Assets.interior(SAVE.ghSize | 0, false);
-        bgKey = 'franz-' + (sz ? sz.key : gh().key) + '-nolip';
+        bgKey = 'ghv2-' + (sz ? sz.key : gh().key);
       } else {
         bgTo = Assets.interior(SAVE.ghSize | 0, false);
         bgKey = 'int-' + gh().key + '-empty';
@@ -3690,25 +3684,25 @@ function applyShot(name) {
 
 async function boot() {
   announce("Haven's Garden " + VER);
-  // Franz greenhouse-layers-v1 maps + growth before assets so migrate remeshes slots
+  // greenhouse-v2 maps + growth before assets so migrate remeshes slots
   try {
-    await HGNursery.load('assets/greenhouse-layers-v1/');
+    await HGNursery.load('assets/greenhouse-v2/');
     if (saveRichness(SAVE) <= 0) {
       const legacy = readRawSave();
       if (legacy && saveRichness(legacy) > 0) SAVE = migrateSave(legacy);
     }
     SAVE.beds = HGNursery.migrateBedsArray(SAVE.beds || [], SAVE.ghSize | 0);
     SAVE.outdoorBeds = HGNursery.migrateBedsArray(SAVE.outdoorBeds || [], -1);
-    SAVE.bedMapVersion = 1;
+    SAVE.bedMapVersion = 2;
     persist();
   } catch (e) {
-    console.warn('franz layers load', e);
+    console.warn('greenhouse-v2 load', e);
   }
   await Assets.loadAll((p) => {
     loadProgress = p;
     if (bootBar) bootBar.style.width = Math.round(p * 100) + '%';
   });
-  // Prefetch current + next Franz plateNoLip / soil (P7)
+  // Prefetch current + next empty plates
   try {
     const cur = HGNursery.sizeForGh(SAVE.ghSize | 0);
     const next = HGNursery.sizeForGh(Math.min(2, (SAVE.ghSize | 0) + 1));

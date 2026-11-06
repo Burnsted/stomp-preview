@@ -1,6 +1,6 @@
 {
-  "name": "Haven's Garden",
-  "short_name": "Haven's Garden",
+  "name": "Haven's Garden (Birthday Preview)",
+  "short_name": "Haven's Garden (Birthday Preview)",
   "description": "A cozy birthday garden for Haven — pick flowers, plant, water, and watch bees visit.",
   "start_url": "./index.html",
   "scope": "./",

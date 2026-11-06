@@ -4,7 +4,7 @@
 */
 'use strict';
 
-const ASSET_VER = 'birthday-preview-v1';
+const ASSET_VER = 'birthday-preview';
 
 const CBN_PAGE_STEMS = [
   'page-13-one-daisy',
