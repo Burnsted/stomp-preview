@@ -1,0 +1,1915 @@
+{
+  "size": [
+    585,
+    1266
+  ],
+  "regionCount": 118,
+  "key": {
+    "1": {
+      "hex": "#ffe04b",
+      "name": "yellow"
+    },
+    "2": {
+      "hex": "#8dd4fa",
+      "name": "light blue"
+    },
+    "3": {
+      "hex": "#86c660",
+      "name": "green"
+    },
+    "4": {
+      "hex": "#f695bd",
+      "name": "pink"
+    },
+    "5": {
+      "hex": "#f4434f",
+      "name": "red"
+    },
+    "6": {
+      "hex": "#b57b48",
+      "name": "brown"
+    },
+    "7": {
+      "hex": "#ff9c42",
+      "name": "orange"
+    },
+    "8": {
+      "hex": "#a486ce",
+      "name": "purple"
+    },
+    "9": {
+      "hex": "#398b4c",
+      "name": "dark green"
+    },
+    "10": {
+      "hex": "#edbb2c",
+      "name": "honey gold"
+    }
+  },
+  "maskEncoding": "RGB pixel interpreted as 24-bit integer region id; 0=outside. Nearest-neighbor sampling only. Region shapes overlap in drawing order.",
+  "regions": [
+    {
+      "id": 1,
+      "colorNumber": 2,
+      "colorHex": "#8dd4fa",
+      "label": [
+        465,
+        110
+      ],
+      "prefilled": false,
+      "shape": "rect",
+      "attributes": {
+        "x": 20,
+        "y": 20,
+        "width": 545,
+        "height": 1025,
+        "rx": 4
+      }
+    },
+    {
+      "id": 2,
+      "colorNumber": 3,
+      "colorHex": "#86c660",
+      "label": [
+        480,
+        880
+      ],
+      "prefilled": true,
+      "shape": "path",
+      "attributes": {
+        "d": "M 20 430 Q 255 300 565 465 L 565 1045 L 20 1045 Z"
+      }
+    },
+    {
+      "id": 3,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        100,
+        100
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 100,
+        "cy": 100,
+        "rx": 36,
+        "ry": 36
+      }
+    },
+    {
+      "id": 4,
+      "colorNumber": 6,
+      "colorHex": "#b57b48",
+      "label": [
+        425,
+        285
+      ],
+      "prefilled": false,
+      "shape": "rect",
+      "attributes": {
+        "x": 133,
+        "y": 252,
+        "width": 319,
+        "height": 399,
+        "rx": 4
+      }
+    },
+    {
+      "id": 5,
+      "colorNumber": 6,
+      "colorHex": "#b57b48",
+      "label": [
+        292.5,
+        242.5
+      ],
+      "prefilled": false,
+      "shape": "rect",
+      "attributes": {
+        "x": 119,
+        "y": 226,
+        "width": 347,
+        "height": 33,
+        "rx": 4
+      }
+    },
+    {
+      "id": 6,
+      "colorNumber": 6,
+      "colorHex": "#b57b48",
+      "label": [
+        300,
+        210
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 119 226 L 175 190 L 479 190 L 466 226 Z"
+      }
+    },
+    {
+      "id": 7,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        164,
+        285
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 183.92 296.50 L 164.00 308.00 L 144.08 296.50 L 144.08 273.50 L 164.00 262.00 L 183.92 273.50 Z"
+      }
+    },
+    {
+      "id": 8,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        207,
+        285
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 226.92 296.50 L 207.00 308.00 L 187.08 296.50 L 187.08 273.50 L 207.00 262.00 L 226.92 273.50 Z"
+      }
+    },
+    {
+      "id": 9,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        250,
+        285
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 269.92 296.50 L 250.00 308.00 L 230.08 296.50 L 230.08 273.50 L 250.00 262.00 L 269.92 273.50 Z"
+      }
+    },
+    {
+      "id": 10,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        293,
+        285
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 312.92 296.50 L 293.00 308.00 L 273.08 296.50 L 273.08 273.50 L 293.00 262.00 L 312.92 273.50 Z"
+      }
+    },
+    {
+      "id": 11,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        336,
+        285
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 355.92 296.50 L 336.00 308.00 L 316.08 296.50 L 316.08 273.50 L 336.00 262.00 L 355.92 273.50 Z"
+      }
+    },
+    {
+      "id": 12,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        379,
+        285
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 398.92 296.50 L 379.00 308.00 L 359.08 296.50 L 359.08 273.50 L 379.00 262.00 L 398.92 273.50 Z"
+      }
+    },
+    {
+      "id": 13,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        185.5,
+        328
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 205.42 339.50 L 185.50 351.00 L 165.58 339.50 L 165.58 316.50 L 185.50 305.00 L 205.42 316.50 Z"
+      }
+    },
+    {
+      "id": 14,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        228.5,
+        328
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 248.42 339.50 L 228.50 351.00 L 208.58 339.50 L 208.58 316.50 L 228.50 305.00 L 248.42 316.50 Z"
+      }
+    },
+    {
+      "id": 15,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        271.5,
+        328
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 291.42 339.50 L 271.50 351.00 L 251.58 339.50 L 251.58 316.50 L 271.50 305.00 L 291.42 316.50 Z"
+      }
+    },
+    {
+      "id": 16,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        314.5,
+        328
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 334.42 339.50 L 314.50 351.00 L 294.58 339.50 L 294.58 316.50 L 314.50 305.00 L 334.42 316.50 Z"
+      }
+    },
+    {
+      "id": 17,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        357.5,
+        328
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 377.42 339.50 L 357.50 351.00 L 337.58 339.50 L 337.58 316.50 L 357.50 305.00 L 377.42 316.50 Z"
+      }
+    },
+    {
+      "id": 18,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        400.5,
+        328
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 420.42 339.50 L 400.50 351.00 L 380.58 339.50 L 380.58 316.50 L 400.50 305.00 L 420.42 316.50 Z"
+      }
+    },
+    {
+      "id": 19,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        164,
+        371
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 183.92 382.50 L 164.00 394.00 L 144.08 382.50 L 144.08 359.50 L 164.00 348.00 L 183.92 359.50 Z"
+      }
+    },
+    {
+      "id": 20,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        207,
+        371
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 226.92 382.50 L 207.00 394.00 L 187.08 382.50 L 187.08 359.50 L 207.00 348.00 L 226.92 359.50 Z"
+      }
+    },
+    {
+      "id": 21,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        250,
+        371
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 269.92 382.50 L 250.00 394.00 L 230.08 382.50 L 230.08 359.50 L 250.00 348.00 L 269.92 359.50 Z"
+      }
+    },
+    {
+      "id": 22,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        293,
+        371
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 312.92 382.50 L 293.00 394.00 L 273.08 382.50 L 273.08 359.50 L 293.00 348.00 L 312.92 359.50 Z"
+      }
+    },
+    {
+      "id": 23,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        336,
+        371
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 355.92 382.50 L 336.00 394.00 L 316.08 382.50 L 316.08 359.50 L 336.00 348.00 L 355.92 359.50 Z"
+      }
+    },
+    {
+      "id": 24,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        379,
+        371
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 398.92 382.50 L 379.00 394.00 L 359.08 382.50 L 359.08 359.50 L 379.00 348.00 L 398.92 359.50 Z"
+      }
+    },
+    {
+      "id": 25,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        185.5,
+        414
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 205.42 425.50 L 185.50 437.00 L 165.58 425.50 L 165.58 402.50 L 185.50 391.00 L 205.42 402.50 Z"
+      }
+    },
+    {
+      "id": 26,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        228.5,
+        414
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 248.42 425.50 L 228.50 437.00 L 208.58 425.50 L 208.58 402.50 L 228.50 391.00 L 248.42 402.50 Z"
+      }
+    },
+    {
+      "id": 27,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        271.5,
+        414
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 291.42 425.50 L 271.50 437.00 L 251.58 425.50 L 251.58 402.50 L 271.50 391.00 L 291.42 402.50 Z"
+      }
+    },
+    {
+      "id": 28,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        314.5,
+        414
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 334.42 425.50 L 314.50 437.00 L 294.58 425.50 L 294.58 402.50 L 314.50 391.00 L 334.42 402.50 Z"
+      }
+    },
+    {
+      "id": 29,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        357.5,
+        414
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 377.42 425.50 L 357.50 437.00 L 337.58 425.50 L 337.58 402.50 L 357.50 391.00 L 377.42 402.50 Z"
+      }
+    },
+    {
+      "id": 30,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        400.5,
+        414
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 420.42 425.50 L 400.50 437.00 L 380.58 425.50 L 380.58 402.50 L 400.50 391.00 L 420.42 402.50 Z"
+      }
+    },
+    {
+      "id": 31,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        164,
+        457
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 183.92 468.50 L 164.00 480.00 L 144.08 468.50 L 144.08 445.50 L 164.00 434.00 L 183.92 445.50 Z"
+      }
+    },
+    {
+      "id": 32,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        207,
+        457
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 226.92 468.50 L 207.00 480.00 L 187.08 468.50 L 187.08 445.50 L 207.00 434.00 L 226.92 445.50 Z"
+      }
+    },
+    {
+      "id": 33,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        250,
+        457
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 269.92 468.50 L 250.00 480.00 L 230.08 468.50 L 230.08 445.50 L 250.00 434.00 L 269.92 445.50 Z"
+      }
+    },
+    {
+      "id": 34,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        293,
+        457
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 312.92 468.50 L 293.00 480.00 L 273.08 468.50 L 273.08 445.50 L 293.00 434.00 L 312.92 445.50 Z"
+      }
+    },
+    {
+      "id": 35,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        336,
+        457
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 355.92 468.50 L 336.00 480.00 L 316.08 468.50 L 316.08 445.50 L 336.00 434.00 L 355.92 445.50 Z"
+      }
+    },
+    {
+      "id": 36,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        379,
+        457
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 398.92 468.50 L 379.00 480.00 L 359.08 468.50 L 359.08 445.50 L 379.00 434.00 L 398.92 445.50 Z"
+      }
+    },
+    {
+      "id": 37,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        185.5,
+        500
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 205.42 511.50 L 185.50 523.00 L 165.58 511.50 L 165.58 488.50 L 185.50 477.00 L 205.42 488.50 Z"
+      }
+    },
+    {
+      "id": 38,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        228.5,
+        500
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 248.42 511.50 L 228.50 523.00 L 208.58 511.50 L 208.58 488.50 L 228.50 477.00 L 248.42 488.50 Z"
+      }
+    },
+    {
+      "id": 39,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        271.5,
+        500
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 291.42 511.50 L 271.50 523.00 L 251.58 511.50 L 251.58 488.50 L 271.50 477.00 L 291.42 488.50 Z"
+      }
+    },
+    {
+      "id": 40,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        314.5,
+        500
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 334.42 511.50 L 314.50 523.00 L 294.58 511.50 L 294.58 488.50 L 314.50 477.00 L 334.42 488.50 Z"
+      }
+    },
+    {
+      "id": 41,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        357.5,
+        500
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 377.42 511.50 L 357.50 523.00 L 337.58 511.50 L 337.58 488.50 L 357.50 477.00 L 377.42 488.50 Z"
+      }
+    },
+    {
+      "id": 42,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        400.5,
+        500
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 420.42 511.50 L 400.50 523.00 L 380.58 511.50 L 380.58 488.50 L 400.50 477.00 L 420.42 488.50 Z"
+      }
+    },
+    {
+      "id": 43,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        164,
+        543
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 183.92 554.50 L 164.00 566.00 L 144.08 554.50 L 144.08 531.50 L 164.00 520.00 L 183.92 531.50 Z"
+      }
+    },
+    {
+      "id": 44,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        207,
+        543
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 226.92 554.50 L 207.00 566.00 L 187.08 554.50 L 187.08 531.50 L 207.00 520.00 L 226.92 531.50 Z"
+      }
+    },
+    {
+      "id": 45,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        250,
+        543
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 269.92 554.50 L 250.00 566.00 L 230.08 554.50 L 230.08 531.50 L 250.00 520.00 L 269.92 531.50 Z"
+      }
+    },
+    {
+      "id": 46,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        293,
+        543
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 312.92 554.50 L 293.00 566.00 L 273.08 554.50 L 273.08 531.50 L 293.00 520.00 L 312.92 531.50 Z"
+      }
+    },
+    {
+      "id": 47,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        336,
+        543
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 355.92 554.50 L 336.00 566.00 L 316.08 554.50 L 316.08 531.50 L 336.00 520.00 L 355.92 531.50 Z"
+      }
+    },
+    {
+      "id": 48,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        379,
+        543
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 398.92 554.50 L 379.00 566.00 L 359.08 554.50 L 359.08 531.50 L 379.00 520.00 L 398.92 531.50 Z"
+      }
+    },
+    {
+      "id": 49,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        185.5,
+        586
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 205.42 597.50 L 185.50 609.00 L 165.58 597.50 L 165.58 574.50 L 185.50 563.00 L 205.42 574.50 Z"
+      }
+    },
+    {
+      "id": 50,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        228.5,
+        586
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 248.42 597.50 L 228.50 609.00 L 208.58 597.50 L 208.58 574.50 L 228.50 563.00 L 248.42 574.50 Z"
+      }
+    },
+    {
+      "id": 51,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        271.5,
+        586
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 291.42 597.50 L 271.50 609.00 L 251.58 597.50 L 251.58 574.50 L 271.50 563.00 L 291.42 574.50 Z"
+      }
+    },
+    {
+      "id": 52,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        314.5,
+        586
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 334.42 597.50 L 314.50 609.00 L 294.58 597.50 L 294.58 574.50 L 314.50 563.00 L 334.42 574.50 Z"
+      }
+    },
+    {
+      "id": 53,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        357.5,
+        586
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 377.42 597.50 L 357.50 609.00 L 337.58 597.50 L 337.58 574.50 L 357.50 563.00 L 377.42 574.50 Z"
+      }
+    },
+    {
+      "id": 54,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        400.5,
+        586
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 420.42 597.50 L 400.50 609.00 L 380.58 597.50 L 380.58 574.50 L 400.50 563.00 L 420.42 574.50 Z"
+      }
+    },
+    {
+      "id": 55,
+      "colorNumber": 6,
+      "colorHex": "#b57b48",
+      "label": [
+        292.5,
+        845.5
+      ],
+      "prefilled": false,
+      "shape": "rect",
+      "attributes": {
+        "x": 70,
+        "y": 828,
+        "width": 445,
+        "height": 35,
+        "rx": 4
+      }
+    },
+    {
+      "id": 56,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        104,
+        760
+      ],
+      "prefilled": false,
+      "shape": "rect",
+      "attributes": {
+        "x": 86.6,
+        "y": 745.2,
+        "width": 52.800000000000004,
+        "height": 71.5,
+        "rx": 4
+      }
+    },
+    {
+      "id": 57,
+      "colorNumber": 6,
+      "colorHex": "#b57b48",
+      "label": [
+        113.0,
+        741.35
+      ],
+      "prefilled": false,
+      "shape": "rect",
+      "attributes": {
+        "x": 83.3,
+        "y": 734.2,
+        "width": 59.400000000000006,
+        "height": 14.3,
+        "rx": 4
+      }
+    },
+    {
+      "id": 58,
+      "colorNumber": 7,
+      "colorHex": "#ff9c42",
+      "label": [
+        113.0,
+        785.9000000000001
+      ],
+      "prefilled": false,
+      "shape": "rect",
+      "attributes": {
+        "x": 95.4,
+        "y": 772.7,
+        "width": 35.2,
+        "height": 26.400000000000002,
+        "rx": 4
+      }
+    },
+    {
+      "id": 59,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        185,
+        760
+      ],
+      "prefilled": false,
+      "shape": "rect",
+      "attributes": {
+        "x": 173.6,
+        "y": 745.2,
+        "width": 52.800000000000004,
+        "height": 71.5,
+        "rx": 4
+      }
+    },
+    {
+      "id": 60,
+      "colorNumber": 6,
+      "colorHex": "#b57b48",
+      "label": [
+        200.0,
+        741.35
+      ],
+      "prefilled": false,
+      "shape": "rect",
+      "attributes": {
+        "x": 170.3,
+        "y": 734.2,
+        "width": 59.400000000000006,
+        "height": 14.3,
+        "rx": 4
+      }
+    },
+    {
+      "id": 61,
+      "colorNumber": 7,
+      "colorHex": "#ff9c42",
+      "label": [
+        200.0,
+        785.9000000000001
+      ],
+      "prefilled": false,
+      "shape": "rect",
+      "attributes": {
+        "x": 182.4,
+        "y": 772.7,
+        "width": 35.2,
+        "height": 26.400000000000002,
+        "rx": 4
+      }
+    },
+    {
+      "id": 62,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        272,
+        760
+      ],
+      "prefilled": false,
+      "shape": "rect",
+      "attributes": {
+        "x": 260.6,
+        "y": 745.2,
+        "width": 52.800000000000004,
+        "height": 71.5,
+        "rx": 4
+      }
+    },
+    {
+      "id": 63,
+      "colorNumber": 6,
+      "colorHex": "#b57b48",
+      "label": [
+        287.0,
+        741.35
+      ],
+      "prefilled": false,
+      "shape": "rect",
+      "attributes": {
+        "x": 257.3,
+        "y": 734.2,
+        "width": 59.400000000000006,
+        "height": 14.3,
+        "rx": 4
+      }
+    },
+    {
+      "id": 64,
+      "colorNumber": 7,
+      "colorHex": "#ff9c42",
+      "label": [
+        287.0,
+        785.9000000000001
+      ],
+      "prefilled": false,
+      "shape": "rect",
+      "attributes": {
+        "x": 269.4,
+        "y": 772.7,
+        "width": 35.2,
+        "height": 26.400000000000002,
+        "rx": 4
+      }
+    },
+    {
+      "id": 65,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        360,
+        760
+      ],
+      "prefilled": false,
+      "shape": "rect",
+      "attributes": {
+        "x": 347.6,
+        "y": 745.2,
+        "width": 52.800000000000004,
+        "height": 71.5,
+        "rx": 4
+      }
+    },
+    {
+      "id": 66,
+      "colorNumber": 6,
+      "colorHex": "#b57b48",
+      "label": [
+        374.0,
+        741.35
+      ],
+      "prefilled": false,
+      "shape": "rect",
+      "attributes": {
+        "x": 344.3,
+        "y": 734.2,
+        "width": 59.400000000000006,
+        "height": 14.3,
+        "rx": 4
+      }
+    },
+    {
+      "id": 67,
+      "colorNumber": 7,
+      "colorHex": "#ff9c42",
+      "label": [
+        374.0,
+        785.9000000000001
+      ],
+      "prefilled": false,
+      "shape": "rect",
+      "attributes": {
+        "x": 356.4,
+        "y": 772.7,
+        "width": 35.2,
+        "height": 26.400000000000002,
+        "rx": 4
+      }
+    },
+    {
+      "id": 68,
+      "colorNumber": 10,
+      "colorHex": "#edbb2c",
+      "label": [
+        446,
+        760
+      ],
+      "prefilled": false,
+      "shape": "rect",
+      "attributes": {
+        "x": 434.6,
+        "y": 745.2,
+        "width": 52.800000000000004,
+        "height": 71.5,
+        "rx": 4
+      }
+    },
+    {
+      "id": 69,
+      "colorNumber": 6,
+      "colorHex": "#b57b48",
+      "label": [
+        461.0,
+        741.35
+      ],
+      "prefilled": false,
+      "shape": "rect",
+      "attributes": {
+        "x": 431.3,
+        "y": 734.2,
+        "width": 59.400000000000006,
+        "height": 14.3,
+        "rx": 4
+      }
+    },
+    {
+      "id": 70,
+      "colorNumber": 7,
+      "colorHex": "#ff9c42",
+      "label": [
+        461.0,
+        785.9000000000001
+      ],
+      "prefilled": false,
+      "shape": "rect",
+      "attributes": {
+        "x": 443.4,
+        "y": 772.7,
+        "width": 35.2,
+        "height": 26.400000000000002,
+        "rx": 4
+      }
+    },
+    {
+      "id": 71,
+      "colorNumber": 2,
+      "colorHex": "#8dd4fa",
+      "label": [
+        72.25,
+        666.75
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 72.25,
+        "cy": 666.75,
+        "rx": 15.75,
+        "ry": 21.0
+      }
+    },
+    {
+      "id": 72,
+      "colorNumber": 2,
+      "colorHex": "#8dd4fa",
+      "label": [
+        97.75,
+        666.75
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 97.75,
+        "cy": 666.75,
+        "rx": 15.75,
+        "ry": 21.0
+      }
+    },
+    {
+      "id": 73,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        85,
+        690
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 85,
+        "cy": 690,
+        "rx": 36.75,
+        "ry": 22.5
+      }
+    },
+    {
+      "id": 74,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        118.75,
+        690
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 118.75,
+        "cy": 690,
+        "rx": 17.25,
+        "ry": 17.25
+      }
+    },
+    {
+      "id": 75,
+      "colorNumber": 2,
+      "colorHex": "#8dd4fa",
+      "label": [
+        472.25,
+        661.75
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 472.25,
+        "cy": 661.75,
+        "rx": 15.75,
+        "ry": 21.0
+      }
+    },
+    {
+      "id": 76,
+      "colorNumber": 2,
+      "colorHex": "#8dd4fa",
+      "label": [
+        497.75,
+        661.75
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 497.75,
+        "cy": 661.75,
+        "rx": 15.75,
+        "ry": 21.0
+      }
+    },
+    {
+      "id": 77,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        485,
+        685
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 485,
+        "cy": 685,
+        "rx": 36.75,
+        "ry": 22.5
+      }
+    },
+    {
+      "id": 78,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        518.75,
+        685
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 518.75,
+        "cy": 685,
+        "rx": 17.25,
+        "ry": 17.25
+      }
+    },
+    {
+      "id": 79,
+      "colorNumber": 4,
+      "colorHex": "#f695bd",
+      "label": [
+        130.1,
+        960.0
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 130.1,
+        "cy": 960.0,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 80,
+      "colorNumber": 4,
+      "colorHex": "#f695bd",
+      "label": [
+        119.81944801964782,
+        984.8194480196478
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 119.81944801964782,
+        "cy": 984.8194480196478,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 81,
+      "colorNumber": 4,
+      "colorHex": "#f695bd",
+      "label": [
+        95.0,
+        995.1
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 95.0,
+        "cy": 995.1,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 82,
+      "colorNumber": 4,
+      "colorHex": "#f695bd",
+      "label": [
+        70.18055198035218,
+        984.8194480196478
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 70.18055198035218,
+        "cy": 984.8194480196478,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 83,
+      "colorNumber": 4,
+      "colorHex": "#f695bd",
+      "label": [
+        59.9,
+        960.0
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 59.9,
+        "cy": 960.0,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 84,
+      "colorNumber": 4,
+      "colorHex": "#f695bd",
+      "label": [
+        70.18055198035218,
+        935.1805519803522
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 70.18055198035218,
+        "cy": 935.1805519803522,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 85,
+      "colorNumber": 4,
+      "colorHex": "#f695bd",
+      "label": [
+        95.0,
+        924.9
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 95.0,
+        "cy": 924.9,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 86,
+      "colorNumber": 4,
+      "colorHex": "#f695bd",
+      "label": [
+        119.81944801964781,
+        935.1805519803522
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 119.81944801964781,
+        "cy": 935.1805519803522,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 87,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        95,
+        960
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 95,
+        "cy": 960,
+        "rx": 17.1,
+        "ry": 17.1
+      }
+    },
+    {
+      "id": 88,
+      "colorNumber": 9,
+      "colorHex": "#398b4c",
+      "label": [
+        74.1,
+        1010.65
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 95 1020 Q 64.75 984.25 59.8 1010.65 Q 76.3 1028.25 95 1020 Z"
+      }
+    },
+    {
+      "id": 89,
+      "colorNumber": 8,
+      "colorHex": "#a486ce",
+      "label": [
+        270.1,
+        960.0
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 270.1,
+        "cy": 960.0,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 90,
+      "colorNumber": 8,
+      "colorHex": "#a486ce",
+      "label": [
+        259.81944801964784,
+        984.8194480196478
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 259.81944801964784,
+        "cy": 984.8194480196478,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 91,
+      "colorNumber": 8,
+      "colorHex": "#a486ce",
+      "label": [
+        235.0,
+        995.1
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 235.0,
+        "cy": 995.1,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 92,
+      "colorNumber": 8,
+      "colorHex": "#a486ce",
+      "label": [
+        210.1805519803522,
+        984.8194480196478
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 210.1805519803522,
+        "cy": 984.8194480196478,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 93,
+      "colorNumber": 8,
+      "colorHex": "#a486ce",
+      "label": [
+        199.9,
+        960.0
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 199.9,
+        "cy": 960.0,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 94,
+      "colorNumber": 8,
+      "colorHex": "#a486ce",
+      "label": [
+        210.18055198035216,
+        935.1805519803522
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 210.18055198035216,
+        "cy": 935.1805519803522,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 95,
+      "colorNumber": 8,
+      "colorHex": "#a486ce",
+      "label": [
+        235.0,
+        924.9
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 235.0,
+        "cy": 924.9,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 96,
+      "colorNumber": 8,
+      "colorHex": "#a486ce",
+      "label": [
+        259.81944801964784,
+        935.1805519803522
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 259.81944801964784,
+        "cy": 935.1805519803522,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 97,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        235,
+        960
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 235,
+        "cy": 960,
+        "rx": 17.1,
+        "ry": 17.1
+      }
+    },
+    {
+      "id": 98,
+      "colorNumber": 9,
+      "colorHex": "#398b4c",
+      "label": [
+        214.1,
+        1010.65
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 235 1020 Q 204.75 984.25 199.8 1010.65 Q 216.3 1028.25 235 1020 Z"
+      }
+    },
+    {
+      "id": 99,
+      "colorNumber": 5,
+      "colorHex": "#f4434f",
+      "label": [
+        415.1,
+        960.0
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 415.1,
+        "cy": 960.0,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 100,
+      "colorNumber": 5,
+      "colorHex": "#f4434f",
+      "label": [
+        404.81944801964784,
+        984.8194480196478
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 404.81944801964784,
+        "cy": 984.8194480196478,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 101,
+      "colorNumber": 5,
+      "colorHex": "#f4434f",
+      "label": [
+        380.0,
+        995.1
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 380.0,
+        "cy": 995.1,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 102,
+      "colorNumber": 5,
+      "colorHex": "#f4434f",
+      "label": [
+        355.18055198035216,
+        984.8194480196478
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 355.18055198035216,
+        "cy": 984.8194480196478,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 103,
+      "colorNumber": 5,
+      "colorHex": "#f4434f",
+      "label": [
+        344.9,
+        960.0
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 344.9,
+        "cy": 960.0,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 104,
+      "colorNumber": 5,
+      "colorHex": "#f4434f",
+      "label": [
+        355.18055198035216,
+        935.1805519803522
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 355.18055198035216,
+        "cy": 935.1805519803522,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 105,
+      "colorNumber": 5,
+      "colorHex": "#f4434f",
+      "label": [
+        380.0,
+        924.9
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 380.0,
+        "cy": 924.9,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 106,
+      "colorNumber": 5,
+      "colorHex": "#f4434f",
+      "label": [
+        404.81944801964784,
+        935.1805519803522
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 404.81944801964784,
+        "cy": 935.1805519803522,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 107,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        380,
+        960
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 380,
+        "cy": 960,
+        "rx": 17.1,
+        "ry": 17.1
+      }
+    },
+    {
+      "id": 108,
+      "colorNumber": 9,
+      "colorHex": "#398b4c",
+      "label": [
+        359.1,
+        1010.65
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 380 1020 Q 349.75 984.25 344.8 1010.65 Q 361.3 1028.25 380 1020 Z"
+      }
+    },
+    {
+      "id": 109,
+      "colorNumber": 7,
+      "colorHex": "#ff9c42",
+      "label": [
+        535.1,
+        960.0
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 535.1,
+        "cy": 960.0,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 110,
+      "colorNumber": 7,
+      "colorHex": "#ff9c42",
+      "label": [
+        524.8194480196478,
+        984.8194480196478
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 524.8194480196478,
+        "cy": 984.8194480196478,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 111,
+      "colorNumber": 7,
+      "colorHex": "#ff9c42",
+      "label": [
+        500.0,
+        995.1
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 500.0,
+        "cy": 995.1,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 112,
+      "colorNumber": 7,
+      "colorHex": "#ff9c42",
+      "label": [
+        475.18055198035216,
+        984.8194480196478
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 475.18055198035216,
+        "cy": 984.8194480196478,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 113,
+      "colorNumber": 7,
+      "colorHex": "#ff9c42",
+      "label": [
+        464.9,
+        960.0
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 464.9,
+        "cy": 960.0,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 114,
+      "colorNumber": 7,
+      "colorHex": "#ff9c42",
+      "label": [
+        475.18055198035216,
+        935.1805519803522
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 475.18055198035216,
+        "cy": 935.1805519803522,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 115,
+      "colorNumber": 7,
+      "colorHex": "#ff9c42",
+      "label": [
+        500.0,
+        924.9
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 500.0,
+        "cy": 924.9,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 116,
+      "colorNumber": 7,
+      "colorHex": "#ff9c42",
+      "label": [
+        524.8194480196478,
+        935.1805519803522
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 524.8194480196478,
+        "cy": 935.1805519803522,
+        "rx": 18.900000000000002,
+        "ry": 18.900000000000002
+      }
+    },
+    {
+      "id": 117,
+      "colorNumber": 1,
+      "colorHex": "#ffe04b",
+      "label": [
+        500,
+        960
+      ],
+      "prefilled": false,
+      "shape": "ellipse",
+      "attributes": {
+        "cx": 500,
+        "cy": 960,
+        "rx": 17.1,
+        "ry": 17.1
+      }
+    },
+    {
+      "id": 118,
+      "colorNumber": 9,
+      "colorHex": "#398b4c",
+      "label": [
+        479.1,
+        1010.65
+      ],
+      "prefilled": false,
+      "shape": "path",
+      "attributes": {
+        "d": "M 500 1020 Q 469.75 984.25 464.8 1010.65 Q 481.3 1028.25 500 1020 Z"
+      }
+    }
+  ]
+}

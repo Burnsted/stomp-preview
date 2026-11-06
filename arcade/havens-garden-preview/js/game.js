@@ -1,12 +1,12 @@
 'use strict';
 /* ============================================================
-   Haven's Garden v0.9-go
+   Haven's Garden v0.9-prod
    Standalone birthday garden — NOT part of STOMP.
    Ted-locked comps: wide coloring-book field, basket plant,
    bugs+net, bees→hive→jars, color rows, CBN, shop.
    ============================================================ */
 
-const VER = 'v0.9-go';
+const VER = 'v0.9-prod';
 const PK = 'havensGarden.v1';
 const MUTE_K = 'havensGarden.mute';
 const QUIET_K = 'havensGarden.quiet';
@@ -1312,51 +1312,44 @@ function drawFieldBugs() {
     const s = worldToScreen(b.x, b.y);
     if (s.x < -40 || s.x > W + 40 || s.y < -40 || s.y > H + 40) return;
     const bob = Math.sin(b.phase) * 4;
-    if (b.kind === 'bee' || b.kind === 'butterfly') {
-      const flap = ((performance.now() / POLLINATOR_FLAP_MS) | 0) % 2;
-      let img = null;
-      if (b.kind === 'bee') img = Assets.get(flap ? 'bee02' : 'bee01');
-      else img = Assets.get(flap ? 'butterfly02' : 'butterfly01');
-      const box = X(36);
-      if (img) cx.drawImage(img, s.x - box / 2, s.y + bob - box / 2, box, box);
-      else {
-        cx.fillStyle = b.kind === 'bee' ? '#ffd23c' : '#f078be';
-        cx.beginPath(); cx.ellipse(s.x, s.y + bob, 10, 8, 0, 0, 7); cx.fill();
-      }
-    } else if (b.kind === 'ladybug') {
-      cx.fillStyle = '#e23a3a';
-      cx.beginPath(); cx.ellipse(s.x, s.y + bob, 10, 8, 0, 0, 7); cx.fill();
-      cx.fillStyle = '#1e1814';
-      cx.beginPath(); cx.arc(s.x - 3, s.y + bob - 2, 2, 0, 7); cx.fill();
-      cx.beginPath(); cx.arc(s.x + 3, s.y + bob + 1, 2, 0, 7); cx.fill();
-    } else {
-      cx.fillStyle = '#6ecf4a';
-      cx.beginPath(); cx.ellipse(s.x, s.y + bob, 12, 7, -0.3, 0, 7); cx.fill();
-      cx.strokeStyle = '#3c8237'; cx.lineWidth = 2;
-      cx.beginPath(); cx.moveTo(s.x + 10, s.y + bob); cx.lineTo(s.x + 18, s.y + bob - 6); cx.stroke();
+    const key = b.kind === 'ladybug' ? 'bugLadybug'
+      : b.kind === 'grasshopper' ? 'bugGrasshopper'
+        : b.kind === 'bee' ? 'bugBee' : 'bugButterfly';
+    const img = Assets.get(key);
+    const box = b.kind === 'ladybug' ? X(22) : (b.kind === 'grasshopper' ? X(40) : X(32));
+    if (img) {
+      cx.drawImage(img, s.x - box / 2, s.y + bob - box / 2, box, box);
+      return;
     }
+    cx.fillStyle = b.kind === 'bee' ? '#ffd23c' : (b.kind === 'ladybug' ? '#e23a3a' : (b.kind === 'grasshopper' ? '#6ecf4a' : '#f078be'));
+    cx.beginPath(); cx.ellipse(s.x, s.y + bob, 10, 8, 0, 0, 7); cx.fill();
   });
 }
 
 function drawBugNet(sx, sy) {
-  // Simple kid net — pole + hoop + mesh (original, not from comps as sprite)
   const face = girl.face || 1;
-  const tipX = sx + face * X(70);
-  const tipY = sy - H * 0.18;
-  cx.strokeStyle = '#8a5524';
-  cx.lineWidth = 4;
-  cx.lineCap = 'round';
-  cx.beginPath(); cx.moveTo(sx + face * X(18), sy - H * 0.08); cx.lineTo(tipX, tipY); cx.stroke();
-  cx.strokeStyle = '#5ecf7a';
-  cx.lineWidth = 3;
-  cx.beginPath(); cx.ellipse(tipX + face * 8, tipY, X(22), Y(16), 0, 0, 7); cx.stroke();
-  cx.strokeStyle = 'rgba(255,255,255,0.55)';
-  cx.lineWidth = 1;
-  for (let i = -2; i <= 2; i++) {
-    cx.beginPath();
-    cx.moveTo(tipX + face * 8 - 14, tipY + i * 5);
-    cx.lineTo(tipX + face * 8 + 14, tipY + i * 5);
-    cx.stroke();
+  const net = Assets.get('bugNet');
+  const tipX = sx + face * X(58);
+  const tipY = sy - H * 0.22;
+  if (net) {
+    const nh = H * 0.16;
+    const nw = nh * (net.width / net.height);
+    cx.save();
+    if (face < 0) {
+      cx.translate(tipX, tipY);
+      cx.scale(-1, 1);
+      cx.drawImage(net, -nw * 0.35, -nh * 0.15, nw, nh);
+    } else {
+      cx.drawImage(net, tipX - nw * 0.35, tipY - nh * 0.15, nw, nh);
+    }
+    cx.restore();
+  } else {
+    cx.strokeStyle = '#8a5524';
+    cx.lineWidth = 4;
+    cx.beginPath(); cx.moveTo(sx + face * X(18), sy - H * 0.08); cx.lineTo(tipX, tipY); cx.stroke();
+    cx.strokeStyle = '#5ecf7a';
+    cx.lineWidth = 3;
+    cx.beginPath(); cx.ellipse(tipX + face * 8, tipY, X(22), Y(16), 0, 0, 7); cx.stroke();
   }
   if (netSwing > 0) {
     cx.strokeStyle = 'rgba(255,230,120,0.7)';
@@ -1377,6 +1370,7 @@ function tryCatchBugAt(wx, wy) {
   if (!best) return false;
   best.caught = 1;
   netSwing = 1;
+  girlPose = 'chase'; girlPoseT = 0.4;
   if (best.kind === 'bee') {
     EX().bees = (EX().bees | 0) + 1;
     cue = 'Bee!';
@@ -1481,7 +1475,7 @@ function hivePourJar() {
 }
 
 function drawHiveScene() {
-  const bg = Assets.get('conceptHive');
+  const bg = Assets.get('plateHive') || Assets.get('conceptHive');
   if (bg) drawFullPlate(bg, 1);
   else {
     cx.fillStyle = '#96cdf0'; cx.fillRect(0, 0, W, H);
@@ -1511,12 +1505,23 @@ function drawHiveScene() {
   cx.fillText('Pour a jar', W / 2, padT + 230);
   hit.hivePour = { x: 40, y: padT + 200, w: W - 80, h: 48 };
 
-  // Concept plate already shows Haven — no second sprite overlay
+  // Player jar stock (plate already shows scenic hive/shelf — don't duplicate hive sprite)
+  const full = Assets.get('jarFull');
+  const empty = Assets.get('jarEmpty');
+  const jars = EX().jarsFull | 0;
+  const empties = EX().jarsEmpty | 0;
+  for (let i = 0; i < Math.min(8, jars + empties); i++) {
+    const img = i < jars ? full : empty;
+    if (!img) break;
+    const jh = Y(42);
+    const jw = jh * (img.width / img.height);
+    cx.drawImage(img, W - 30 - (i % 4) * (jw + 6) - jw, contentBottom() - 50 - ((i / 4) | 0) * (jh + 6) - jh, jw, jh);
+  }
   if (cue) drawCue(cue);
 }
 
 function drawShopScene() {
-  const bg = Assets.get('conceptShop');
+  const bg = Assets.get('plateShop') || Assets.get('conceptShop');
   if (bg) drawFullPlate(bg, 1);
   else drawMeadowBG('day');
   cx.fillStyle = 'rgba(255,250,240,.92)';
@@ -1596,24 +1601,23 @@ function drawCbnPage() {
   const page = HGSystems.CBN_PAGES[EX().cbnPage | 0];
   if (!page) return;
   const fill = EX().cbnFill[page.id] || {};
-  // Art plate or flat coloring-book ground
-  const bg = page.bg ? Assets.get(page.bg) : null;
+  const stem = page.stem || page.id;
+  const bg = Assets.cbnPage(stem) || (page.bg ? Assets.get(page.bg) : null);
   if (bg) drawFullPlate(bg, 1);
   else {
     cx.fillStyle = '#fffaf2'; cx.fillRect(0, 0, W, H);
   }
-  // Dim unfilled look: white wash then paint filled regions
-  cx.fillStyle = 'rgba(255,255,255,0.35)';
-  cx.fillRect(0, 0, W, H);
 
   const top = padT + 52;
   const bot = contentBottom() - 70;
   const left = 12, right = W - 12;
   const pw = right - left, ph = bot - top;
 
+  // Paint filled regions (shape approx; hard pages still readable)
   page.regions.forEach((reg) => {
     const col = fill[reg.id];
     if (!col) return;
+    if (reg.prefilled) return;
     cx.fillStyle = col;
     if (reg.shape === 'rect') {
       cx.fillRect(left + reg.x * pw, top + reg.y * ph, reg.w * pw, reg.h * ph);
@@ -1623,16 +1627,14 @@ function drawCbnPage() {
       cx.fill();
     }
   });
-  // Numbers for unfilled
-  page.regions.forEach((reg) => {
-    if (fill[reg.id]) return;
-    const nx = left + (reg.shape === 'rect' ? reg.x + reg.w / 2 : reg.x) * pw;
-    const ny = top + (reg.shape === 'rect' ? reg.y + reg.h / 2 : reg.y) * ph;
-    cx.fillStyle = 'rgba(30,24,20,0.75)';
-    cx.font = '800 14px Fredoka, system-ui, sans-serif';
-    cx.textAlign = 'center';
-    cx.fillText(String(reg.n), nx, ny + 5);
-  });
+  // Ink overlay keeps numbers / outlines crisp
+  const ink = Assets.cbnInk(stem);
+  if (ink) {
+    cx.save();
+    // cover plate area same as drawFullPlate math roughly via playfield box
+    cx.drawImage(ink, left, top, pw, ph);
+    cx.restore();
+  }
 
   // Palette
   const colors = Math.min(page.colors || 5, HGSystems.CBN_PALETTE.length);
@@ -1670,16 +1672,44 @@ function cbnTap(p) {
   const nx = (p.x - box.x) / box.w;
   const ny = (p.y - box.y) / box.h;
   const page = box.page;
-  // Topmost region under tap (iterate reverse for smaller overlays)
-  for (let i = page.regions.length - 1; i >= 0; i--) {
-    const reg = page.regions[i];
-    if (!HGSystems.hitRegion(reg, nx, ny)) continue;
+  // Prefer region-mask sampling (Franz prod) when available
+  let picked = null;
+  const stem = page.stem || page.id;
+  const mask = Assets.cbnMask(stem);
+  if (mask && mask.naturalWidth) {
+    try {
+      const mc = document.createElement('canvas');
+      mc.width = mask.naturalWidth; mc.height = mask.naturalHeight;
+      const mcx = mc.getContext('2d', { willReadFrequently: true });
+      mcx.imageSmoothingEnabled = false;
+      mcx.drawImage(mask, 0, 0);
+      const px = Math.max(0, Math.min(mask.naturalWidth - 1, (nx * mask.naturalWidth) | 0));
+      const py = Math.max(0, Math.min(mask.naturalHeight - 1, (ny * mask.naturalHeight) | 0));
+      const d = mcx.getImageData(px, py, 1, 1).data;
+      const rid = (d[0] << 16) | (d[1] << 8) | d[2];
+      if (rid > 0) {
+        const n = (page.regionColor && page.regionColor[rid]) || null;
+        if (n) picked = page.regions.find((r) => (r.id | 0) === rid) || { id: String(rid), n };
+      }
+    } catch (e) {}
+  }
+  if (!picked) {
+    for (let i = page.regions.length - 1; i >= 0; i--) {
+      const reg = page.regions[i];
+      if (!HGSystems.hitRegion(reg, nx, ny)) continue;
+      picked = reg;
+      break;
+    }
+  }
+  if (picked) {
+    const reg = picked;
     if (reg.n !== cbnSelected) { cue = 'Color ' + reg.n; AudioFX.rustle(); return; }
     const fill = EX().cbnFill[page.id] || (EX().cbnFill[page.id] = {});
-    fill[reg.id] = HGSystems.CBN_PALETTE[reg.n - 1];
+    fill[reg.id] = (page.key && page.key[reg.n]) || HGSystems.CBN_PALETTE[reg.n - 1];
     AudioFX.plant();
-    // Complete?
-    const done = page.regions.every((r) => fill[r.id]);
+    // Complete? (ignore prefilled greens)
+    const paintables = page.regions.filter((r) => !r.prefilled);
+    const done = paintables.length ? paintables.every((r) => fill[r.id]) : page.regions.every((r) => fill[r.id]);
     if (done) {
       if ((EX().cbnDone || []).indexOf(page.id) < 0) EX().cbnDone.push(page.id);
       addFlowerPoints(5);
@@ -1756,70 +1786,33 @@ function drawPlateOffset(img, ox, oy, alpha) {
   cx.restore();
 }
 
-/** Living open field — kid coloring-book meadow (NO concept plate: those bake Haven in). */
+/** Living open field — Franz production plate (empty, no Haven) + camera parallax. */
 function drawLivingField(mode, opts) {
   opts = opts || {};
   mode = mode || 'day';
+  const plate = Assets.get('plateMeadow') || Assets.meadow(mode);
   const sky = mode === 'sunset' ? '#fa8c5a' : mode === 'sunrise' ? '#ffd6a0' : '#8ec8f5';
   cx.fillStyle = sky;
   cx.fillRect(0, 0, W, H);
 
-  // Soft cartoon clouds (parallax)
-  const drift = (opts.drift || 0) + cam.x * 0.02;
-  cx.fillStyle = 'rgba(255,255,255,0.85)';
-  for (let i = 0; i < 4; i++) {
-    const cx0 = ((i * 140 - drift * (0.4 + i * 0.05)) % (W + 120)) - 40;
-    const cy0 = padT + 70 + (i % 3) * 28;
-    cx.beginPath();
-    cx.ellipse(cx0, cy0, 36, 16, 0, 0, 7);
-    cx.ellipse(cx0 + 22, cy0 + 4, 28, 14, 0, 0, 7);
-    cx.ellipse(cx0 - 18, cy0 + 6, 22, 12, 0, 0, 7);
-    cx.fill();
+  if (plate) {
+    // Soft parallax — single plate, no hard tile seams / no baked character
+    const ox = ((-cam.x * 0.16 + (opts.drift || 0) * 0.1) % (W * 0.28));
+    const oy = (-cam.y * 0.05) % (H * 0.06);
+    drawPlateOffset(plate, ox, oy - H * 0.02, 1);
   }
 
-  // Rolling hills — single soft shapes, not tiled bands
-  const hillShift = (-cam.x * 0.12) % W;
-  const midY = (playfieldTop() + playfieldBot()) * 0.42;
-  cx.fillStyle = '#7ecf6a';
-  cx.beginPath();
-  cx.moveTo(-40, H);
-  for (let x = -40; x <= W + 40; x += 40) {
-    const wx = x - hillShift;
-    const y = midY + Math.sin(wx * 0.01 + 1.2) * 28 + Math.cos(wx * 0.007) * 18;
-    cx.lineTo(x, y);
-  }
-  cx.lineTo(W + 40, H);
-  cx.closePath();
-  cx.fill();
-  cx.fillStyle = '#6bbb58';
-  cx.beginPath();
-  cx.moveTo(-40, H);
-  for (let x = -40; x <= W + 40; x += 36) {
-    const wx = x - (-cam.x * 0.28) % W;
-    const y = midY + 50 + Math.sin(wx * 0.014) * 22;
-    cx.lineTo(x, y);
-  }
-  cx.lineTo(W + 40, H);
-  cx.closePath();
-  cx.fill();
+  // Ground wash so world scrolls under her feet
+  const g0 = playfieldTop() + (playfieldBot() - playfieldTop()) * 0.28;
+  const grd = cx.createLinearGradient(0, g0, 0, playfieldBot());
+  grd.addColorStop(0, 'rgba(110, 170, 70, 0.08)');
+  grd.addColorStop(0.45, 'rgba(90, 150, 55, 0.35)');
+  grd.addColorStop(1, 'rgba(70, 130, 45, 0.62)');
+  cx.fillStyle = grd;
+  cx.fillRect(0, g0, W, playfieldBot() - g0 + 4);
 
-  // Dirt path ribbon in screen space following camera
-  const pathY = midY + 90;
-  cx.strokeStyle = '#d2b48c';
-  cx.lineWidth = 48;
-  cx.lineCap = 'round';
-  cx.beginPath();
-  const px0 = W * 0.5 - (girl.x - cam.x) * 0.15;
-  cx.moveTo(px0 - 80, playfieldBot() + 10);
-  cx.quadraticCurveTo(px0 - 20, pathY + 40, px0 + 30, pathY);
-  cx.quadraticCurveTo(px0 + 90, pathY - 50, px0 + 40, midY + 10);
-  cx.stroke();
-  cx.strokeStyle = '#c4a574';
-  cx.lineWidth = 28;
-  cx.stroke();
-
-  // Distant greenhouse landmark (optional)
-  const ghImg = Assets.greenhouse(SAVE.ghSize | 0, false, 'day');
+  // Distant greenhouse landmark
+  const ghImg = Assets.get('plateGreenhouse') || Assets.greenhouse(SAVE.ghSize | 0, false, 'day');
   if (ghImg) {
     const lx = FIELD_W * 0.78, ly = FIELD_H * 0.40;
     const sx = (lx - cam.x) * 0.45 + W * 0.5;
@@ -1828,18 +1821,17 @@ function drawLivingField(mode, opts) {
     const w = h * (ghImg.width / ghImg.height);
     if (sx > -w && sx < W + w) {
       cx.save();
-      cx.globalAlpha = 0.9;
+      cx.globalAlpha = 0.85;
       cx.drawImage(ghImg, sx - w / 2, sy - h, w, h);
       cx.restore();
     }
   }
 
-  // Near grass tufts (world space) — camera-follow living field
   grassTufts.forEach((t) => {
     const s = worldToScreen(t.x, t.y);
     if (s.x < -40 || s.x > W + 40 || s.y < playfieldTop() || s.y > playfieldBot() + 20) return;
     const bob = Math.sin(performance.now() / 420 + t.phase) * 2;
-    cx.fillStyle = `hsla(${t.hue}, 50%, 36%, 0.7)`;
+    cx.fillStyle = `hsla(${t.hue}, 50%, 36%, 0.55)`;
     cx.beginPath();
     cx.ellipse(s.x, s.y + bob, t.w * 0.5, t.h * 0.5, 0, 0, 7);
     cx.fill();
@@ -1890,42 +1882,21 @@ function basketPos(gx, gy, girlH) {
   };
 }
 
-/** Original drawn wicker picnic basket — no Franz basket file, no copied game art. */
+/** Hip basket — production prop; sparkle multi-pick when upgrade is active. */
 function drawWickerBasket(bx, by, scale) {
   scale = scale == null ? 1 : scale;
-  const w = X(58) * scale;
-  const h = Y(34) * scale;
-  cx.save();
-  // Shadow
-  cx.fillStyle = 'rgba(40, 28, 16, 0.18)';
-  cx.beginPath(); cx.ellipse(bx + 2, by + h * 0.28, w * 0.48, h * 0.22, 0, 0, 7); cx.fill();
-  // Body
-  cx.fillStyle = '#c48a48';
-  cx.beginPath(); cx.ellipse(bx, by + h * 0.06, w * 0.48, h * 0.40, 0, 0, 7); cx.fill();
-  cx.fillStyle = '#a86f34';
-  cx.beginPath(); cx.ellipse(bx, by + h * 0.10, w * 0.40, h * 0.28, 0, 0, 7); cx.fill();
-  // Rim / open top
-  cx.fillStyle = '#8a5524';
-  cx.beginPath(); cx.ellipse(bx, by - h * 0.08, w * 0.46, h * 0.20, 0, 0, 7); cx.fill();
-  cx.fillStyle = '#6e4218';
-  cx.beginPath(); cx.ellipse(bx, by - h * 0.06, w * 0.36, h * 0.14, 0, 0, 7); cx.fill();
-  // Handle
-  cx.strokeStyle = '#7a4a20';
-  cx.lineWidth = Math.max(2.5, X(3.2) * scale);
-  cx.lineCap = 'round';
-  cx.beginPath();
-  cx.arc(bx, by - h * 0.22, w * 0.30, Math.PI * 1.08, Math.PI * 1.92, false);
-  cx.stroke();
-  // Simple weave hints
-  cx.strokeStyle = 'rgba(90, 50, 18, 0.35)';
-  cx.lineWidth = 1;
-  for (let i = -2; i <= 2; i++) {
-    cx.beginPath();
-    cx.moveTo(bx + i * w * 0.12, by - h * 0.02);
-    cx.lineTo(bx + i * w * 0.12, by + h * 0.28);
-    cx.stroke();
+  const sparkle = sparkleActive();
+  const img = sparkle ? (Assets.get('multiPickBasket') || Assets.get('basket')) : Assets.get('basket');
+  if (img) {
+    const h = Y(48) * scale * (sparkle ? 1.15 : 1);
+    const w = h * (img.width / img.height);
+    cx.drawImage(img, bx - w / 2, by - h * 0.72, w, h);
+    return;
   }
-  cx.restore();
+  const w = X(58) * scale;
+  const hh = Y(34) * scale;
+  cx.fillStyle = '#c48a48';
+  cx.beginPath(); cx.ellipse(bx, by + hh * 0.06, w * 0.48, hh * 0.40, 0, 0, 7); cx.fill();
 }
 
 /** Small flowers laid horizontally in the basket — same scale as meadow pick flowers. */
@@ -1954,22 +1925,25 @@ function drawBasketFlowers(bx, by, ids, flyingId) {
 }
 
 function drawGirl(x, y, walking) {
-  const h = H * GIRL_FRAME_FRAC * girl.squash;
+  // Production sprites: 1024 canvas, ~768 standing visible → scale so visible ≈ 25% frame
+  const prod = !!Assets.get('havenRun');
+  const visFrac = prod ? (1024 / 768) : 1;
+  const h = H * GIRL_FRAME_FRAC * visFrac * girl.squash;
   let img = null;
   let bob = 0;
-  const pose = girlPoseT > 0 ? girlPose : (walking ? 'walk' : 'idle');
+  let pose = girlPoseT > 0 ? girlPose : (walking ? 'walk' : 'idle');
+  if (netSwing > 0.2) pose = 'chase';
 
-  if (pose === 'pick') img = Assets.get('havenPick');
-  else if (pose === 'plant') img = Assets.get('havenPlant');
-  else if (pose === 'water') img = Assets.get('havenWater');
+  if (pose === 'pick') img = Assets.pose('pick');
+  else if (pose === 'plant' || pose === 'water') img = Assets.pose('plant');
+  else if (pose === 'chase') img = Assets.pose('chase');
+  else if (pose === 'jump') img = Assets.pose('jump');
   else if (pose === 'walk' || walking) {
     const fi = girl.walkFrame | 0;
     img = Assets.walkFrame(fi);
     if (fi === 1 || fi === 3) bob = -WALK_BOB_PX * Math.min(SX, SY) * 2;
-  } else if (girl.face < 0 || Math.abs(girl.tx - girl.x) > 2) {
-    img = Assets.get('havenThreeQuarter');
   } else {
-    img = Assets.get('havenFront');
+    img = Assets.pose('idle');
   }
 
   cx.save();
@@ -1981,8 +1955,8 @@ function drawGirl(x, y, walking) {
     cx.fillRect(x - h * 0.08, y - h * 0.55, h * 0.16, h * 0.35);
   }
 
-  // Basket at her hip — NEVER a giant bouquet-full overlay over her torso
-  if (bouquet.length > 0 || (plantFly && plantFly.id)) {
+  // Basket at her hip — production prop sprite (sparkle basket when upgrade active)
+  if (bouquet.length > 0 || (plantFly && plantFly.id) || sparkleActive()) {
     const ba = basketPos(x, y, h);
     drawWickerBasket(ba.x, ba.y, 1);
     drawBasketFlowers(ba.x, ba.y, bouquet, plantFly ? plantFly.id : null);
@@ -3310,7 +3284,7 @@ async function boot() {
   }
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js?v=0.9-go').catch(() => {});
+    navigator.serviceWorker.register('./sw.js?v=0.9-prod').catch(() => {});
   }
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));
 }
