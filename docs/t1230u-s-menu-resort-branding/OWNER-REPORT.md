@@ -8,7 +8,7 @@
 
 ## Tip / PR
 
-- **Tip SHA:** `e8dd073a227a82c9478a895afc1bdef7af5c1a83` _(updated on push)_
+- **Tip SHA:** `2346d8242e5f6c88ef1e12239cc23f941f6e1358` _(updated on push)_
 - **Draft PR:** [#73](https://github.com/Burnsted/stomp-preview/pull/73) — *DRAFT t1230u — Form #7 S menu + resort branding (NO MERGE)*
 
 ## What shipped
