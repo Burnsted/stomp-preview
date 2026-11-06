@@ -1,5 +1,5 @@
-/* Haven's Garden v0.9-birthday-preview — greenhouse-v2 empty plate + growth sprites */
-const CACHE = 'havens-garden-birthday-preview-v0.9-birthday-preview';
+/* Haven's Garden v0.9-birthday-haven-move — natural Haven locomotion layer */
+const CACHE = 'havens-garden-birthday-preview-v0.9-birthday-haven-move';
 const PRECACHE = [
   './',
   './index.html',
@@ -9,6 +9,7 @@ const PRECACHE = [
   './js/audio.js',
   './js/systems.js',
   './js/nursery.js',
+  './js/haven-anim.js',
   './js/game.js',
   './assets/greenhouse-v2/maps/small.json',
   './assets/greenhouse-v2/maps/medium.json',
@@ -25,6 +26,9 @@ const PRECACHE = [
   './assets/icon/app-icon-512.png',
   './assets/plates/meadow-day.webp',
   './assets/character/haven-run.png',
+  './assets/character/haven-walk-01.png',
+  './assets/character/haven-walk-02.png',
+  './assets/character/haven-pick.png',
   './assets/props/basket.png',
   './assets/props/watering-can.png',
   './assets/bugs/bee.png',
