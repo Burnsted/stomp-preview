@@ -8,7 +8,7 @@
 |---|---|
 | Branch | `cursor/t1232u-locker-boards-customization-2547` |
 | Starting ref | `2d831cefc12ba0a1dead1fed189c669bd75ee6cf` (draft PR **#73** tip — Form #7 S menu + resort text branding; CI green run `42220897290`) |
-| Tip SHA | `a065c2ed023d79e1443d93520f2a9d2e869971ff` |
+| Tip SHA | `92e7339ad83e6d604d45ffdb99e8110953d8d912` (this docs pin; PR head tracks branch tip) |
 | Isolated | **NEW** draft PR — does **not** push onto PR #73 or PR #70. Do not merge. |
 | Draft PR title | DRAFT t1232u — Locker/Boards customization (NO MERGE) |
 
