@@ -19,10 +19,10 @@ canvas{display:block;position:fixed;left:0;top:0;width:100%;height:100%;touch-ac
 <script>
 'use strict';
 /* ============================================================
-   Haven's Garden v0.6 — Franz simplified flat plates as canvas vectors
+   Haven's Garden v0.6.1 — Franz simplified flat plates as canvas vectors
    shared S/M/L house · aisle beds · grow/water/sleep · no JPEG embeds
    ============================================================ */
-const VER='v0.6';
+const VER='v0.6.1';
 const BASKET_SLOTS=6,PICK_RADIUS=36,TARGET_SPACING=78,SPAWN_INTERVAL=720,SPAWN_HOLD=9000;
 const INTRO_BLOOMS_PERSIST=true,PIP_SPEED=260,WORLD_SPEED=118,SWEEP_RADIUS=34,TRAIL_MAX=14;
 const OUTINGS_PER_GARDEN=2,NEW_SPECIES_EVERY=2,MIN_OUTING_TYPES=3;
@@ -701,7 +701,9 @@ function drawExtNightSky(){
 function drawNursery(){
   if(nurseryView==='enter'||nurseryView==='exit'||upgradeAnim){
     const nightExt=dayNight>0.5;
-    if(nightExt)drawExtNightSky();else{drawSky();drawFarHills();drawMidHills();cx.fillStyle=MID;cx.fillRect(0,H*0.55,W,H*0.45);}
+    if(nightExt)drawExtNightSky();else{drawSky();drawFarHills();drawMidHills();}
+    /* opaque lawn behind the house (covers full lower plate; frame wipe clears prior titles) */
+    cx.fillStyle=nightExt?'#2a5a28':MID;cx.fillRect(0,H*0.48,W,H*0.52);
     /* night exteriors are closed-only per Franz plates */
     const dOpen=nightExt?0:door;
     drawGreenhouseBuilding(W/2,H*0.42,1.7+(upgradeAnim?upgradeT*0.12:0)+(SAVE.ghSize|0)*0.08,dOpen);
@@ -835,7 +837,7 @@ cv.addEventListener('pointerdown',onDown,{passive:false});cv.addEventListener('p
 addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
 
 let last=performance.now();
-function frame(now){const dt=Math.min(DT_CAP,(now-last)/1000);last=now;hit={};update(dt);if(state===ST.MENU)drawMenu();else if(state===ST.NURSERY)drawNursery();else drawPlay();drawChrome();if(albumOpen)drawAlbum();requestAnimationFrame(frame);}
+function frame(now){const dt=Math.min(DT_CAP,(now-last)/1000);last=now;hit={};update(dt);cx.fillStyle=SKY0;cx.fillRect(0,0,W,H);if(state===ST.MENU)drawMenu();else if(state===ST.NURSERY)drawNursery();else drawPlay();drawChrome();if(albumOpen)drawAlbum();requestAnimationFrame(frame);}
 requestAnimationFrame(frame);announce("Haven's Garden "+VER);
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
