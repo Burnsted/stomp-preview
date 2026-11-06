@@ -8,7 +8,7 @@
 |---|---|
 | Branch | `cursor/stomper-ingest-t1225u-bfa0` |
 | Base / starting_ref | `9339cc6b30df13beb445c90682d17536d8471db0` (draft PR #60 tip) |
-| Tip SHA | `49f58badf3018ad52d01f242f5c636416632f591` |
+| Tip SHA | `f0d320bf99cca12a034dcac5fd5020954aa69128` |
 | Stack | New isolated draft PR #70 from #60 tip — **does not push onto #60** |
 | Draft PR | https://github.com/Burnsted/stomp-preview/pull/70 |
 
@@ -95,7 +95,7 @@ Flow: Form #7 welcome → STOMPER selection/customization → personalize → ST
 | `gb-phone` `npm run test:woz` | **1079 passed / 41 files** |
 | `batch1` `npm test` | **608 passed / 8 skipped / 37 files** |
 
-CI both jobs: **GREEN** — [pr-verify `49f58ba`](https://github.com/Burnsted/stomp-preview/actions/runs/42151093716) (batch1 + gb-phone).
+CI both jobs: **GREEN** — [pr-verify live tip `f0d320b`](https://github.com/Burnsted/stomp-preview/actions/runs/42151240733) (batch1 + gb-phone). Prior green: [42151093716](https://github.com/Burnsted/stomp-preview/actions/runs/42151093716).
 
 ## 7. Real-device test status
 
