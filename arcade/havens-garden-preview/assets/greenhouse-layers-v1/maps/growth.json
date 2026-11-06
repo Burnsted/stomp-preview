@@ -2,7 +2,7 @@
   "stages": [
     {
       "id": "seedling",
-      "file": "growth/seedling.png",
+      "file": "growth/seedling.webp",
       "size": [
         126,
         142
@@ -15,7 +15,7 @@
     },
     {
       "id": "leaves",
-      "file": "growth/leaves.png",
+      "file": "growth/leaves.webp",
       "size": [
         158,
         232
@@ -28,7 +28,7 @@
     },
     {
       "id": "bud",
-      "file": "growth/bud.png",
+      "file": "growth/bud.webp",
       "size": [
         200,
         282
@@ -41,7 +41,7 @@
     },
     {
       "id": "bloom",
-      "file": "growth/bloom.png",
+      "file": "growth/bloom.webp",
       "size": [
         201,
         312

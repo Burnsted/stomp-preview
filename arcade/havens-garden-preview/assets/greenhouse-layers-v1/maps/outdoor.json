@@ -11,11 +11,11 @@
   ],
   "phoneScale": 0.6666666666666666,
   "plate": "plates/outdoor-garden-beds.webp",
-  "plateNoLip": "plates/outdoor-garden-beds-nolip.png",
+  "plateNoLip": "plates/outdoor-garden-beds-nolip.webp",
   "layers": {
-    "soilDry": "layers/outdoor/soil_dry.png",
-    "soilWet": "layers/outdoor/soil_wet.png",
-    "frontLip": "layers/outdoor/front_lip.png",
+    "soilDry": "layers/outdoor/soil_dry.webp",
+    "soilWet": "layers/outdoor/soil_wet.webp",
+    "frontLip": "layers/outdoor/front_lip.webp",
     "registration": "plateNoLip \u2192 soil \u2192 plants \u2192 frontLip"
   },
   "bedCount": 2,
@@ -60,9 +60,9 @@
       "slotCount": 6,
       "activeSlotCount": 6,
       "layers": {
-        "soilDryFullPage": "layers/outdoor/soil_dry.png",
-        "soilWetFullPage": "layers/outdoor/soil_wet.png",
-        "frontLipFullPage": "layers/outdoor/front_lip.png",
+        "soilDryFullPage": "layers/outdoor/soil_dry.webp",
+        "soilWetFullPage": "layers/outdoor/soil_wet.webp",
+        "frontLipFullPage": "layers/outdoor/front_lip.webp",
         "soilDryCropped": "layers/_cropped/outdoor/outdoor_bed0_soil_dry.png",
         "soilWetCropped": "layers/_cropped/outdoor/outdoor_bed0_soil_wet.png",
         "frontLipCropped": "layers/_cropped/outdoor/outdoor_bed0_front_lip.png",
@@ -84,7 +84,7 @@
           "width": 275,
           "height": 36
         },
-        "plateNoLip": "plates/outdoor-garden-beds-nolip.png"
+        "plateNoLip": "plates/outdoor-garden-beds-nolip.webp"
       }
     },
     {
@@ -118,9 +118,9 @@
       "slotCount": 6,
       "activeSlotCount": 6,
       "layers": {
-        "soilDryFullPage": "layers/outdoor/soil_dry.png",
-        "soilWetFullPage": "layers/outdoor/soil_wet.png",
-        "frontLipFullPage": "layers/outdoor/front_lip.png",
+        "soilDryFullPage": "layers/outdoor/soil_dry.webp",
+        "soilWetFullPage": "layers/outdoor/soil_wet.webp",
+        "frontLipFullPage": "layers/outdoor/front_lip.webp",
         "soilDryCropped": "layers/_cropped/outdoor/outdoor_bed1_soil_dry.png",
         "soilWetCropped": "layers/_cropped/outdoor/outdoor_bed1_soil_wet.png",
         "frontLipCropped": "layers/_cropped/outdoor/outdoor_bed1_front_lip.png",
@@ -142,7 +142,7 @@
           "width": 275,
           "height": 36
         },
-        "plateNoLip": "plates/outdoor-garden-beds-nolip.png"
+        "plateNoLip": "plates/outdoor-garden-beds-nolip.webp"
       }
     }
   ],

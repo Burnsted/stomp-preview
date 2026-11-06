@@ -11,11 +11,11 @@
   ],
   "phoneScale": 0.6666666666666666,
   "plate": "plates/greenhouse-medium-interior.webp",
-  "plateNoLip": "plates/greenhouse-medium-interior-nolip.png",
+  "plateNoLip": "plates/greenhouse-medium-interior-nolip.webp",
   "layers": {
-    "soilDry": "layers/medium/soil_dry.png",
-    "soilWet": "layers/medium/soil_wet.png",
-    "frontLip": "layers/medium/front_lip.png",
+    "soilDry": "layers/medium/soil_dry.webp",
+    "soilWet": "layers/medium/soil_wet.webp",
+    "frontLip": "layers/medium/front_lip.webp",
     "registration": "plateNoLip \u2192 soil \u2192 plants \u2192 frontLip"
   },
   "bedCount": 4,
@@ -60,9 +60,9 @@
       "slotCount": 6,
       "activeSlotCount": 4,
       "layers": {
-        "soilDryFullPage": "layers/medium/soil_dry.png",
-        "soilWetFullPage": "layers/medium/soil_wet.png",
-        "frontLipFullPage": "layers/medium/front_lip.png",
+        "soilDryFullPage": "layers/medium/soil_dry.webp",
+        "soilWetFullPage": "layers/medium/soil_wet.webp",
+        "frontLipFullPage": "layers/medium/front_lip.webp",
         "soilDryCropped": "layers/_cropped/medium/medium_bed0_soil_dry.png",
         "soilWetCropped": "layers/_cropped/medium/medium_bed0_soil_wet.png",
         "frontLipCropped": "layers/_cropped/medium/medium_bed0_front_lip.png",
@@ -84,7 +84,7 @@
           "width": 280,
           "height": 386
         },
-        "plateNoLip": "plates/greenhouse-medium-interior-nolip.png"
+        "plateNoLip": "plates/greenhouse-medium-interior-nolip.webp"
       }
     },
     {
@@ -118,9 +118,9 @@
       "slotCount": 6,
       "activeSlotCount": 4,
       "layers": {
-        "soilDryFullPage": "layers/medium/soil_dry.png",
-        "soilWetFullPage": "layers/medium/soil_wet.png",
-        "frontLipFullPage": "layers/medium/front_lip.png",
+        "soilDryFullPage": "layers/medium/soil_dry.webp",
+        "soilWetFullPage": "layers/medium/soil_wet.webp",
+        "frontLipFullPage": "layers/medium/front_lip.webp",
         "soilDryCropped": "layers/_cropped/medium/medium_bed1_soil_dry.png",
         "soilWetCropped": "layers/_cropped/medium/medium_bed1_soil_wet.png",
         "frontLipCropped": "layers/_cropped/medium/medium_bed1_front_lip.png",
@@ -142,7 +142,7 @@
           "width": 280,
           "height": 386
         },
-        "plateNoLip": "plates/greenhouse-medium-interior-nolip.png"
+        "plateNoLip": "plates/greenhouse-medium-interior-nolip.webp"
       }
     },
     {
@@ -176,9 +176,9 @@
       "slotCount": 6,
       "activeSlotCount": 6,
       "layers": {
-        "soilDryFullPage": "layers/medium/soil_dry.png",
-        "soilWetFullPage": "layers/medium/soil_wet.png",
-        "frontLipFullPage": "layers/medium/front_lip.png",
+        "soilDryFullPage": "layers/medium/soil_dry.webp",
+        "soilWetFullPage": "layers/medium/soil_wet.webp",
+        "frontLipFullPage": "layers/medium/front_lip.webp",
         "soilDryCropped": "layers/_cropped/medium/medium_bed2_soil_dry.png",
         "soilWetCropped": "layers/_cropped/medium/medium_bed2_soil_wet.png",
         "frontLipCropped": "layers/_cropped/medium/medium_bed2_front_lip.png",
@@ -200,7 +200,7 @@
           "width": 285,
           "height": 36
         },
-        "plateNoLip": "plates/greenhouse-medium-interior-nolip.png"
+        "plateNoLip": "plates/greenhouse-medium-interior-nolip.webp"
       }
     },
     {
@@ -234,9 +234,9 @@
       "slotCount": 6,
       "activeSlotCount": 6,
       "layers": {
-        "soilDryFullPage": "layers/medium/soil_dry.png",
-        "soilWetFullPage": "layers/medium/soil_wet.png",
-        "frontLipFullPage": "layers/medium/front_lip.png",
+        "soilDryFullPage": "layers/medium/soil_dry.webp",
+        "soilWetFullPage": "layers/medium/soil_wet.webp",
+        "frontLipFullPage": "layers/medium/front_lip.webp",
         "soilDryCropped": "layers/_cropped/medium/medium_bed3_soil_dry.png",
         "soilWetCropped": "layers/_cropped/medium/medium_bed3_soil_wet.png",
         "frontLipCropped": "layers/_cropped/medium/medium_bed3_front_lip.png",
@@ -258,7 +258,7 @@
           "width": 285,
           "height": 36
         },
-        "plateNoLip": "plates/greenhouse-medium-interior-nolip.png"
+        "plateNoLip": "plates/greenhouse-medium-interior-nolip.webp"
       }
     }
   ],
