@@ -1,0 +1,117 @@
+{
+  "page": 18,
+  "subject": "watering-can",
+  "difficulty": "extra-easy",
+  "width": 585,
+  "height": 1266,
+  "target_count": 7,
+  "palette": {
+    "1": {
+      "name": "Sunshine",
+      "hex": "#FFD63C"
+    },
+    "2": {
+      "name": "Sky blue",
+      "hex": "#96D9F5"
+    },
+    "4": {
+      "name": "Petal pink",
+      "hex": "#F69CBD"
+    },
+    "6": {
+      "name": "Clay / gold",
+      "hex": "#D49A5C"
+    },
+    "8": {
+      "name": "Deep brown",
+      "hex": "#795542"
+    }
+  },
+  "regions": [
+    {
+      "id": 1,
+      "x": 120,
+      "y": 556,
+      "r": 23.71,
+      "area": 7375,
+      "cx": 120.98630508474577,
+      "cy": 595.8764745762712,
+      "color_number": 8,
+      "color_hex": "#795542",
+      "target_id": 1
+    },
+    {
+      "id": 2,
+      "x": 459,
+      "y": 620,
+      "r": 23.09,
+      "area": 11871,
+      "cx": 454.14665992755454,
+      "cy": 623.0725296942128,
+      "color_number": 2,
+      "color_hex": "#96D9F5",
+      "target_id": 2
+    },
+    {
+      "id": 3,
+      "x": 510,
+      "y": 498,
+      "r": 24.04,
+      "area": 4723,
+      "cx": 508.13381325428753,
+      "cy": 498.93309337285626,
+      "color_number": 6,
+      "color_hex": "#D49A5C",
+      "target_id": 3
+    },
+    {
+      "id": 4,
+      "x": 296,
+      "y": 810,
+      "r": 38.0,
+      "area": 69657,
+      "cx": 286.5317484244225,
+      "cy": 752.8295361557346,
+      "color_number": 2,
+      "color_hex": "#96D9F5",
+      "target_id": 4
+    },
+    {
+      "id": 5,
+      "x": 280,
+      "y": 543,
+      "r": 25.0,
+      "area": 14174,
+      "cx": 282.4847608296882,
+      "cy": 543.540073373783,
+      "color_number": 6,
+      "color_hex": "#D49A5C",
+      "target_id": 5
+    },
+    {
+      "id": 6,
+      "x": 288,
+      "y": 702,
+      "r": 63.82,
+      "area": 13080,
+      "cx": 287.46605504587154,
+      "cy": 701.4759174311927,
+      "color_number": 4,
+      "color_hex": "#F69CBD",
+      "target_id": 6
+    },
+    {
+      "id": 7,
+      "x": 283,
+      "y": 496,
+      "r": 17.0,
+      "area": 2485,
+      "cx": 283.0,
+      "cy": 496.0,
+      "color_number": 1,
+      "color_hex": "#FFD63C",
+      "target_id": 7
+    }
+  ],
+  "note": "Original hand-authored vector coloring-book illustration. 16-bit grayscale target-ID mask; 0 is non-target. Stable shared palette IDs. Compose fills below RGBA ink overlay. Unnumbered paper remains white."
+}

@@ -1,0 +1,141 @@
+{
+  "page": 16,
+  "subject": "simple-butterfly",
+  "difficulty": "extra-easy",
+  "width": 585,
+  "height": 1266,
+  "target_count": 9,
+  "palette": {
+    "1": {
+      "name": "Sunshine",
+      "hex": "#FFD63C"
+    },
+    "2": {
+      "name": "Sky blue",
+      "hex": "#96D9F5"
+    },
+    "4": {
+      "name": "Petal pink",
+      "hex": "#F69CBD"
+    },
+    "6": {
+      "name": "Clay / gold",
+      "hex": "#D49A5C"
+    },
+    "7": {
+      "name": "Lavender",
+      "hex": "#B59BDF"
+    }
+  },
+  "regions": [
+    {
+      "id": 1,
+      "x": 97,
+      "y": 381,
+      "r": 36.25,
+      "area": 25810,
+      "cx": 140.82502905850447,
+      "cy": 489.73785354513757,
+      "color_number": 4,
+      "color_hex": "#F69CBD",
+      "target_id": 1
+    },
+    {
+      "id": 2,
+      "x": 154,
+      "y": 836,
+      "r": 36.25,
+      "area": 22809,
+      "cx": 179.51773422771714,
+      "cy": 746.5954228593976,
+      "color_number": 7,
+      "color_hex": "#B59BDF",
+      "target_id": 2
+    },
+    {
+      "id": 3,
+      "x": 164,
+      "y": 514,
+      "r": 31.11,
+      "area": 11093,
+      "cx": 170.10511133147028,
+      "cy": 509.3295772108537,
+      "color_number": 1,
+      "color_hex": "#FFD63C",
+      "target_id": 3
+    },
+    {
+      "id": 4,
+      "x": 185,
+      "y": 737,
+      "r": 27.51,
+      "area": 6195,
+      "cx": 193.51557707828894,
+      "cy": 736.3725585149314,
+      "color_number": 2,
+      "color_hex": "#96D9F5",
+      "target_id": 4
+    },
+    {
+      "id": 5,
+      "x": 487,
+      "y": 381,
+      "r": 36.25,
+      "area": 25814,
+      "cx": 443.14736189664524,
+      "cy": 489.72654373595725,
+      "color_number": 4,
+      "color_hex": "#F69CBD",
+      "target_id": 5
+    },
+    {
+      "id": 6,
+      "x": 430,
+      "y": 836,
+      "r": 36.25,
+      "area": 22809,
+      "cx": 404.46828006488664,
+      "cy": 746.5932745845938,
+      "color_number": 7,
+      "color_hex": "#B59BDF",
+      "target_id": 6
+    },
+    {
+      "id": 7,
+      "x": 421,
+      "y": 514,
+      "r": 30.41,
+      "area": 11095,
+      "cx": 413.8821090581343,
+      "cy": 509.33907165389815,
+      "color_number": 1,
+      "color_hex": "#FFD63C",
+      "target_id": 7
+    },
+    {
+      "id": 8,
+      "x": 400,
+      "y": 737,
+      "r": 26.57,
+      "area": 6194,
+      "cx": 390.4670649015176,
+      "cy": 736.3692282854375,
+      "color_number": 2,
+      "color_hex": "#96D9F5",
+      "target_id": 8
+    },
+    {
+      "id": 9,
+      "x": 292,
+      "y": 650,
+      "r": 22.0,
+      "area": 10110,
+      "cx": 292.00237388724037,
+      "cy": 648.5001978239367,
+      "color_number": 6,
+      "color_hex": "#D49A5C",
+      "target_id": 9
+    }
+  ],
+  "note": "Original hand-authored vector coloring-book illustration. 16-bit grayscale target-ID mask; 0 is non-target. Stable shared palette IDs. Compose fills below RGBA ink overlay. Unnumbered paper remains white."
+}

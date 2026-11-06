@@ -1,0 +1,720 @@
+{
+  "key": "large",
+  "kind": "greenhouse-interior",
+  "capacityTarget": 30,
+  "slotsPerBed": 8,
+  "plateSize": [
+    585,
+    1266
+  ],
+  "phoneScale": 0.6666666666666666,
+  "plate": "plates/medium-empty.webp",
+  "plateNoLip": "plates/medium-empty.webp",
+  "layers": {},
+  "beds": [
+    {
+      "id": "bed0",
+      "index": 0,
+      "soilBounds": {
+        "x": 0,
+        "y": 718,
+        "w": 168,
+        "h": 246
+      }
+    },
+    {
+      "id": "bed1",
+      "index": 1,
+      "soilBounds": {
+        "x": 52,
+        "y": 718,
+        "w": 202,
+        "h": 372
+      }
+    },
+    {
+      "id": "bed2",
+      "index": 2,
+      "soilBounds": {
+        "x": 329,
+        "y": 718,
+        "w": 181,
+        "h": 372
+      }
+    },
+    {
+      "id": "bed3",
+      "index": 3,
+      "soilBounds": {
+        "x": 422,
+        "y": 718,
+        "w": 163,
+        "h": 246
+      }
+    }
+  ],
+  "slots": [
+    {
+      "index": 0,
+      "id": "bed0_s0",
+      "bedId": "bed0",
+      "grid": {
+        "row": 0,
+        "col": 0
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 125.0,
+        "y": 736.0
+      },
+      "hitBounds": {
+        "x": 92.0,
+        "y": 688.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.211,
+      "drawOrder": 0
+    },
+    {
+      "index": 1,
+      "id": "bed0_s1",
+      "bedId": "bed0",
+      "grid": {
+        "row": 0,
+        "col": 1
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 103.0,
+        "y": 766.0
+      },
+      "hitBounds": {
+        "x": 70.0,
+        "y": 718.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.227,
+      "drawOrder": 4
+    },
+    {
+      "index": 2,
+      "id": "bed0_s2",
+      "bedId": "bed0",
+      "grid": {
+        "row": 0,
+        "col": 2
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 82.0,
+        "y": 796.0
+      },
+      "hitBounds": {
+        "x": 49.0,
+        "y": 748.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.244,
+      "drawOrder": 7
+    },
+    {
+      "index": 3,
+      "id": "bed0_s3",
+      "bedId": "bed0",
+      "grid": {
+        "row": 0,
+        "col": 3
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 61.0,
+        "y": 826.0
+      },
+      "hitBounds": {
+        "x": 28.0,
+        "y": 778.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.261,
+      "drawOrder": 10
+    },
+    {
+      "index": 4,
+      "id": "bed0_s4",
+      "bedId": "bed0",
+      "grid": {
+        "row": 0,
+        "col": 4
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 45.0,
+        "y": 856.0
+      },
+      "hitBounds": {
+        "x": 12.0,
+        "y": 808.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.279,
+      "drawOrder": 14
+    },
+    {
+      "index": 5,
+      "id": "bed0_s5",
+      "bedId": "bed0",
+      "grid": {
+        "row": 0,
+        "col": 5
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 37.0,
+        "y": 886.0
+      },
+      "hitBounds": {
+        "x": 4.0,
+        "y": 838.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.296,
+      "drawOrder": 17
+    },
+    {
+      "index": 6,
+      "id": "bed0_s6",
+      "bedId": "bed0",
+      "grid": {
+        "row": 0,
+        "col": 6
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 29.0,
+        "y": 916.0
+      },
+      "hitBounds": {
+        "x": -4.0,
+        "y": 868.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.313,
+      "drawOrder": 20
+    },
+    {
+      "index": 7,
+      "id": "bed0_s7",
+      "bedId": "bed0",
+      "grid": {
+        "row": 0,
+        "col": 7
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 20.0,
+        "y": 946.0
+      },
+      "hitBounds": {
+        "x": -13.0,
+        "y": 898.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.329,
+      "drawOrder": 22
+    },
+    {
+      "index": 8,
+      "id": "bed1_s0",
+      "bedId": "bed1",
+      "grid": {
+        "row": 1,
+        "col": 0
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 218.0,
+        "y": 748.0
+      },
+      "hitBounds": {
+        "x": 185.0,
+        "y": 700.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.211,
+      "drawOrder": 2
+    },
+    {
+      "index": 9,
+      "id": "bed1_s1",
+      "bedId": "bed1",
+      "grid": {
+        "row": 1,
+        "col": 1
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 203.0,
+        "y": 802.0
+      },
+      "hitBounds": {
+        "x": 170.0,
+        "y": 754.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.231,
+      "drawOrder": 8
+    },
+    {
+      "index": 10,
+      "id": "bed1_s2",
+      "bedId": "bed1",
+      "grid": {
+        "row": 1,
+        "col": 2
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 190.0,
+        "y": 850.0
+      },
+      "hitBounds": {
+        "x": 157.0,
+        "y": 802.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.25,
+      "drawOrder": 13
+    },
+    {
+      "index": 11,
+      "id": "bed1_s3",
+      "bedId": "bed1",
+      "grid": {
+        "row": 1,
+        "col": 3
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 175.0,
+        "y": 904.0
+      },
+      "hitBounds": {
+        "x": 142.0,
+        "y": 856.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.27,
+      "drawOrder": 18
+    },
+    {
+      "index": 12,
+      "id": "bed1_s4",
+      "bedId": "bed1",
+      "grid": {
+        "row": 1,
+        "col": 4
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 160.0,
+        "y": 958.0
+      },
+      "hitBounds": {
+        "x": 127.0,
+        "y": 910.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.29,
+      "drawOrder": 24
+    },
+    {
+      "index": 13,
+      "id": "bed1_s5",
+      "bedId": "bed1",
+      "grid": {
+        "row": 1,
+        "col": 5
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 146.0,
+        "y": 1006.0
+      },
+      "hitBounds": {
+        "x": 113.0,
+        "y": 958.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.309,
+      "drawOrder": 26
+    },
+    {
+      "index": 14,
+      "id": "bed1_s6",
+      "bedId": "bed1",
+      "grid": {
+        "row": 1,
+        "col": 6
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 131.0,
+        "y": 1060.0
+      },
+      "hitBounds": {
+        "x": 98.0,
+        "y": 1012.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.329,
+      "drawOrder": 28
+    },
+    {
+      "index": 15,
+      "id": "bed2_s0",
+      "bedId": "bed2",
+      "grid": {
+        "row": 2,
+        "col": 0
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 364.0,
+        "y": 748.0
+      },
+      "hitBounds": {
+        "x": 331.0,
+        "y": 700.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.211,
+      "drawOrder": 3
+    },
+    {
+      "index": 16,
+      "id": "bed2_s1",
+      "bedId": "bed2",
+      "grid": {
+        "row": 2,
+        "col": 1
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 374.0,
+        "y": 790.0
+      },
+      "hitBounds": {
+        "x": 341.0,
+        "y": 742.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.227,
+      "drawOrder": 6
+    },
+    {
+      "index": 17,
+      "id": "bed2_s2",
+      "bedId": "bed2",
+      "grid": {
+        "row": 2,
+        "col": 2
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 385.0,
+        "y": 838.0
+      },
+      "hitBounds": {
+        "x": 352.0,
+        "y": 790.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.244,
+      "drawOrder": 11
+    },
+    {
+      "index": 18,
+      "id": "bed2_s3",
+      "bedId": "bed2",
+      "grid": {
+        "row": 2,
+        "col": 3
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 394.0,
+        "y": 880.0
+      },
+      "hitBounds": {
+        "x": 361.0,
+        "y": 832.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.261,
+      "drawOrder": 16
+    },
+    {
+      "index": 19,
+      "id": "bed2_s4",
+      "bedId": "bed2",
+      "grid": {
+        "row": 2,
+        "col": 4
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 406.0,
+        "y": 928.0
+      },
+      "hitBounds": {
+        "x": 373.0,
+        "y": 880.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.279,
+      "drawOrder": 21
+    },
+    {
+      "index": 20,
+      "id": "bed2_s5",
+      "bedId": "bed2",
+      "grid": {
+        "row": 2,
+        "col": 5
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 415.0,
+        "y": 964.0
+      },
+      "hitBounds": {
+        "x": 382.0,
+        "y": 916.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.296,
+      "drawOrder": 25
+    },
+    {
+      "index": 21,
+      "id": "bed2_s6",
+      "bedId": "bed2",
+      "grid": {
+        "row": 2,
+        "col": 6
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 427.0,
+        "y": 1018.0
+      },
+      "hitBounds": {
+        "x": 394.0,
+        "y": 970.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.313,
+      "drawOrder": 27
+    },
+    {
+      "index": 22,
+      "id": "bed2_s7",
+      "bedId": "bed2",
+      "grid": {
+        "row": 2,
+        "col": 7
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 435.0,
+        "y": 1060.0
+      },
+      "hitBounds": {
+        "x": 402.0,
+        "y": 1012.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.329,
+      "drawOrder": 29
+    },
+    {
+      "index": 23,
+      "id": "bed3_s0",
+      "bedId": "bed3",
+      "grid": {
+        "row": 3,
+        "col": 0
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 469.0,
+        "y": 736.0
+      },
+      "hitBounds": {
+        "x": 436.0,
+        "y": 688.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.211,
+      "drawOrder": 1
+    },
+    {
+      "index": 24,
+      "id": "bed3_s1",
+      "bedId": "bed3",
+      "grid": {
+        "row": 3,
+        "col": 1
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 494.0,
+        "y": 772.0
+      },
+      "hitBounds": {
+        "x": 461.0,
+        "y": 724.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.231,
+      "drawOrder": 5
+    },
+    {
+      "index": 25,
+      "id": "bed3_s2",
+      "bedId": "bed3",
+      "grid": {
+        "row": 3,
+        "col": 2
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 517.0,
+        "y": 808.0
+      },
+      "hitBounds": {
+        "x": 484.0,
+        "y": 760.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.25,
+      "drawOrder": 9
+    },
+    {
+      "index": 26,
+      "id": "bed3_s3",
+      "bedId": "bed3",
+      "grid": {
+        "row": 3,
+        "col": 3
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 534.0,
+        "y": 838.0
+      },
+      "hitBounds": {
+        "x": 501.0,
+        "y": 790.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.27,
+      "drawOrder": 12
+    },
+    {
+      "index": 27,
+      "id": "bed3_s4",
+      "bedId": "bed3",
+      "grid": {
+        "row": 3,
+        "col": 4
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 542.0,
+        "y": 874.0
+      },
+      "hitBounds": {
+        "x": 509.0,
+        "y": 826.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.29,
+      "drawOrder": 15
+    },
+    {
+      "index": 28,
+      "id": "bed3_s5",
+      "bedId": "bed3",
+      "grid": {
+        "row": 3,
+        "col": 5
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 551.0,
+        "y": 910.0
+      },
+      "hitBounds": {
+        "x": 518.0,
+        "y": 862.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.309,
+      "drawOrder": 19
+    },
+    {
+      "index": 29,
+      "id": "bed3_s6",
+      "bedId": "bed3",
+      "grid": {
+        "row": 3,
+        "col": 6
+      },
+      "active": true,
+      "rootAnchor": {
+        "x": 560.0,
+        "y": 946.0
+      },
+      "hitBounds": {
+        "x": 527.0,
+        "y": 898.5,
+        "w": 66,
+        "h": 66
+      },
+      "recommendedPlantScale": 0.329,
+      "drawOrder": 23
+    }
+  ],
+  "pack": "greenhouse-v2",
+  "note": "Illustration master plate; slots hand-placed on soil rows. No lip/soil overlays."
+}
