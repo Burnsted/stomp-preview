@@ -4,10 +4,23 @@
 */
 'use strict';
 
-const ASSET_VER = 'batch2';
+const ASSET_VER = 'go-v1';
 
-/** Locked Franz paths (exact). */
+/** Locked Franz paths (exact) + Ted-approved concept plates. */
 const AssetPaths = {
+  // concept comps (coloring-book energy)
+  conceptMeadow: 'assets/concept/01b-meadow-wider.jpg',
+  conceptHavenMotion: 'assets/concept/02-haven-in-motion.jpg',
+  conceptBugs: 'assets/concept/03b-bug-chase-wider.jpg',
+  conceptGreenhouse: 'assets/concept/05b-greenhouse-wider.jpg',
+  conceptCounter: 'assets/concept/06b-side-counter-wider.jpg',
+  conceptHive: 'assets/concept/11-hive-and-jars.jpg',
+  conceptRows: 'assets/concept/12-greenhouse-color-rows.jpg',
+  conceptShop: 'assets/concept/13-shop-upgrades.jpg',
+  cbnEasyMeadow: 'assets/cbn/07-color-easy-meadow.jpg',
+  cbnMidGreenhouse: 'assets/cbn/08-color-mid-greenhouse.jpg',
+  cbnHardHive: 'assets/cbn/09-color-harder-hive.jpg',
+  cbnLadder: 'assets/cbn/10-color-ladder-15.jpg',
   // character
   havenFront: 'assets/character/haven-front.png',
   havenThreeQuarter: 'assets/character/haven-three-quarter.png',

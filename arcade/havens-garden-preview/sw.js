@@ -1,5 +1,5 @@
-/* Haven's Garden v0.9-basket — network-first HTML; Franz batch-2 assets */
-const CACHE = 'havens-garden-preview-v7-basket';
+/* Haven's Garden v0.9-go — network-first HTML; concept comps + systems */
+const CACHE = 'havens-garden-preview-v0.9-go';
 const PRECACHE = [
   './',
   './index.html',
@@ -7,13 +7,20 @@ const PRECACHE = [
   './sw.js',
   './js/assets.js',
   './js/audio.js',
+  './js/systems.js',
   './js/game.js',
   './assets/icon/app-icon.png',
   './assets/icon/app-icon-192.png',
   './assets/icon/app-icon-512.png',
   './assets/character/haven-front.png',
   './assets/meadow/meadow-day.webp',
-  './assets/bouquet/bouquet-full.png'
+  './assets/bouquet/bouquet-full.png',
+  './assets/concept/01b-meadow-wider.jpg',
+  './assets/concept/03b-bug-chase-wider.jpg',
+  './assets/concept/11-hive-and-jars.jpg',
+  './assets/concept/13-shop-upgrades.jpg',
+  './assets/cbn/07-color-easy-meadow.jpg',
+  './assets/cbn/10-color-ladder-15.jpg'
 ];
 
 const OWN = (k) => k.indexOf('havens-garden-') === 0;
@@ -52,6 +59,20 @@ self.addEventListener('fetch', (e) => {
           return r;
         })
         .catch(() => caches.match(e.request).then((m) => m || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  // Network-first for JS so v0.9-go ships promptly; fall back to cache
+  if (u.pathname.endsWith('.js')) {
+    e.respondWith(
+      fetch(e.request)
+        .then((r) => {
+          const clone = r.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, clone));
+          return r;
+        })
+        .catch(() => caches.match(e.request))
     );
     return;
   }
