@@ -6,14 +6,15 @@
    bugs+net, bees→hive→jars, color rows, CBN, shop.
    ============================================================ */
 
-const VER = 'v0.9-birthday-polish';
+const VER = 'v0.9-birthday-layers';
 const PK = 'havensGarden.birthday.v2';
 const PK_LEGACY = 'havensGarden.v1';
 const MUTE_K = 'havensGarden.mute';
 const QUIET_K = 'havensGarden.quiet';
 
 const BOUQUET_GOAL = 20;
-const FLOWERS_PER_BED = 6;
+/** Franz layers v1: one plant per slot (66×66 hit). Clusters explode on migrate. */
+const FLOWERS_PER_BED = 1;
 const PICK_RADIUS = 72;
 const ARRIVE_RADIUS = 52;
 const TARGET_SPACING = 110;
@@ -152,33 +153,6 @@ function migrateSave(raw) {
   if (window.HGNursery && HGNursery.ready()) {
     s.beds = HGNursery.migrateBedsArray(s.beds, s.ghSize | 0);
     s.outdoorBeds = HGNursery.migrateBedsArray(s.outdoorBeds, -1);
-    // outdoor migrate uses outdoor def — remap via outdoor slots
-    const od = HGNursery.outdoorDef();
-    if (od) {
-      const rawOut = (raw.outdoorBeds || []).map(normalizeBed);
-      s.outdoorBeds = HGNursery.migrateBedsArray(rawOut, 0);
-      // migrateBedsArray with ghSize 0 uses small — fix: rebuild outdoor explicitly
-      const flowers = [];
-      rawOut.forEach((b) => { if (b) flowers.push(b); });
-      const next = Array.from({ length: od.slotCount }, () => null);
-      const active = od.slots.filter((x) => x.active !== false).map((x) => x.i);
-      let fi = 0;
-      active.forEach((idx) => { if (fi < flowers.length) next[idx] = flowers[fi++]; });
-      while (fi < flowers.length) {
-        for (const idx of active) {
-          if (!next[idx]) { next[idx] = flowers[fi++]; break; }
-          const mix = (next[idx].mix || []).slice();
-          if (mix.length < FLOWERS_PER_BED) {
-            mix.push.apply(mix, (flowers[fi].mix || []).slice(0, FLOWERS_PER_BED - mix.length));
-            next[idx].mix = mix; fi++; break;
-          }
-        }
-        if (fi >= flowers.length) break;
-        // force
-        next[active[0]] = next[active[0]] || flowers[fi++];
-      }
-      s.outdoorBeds = next;
-    }
     s.bedMapVersion = 1;
   } else {
     const need = GH_SIZES[Math.min(2, s.ghSize | 0)].beds;
@@ -553,29 +527,33 @@ function drawAnchored(img, x, y, h, face, bobY) {
 }
 
 /** Bed/slot positions from Franz bed-map.json (plate-normalized → canvas). */
+/** Franz slot → canvas spot (rootAnchor + hitBounds). hitW/H are screen px (66→44 @390). */
+function franzSlotToSpot(slot, outdoor) {
+  const root = plateToCanvas(slot.nx, slot.ny);
+  const r = plateCoverRect();
+  const hw = (slot.hitW || 66) * (r.dw / DW);
+  const hh = (slot.hitH || 66) * (r.dh / DH);
+  const hx = r.dx + (slot.hitNx != null ? slot.hitNx : (slot.hitX || 0) / DW) * r.dw;
+  const hy = r.dy + (slot.hitNy != null ? slot.hitNy : (slot.hitY || 0) / DH) * r.dh;
+  return {
+    x: root.x, y: root.y, r: Math.max(hw, hh) * 0.45,
+    hitW: hw, hitH: hh, hitX: hx, hitY: hy,
+    plantScale: slot.plantScale || 0.28,
+    outdoor: outdoor ? 1 : 0, i: slot.i, planter: slot.planter, slot: slot.slot
+  };
+}
+
 function plantSpots() {
   const g = gh();
-  const spots = [];
   if (window.HGNursery && HGNursery.ready()) {
     const sz = HGNursery.sizeForGh(SAVE.ghSize | 0);
-    (sz.slots || []).forEach((slot) => {
-      if (slot.active === false) return;
-      const pt = plateToCanvas(slot.nx, slot.ny);
-      const hw = X(slot.hitW || 72);
-      const hh = Y(slot.hitH || 56);
-      spots.push({
-        x: pt.x, y: pt.y, r: Math.max(hw, hh) * 0.45,
-        hitW: hw, hitH: hh, outdoor: 0, i: slot.i, planter: slot.planter, slot: slot.slot
-      });
-    });
-    return spots;
+    return (sz.slots || []).filter((slot) => slot.active !== false).map((slot) => franzSlotToSpot(slot, 0));
   }
-  // Fallback grid (Franz shape counts)
   const layout = (BED_LAYOUTS_FALLBACK[g.id] || BED_LAYOUTS_FALLBACK.S);
   const r = X(g.id === 'L' ? 30 : g.id === 'M' ? 34 : 38);
   return layout.slice(0, g.beds).map((p, i) => {
     const pt = plateToCanvas(p[0], p[1]);
-    return { x: pt.x, y: pt.y, r, hitW: r * 2.2, hitH: r * 1.8, outdoor: 0, i, planter: (i / 6) | 0, slot: i % 6 };
+    return { x: pt.x, y: pt.y, r, hitW: r * 2.2, hitH: r * 1.8, outdoor: 0, i, planter: (i / 6) | 0, slot: i % 6, plantScale: 0.28 };
   });
 }
 
@@ -583,18 +561,13 @@ function outdoorSpots() {
   if (!SAVE.outdoorUnlocked) return [];
   if (window.HGNursery && HGNursery.ready()) {
     const od = HGNursery.outdoorDef();
-    return (od.slots || []).filter((s) => s.active !== false).map((slot) => {
-      const pt = plateToCanvas(slot.nx, slot.ny);
-      const hw = X(slot.hitW || 72);
-      const hh = Y(slot.hitH || 56);
-      return { x: pt.x, y: pt.y, r: Math.max(hw, hh) * 0.45, hitW: hw, hitH: hh, outdoor: 1, i: slot.i, planter: slot.planter, slot: slot.slot };
-    });
+    return (od.slots || []).filter((s) => s.active !== false).map((slot) => franzSlotToSpot(slot, 1));
   }
   const layout = BED_LAYOUTS_FALLBACK.outdoor;
   const r = X(34);
   return layout.slice(0, OUTDOOR_SLOTS).map((p, i) => {
     const pt = plateToCanvas(p[0], p[1]);
-    return { x: pt.x, y: pt.y, r, hitW: r * 2.2, hitH: r * 1.8, outdoor: 1, i, planter: (i / 6) | 0, slot: i % 6 };
+    return { x: pt.x, y: pt.y, r, hitW: r * 2.2, hitH: r * 1.8, outdoor: 1, i, planter: (i / 6) | 0, slot: i % 6, plantScale: 0.28 };
   });
 }
 
@@ -619,12 +592,9 @@ const BED_LAYOUTS_FALLBACK = {
 };
 
 function spotXY(i, outdoor) {
-  if (outdoor) {
-    const s = outdoorSpots()[i];
-    return s ? { x: s.x, y: s.y } : { x: W / 2, y: H * 0.7 };
-  }
-  const s = plantSpots()[i];
-  return s ? { x: s.x, y: s.y } : { x: W / 2, y: H * 0.6 };
+  const spots = outdoor ? outdoorSpots() : plantSpots();
+  const s = spots.find((sp) => sp.i === i) || spots[i];
+  return s ? { x: s.x, y: s.y } : { x: W / 2, y: outdoor ? H * 0.7 : H * 0.6 };
 }
 
 function snapshotRuntime() {
@@ -2475,20 +2445,8 @@ function drawWoodenPlanter(pr) {
   }
 }
 
-function drawBedSoil(s) {
-  // Small soil pocket under a single slot (inside planter) — no opaque floor wash
-  const rx = Math.max(14, (s.hitW || s.r * 2) * 0.38);
-  const ry = Math.max(8, (s.hitH || s.r) * 0.28);
-  cx.fillStyle = 'rgba(74, 46, 24, 0.55)';
-  cx.beginPath();
-  cx.ellipse(s.x, s.y - 2, rx, ry, 0, 0, 7);
-  cx.fill();
-  if (s.waterDark) {
-    cx.fillStyle = 'rgba(40, 28, 16, 0.45)';
-    cx.beginPath();
-    cx.ellipse(s.x, s.y - 2, rx * 0.92, ry * 0.9, 0, 0, 7);
-    cx.fill();
-  }
+function drawBedSoil(_s) {
+  /* Franz pack: soil comes from soil_dry/soil_wet layers — no code soil dots. */
 }
 
 function nurseryPlanterRects() {
@@ -2501,7 +2459,6 @@ function nurseryPlanterRects() {
     });
     return rects;
   }
-  // Fallback: two big planters covering the soil band
   const r = plateCoverRect();
   const bandY = r.dy + r.dh * 0.50;
   const bandH = r.dh * 0.38;
@@ -2513,61 +2470,81 @@ function nurseryPlanterRects() {
 function drawBedHighlight(s, highlight) {
   if (!highlight) return;
   const pulse = 0.55 + 0.45 * Math.sin(performance.now() / 220);
-  cx.fillStyle = `rgba(255,220,90,${0.28 * pulse})`;
+  cx.fillStyle = `rgba(255,220,90,${0.22 * pulse})`;
+  const hw = (s.hitW || s.r * 2) * 0.55;
+  const hh = (s.hitH || s.r) * 0.55;
   cx.beginPath();
-  cx.ellipse(s.x, s.y - 8, s.r + 10, s.r * 0.55, 0, 0, 7);
+  cx.ellipse(s.x, s.y - 4, hw, hh, 0, 0, 7);
   cx.fill();
 }
 
+/** Daisy growth set (seedling→leaves→bud→bloom) rooted at Franz rootAnchor. */
 function drawBedFlowers(s, b) {
   if (!b) return;
   const grown = b.grown | 0;
   const mix = bedMix(b);
-  const n = mix.length;
-  if (!n) return;
-  const base = bedFlowerDrawScale(grown);
+  if (!mix.length) return;
   const planting = plantAnim && plantSpot === (s.i != null ? s.i : -1) && !!s.outdoor === !!plantIsOutdoor;
   const squash = (b.squash != null ? b.squash : 1);
-  // Maturity motion: gentle sway + color lift
-  const sway = Math.sin((performance.now() / 700) + (s.i || 0)) * (grown >= 2 ? 2.2 : 0.6);
-  for (let j = 0; j < n; j++) {
-    const col = j % 3;
-    const row = (j / 3) | 0;
-    const ox = (col - 1) * (s.hitW || s.r * 2) * 0.22 + sway;
-    const oy = (row - 0.35) * (s.hitH || s.r) * 0.22;
-    let sc = 1;
-    if (planting && j === n - 1) sc = 0.35 + 0.65 * Math.min(1, plantAnimT / 0.7);
-    // Seedling stem before bloom fills in
-    if (grown <= 1) {
-      cx.strokeStyle = '#3c8237';
-      cx.lineWidth = Math.max(1.5, 2.5 * base);
-      cx.beginPath();
-      cx.moveTo(s.x + ox, s.y + oy);
-      cx.lineTo(s.x + ox, s.y + oy - 14 * base * squash);
-      cx.stroke();
-      if (grown === 1) {
-        cx.fillStyle = '#6db85a';
-        cx.beginPath();
-        cx.ellipse(s.x + ox - 5, s.y + oy - 10 * base, 5 * base, 3 * base, -0.5, 0, 7);
-        cx.ellipse(s.x + ox + 5, s.y + oy - 10 * base, 5 * base, 3 * base, 0.5, 0, 7);
-        cx.fill();
-      }
-    }
-    const sp = spById(mix[j]);
-    drawFlowerSprite(sp, s.x + ox, s.y + oy, base * sc * squash * (grown >= 3 ? 1.05 : 1));
+  let pop = 1;
+  if (planting) pop = 0.35 + 0.65 * Math.min(1, plantAnimT / 0.7);
+  const sway = Math.sin((performance.now() / 700) + (s.i || 0)) * (grown >= 2 ? 1.6 : 0.4);
+  const r = plateCoverRect();
+  const stage = window.HGNursery && HGNursery.ready() ? HGNursery.growthStage(grown) : null;
+  const gimg = window.HGNursery && HGNursery.ready() ? HGNursery.growthImg(grown) : null;
+  if (gimg && stage && stage.size) {
+    const sc = (s.plantScale || 0.28) * squash * pop * (r.dw / DW);
+    const dw = stage.size[0] * sc;
+    const dh = stage.size[1] * sc;
+    const ax = (stage.rootAnchor && stage.rootAnchor.x != null) ? stage.rootAnchor.x / stage.size[0] : 0.5;
+    const ay = (stage.rootAnchor && stage.rootAnchor.y != null) ? stage.rootAnchor.y / stage.size[1] : 0.92;
+    cx.drawImage(gimg, s.x - ax * dw + sway, s.y - ay * dh, dw, dh);
+    return;
   }
+  // Fallback: legacy flower sprites
+  const base = bedFlowerDrawScale(grown);
+  const sp = spById(mix[0]);
+  drawFlowerSprite(sp, s.x + sway, s.y, base * pop * squash);
 }
 
-/** Wooden planters on empty Franz plate — no opaque soil wash over the art. */
 function drawNurserySoilFloor() {
-  // Soft vignette only at the very bottom so painted plate blooms are covered lightly
-  const r = plateCoverRect();
-  const veil = cx.createLinearGradient(0, r.dy + r.dh * 0.42, 0, r.dy + r.dh * 0.55);
-  veil.addColorStop(0, 'rgba(200, 178, 140, 0)');
-  veil.addColorStop(1, 'rgba(200, 178, 140, 0.35)');
-  cx.fillStyle = veil;
-  cx.fillRect(r.dx + r.dw * 0.06, r.dy + r.dh * 0.42, r.dw * 0.88, r.dh * 0.14);
-  nurseryPlanterRects().forEach(drawWoodenPlanter);
+  /* Removed: opaque code soil mask + procedural planters. Franz soil layers only. */
+}
+
+/** plateNoLip → soil → plants → front_lip (never both plate versions). */
+function drawFranzComposite(sz, bedsArr, outdoorFlag) {
+  if (!sz || !window.HGNursery) return false;
+  HGNursery.warmImages(sz);
+  const layers = HGNursery.layerImages(sz);
+  const plate = layers.plateNoLip;
+  if (!plate) return false;
+  const key = 'franz-' + sz.key + '-nolip';
+  ensureBgCrossfade(key, plate);
+  if (bgKey === key && bgBlend < 1 && !(bgFrom && bgFrom !== plate)) bgBlend = 1;
+  drawCrossfadedPlate(bgFrom, bgTo || plate, bgBlend);
+
+  const anyWet = (bedsArr || []).some((b) => b && b.watered);
+  const soil = anyWet && layers.soilWet ? layers.soilWet : layers.soilDry;
+  if (soil) drawFullPlate(soil, 1);
+
+  const spots = outdoorFlag ? outdoorSpots() : plantSpots();
+  spots.forEach((s) => {
+    const b = outdoorFlag ? outdoorAt(s.i) : bedAt(s.i);
+    let hl = (nurseryMode === 'plant' && bouquet.length && bedHasRoom(b) && !(b && b.grown)) ||
+      (nurseryMode === 'water' && b && !b.watered) ||
+      ((nurseryMode === 'ready' || nurseryMode === 'look') && b && b.grown);
+    drawBedHighlight(s, hl);
+    drawBedFlowers(s, b);
+    const hx = s.hitX != null ? s.hitX : s.x - (s.hitW || 44) / 2;
+    const hy = s.hitY != null ? s.hitY : s.y - (s.hitH || 44) * 0.7;
+    hit.spots.push({
+      x: hx, y: hy, w: s.hitW || 44, h: s.hitH || 44,
+      i: s.i, outdoor: outdoorFlag ? 1 : 0, planter: s.planter
+    });
+  });
+
+  if (layers.frontLip) drawFullPlate(layers.frontLip, 1);
+  return true;
 }
 
 function celebrateBed(spotIdx, outdoor) {
@@ -2634,61 +2611,48 @@ function drawPollinators() {
 }
 
 function drawInterior() {
-  // ALWAYS empty Franz interior — never the grown plate (painted blooms ≠ her plants).
-  // Growth is sprites only, sized by bed.grown after Growing… / return time-lapse.
-  const plate = Assets.interior(SAVE.ghSize | 0, false);
-  const key = 'int-' + gh().key + '-empty';
-  ensureBgCrossfade(key, plate);
-  // Snap blend when entering empty nursery so a prior plate can't flash painted flowers
-  if (bgKey === key && bgBlend < 1 && !(bgFrom && bgFrom !== plate)) bgBlend = 1;
-  if (plate || bgFrom || bgTo) drawCrossfadedPlate(bgFrom, bgTo || plate, bgBlend);
-  else {
-    cx.fillStyle = '#cdaf82';
-    cx.fillRect(0, 0, W, H);
-  }
-  // Cover any leftover painted blooms on the empty plate — unused beds are bare soil
-  drawNurserySoilFloor();
-
   hit.spots = [];
-  plantSpots().forEach((s, i) => {
-    s.i = i;
-    const b = bedAt(i);
-    let hl = (nurseryMode === 'plant' && bouquet.length && bedHasRoom(b) && !(b && b.grown)) ||
-      (nurseryMode === 'water' && b && !b.watered) ||
-      ((nurseryMode === 'ready' || nurseryMode === 'look') && b && b.grown);
-    // Color-row tip: pulse beds that match a bouquet flower
-    if (nurseryMode === 'plant' && EX().colorRows && bouquet.length && bedHasRoom(b) && !(b && b.grown)) {
-      const mix = bedMix(b);
-      if (mix.length && bouquet.indexOf(mix[0]) >= 0) hl = 1;
+  // Outdoor yard plate when unlocked and indoor slots are full (or watering outdoor)
+  const wantOutdoor = !!(SAVE.outdoorUnlocked && window.HGNursery && HGNursery.ready() && (
+    (nurseryMode === 'plant' && freeIndoorSpot() < 0 && freeOutdoorSpot() >= 0) ||
+    (nurseryMode === 'water' && SAVE.beds.every((b) => !b || b.watered) && SAVE.outdoorBeds.some((b) => b && !b.watered)) ||
+    ((nurseryMode === 'ready' || nurseryMode === 'look') && SAVE.outdoorBeds.some((b) => b && b.grown))
+  ));
+  let drew = false;
+  if (wantOutdoor) {
+    const od = HGNursery.outdoorDef();
+    drew = drawFranzComposite(od, SAVE.outdoorBeds, 1);
+  }
+  if (!drew && window.HGNursery && HGNursery.ready()) {
+    const sz = HGNursery.sizeForGh(SAVE.ghSize | 0);
+    drew = drawFranzComposite(sz, SAVE.beds, 0);
+  }
+  if (!drew) {
+    // Legacy fallback: empty interior plate only (never grown plate)
+    const plate = Assets.interior(SAVE.ghSize | 0, false);
+    const key = 'int-' + gh().key + '-empty';
+    ensureBgCrossfade(key, plate);
+    if (bgKey === key && bgBlend < 1 && !(bgFrom && bgFrom !== plate)) bgBlend = 1;
+    if (plate || bgFrom || bgTo) drawCrossfadedPlate(bgFrom, bgTo || plate, bgBlend);
+    else {
+      cx.fillStyle = '#cdaf82';
+      cx.fillRect(0, 0, W, H);
     }
-    s.waterDark = !!(b && b.watered && !(b.grown > 0));
-    drawBedSoil(s);
-    drawBedHighlight(s, hl);
-    drawBedFlowers(s, b);
-    const hw = Math.max(64, s.hitW || s.r * 2.2);
-    const hh = Math.max(52, s.hitH || hw * 0.85);
-    hit.spots.push({ x: s.x - hw / 2, y: s.y - hh * 0.7, w: hw, h: hh, i, outdoor: 0, planter: s.planter });
-  });
-
-  if (SAVE.outdoorUnlocked && (nurseryMode === 'plant' || nurseryMode === 'water' || nurseryMode === 'ready' || nurseryMode === 'look')) {
-    outdoorSpots().forEach((s) => {
-      const b = outdoorAt(s.i);
-      const hl = (nurseryMode === 'plant' && bouquet.length && bedHasRoom(b) && !(b && b.grown)) ||
-        (nurseryMode === 'water' && b && !b.watered) ||
-        ((nurseryMode === 'ready' || nurseryMode === 'look') && b && b.grown);
-      s.waterDark = !!(b && b.watered && !(b.grown > 0));
-      drawBedSoil(s);
-      drawBedHighlight(s, hl);
+    plantSpots().forEach((s) => {
+      const b = bedAt(s.i);
+      drawBedHighlight(s, nurseryMode === 'plant' && bouquet.length && bedHasRoom(b));
       drawBedFlowers(s, b);
-      const hw = Math.max(64, s.hitW || s.r * 2.2);
-      const hh = Math.max(52, s.hitH || hw * 0.85);
-      hit.spots.push({ x: s.x - hw / 2, y: s.y - hh * 0.7, w: hw, h: hh, i: s.i, outdoor: 1, planter: s.planter });
+      hit.spots.push({
+        x: s.hitX != null ? s.hitX : s.x - (s.hitW || 44) / 2,
+        y: s.hitY != null ? s.hitY : s.y - (s.hitH || 44) * 0.7,
+        w: s.hitW || 44, h: s.hitH || 44, i: s.i, outdoor: 0, planter: s.planter
+      });
     });
   }
 
   // Planter-level hit targets (easier planting for ~5yo) — plant into next open slot in that planter
   hit.planters = nurseryPlanterRects().map((pr) => ({
-    x: pr.x, y: pr.y, w: pr.w, h: pr.h, planter: pr.id, outdoor: 0
+    x: pr.x, y: pr.y, w: pr.w, h: pr.h, planter: pr.id, outdoor: wantOutdoor ? 1 : 0
   }));
 
   // Haven on the center path (above bottom nav dock)
@@ -3052,11 +3016,19 @@ function update(dt) {
     if (ghEnterT >= CROSSFADE_SEC + 0.2 && !upgradeAnim) {
       nurseryView = 'inside';
       ghEnterT = -1;
-      // Snap to empty interior — don't carry open-GH window blooms into the nursery
+      // Snap to Franz plateNoLip (never lipped plate / painted blooms)
       bgFrom = null;
-      bgTo = Assets.interior(SAVE.ghSize | 0, false);
+      if (window.HGNursery && HGNursery.ready()) {
+        const sz = HGNursery.sizeForGh(SAVE.ghSize | 0);
+        HGNursery.warmImages(sz);
+        const layers = HGNursery.layerImages(sz);
+        bgTo = layers.plateNoLip || Assets.interior(SAVE.ghSize | 0, false);
+        bgKey = 'franz-' + (sz ? sz.key : gh().key) + '-nolip';
+      } else {
+        bgTo = Assets.interior(SAVE.ghSize | 0, false);
+        bgKey = 'int-' + gh().key + '-empty';
+      }
       bgBlend = 1;
-      bgKey = 'int-' + gh().key + '-empty';
     }
   }
   // Greenhouse exit: open → dissolve closed → meadow
@@ -3718,46 +3690,30 @@ function applyShot(name) {
 
 async function boot() {
   announce("Haven's Garden " + VER);
-  // Bed map before assets so migrate can remesh planted flowers into Franz slots
+  // Franz greenhouse-layers-v1 maps + growth before assets so migrate remeshes slots
   try {
-    await HGNursery.load('assets/greenhouse/bed-map.json?v=' + encodeURIComponent(VER));
-    // If birthday key was empty/stale, re-import richer legacy v1 progress
+    await HGNursery.load('assets/greenhouse-layers-v1/');
     if (saveRichness(SAVE) <= 0) {
       const legacy = readRawSave();
       if (legacy && saveRichness(legacy) > 0) SAVE = migrateSave(legacy);
     }
     SAVE.beds = HGNursery.migrateBedsArray(SAVE.beds || [], SAVE.ghSize | 0);
-    const od = HGNursery.outdoorDef();
-    if (od) {
-      const flowers = [];
-      (SAVE.outdoorBeds || []).forEach((b) => { if (b) flowers.push(b); });
-      const next = Array.from({ length: od.slotCount }, () => null);
-      const active = od.slots.filter((x) => x.active !== false).map((x) => x.i);
-      let fi = 0;
-      active.forEach((idx) => { if (fi < flowers.length) next[idx] = flowers[fi++]; });
-      while (fi < flowers.length) {
-        for (const idx of active) {
-          if (!next[idx]) { next[idx] = flowers[fi++]; break; }
-        }
-        if (fi >= flowers.length) break;
-        next[active[0]] = flowers[fi++];
-      }
-      SAVE.outdoorBeds = next;
-    }
+    SAVE.outdoorBeds = HGNursery.migrateBedsArray(SAVE.outdoorBeds || [], -1);
     SAVE.bedMapVersion = 1;
     persist();
   } catch (e) {
-    console.warn('bed-map load', e);
+    console.warn('franz layers load', e);
   }
   await Assets.loadAll((p) => {
     loadProgress = p;
     if (bootBar) bootBar.style.width = Math.round(p * 100) + '%';
   });
-  // Prefetch next greenhouse size interiors (P7)
+  // Prefetch current + next Franz plateNoLip / soil (P7)
   try {
-    const next = Math.min(2, (SAVE.ghSize | 0) + 1);
-    const img = Assets.interior(next, false);
-    if (img && img.decode) img.decode().catch(() => {});
+    const cur = HGNursery.sizeForGh(SAVE.ghSize | 0);
+    const next = HGNursery.sizeForGh(Math.min(2, (SAVE.ghSize | 0) + 1));
+    if (cur) HGNursery.warmImages(cur);
+    if (next) HGNursery.warmImages(next);
   } catch (e) {}
   if (bootEl) {
     bootEl.classList.add('hidden');
@@ -3778,7 +3734,7 @@ async function boot() {
 
   try {
     if (navigator.serviceWorker && typeof navigator.serviceWorker.register === 'function') {
-      navigator.serviceWorker.register('./sw.js?v=0.9-birthday-polish').catch(() => {});
+      navigator.serviceWorker.register('./sw.js?v=0.9-birthday-layers').catch(() => {});
     }
   } catch (eSw) {}
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));

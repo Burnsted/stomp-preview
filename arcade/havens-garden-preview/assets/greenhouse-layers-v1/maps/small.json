@@ -1,0 +1,436 @@
+{
+  "id": "small",
+  "kind": "greenhouse-interior",
+  "plateSize": [
+    585,
+    1266
+  ],
+  "phoneReferenceRender": [
+    390,
+    844
+  ],
+  "phoneScale": 0.6666666666666666,
+  "plate": "plates/greenhouse-small-interior.webp",
+  "plateNoLip": "plates/greenhouse-small-interior-nolip.png",
+  "layers": {
+    "soilDry": "layers/small/soil_dry.png",
+    "soilWet": "layers/small/soil_wet.png",
+    "frontLip": "layers/small/front_lip.png",
+    "registration": "plateNoLip \u2192 soil \u2192 plants \u2192 frontLip"
+  },
+  "bedCount": 2,
+  "slotsPerBed": 6,
+  "gridPerBed": [
+    2,
+    3
+  ],
+  "totalSlotPositions": 12,
+  "activeIndoorOrOutdoorSlots": 12,
+  "inactiveSlotPositions": 0,
+  "capacityTarget": 12,
+  "beds": [
+    {
+      "id": "small_bed0",
+      "index": 0,
+      "soilBounds": {
+        "x": 35,
+        "y": 740,
+        "w": 240,
+        "h": 370
+      },
+      "soilPolygon": [
+        [
+          35,
+          740
+        ],
+        [
+          275,
+          740
+        ],
+        [
+          275,
+          1110
+        ],
+        [
+          35,
+          1110
+        ]
+      ],
+      "soilPixelCount": 88800,
+      "slotCount": 6,
+      "activeSlotCount": 6,
+      "layers": {
+        "soilDryFullPage": "layers/small/soil_dry.png",
+        "soilWetFullPage": "layers/small/soil_wet.png",
+        "frontLipFullPage": "layers/small/front_lip.png",
+        "soilDryCropped": "layers/_cropped/small/small_bed0_soil_dry.png",
+        "soilWetCropped": "layers/_cropped/small/small_bed0_soil_wet.png",
+        "frontLipCropped": "layers/_cropped/small/small_bed0_front_lip.png",
+        "dryOffset": {
+          "offsetX": 33,
+          "offsetY": 738,
+          "width": 244,
+          "height": 374
+        },
+        "wetOffset": {
+          "offsetX": 33,
+          "offsetY": 738,
+          "width": 244,
+          "height": 374
+        },
+        "lipOffset": {
+          "offsetX": 18,
+          "offsetY": 1108,
+          "width": 275,
+          "height": 36
+        },
+        "plateNoLip": "plates/greenhouse-small-interior-nolip.png"
+      }
+    },
+    {
+      "id": "small_bed1",
+      "index": 1,
+      "soilBounds": {
+        "x": 310,
+        "y": 740,
+        "w": 240,
+        "h": 370
+      },
+      "soilPolygon": [
+        [
+          310,
+          740
+        ],
+        [
+          550,
+          740
+        ],
+        [
+          550,
+          1110
+        ],
+        [
+          310,
+          1110
+        ]
+      ],
+      "soilPixelCount": 88800,
+      "slotCount": 6,
+      "activeSlotCount": 6,
+      "layers": {
+        "soilDryFullPage": "layers/small/soil_dry.png",
+        "soilWetFullPage": "layers/small/soil_wet.png",
+        "frontLipFullPage": "layers/small/front_lip.png",
+        "soilDryCropped": "layers/_cropped/small/small_bed1_soil_dry.png",
+        "soilWetCropped": "layers/_cropped/small/small_bed1_soil_wet.png",
+        "frontLipCropped": "layers/_cropped/small/small_bed1_front_lip.png",
+        "dryOffset": {
+          "offsetX": 308,
+          "offsetY": 738,
+          "width": 244,
+          "height": 374
+        },
+        "wetOffset": {
+          "offsetX": 308,
+          "offsetY": 738,
+          "width": 244,
+          "height": 374
+        },
+        "lipOffset": {
+          "offsetX": 293,
+          "offsetY": 1108,
+          "width": 275,
+          "height": 36
+        },
+        "plateNoLip": "plates/greenhouse-small-interior-nolip.png"
+      }
+    }
+  ],
+  "slots": [
+    {
+      "id": "small_bed0_s0",
+      "index": 0,
+      "bedId": "small_bed0",
+      "grid": {
+        "col": 0,
+        "row": 0
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 120,
+        "y": 865
+      },
+      "hitBounds": {
+        "x": 87,
+        "y": 822,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 0,
+      "recommendedPlantScale": 0.28
+    },
+    {
+      "id": "small_bed0_s1",
+      "index": 1,
+      "bedId": "small_bed0",
+      "grid": {
+        "col": 1,
+        "row": 0
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 190,
+        "y": 865
+      },
+      "hitBounds": {
+        "x": 157,
+        "y": 822,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 1,
+      "recommendedPlantScale": 0.28
+    },
+    {
+      "id": "small_bed0_s2",
+      "index": 2,
+      "bedId": "small_bed0",
+      "grid": {
+        "col": 0,
+        "row": 1
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 120,
+        "y": 935
+      },
+      "hitBounds": {
+        "x": 87,
+        "y": 892,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 10,
+      "recommendedPlantScale": 0.28
+    },
+    {
+      "id": "small_bed0_s3",
+      "index": 3,
+      "bedId": "small_bed0",
+      "grid": {
+        "col": 1,
+        "row": 1
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 190,
+        "y": 935
+      },
+      "hitBounds": {
+        "x": 157,
+        "y": 892,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 11,
+      "recommendedPlantScale": 0.28
+    },
+    {
+      "id": "small_bed0_s4",
+      "index": 4,
+      "bedId": "small_bed0",
+      "grid": {
+        "col": 0,
+        "row": 2
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 120,
+        "y": 1005
+      },
+      "hitBounds": {
+        "x": 87,
+        "y": 962,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 20,
+      "recommendedPlantScale": 0.28
+    },
+    {
+      "id": "small_bed0_s5",
+      "index": 5,
+      "bedId": "small_bed0",
+      "grid": {
+        "col": 1,
+        "row": 2
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 190,
+        "y": 1005
+      },
+      "hitBounds": {
+        "x": 157,
+        "y": 962,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 21,
+      "recommendedPlantScale": 0.28
+    },
+    {
+      "id": "small_bed1_s0",
+      "index": 6,
+      "bedId": "small_bed1",
+      "grid": {
+        "col": 0,
+        "row": 0
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 395,
+        "y": 865
+      },
+      "hitBounds": {
+        "x": 362,
+        "y": 822,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 100,
+      "recommendedPlantScale": 0.28
+    },
+    {
+      "id": "small_bed1_s1",
+      "index": 7,
+      "bedId": "small_bed1",
+      "grid": {
+        "col": 1,
+        "row": 0
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 465,
+        "y": 865
+      },
+      "hitBounds": {
+        "x": 432,
+        "y": 822,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 101,
+      "recommendedPlantScale": 0.28
+    },
+    {
+      "id": "small_bed1_s2",
+      "index": 8,
+      "bedId": "small_bed1",
+      "grid": {
+        "col": 0,
+        "row": 1
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 395,
+        "y": 935
+      },
+      "hitBounds": {
+        "x": 362,
+        "y": 892,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 110,
+      "recommendedPlantScale": 0.28
+    },
+    {
+      "id": "small_bed1_s3",
+      "index": 9,
+      "bedId": "small_bed1",
+      "grid": {
+        "col": 1,
+        "row": 1
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 465,
+        "y": 935
+      },
+      "hitBounds": {
+        "x": 432,
+        "y": 892,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 111,
+      "recommendedPlantScale": 0.28
+    },
+    {
+      "id": "small_bed1_s4",
+      "index": 10,
+      "bedId": "small_bed1",
+      "grid": {
+        "col": 0,
+        "row": 2
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 395,
+        "y": 1005
+      },
+      "hitBounds": {
+        "x": 362,
+        "y": 962,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 120,
+      "recommendedPlantScale": 0.28
+    },
+    {
+      "id": "small_bed1_s5",
+      "index": 11,
+      "bedId": "small_bed1",
+      "grid": {
+        "col": 1,
+        "row": 2
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 465,
+        "y": 1005
+      },
+      "hitBounds": {
+        "x": 432,
+        "y": 962,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 121,
+      "recommendedPlantScale": 0.28
+    }
+  ],
+  "minHitNativeWxH": [
+    66,
+    66
+  ],
+  "minProjectedHitWxHOn390x844": [
+    44.0,
+    44.0
+  ],
+  "note": "Soil h>=210 for non-overlapping 66x66 in 2x3; 132px soil cannot meet that gate."
+}
