@@ -8,9 +8,10 @@
 |---|---|
 | Branch | `cursor/stomper-ingest-t1225u-bfa0` |
 | Base / starting_ref | `9339cc6b30df13beb445c90682d17536d8471db0` (draft PR #60 tip) |
-| Tip SHA | `f0d320bf99cca12a034dcac5fd5020954aa69128` |
+| Tip SHA | *(pin after t1228u push)* |
 | Stack | New isolated draft PR #70 from #60 tip — **does not push onto #60** |
 | Draft PR | https://github.com/Burnsted/stomp-preview/pull/70 |
+| Follow-up | **t1228u** Hey Session FAB Trails clearance (same draft PR) |
 
 ## 2. Franz asset package / checksums used
 
@@ -87,15 +88,28 @@ Fresh post-ingest 390×844 A/B/C (browser viewport ≠ Android PASS):
 
 Flow: Form #7 welcome → STOMPER selection/customization → personalize → STOMPER ID → Meet Sesh → Trip Drop / Explore Solo → Home with selected STOMPER. Partial drafts resume; completed profiles skip welcome; Reset Demo → welcome. **STOMPER-first** (never Home/greet as first-visit default). `greet.tsx` / CrewLink preserved.
 
+### t1228u — Hey Session FAB clearance (Ted Continue)
+
+**Primary control gate:** Hey Session / Yo Session primary = **only** the little snowboarder FAB bottom-right — never a mid-page pill / header chip. Key surfaces keep voice prompt + Type instead.
+
+| Proof (390×844) | Path |
+|---|---|
+| Trails **BEFORE** (overlap) | `docs/franz-ingest-t1225u/screenshots/t1228u/t1228u-trails-fab-BEFORE.png` |
+| Trails **AFTER** (clear) | `docs/franz-ingest-t1225u/screenshots/t1228u/t1228u-trails-fab-clear.png` |
+| Home FAB clear | `…/t1228u-home-fab-clear.png` |
+| Music FAB clear | `…/t1228u-other-fab-clear.png` |
+
+**Fix:** raise FAB bottom offset to `12.75rem` (caption above mark); Trails `pb-[13.5rem]` + drop tall map-card min-height; playlist FAB raised left of snowboarder; Trails voice prompt restores Type instead. HOME MOUNTAIN / FICTION·SAMPLE / Create roster locks unchanged.
+
 ## 6. Automated test results (local)
 
 | Suite | Result |
 |---|---|
 | `gb-phone` `npm run typecheck` | **PASS** |
-| `gb-phone` `npm run test:woz` | **1079 passed / 41 files** |
+| `gb-phone` `npm run test:woz` | **1082 passed / 42 files** |
 | `batch1` `npm test` | **608 passed / 8 skipped / 37 files** |
 
-CI both jobs: **GREEN** — [pr-verify live tip `f0d320b`](https://github.com/Burnsted/stomp-preview/actions/runs/42151240733) (batch1 + gb-phone). Prior green: [42151093716](https://github.com/Burnsted/stomp-preview/actions/runs/42151093716).
+CI both jobs: *(pin run URL after t1228u push green)*.
 
 ## 7. Real-device test status
 
@@ -132,8 +146,9 @@ From Franz `KNOWN-DEFECTS.md` (still apply) + this ingest:
 
 - **A:** Rider 1 restored from Man 1 package; eight packages + four v2 fills ingested into `gb-phone/public/stomper/`; ten slots unavailable.
 - **B:** STOMPER-first onboard + Create first-ship lock (omit OPEN + SOURCE MISSING; PARTIAL labeled not Create-cleared); appearance-preview looks skip fake clothing controls.
-- **C:** #57–#60 decisions retained; Hey Session FAB bottom padding lifted to clear player chrome (`10.5rem` / safe-area+`9.25rem`).
+- **C:** #57–#60 decisions retained; **t1228u** Hey Session FAB clearance vs Trails official-map CTA + player chrome + tabs (`12.75rem` bottom offset).
 - **D:** Fresh / partial / reset / missing-art paths exercised in automated + browser screenshots.
+- **t1228u remaining:** Playlist layers FAB still shares the corner — kept left of snowboarder; further playlist cluster polish out of scope. Create 67% scale still wait-Ted.
 
 ## Integrity
 

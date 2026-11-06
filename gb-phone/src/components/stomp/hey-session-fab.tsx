@@ -1,8 +1,14 @@
 /**
- * Hey Session little-snowboarder FAB (t1224u).
+ * Hey Session little-snowboarder FAB (t1224u / t1228u).
  * Fixed bottom-right on every chrome page — Form #7 steel, not a mid-page pill
  * and not a header HEY SESSION chip. Hold to speak; preserves SessionMic routing.
+ *
+ * t1228u clearance: sit above mini-player + Feedback/Reset strip + tab bar.
+ * Trails official-map CTA clears via page padding / card height — FAB stays corner.
  */
+/** Shared bottom offset — clears player (~4.75rem) + playtest tools + tabs. */
+export const HEY_SESSION_FAB_BOTTOM_CLASS =
+  "pb-[max(12.75rem,calc(env(safe-area-inset-bottom)+11.5rem))]";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { holdListen } from "@/lib/stomp/audio-route";
 import { useSessionRouter } from "@/components/stomp/session-mic";
@@ -92,8 +98,12 @@ export function HeySessionFab() {
 
   return (
     <div
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-35 mx-auto flex w-full max-w-md justify-end px-3 pb-[max(10.5rem,calc(env(safe-area-inset-bottom)+9.25rem))]"
+      className={
+        "pointer-events-none fixed inset-x-0 bottom-0 z-35 mx-auto flex w-full max-w-md justify-end px-3 " +
+        HEY_SESSION_FAB_BOTTOM_CLASS
+      }
       data-testid="hey-session-fab-root"
+      data-fab-clearance="player-chrome-tabs"
     >
       <div className="pointer-events-none flex flex-col items-end gap-1">
         {note ? (
@@ -104,6 +114,13 @@ export function HeySessionFab() {
             {note}
           </p>
         ) : null}
+        {/* Caption above the mark so the stack does not drip into player chrome. */}
+        <span
+          data-testid="hey-session-fab-caption"
+          className="pointer-events-none text-[9px] font-bold tracking-widest text-accent"
+        >
+          HEY SESSION
+        </span>
         <button
           type="button"
           data-testid="hey-session-fab"
@@ -120,12 +137,6 @@ export function HeySessionFab() {
           <SnowboarderMark />
           <span className="sr-only">Hey Session</span>
         </button>
-        <span
-          data-testid="hey-session-fab-caption"
-          className="pointer-events-none text-[9px] font-bold tracking-widest text-accent"
-        >
-          HEY SESSION
-        </span>
       </div>
     </div>
   );

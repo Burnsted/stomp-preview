@@ -3,6 +3,7 @@
  * + mountain conditions for selected / default resort (t1221u / t1222u).
  * Weather belongs here — not on Home (Ted t1222u).
  * t1224u: Home mountain label; Hey Session = bottom-right snowboarder FAB (not header chip).
+ * t1228u: Extra bottom pad so official-map CTA clears the corner FAB + player + tabs.
  */
 import { AlpineTopBar } from "@/components/stomp/alpine-chrome";
 import { HomeMountainLabel } from "@/components/stomp/home-mountain-label";
@@ -22,7 +23,12 @@ export function TrailMapScreen() {
   }, [hydrate]);
 
   return (
-    <div className="px-4 pb-28 pt-2" data-testid="trail-map-screen" data-surface="trails">
+    <div
+      className="px-4 pb-[13.5rem] pt-2"
+      data-testid="trail-map-screen"
+      data-surface="trails"
+      data-fab-content-clearance="official-map-cta"
+    >
       <AlpineTopBar title="Trails" />
       <header className="mt-2 px-1">
         <h1 className="font-display text-4xl tracking-wide text-ink">Trails</h1>
@@ -42,7 +48,8 @@ export function TrailMapScreen() {
       </header>
       <MapResortConditionsStrip />
       <div className="mt-3 px-1">
-        <SessionVoicePrompt secondaryType={false} />
+        {/* t1228u primary-control gate: voice prompt + Type instead; FAB remains the only primary */}
+        <SessionVoicePrompt />
       </div>
       <div className="mt-4">
         <TrailMapViewer showResortSwitch />

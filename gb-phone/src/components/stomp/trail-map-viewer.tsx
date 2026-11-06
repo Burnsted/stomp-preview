@@ -50,7 +50,8 @@ export function OfficialMapLinkCard({
       className={
         compact
           ? "rounded-2xl bg-snow/5 p-3 ring-1 ring-line"
-          : "flex min-h-[18rem] flex-col justify-between rounded-2xl bg-snow/5 p-4 ring-1 ring-line"
+          : // t1228u: drop tall min-height so the CTA is not forced into the FAB corner
+            "flex flex-col justify-between rounded-2xl bg-snow/5 p-4 ring-1 ring-line"
       }
     >
       <div>
@@ -319,7 +320,8 @@ export function TrailMapViewer({
         )}
       </div>
 
-      <p className="text-[11px] text-muted text-pretty">
+      {/* t1228u: keep copy clear of the bottom-right snowboarder FAB */}
+      <p className="pr-[4.75rem] text-[11px] text-muted text-pretty">
         Pinch-zoom and pan work in this viewer when an authorized map image is present. Until
         resorts grant embed rights, the official map opens in a new tab.
       </p>

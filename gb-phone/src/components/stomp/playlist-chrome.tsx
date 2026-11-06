@@ -80,8 +80,8 @@ export function PlaylistFab() {
         data-testid="playlist-fab-root"
         data-concept="playlist-fab-cluster-b"
       >
-        {/* Shifted left of t1224u Hey Session snowboarder FAB (right-3) */}
-        <div className="pointer-events-none absolute right-[5.5rem] bottom-[max(7.75rem,calc(env(safe-area-inset-bottom)+6.75rem))]">
+        {/* Left of t1228u Hey Session snowboarder FAB; clears mini-player + tabs */}
+        <div className="pointer-events-none absolute right-[5.5rem] bottom-[max(11rem,calc(env(safe-area-inset-bottom)+9.75rem))]">
           {fabOpen ? (
             <button
               type="button"
