@@ -1,30 +1,31 @@
 'use strict';
 /* ============================================================
-   Haven's Garden v0.9-batch2
+   Haven's Garden v0.9-nursery
    Standalone birthday garden — NOT part of STOMP.
-   Franz batch-2 art (585×1266 backgrounds) + ted-play gameplay:
-   pick ~20, Growing…, collect-while-growing, time-lapse,
-   cursor watering, Home/Back/Places nav, soil-anchored beds.
+   Play loop first: pick ~20 → plant into dense nursery beds
+   (≈6 flowers each) → water → Growing… → pick more.
+   Batch-2 art kept; no new Franz files.
    ============================================================ */
 
-const VER = 'v0.9-batch2';
+const VER = 'v0.9-nursery';
 const PK = 'havensGarden.v1';
 const MUTE_K = 'havensGarden.mute';
 const QUIET_K = 'havensGarden.quiet';
 
 const BOUQUET_GOAL = 20;
+const FLOWERS_PER_BED = 6;
 const PICK_RADIUS = 64;
 const ARRIVE_RADIUS = 48;
-const TARGET_SPACING = 92;
-const SPAWN_INTERVAL = 1100;
-const SPAWN_HOLD = 24000;
+const TARGET_SPACING = 88;
+const SPAWN_INTERVAL = 900;
+const SPAWN_HOLD = 28000;
 const GIRL_SPEED = 165;
-const MAX_FIELD = 10;
+const MAX_FIELD = 12;
 const MAX_PARTICLES = 100;
 const DPR_CAP = 2.5;
 const DT_CAP = 1 / 20;
 const SAFE_UI = 110;
-const OUTDOOR_SLOTS = 6;
+const OUTDOOR_SLOTS = 12;
 /* Batch-2 backgrounds are 585×1266 (1.5× a 390×844 viewport) — not 780×1688. */
 const DW = 585;
 const DH = 1266;
@@ -36,11 +37,11 @@ const WALK_BOB_PX = 6; // ±6 on walk 02/04
 const GROWING_SEC = 1.45;
 const WATER_CAN_CSS = 52; // ~44–60 CSS px finger-follow can
 
-/* Bed counts match painted interiors (batch-2 large ≈9 visible, not 12). */
+/* Dense nursery bed counts — packed grid on the soil floor (drawn beds if plates lack patches). */
 const GH_SIZES = [
-  { id: 'S', key: 'small', beds: 4 },
-  { id: 'M', key: 'medium', beds: 8 },
-  { id: 'L', key: 'large', beds: 9 }
+  { id: 'S', key: 'small', beds: 12, cols: 3, rows: 4 },
+  { id: 'M', key: 'medium', beds: 20, cols: 4, rows: 5 },
+  { id: 'L', key: 'large', beds: 30, cols: 5, rows: 6 }
 ];
 
 /* Franz flowers + aliases so old album/save ids still resolve. */
@@ -61,7 +62,7 @@ const ST = { BOOT: 'BOOT', MENU: 'MENU', HOWTO: 'HOWTO', MEADOW: 'MEADOW', GREEN
 /* ---------- Save (compatible with havensGarden.v1) ---------- */
 function freshSave() {
   return {
-    v: 6,
+    v: 7,
     unlocked: 1,
     baskets: 0,
     outingDone: 0,
@@ -90,6 +91,22 @@ function freshSave() {
   };
 }
 
+function normalizeBed(b) {
+  if (!b || typeof b !== 'object') return null;
+  let mix = Array.isArray(b.mix) ? b.mix.slice() : [];
+  // Legacy 1-flower beds / odd shapes → mix[] of species ids
+  if (!mix.length && b.id) mix = [b.id];
+  mix = mix.map((id) => SPECIES_ALIAS[id] || id).filter(Boolean).slice(0, FLOWERS_PER_BED);
+  if (!mix.length) return null;
+  return {
+    mix,
+    watered: b.watered ? 1 : 0,
+    grown: Math.min(3, b.grown | 0),
+    squash: b.squash != null ? b.squash : 1,
+    pendingGrow: b.pendingGrow ? 1 : 0
+  };
+}
+
 function migrateSave(raw) {
   const base = freshSave();
   if (!raw || typeof raw !== 'object') return base;
@@ -109,16 +126,24 @@ function migrateSave(raw) {
   if (s.step === 'night') s.step = 'growing';
   if (s.step === 'morning') s.step = 'ready';
   if (s.nurseryMode === 'night' || s.nurseryMode === 'morning') s.nurseryMode = s.step === 'growing' ? 'growing' : 'ready';
-  // Keep bouquet as-is (threshold migrated 3 → 20; partial progress stays)
-  s.v = Math.max(6, s.v | 0);
+  // Keep bouquet as-is (threshold stays 20; partial progress stays)
+  s.v = Math.max(7, s.v | 0);
   s.ver = VER;
-  // Trim / pad beds to painted capacity (batch-2 L ≈9 visible, not 12)
+  // Normalize beds to mix[] (up to 6) and pad to dense nursery capacity
+  s.beds = (s.beds || []).map(normalizeBed);
+  s.outdoorBeds = (s.outdoorBeds || []).map(normalizeBed);
   const need = GH_SIZES[Math.min(2, s.ghSize | 0)].beds;
   if (s.beds.length > need) s.beds = s.beds.slice(0, need);
   while (s.beds.length < need) s.beds.push(null);
+  while (s.outdoorBeds.length < OUTDOOR_SLOTS) s.outdoorBeds.push(null);
   // Normalize album / bouquet species aliases
   s.album = (s.album || []).map((id) => SPECIES_ALIAS[id] || id);
   s.bouquet = (s.bouquet || []).map((id) => SPECIES_ALIAS[id] || id);
+  // If somehow mid-plant with <20 bouquet from old bug, demote plant step
+  if (s.step === 'plant' && (s.bouquet || []).length < BOUQUET_GOAL) {
+    s.step = 'ready';
+    if (s.nurseryMode === 'plant') s.nurseryMode = 'look';
+  }
   return s;
 }
 
@@ -264,30 +289,57 @@ function fieldTop() { return H * 0.52; }
 function fieldBot() { return contentBottom() - 110; }
 function bedAt(i) { return SAVE.beds[i] || null; }
 function outdoorAt(i) { return SAVE.outdoorBeds[i] || null; }
+function bedMix(b) {
+  return (b && Array.isArray(b.mix)) ? b.mix : [];
+}
+function bedRoom(b) {
+  return Math.max(0, FLOWERS_PER_BED - bedMix(b).length);
+}
+function bedHasRoom(b) {
+  return bedRoom(b) > 0;
+}
 function freeIndoorSpot() {
   const n = bedCount();
-  for (let i = 0; i < n; i++) if (!SAVE.beds[i]) return i;
+  for (let i = 0; i < n; i++) if (bedHasRoom(SAVE.beds[i])) return i;
   return -1;
 }
 function freeOutdoorSpot() {
   if (!SAVE.outdoorUnlocked) return -1;
-  for (let i = 0; i < OUTDOOR_SLOTS; i++) if (!SAVE.outdoorBeds[i]) return i;
+  for (let i = 0; i < OUTDOOR_SLOTS; i++) if (bedHasRoom(SAVE.outdoorBeds[i])) return i;
   return -1;
 }
+/** Any bed with an open slot (null or mix.length < FLOWERS_PER_BED). */
 function emptyBedsWaiting() { return freeIndoorSpot() >= 0 || freeOutdoorSpot() >= 0; }
+function hasPlantRoom() { return emptyBedsWaiting(); }
+/** Full armful (~20) AND room in beds — required before plant mode. */
+function canStartPlant() {
+  return (bouquet.length >= BOUQUET_GOAL) && hasPlantRoom();
+}
+/** Already planting this outing (may be mid-bouquet after first flower). */
+function plantingInProgress() {
+  return (SAVE.step === 'plant' || nurseryMode === 'plant') && bouquet.length > 0 && hasPlantRoom();
+}
+function ensureBedCapacity() {
+  const n = bedCount();
+  while (SAVE.beds.length < n) SAVE.beds.push(null);
+  while (SAVE.outdoorBeds.length < OUTDOOR_SLOTS) SAVE.outdoorBeds.push(null);
+}
 function plantedIndoor() { return SAVE.beds.filter(Boolean); }
 function allWateredPlanted() {
   const planted = plantedIndoor().concat(SAVE.outdoorBeds.filter(Boolean));
-  const need = planted.filter((b) => !b.grown || (SAVE.step === 'water'));
-  // Water all currently unwatered planted beds
   const unwatered = SAVE.beds.filter((b) => b && !b.watered).concat(SAVE.outdoorBeds.filter((b) => b && !b.watered));
   return planted.length > 0 && unwatered.length === 0;
 }
 function bedsTrulyFilled() {
+  // Dense nursery: "full" when most beds hold at least one grown flower
   const n = bedCount();
+  if (!n) return false;
   let filled = 0;
-  for (let i = 0; i < n; i++) if (SAVE.beds[i] && (SAVE.beds[i].grown | 0) > 0) filled++;
-  return filled >= n;
+  for (let i = 0; i < n; i++) {
+    const b = SAVE.beds[i];
+    if (b && (b.grown | 0) > 0 && bedMix(b).length) filled++;
+  }
+  return filled >= Math.max(4, Math.floor(n * 0.55));
 }
 function skyMode() {
   // No night story — keep daytime plates; Growing… uses a dark veil instead
@@ -367,59 +419,47 @@ function drawAnchored(img, x, y, h, face, bobY) {
   return true;
 }
 
-/** Normalized bed layouts (soil feet on Franz interiors — lower Y = in dirt, not mid-air). */
+/** Dense bed grids packed into the greenhouse soil floor (plate-normalized).
+ *  Extra earth/terracotta patches are drawn under each spot so flowers never float. */
+function makeBedGrid(cols, rows, x0, x1, y0, y1) {
+  const spots = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      spots.push([
+        x0 + ((c + 0.5) / cols) * (x1 - x0),
+        y0 + ((r + 0.5) / rows) * (y1 - y0)
+      ]);
+    }
+  }
+  return spots;
+}
+
 const BED_LAYOUTS = {
-  // small: 2×2 soil beds
-  S: [
-    [0.28, 0.64], [0.72, 0.64],
-    [0.28, 0.80], [0.72, 0.80]
-  ],
-  // medium: 8 beds along center path
-  M: [
-    [0.26, 0.56], [0.74, 0.56],
-    [0.26, 0.66], [0.74, 0.66],
-    [0.26, 0.76], [0.74, 0.76],
-    [0.28, 0.84], [0.72, 0.84]
-  ],
-  // large: ~9 clearly visible beds (3×3) — batch-2 ASSET-QA, not 12
-  L: [
-    [0.22, 0.54], [0.50, 0.54], [0.78, 0.54],
-    [0.22, 0.66], [0.50, 0.66], [0.78, 0.66],
-    [0.22, 0.78], [0.50, 0.78], [0.78, 0.78]
-  ]
+  S: makeBedGrid(3, 4, 0.16, 0.84, 0.52, 0.86),   // 12
+  M: makeBedGrid(4, 5, 0.12, 0.88, 0.50, 0.88),   // 20
+  L: makeBedGrid(5, 6, 0.10, 0.90, 0.48, 0.90),   // 30
+  outdoor: makeBedGrid(4, 3, 0.12, 0.88, 0.70, 0.92) // 12
 };
 
 function plantSpots() {
   const g = gh();
   const layout = BED_LAYOUTS[g.id] || BED_LAYOUTS.S;
-  const r = X(g.id === 'L' ? 42 : g.id === 'M' ? 48 : 56);
+  // Compact kid-tappable radii for dense grids
+  const r = X(g.id === 'L' ? 28 : g.id === 'M' ? 32 : 36);
   return layout.slice(0, g.beds).map((p, i) => {
     const pt = plateToCanvas(p[0], p[1]);
-    return {
-      x: pt.x,
-      y: pt.y,
-      r,
-      outdoor: 0,
-      i
-    };
+    return { x: pt.x, y: pt.y, r, outdoor: 0, i };
   });
 }
 
 function outdoorSpots() {
   if (!SAVE.outdoorUnlocked) return [];
-  const spots = [];
-  const y0 = contentBottom() - 160;
-  for (let i = 0; i < OUTDOOR_SLOTS; i++) {
-    const col = i % 3, row = (i / 3) | 0;
-    spots.push({
-      x: W * 0.2 + col * W * 0.3,
-      y: y0 - row * Y(120),
-      r: X(48),
-      outdoor: 1,
-      i
-    });
-  }
-  return spots;
+  const layout = BED_LAYOUTS.outdoor;
+  const r = X(34);
+  return layout.slice(0, OUTDOOR_SLOTS).map((p, i) => {
+    const pt = plateToCanvas(p[0], p[1]);
+    return { x: pt.x, y: pt.y, r, outdoor: 1, i };
+  });
 }
 
 function spotXY(i, outdoor) {
@@ -589,8 +629,8 @@ function resolveNurseryMode() {
   if (SAVE.step === 'water') return 'water';
   if (SAVE.step === 'growing') return 'growing';
   if (SAVE.step === 'upgrade') return 'upgrade';
-  if (bouquet.length && emptyBedsWaiting()) return 'plant';
-  if (bouquet.length && !emptyBedsWaiting()) return 'look';
+  // Plant ONLY with a full ~20 bouquet and free bed slots — peeking stays look/ready
+  if (SAVE.step === 'plant' || canStartPlant()) return 'plant';
   return 'look';
 }
 
@@ -623,8 +663,11 @@ function applyReturnTimeLapse() {
 function enterGreenhouse(mode) {
   placesOpen = 0;
   wateringHeld = 0; waterPtr = null;
+  ensureBedCapacity();
   if (SAVE.awaitingReturnGrowth && SAVE.leftForOuting) applyReturnTimeLapse();
 
+  // Never force plant mode from a peek when bouquet is short
+  if (mode === 'plant' && !canStartPlant() && SAVE.step !== 'plant') mode = 'look';
   nurseryMode = mode || resolveNurseryMode();
   plantAnim = 0; plantAnimT = 0; plantSpot = -1; plantIsOutdoor = 0;
   growAnim = 0; growT = 0;
@@ -646,7 +689,7 @@ function enterGreenhouse(mode) {
     teach = 0;
     beginGrowing();
   } else {
-    cue = cue === 'Bigger!' ? cue : (emptyBedsWaiting() ? 'Pick more!' : 'Look!');
+    cue = cue === 'Bigger!' ? cue : (bouquet.length >= BOUQUET_GOAL ? 'Go plant!' : (hasPlantRoom() ? 'Pick more!' : 'Look!'));
     teach = 0;
     if (mode !== 'look') startParty('door');
   }
@@ -656,23 +699,37 @@ function enterGreenhouse(mode) {
   snapshotRuntime();
 }
 
-/** Meadow “go plant” when bouquet is full (or resume water/growing). */
+/** Meadow “go plant” — locked until bouquet hits ~20 (peek still allowed). */
 function goPlantHome() {
   if (SAVE.step === 'water' || SAVE.step === 'growing') {
     enterGreenhouse(SAVE.step);
-  } else if (bouquet.length >= BOUQUET_GOAL || bouquet.length > 0) {
-    enterGreenhouse(emptyBedsWaiting() ? 'plant' : resolveNurseryMode());
-  } else {
-    enterGreenhouse(resolveNurseryMode());
+    return;
+  }
+  if (SAVE.step === 'upgrade') {
+    enterGreenhouse('upgrade');
+    return;
+  }
+  if (canStartPlant()) {
+    SAVE.step = 'plant';
+    enterGreenhouse('plant');
+    return;
+  }
+  // Places/Home may peek the greenhouse, but planting must not start early
+  enterGreenhouse('look');
+  if (bouquet.length > 0 && bouquet.length < BOUQUET_GOAL) {
+    cue = 'Pick about ' + BOUQUET_GOAL + ' first!';
+  } else if (bouquet.length >= BOUQUET_GOAL && !hasPlantRoom()) {
+    cue = 'Beds full — harvest grown ones!';
   }
 }
 
-/** Plant ONE flower into ONE bed (fix v0.8 whole-basket dump) */
+/** Plant ONE flower into the next empty slot of a tapped bed (up to FLOWERS_PER_BED). */
 function doPlantAt(spotIdx, outdoor) {
   if (nurseryMode !== 'plant' || !bouquet.length) return;
-  if (outdoor) {
-    if (!SAVE.outdoorUnlocked || outdoorAt(spotIdx)) return;
-  } else if (bedAt(spotIdx)) return;
+  const b = outdoor ? outdoorAt(spotIdx) : bedAt(spotIdx);
+  if (outdoor && !SAVE.outdoorUnlocked) return;
+  if (b && (b.grown | 0) > 0) return; // harvest grown beds first
+  if (!bedHasRoom(b)) return;
 
   plantSpot = spotIdx;
   plantIsOutdoor = outdoor ? 1 : 0;
@@ -690,7 +747,27 @@ function finishPlant() {
   const spot = plantSpot;
   const outdoor = plantIsOutdoor;
   if (flowerId && spot >= 0) {
-    const bed = { mix: [flowerId], watered: 0, grown: 0, squash: 1, pendingGrow: 0 };
+    let bed = outdoor ? SAVE.outdoorBeds[spot] : SAVE.beds[spot];
+    if (!bed) {
+      bed = { mix: [flowerId], watered: 0, grown: 0, squash: 1, pendingGrow: 0 };
+    } else {
+      const mix = bedMix(bed).slice();
+      if (mix.length >= FLOWERS_PER_BED) {
+        // Slot filled during anim — put flower back
+        bouquet.unshift(flowerId);
+        plantAnim = 0;
+        snapshotRuntime();
+        return;
+      }
+      mix.push(flowerId);
+      bed = {
+        mix,
+        watered: 0, // new plantings need water
+        grown: 0,
+        squash: 1,
+        pendingGrow: 0
+      };
+    }
     if (outdoor) SAVE.outdoorBeds[spot] = bed;
     else {
       SAVE.beds[spot] = bed;
@@ -703,13 +780,13 @@ function finishPlant() {
   plantAnim = 0;
   SAVE.taughtPlant = 1;
 
-  const canPlantMore = bouquet.length > 0 && emptyBedsWaiting();
+  const canPlantMore = bouquet.length > 0 && hasPlantRoom();
   if (canPlantMore) {
     cue = 'Plant!';
     nurseryMode = 'plant';
     SAVE.step = 'plant';
   } else {
-    // Beds full or bouquet empty → water what we just planted (leftover bouquet kept)
+    // Bouquet empty (or beds full) → water what we just planted
     SAVE.baskets = (SAVE.baskets | 0) + 1;
     SAVE.outingDone = (SAVE.outingDone | 0) + 1;
     SAVE.step = 'water';
@@ -818,24 +895,28 @@ function unlockOutdoor() {
   snapshotRuntime();
 }
 
-/** Collect a grown bloom to free a bed (no-fail — frees even if bouquet full). */
+/** Collect a grown bed to free slots (no-fail — clears whole mix). */
 function harvestBed(spotIdx, outdoor) {
   const b = outdoor ? outdoorAt(spotIdx) : bedAt(spotIdx);
   if (!b || !(b.grown > 0)) return;
-  const id = (b.mix && b.mix[0]) || 'daisy';
-  if (bouquet.length < BOUQUET_GOAL) bouquet.push(id);
-  if (SAVE.album.indexOf(id) < 0) SAVE.album.push(id);
+  const mix = bedMix(b);
+  const id = mix[0] || 'daisy';
+  // Soft album credit for species in the bed; don't dump mix into bouquet (keep pick loop)
+  mix.forEach((fid) => {
+    if (SAVE.album.indexOf(fid) < 0) SAVE.album.push(fid);
+  });
   if (outdoor) SAVE.outdoorBeds[spotIdx] = null;
   else SAVE.beds[spotIdx] = null;
   const p = spotXY(spotIdx, outdoor);
   addPetals(p.x, p.y, spById(id).c, 8);
   AudioFX.pick(Math.max(1, bouquet.length));
-  if (bouquet.length && emptyBedsWaiting()) {
+  // Plant mode stays locked until a fresh ~20 bouquet
+  if (canStartPlant()) {
     nurseryMode = 'plant';
     SAVE.step = 'plant';
     cue = 'Plant!';
   } else {
-    cue = emptyBedsWaiting() ? 'Pick more!' : 'Pick blooms!';
+    cue = hasPlantRoom() ? 'Pick more!' : 'Pick blooms!';
   }
   snapshotRuntime();
 }
@@ -865,7 +946,7 @@ function resumeOuting() {
     AudioFX.rustle();
     return;
   }
-  if (SAVE.step === 'plant' && bouquet.length && emptyBedsWaiting()) {
+  if (plantingInProgress()) {
     cue = 'Plant!';
     AudioFX.rustle();
     return;
@@ -900,7 +981,7 @@ function goBackNav() {
     const prev = navStack[navStack.length - 1];
     if (prev === 'meadow') {
       if (state === ST.GREENHOUSE) {
-        if (nurseryMode === 'water' || nurseryMode === 'growing' || (nurseryMode === 'plant' && bouquet.length && emptyBedsWaiting())) {
+        if (nurseryMode === 'water' || nurseryMode === 'growing' || plantingInProgress()) {
           cue = nurseryMode === 'plant' ? 'Plant!' : (nurseryMode === 'water' ? 'Water!' : 'Growing…');
           AudioFX.rustle();
           navStack.push('greenhouse');
@@ -942,7 +1023,7 @@ function choosePlace(id) {
   placesOpen = 0;
   if (id === 'home') { goTitleHome(); return; }
   if (id === 'meadow') {
-    if (state === ST.GREENHOUSE && (nurseryMode === 'water' || growAnim || (nurseryMode === 'plant' && bouquet.length && emptyBedsWaiting()))) {
+    if (state === ST.GREENHOUSE && (nurseryMode === 'water' || growAnim || plantingInProgress())) {
       cue = nurseryMode === 'plant' ? 'Plant first!' : (growAnim ? 'Growing…' : 'Water first!');
       AudioFX.rustle();
       return;
@@ -1294,6 +1375,25 @@ function drawParty() {
   }
 }
 
+function drawBedSoil(s) {
+  // Simple earth/terracotta patch on the floor — readable even if Franz plates lack that many beds
+  const rx = s.r * 1.05;
+  const ry = s.r * 0.52;
+  cx.fillStyle = 'rgba(92, 58, 32, 0.72)';
+  cx.beginPath();
+  cx.ellipse(s.x, s.y - 4, rx, ry, 0, 0, 7);
+  cx.fill();
+  cx.fillStyle = 'rgba(140, 88, 48, 0.55)';
+  cx.beginPath();
+  cx.ellipse(s.x, s.y - 6, rx * 0.78, ry * 0.62, 0, 0, 7);
+  cx.fill();
+  cx.strokeStyle = 'rgba(60, 36, 18, 0.45)';
+  cx.lineWidth = 1.5;
+  cx.beginPath();
+  cx.ellipse(s.x, s.y - 4, rx, ry, 0, 0, 7);
+  cx.stroke();
+}
+
 function drawBedHighlight(s, highlight) {
   if (!highlight) return;
   const pulse = 0.55 + 0.45 * Math.sin(performance.now() / 220);
@@ -1305,18 +1405,23 @@ function drawBedHighlight(s, highlight) {
 
 function drawBedFlowers(s, b) {
   if (!b) return;
-  // Always sprite-draw in soil (bottom-center at bed feet). Never use mid-air Y.
+  // Up to 6 flowers in 2 rows × 3 — each foot bottom-center anchored in the dirt
   const grown = b.grown | 0;
-  const mix = b.mix || ['daisy'];
-  const n = 1;
-  // Time-lapse: each grown step is clearly bigger
-  const fs = grown <= 0 ? 0.38 : (0.48 + grown * 0.16);
-  const sc = plantAnim && plantSpot === (s.i != null ? s.i : -1) && !!s.outdoor === !!plantIsOutdoor
-    ? 0.45 + 0.55 * Math.min(1, plantAnimT / 0.7) : 1;
+  const mix = bedMix(b);
+  const n = mix.length;
+  if (!n) return;
+  const base = grown <= 0 ? 0.28 : (0.34 + grown * 0.11);
+  const planting = plantAnim && plantSpot === (s.i != null ? s.i : -1) && !!s.outdoor === !!plantIsOutdoor;
   const squash = (b.squash != null ? b.squash : 1);
   for (let j = 0; j < n; j++) {
-    const sp = spById(mix[j % mix.length]);
-    drawFlowerSprite(sp, s.x + (j - (n - 1) / 2) * s.r * 0.35, s.y, fs * sc * squash);
+    const col = j % 3;
+    const row = (j / 3) | 0;
+    const ox = (col - 1) * s.r * 0.52;
+    const oy = (row - 0.35) * s.r * 0.42;
+    let sc = 1;
+    if (planting && j === n - 1) sc = 0.45 + 0.55 * Math.min(1, plantAnimT / 0.7);
+    const sp = spById(mix[j]);
+    drawFlowerSprite(sp, s.x + ox, s.y + oy, base * sc * squash);
   }
 }
 
@@ -1354,23 +1459,28 @@ function drawInterior() {
   plantSpots().forEach((s, i) => {
     s.i = i;
     const b = bedAt(i);
-    const hl = (nurseryMode === 'plant' && !b && bouquet.length) ||
+    const hl = (nurseryMode === 'plant' && bouquet.length && bedHasRoom(b) && !(b && b.grown)) ||
       (nurseryMode === 'water' && b && !b.watered) ||
       ((nurseryMode === 'ready' || nurseryMode === 'look') && b && b.grown);
+    drawBedSoil(s);
     drawBedHighlight(s, hl);
     drawBedFlowers(s, b);
     // Hit box rooted at soil feet (not floating high)
-    hit.spots.push({ x: s.x - 52, y: s.y - 70, w: 104, h: 88, i, outdoor: 0 });
+    const hw = Math.max(72, s.r * 2.2);
+    hit.spots.push({ x: s.x - hw / 2, y: s.y - hw * 0.75, w: hw, h: hw * 0.95, i, outdoor: 0 });
   });
 
   if (SAVE.outdoorUnlocked && (nurseryMode === 'plant' || nurseryMode === 'water' || nurseryMode === 'ready' || nurseryMode === 'look')) {
     outdoorSpots().forEach((s) => {
       const b = outdoorAt(s.i);
-      const hl = (nurseryMode === 'plant' && !b && bouquet.length) || (nurseryMode === 'water' && b && !b.watered) ||
+      const hl = (nurseryMode === 'plant' && bouquet.length && bedHasRoom(b) && !(b && b.grown)) ||
+        (nurseryMode === 'water' && b && !b.watered) ||
         ((nurseryMode === 'ready' || nurseryMode === 'look') && b && b.grown);
+      drawBedSoil(s);
       drawBedHighlight(s, hl);
       drawBedFlowers(s, b);
-      hit.spots.push({ x: s.x - 52, y: s.y - 70, w: 104, h: 88, i: s.i, outdoor: 1 });
+      const hw = Math.max(72, s.r * 2.2);
+      hit.spots.push({ x: s.x - hw / 2, y: s.y - hw * 0.75, w: hw, h: hw * 0.95, i: s.i, outdoor: 1 });
     });
   }
 
@@ -1569,9 +1679,9 @@ function drawHowTo() {
   rr(18, padT + 60, W - 36, contentBottom() - padT - 80, 20); cx.fill();
   const steps = [
     { t: 'Tap a flower', d: 'Haven walks there, then picks it.' },
-    { t: 'Pick lots!', d: 'Fill a big bouquet — about twenty.' },
-    { t: 'Go plant', d: 'Tap Home or the glowing house.' },
-    { t: 'Plant each one', d: 'Tap empty beds, one by one.' },
+    { t: 'Pick ~20', d: 'Fill a mixed armful — about twenty flowers.' },
+    { t: 'Go plant', d: 'When the bouquet is full, tap Home.' },
+    { t: 'Fill the beds', d: 'Tap beds — about six flowers each.' },
     { t: 'Water', d: 'Drag the watering can onto each bed.' },
     { t: 'Growing…', d: 'Then pick more — flowers get bigger!' }
   ];
@@ -1606,10 +1716,12 @@ function drawHowTo() {
       cx.drawImage(img, W / 2 - w / 2, H * 0.32, w, h);
     }
   } else if (howtoPage === 3) {
-    drawBedHighlight({ x: W * 0.5, y: H * 0.58, r: X(70) }, true);
-    drawFlowerSprite(SPECIES[1], W * 0.5, H * 0.58, 0.55);
+    const demo = { x: W * 0.55, y: H * 0.58, r: X(58), i: 0, outdoor: 0 };
+    drawBedSoil(demo);
+    drawBedHighlight(demo, true);
+    drawBedFlowers(demo, { mix: ['tulip', 'daisy', 'sunflower', 'bluebell', 'daisy', 'tulip'], grown: 0, squash: 1 });
     const plant = Assets.get('havenPlant');
-    if (plant) drawAnchored(plant, W * 0.35, H * 0.62, Y(220), 1, 0);
+    if (plant) drawAnchored(plant, W * 0.28, H * 0.62, Y(220), 1, 0);
   } else if (howtoPage === 4) {
     const can = Assets.get('wateringCan');
     if (can) cx.drawImage(can, W / 2 - 40, H * 0.42, 90, 90);
@@ -1872,7 +1984,7 @@ function onDown(e) {
   if (state === ST.GREENHOUSE) {
     if (plantAnim || growAnim || upgradeAnim) return;
     if (inRect(p, hit.gate)) {
-      if (nurseryMode === 'plant' && bouquet.length && emptyBedsWaiting()) { cue = 'Plant!'; AudioFX.rustle(); return; }
+      if (plantingInProgress()) { cue = 'Plant!'; AudioFX.rustle(); return; }
       if (nurseryMode === 'water' || nurseryMode === 'growing') {
         cue = nurseryMode === 'water' ? 'Water!' : 'Growing…';
         AudioFX.rustle();
@@ -1892,9 +2004,9 @@ function onDown(e) {
     if (nurseryMode === 'plant' && nurseryView === 'inside') {
       for (const s of (hit.spots || [])) {
         if (inRect(p, s)) {
-          const occupied = s.outdoor ? outdoorAt(s.i) : bedAt(s.i);
-          if (!occupied) { doPlantAt(s.i, s.outdoor); return; }
-          if (occupied && occupied.grown) { harvestBed(s.i, s.outdoor); return; }
+          const bed = s.outdoor ? outdoorAt(s.i) : bedAt(s.i);
+          if (bed && bed.grown) { harvestBed(s.i, s.outdoor); return; }
+          if (bedHasRoom(bed)) { doPlantAt(s.i, s.outdoor); return; }
         }
       }
       AudioFX.rustle();
@@ -2218,7 +2330,7 @@ async function boot() {
   }
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js?v=0.9-batch2').catch(() => {});
+    navigator.serviceWorker.register('./sw.js?v=0.9-nursery').catch(() => {});
   }
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));
 }

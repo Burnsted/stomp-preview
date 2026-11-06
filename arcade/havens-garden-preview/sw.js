@@ -1,5 +1,5 @@
-/* Haven's Garden v0.9-batch2 — network-first HTML; Franz batch-2 assets */
-const CACHE = 'havens-garden-preview-v3-batch2';
+/* Haven's Garden v0.9-nursery — network-first HTML; Franz batch-2 assets */
+const CACHE = 'havens-garden-preview-v4-nursery';
 const PRECACHE = [
   './',
   './index.html',
