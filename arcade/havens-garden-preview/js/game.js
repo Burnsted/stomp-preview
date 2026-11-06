@@ -1,13 +1,12 @@
 'use strict';
 /* ============================================================
-   Haven's Garden v0.9-basket
+   Haven's Garden v0.9-go
    Standalone birthday garden — NOT part of STOMP.
-   Carry basket (small flowers) → tap bed to plant.
-   Living field + bees; empty nursery until she plants.
-   Batch-2 art kept; no new Franz files.
+   Ted-locked comps: wide coloring-book field, basket plant,
+   bugs+net, bees→hive→jars, color rows, CBN, shop.
    ============================================================ */
 
-const VER = 'v0.9-basket';
+const VER = 'v0.9-go';
 const PK = 'havensGarden.v1';
 const MUTE_K = 'havensGarden.mute';
 const QUIET_K = 'havensGarden.quiet';
@@ -41,6 +40,9 @@ const POLLINATOR_FLAP_MS = 120;
 const WALK_BOB_PX = 6; // ±6 on walk 02/04
 const GROWING_SEC = 1.45;
 const WATER_CAN_CSS = 52; // ~44–60 CSS px finger-follow can
+const GIRL_FRAME_FRAC = 0.25; // Haven ~25% of frame height (wide camera)
+const SPARKLE_MS = 30000;
+const PLANT_FAST_SEC = 0.32; // shovel upgrade
 
 /* Drawn size (drawFlowerSprite s). Hit targets stay generous (PICK_RADIUS). */
 const MEADOW_FLOWER_DRAW = 0.34;   // little wildflowers / cuttings in the field
@@ -67,7 +69,10 @@ const SPECIES_ALIAS = {
   lilac: 'bluebell', rainbow: 'sunflower'
 };
 
-const ST = { BOOT: 'BOOT', MENU: 'MENU', HOWTO: 'HOWTO', MEADOW: 'MEADOW', GREENHOUSE: 'GREENHOUSE', PAUSED: 'PAUSED' };
+const ST = {
+  BOOT: 'BOOT', MENU: 'MENU', HOWTO: 'HOWTO', MEADOW: 'MEADOW', GREENHOUSE: 'GREENHOUSE',
+  HIVE: 'HIVE', SHOP: 'SHOP', CBN: 'CBN', CBNMAP: 'CBNMAP', PAUSED: 'PAUSED'
+};
 
 /* ---------- Save (compatible with havensGarden.v1) ---------- */
 function freshSave() {
@@ -97,6 +102,7 @@ function freshSave() {
     girlNY: 0.55,
     awaitingReturnGrowth: 0,
     leftForOuting: 0,
+    extras: (window.HGSystems ? HGSystems.freshExtras() : null),
     ver: VER
   };
 }
@@ -154,6 +160,8 @@ function migrateSave(raw) {
     s.step = 'ready';
     if (s.nurseryMode === 'plant') s.nurseryMode = 'look';
   }
+  if (window.HGSystems) s.extras = HGSystems.migrateExtras(s.extras);
+  else if (!s.extras) s.extras = {};
   return s;
 }
 
@@ -227,9 +235,13 @@ let arcs = [];
 let confetti = [];
 let pollinators = [];
 let meadowCritters = []; // meadow bees / butterflies (world space)
+let fieldBugs = [];      // catchable bugs (ladybug, grasshopper, bee, butterfly)
 let grassTufts = [];     // world-space grass patches for motion
 let cam = { x: FIELD_W * 0.5, y: FIELD_H * 0.55 };
 let titleDrift = 0;
+let netSwing = 0;
+let cbnSelected = 1;
+let shopFlash = '';
 let bouquet = Array.isArray(SAVE.bouquet) ? SAVE.bouquet.slice() : [];
 let spawnTypeIdx = 0;
 let spawnT = 0;
@@ -285,6 +297,15 @@ function bouquetArtStage(n) {
   return 1;
 }
 
+function EX() {
+  if (!SAVE.extras) SAVE.extras = window.HGSystems ? HGSystems.freshExtras() : {};
+  return SAVE.extras;
+}
+function flowerPoints() { return EX().flowerPoints | 0; }
+function addFlowerPoints(n) { EX().flowerPoints = (EX().flowerPoints | 0) + n; }
+function shovelOwned() { return !!(EX().owned && EX().owned.shovel); }
+function sparkleActive() { return Date.now() < (EX().sparkleUntil || 0); }
+function plantAnimDuration() { return shovelOwned() ? PLANT_FAST_SEC : 0.55; }
 function gh() { return GH_SIZES[Math.min(2, SAVE.ghSize | 0)]; }
 function bedCount() { return gh().beds; }
 function spById(id) {
@@ -515,7 +536,10 @@ function snapshotRuntime() {
   SAVE.bouquet = bouquet.slice();
   SAVE.scene = state === ST.GREENHOUSE ? 'greenhouse'
     : state === ST.MEADOW || state === ST.PAUSED ? 'meadow'
-      : state === ST.HOWTO ? 'howto' : 'menu';
+      : state === ST.HIVE ? 'hive'
+        : state === ST.SHOP ? 'shop'
+          : state === ST.CBN || state === ST.CBNMAP ? 'color'
+            : state === ST.HOWTO ? 'howto' : 'menu';
   SAVE.nurseryMode = nurseryMode;
   SAVE.dayPhase = dayNight;
   if (state === ST.MEADOW || state === ST.PAUSED) {
@@ -682,17 +706,30 @@ function requestPick(f) {
   AudioFX.rustle();
 }
 
-function doPick(f) {
-  if (!f || f.picked || bouquet.length >= BOUQUET_GOAL) return;
+function takeFlowerIntoBasket(f) {
+  if (!f || f.picked || bouquet.length >= BOUQUET_GOAL) return false;
   f.picked = 1;
   f.state = 'pop';
   f.popT = 0;
   flowerPops.push({ x: f.x, y: f.y, t: 0, life: FLOWER_POP_SEC });
   addPetals(f.x, f.y, f.sp.c, quiet ? 2 : 7);
   addSpark(f.x, f.y);
-  arcs.push({ sp: f.sp, x: f.x, y: f.y, x0: f.x, y0: f.y, tx: girl.x, ty: girl.y - 40, u: 0 });
+  arcs.push({ sp: f.sp, x: f.x, y: f.y, x0: f.x, y0: f.y, tx: girl.x + girl.face * 36, ty: girl.y - 28, u: 0 });
   bouquet.push(f.sp.id);
   if (SAVE.album.indexOf(f.sp.id) < 0) SAVE.album.push(f.sp.id);
+  addFlowerPoints(1);
+  return true;
+}
+
+function doPick(f) {
+  if (!f || f.picked || bouquet.length >= BOUQUET_GOAL) return;
+  takeFlowerIntoBasket(f);
+  // Sparkle basket: try a second nearby flower
+  if (sparkleActive() && bouquet.length < BOUQUET_GOAL) {
+    const other = flowers.find((x) => x !== f && !x.picked && (x.state === 'open' || x.state === 'blooming')
+      && Math.hypot(x.x - f.x, x.y - f.y) < TARGET_SPACING * 1.4);
+    if (other) takeFlowerIntoBasket(other);
+  }
   AudioFX.pick(bouquet.length);
   girl.squash = 0.88;
   girl.face = f.x >= girl.x ? 1 : -1;
@@ -702,7 +739,7 @@ function doPick(f) {
     cue = 'Go plant!';
     startParty('full');
   } else {
-    cue = bouquet.length + ' / ' + BOUQUET_GOAL;
+    cue = bouquet.length + '/' + BOUQUET_GOAL;
   }
   snapshotRuntime();
 }
@@ -710,7 +747,7 @@ function doPick(f) {
 /* ---------- Scene transitions ---------- */
 function startMeadow(resetBouquet) {
   flowers = []; particles = []; arcs = []; confetti = []; pollinators = []; flowerPops = [];
-  meadowCritters = [];
+  meadowCritters = []; fieldBugs = [];
   pendingPick = null;
   girlPose = 'idle'; girlPoseT = 0;
   wateringHeld = 0; waterPtr = null; placesOpen = 0;
@@ -726,6 +763,7 @@ function startMeadow(resetBouquet) {
   cam.x = girl.x; cam.y = girl.y;
   seedGrassTufts();
   ensureMeadowCritters();
+  spawnFieldBugs(10);
   const pool = outingTypes();
   for (let i = 0; i < Math.min(9, pool.length + 5); i++) {
     const ang = (i / 9) * Math.PI * 2;
@@ -847,6 +885,7 @@ function goPlantHome() {
   if (canStartPlant()) {
     SAVE.step = 'plant';
     enterGreenhouse('plant');
+    if (EX().colorRows) cue = 'Match colors in rows!';
     return;
   }
   // Places/Home may peek the greenhouse, but planting must not start early
@@ -883,7 +922,30 @@ function doPlantAt(spotIdx, outdoor) {
   const g = greenhouseGirlScreen();
   const ba = basketPos(g.x, g.y, g.h);
   const dest = spotXY(spotIdx, outdoor);
-  const flowerId = bouquet[bouquet.length - 1]; // take from top of basket
+  // Color rows: prefer a basket flower matching the bed's species (or empty bed = top)
+  let flowerId = bouquet[bouquet.length - 1];
+  if (EX().colorRows) {
+    const mix = bedMix(b);
+    if (mix.length) {
+      const want = mix[0];
+      const ix = bouquet.lastIndexOf(want);
+      if (ix >= 0) flowerId = bouquet[ix];
+    } else {
+      // Empty bed: if nearby beds share a color, try to continue that row
+      const size = gh();
+      const col = spotIdx % size.cols;
+      const row = (spotIdx / size.cols) | 0;
+      let neighbor = null;
+      if (col > 0) neighbor = bedAt(spotIdx - 1);
+      if ((!neighbor || !bedMix(neighbor).length) && col < size.cols - 1) neighbor = bedAt(spotIdx + 1);
+      if ((!neighbor || !bedMix(neighbor).length) && row > 0) neighbor = bedAt(spotIdx - size.cols);
+      if (neighbor && bedMix(neighbor).length) {
+        const want = bedMix(neighbor)[0];
+        const ix = bouquet.lastIndexOf(want);
+        if (ix >= 0) flowerId = bouquet[ix];
+      }
+    }
+  }
   plantFly = {
     id: flowerId,
     x0: ba.x,
@@ -891,7 +953,7 @@ function doPlantAt(spotIdx, outdoor) {
     x1: dest.x,
     y1: dest.y,
     t: 0,
-    life: 0.55
+    life: plantAnimDuration()
   };
   AudioFX.plant();
 }
@@ -1156,6 +1218,10 @@ function goBackNav() {
       doorOpen = 1; ghEnterT = -1; nurseryView = 'inside';
       return;
     }
+    if (prev === 'hive') { enterHive(); return; }
+    if (prev === 'shop') { enterShop(); return; }
+    if (prev === 'color') { enterCbnMap(); return; }
+    if (prev === 'cbn') { enterCbnMap(); return; }
     if (prev === 'home' || prev === 'menu') {
       goTitleHome();
       return;
@@ -1163,6 +1229,8 @@ function goBackNav() {
   }
   // Fallbacks by current scene
   if (state === ST.HOWTO) { state = ST.MENU; pushNav('home'); AudioFX.ui(); return; }
+  if (state === ST.CBN) { enterCbnMap(); return; }
+  if (state === ST.CBNMAP || state === ST.HIVE || state === ST.SHOP) { goTitleHome(); return; }
   if (state === ST.GREENHOUSE) {
     if (nurseryMode === 'ready' || nurseryMode === 'look') { resumeOuting(); return; }
     goTitleHome();
@@ -1190,18 +1258,438 @@ function choosePlace(id) {
     else startMeadow(false);
     return;
   }
-  if (id === 'greenhouse') {
-    goPlantHome();
-    return;
-  }
+  if (id === 'greenhouse') { goPlantHome(); return; }
+  if (id === 'hive') { enterHive(); return; }
+  if (id === 'shop') { enterShop(); return; }
+  if (id === 'color') { enterCbnMap(); return; }
   if (id === 'play') {
     if (state === ST.MENU || state === ST.HOWTO) {
       if (!SAVE.taughtHow) { state = ST.HOWTO; howtoPage = 0; }
       else startMeadow(false);
-    } else {
-      placesOpen = 0;
     }
     AudioFX.ui();
+  }
+}
+
+/* ---------- Bugs / net / hive / shop / CBN ---------- */
+const BUG_KINDS = ['ladybug', 'grasshopper', 'bee', 'butterfly'];
+
+function spawnFieldBugs(n) {
+  for (let i = 0; i < n; i++) {
+    const kind = BUG_KINDS[i % BUG_KINDS.length];
+    const c = clampField(
+      girl.x + (Math.random() - 0.5) * 900,
+      girl.y + (Math.random() - 0.5) * 600
+    );
+    fieldBugs.push({
+      kind, x: c.x, y: c.y,
+      vx: (Math.random() - 0.5) * 80,
+      vy: (Math.random() - 0.5) * 60,
+      phase: Math.random() * 6,
+      caught: 0
+    });
+  }
+}
+
+function updateFieldBugs(dt) {
+  if (fieldBugs.length < 8 && Math.random() < dt * 0.4) spawnFieldBugs(1);
+  fieldBugs.forEach((b) => {
+    if (b.caught) return;
+    b.phase += dt * 2.5;
+    b.x += b.vx * dt;
+    b.y += b.vy * dt + Math.sin(b.phase) * 12 * dt;
+    if (Math.random() < dt * 0.5) {
+      b.vx += (Math.random() - 0.5) * 40;
+      b.vy += (Math.random() - 0.5) * 30;
+    }
+    const c = clampField(b.x, b.y); b.x = c.x; b.y = c.y;
+  });
+  fieldBugs = fieldBugs.filter((b) => !b.caught);
+}
+
+function drawFieldBugs() {
+  fieldBugs.forEach((b) => {
+    const s = worldToScreen(b.x, b.y);
+    if (s.x < -40 || s.x > W + 40 || s.y < -40 || s.y > H + 40) return;
+    const bob = Math.sin(b.phase) * 4;
+    if (b.kind === 'bee' || b.kind === 'butterfly') {
+      const flap = ((performance.now() / POLLINATOR_FLAP_MS) | 0) % 2;
+      let img = null;
+      if (b.kind === 'bee') img = Assets.get(flap ? 'bee02' : 'bee01');
+      else img = Assets.get(flap ? 'butterfly02' : 'butterfly01');
+      const box = X(36);
+      if (img) cx.drawImage(img, s.x - box / 2, s.y + bob - box / 2, box, box);
+      else {
+        cx.fillStyle = b.kind === 'bee' ? '#ffd23c' : '#f078be';
+        cx.beginPath(); cx.ellipse(s.x, s.y + bob, 10, 8, 0, 0, 7); cx.fill();
+      }
+    } else if (b.kind === 'ladybug') {
+      cx.fillStyle = '#e23a3a';
+      cx.beginPath(); cx.ellipse(s.x, s.y + bob, 10, 8, 0, 0, 7); cx.fill();
+      cx.fillStyle = '#1e1814';
+      cx.beginPath(); cx.arc(s.x - 3, s.y + bob - 2, 2, 0, 7); cx.fill();
+      cx.beginPath(); cx.arc(s.x + 3, s.y + bob + 1, 2, 0, 7); cx.fill();
+    } else {
+      cx.fillStyle = '#6ecf4a';
+      cx.beginPath(); cx.ellipse(s.x, s.y + bob, 12, 7, -0.3, 0, 7); cx.fill();
+      cx.strokeStyle = '#3c8237'; cx.lineWidth = 2;
+      cx.beginPath(); cx.moveTo(s.x + 10, s.y + bob); cx.lineTo(s.x + 18, s.y + bob - 6); cx.stroke();
+    }
+  });
+}
+
+function drawBugNet(sx, sy) {
+  // Simple kid net — pole + hoop + mesh (original, not from comps as sprite)
+  const face = girl.face || 1;
+  const tipX = sx + face * X(70);
+  const tipY = sy - H * 0.18;
+  cx.strokeStyle = '#8a5524';
+  cx.lineWidth = 4;
+  cx.lineCap = 'round';
+  cx.beginPath(); cx.moveTo(sx + face * X(18), sy - H * 0.08); cx.lineTo(tipX, tipY); cx.stroke();
+  cx.strokeStyle = '#5ecf7a';
+  cx.lineWidth = 3;
+  cx.beginPath(); cx.ellipse(tipX + face * 8, tipY, X(22), Y(16), 0, 0, 7); cx.stroke();
+  cx.strokeStyle = 'rgba(255,255,255,0.55)';
+  cx.lineWidth = 1;
+  for (let i = -2; i <= 2; i++) {
+    cx.beginPath();
+    cx.moveTo(tipX + face * 8 - 14, tipY + i * 5);
+    cx.lineTo(tipX + face * 8 + 14, tipY + i * 5);
+    cx.stroke();
+  }
+  if (netSwing > 0) {
+    cx.strokeStyle = 'rgba(255,230,120,0.7)';
+    cx.lineWidth = 3;
+    cx.beginPath();
+    cx.arc(tipX, tipY, X(30) * netSwing, 0, Math.PI * 1.2);
+    cx.stroke();
+  }
+}
+
+function tryCatchBugAt(wx, wy) {
+  let best = null, bd = 70;
+  fieldBugs.forEach((b) => {
+    if (b.caught) return;
+    const d = Math.hypot(b.x - wx, b.y - wy);
+    if (d < bd) { bd = d; best = b; }
+  });
+  if (!best) return false;
+  best.caught = 1;
+  netSwing = 1;
+  if (best.kind === 'bee') {
+    EX().bees = (EX().bees | 0) + 1;
+    cue = 'Bee!';
+    addFlowerPoints(2);
+  } else {
+    EX().bugs[best.kind] = (EX().bugs[best.kind] | 0) + 1;
+    cue = best.kind === 'ladybug' ? 'Ladybug!' : (best.kind === 'grasshopper' ? 'Hopper!' : 'Butterfly!');
+    addFlowerPoints(1);
+  }
+  AudioFX.pick(3);
+  snapshotRuntime();
+  return true;
+}
+
+function enterHive() {
+  placesOpen = 0;
+  state = ST.HIVE;
+  pushNav('hive');
+  cue = 'Bees → honey → jars';
+  announce('Hive');
+  AudioFX.ui();
+  snapshotRuntime();
+}
+
+function enterShop() {
+  placesOpen = 0;
+  state = ST.SHOP;
+  shopFlash = '';
+  pushNav('shop');
+  cue = 'Pick an upgrade';
+  announce('Shop');
+  AudioFX.ui();
+  snapshotRuntime();
+}
+
+function enterCbnMap() {
+  placesOpen = 0;
+  state = ST.CBNMAP;
+  pushNav('color');
+  cue = 'Easy → Hard';
+  announce('Color');
+  AudioFX.ui();
+}
+
+function openCbnPage(idx) {
+  idx = Math.max(0, Math.min(HGSystems.CBN_PAGES.length - 1, idx | 0));
+  EX().cbnPage = idx;
+  const key = HGSystems.CBN_PAGES[idx].id;
+  if (!EX().cbnFill[key]) EX().cbnFill[key] = {};
+  cbnSelected = 1;
+  state = ST.CBN;
+  pushNav('cbn');
+  cue = HGSystems.CBN_PAGES[idx].title;
+  AudioFX.ui();
+}
+
+function buyUpgrade(id) {
+  const item = HGSystems.SHOP.find((s) => s.id === id);
+  if (!item) return;
+  if (EX().owned[id]) { shopFlash = 'Have it!'; return; }
+  if (id === 'greenhouse') {
+    // Stage gate ~3: need enough cycles / points
+    if ((SAVE.cycles | 0) < 2 && flowerPoints() < 40) {
+      shopFlash = 'Play more first';
+      return;
+    }
+  }
+  if (flowerPoints() < item.cost) { shopFlash = 'Need more ✿'; return; }
+  EX().flowerPoints -= item.cost;
+  EX().owned[id] = 1;
+  if (id === 'greenhouse') {
+    SAVE.ghSize = Math.min(2, (SAVE.ghSize | 0) + 1);
+    while (SAVE.beds.length < bedCount()) SAVE.beds.push(null);
+  }
+  if (id === 'sparkle') EX().sparkleUntil = Date.now() + SPARKLE_MS;
+  shopFlash = 'Yay!';
+  startParty('upgrade');
+  snapshotRuntime();
+}
+
+function hiveHarvest() {
+  if ((EX().bees | 0) <= 0) { cue = 'Catch bees first'; return; }
+  const n = Math.min(EX().bees, 3);
+  EX().bees -= n;
+  EX().honey = (EX().honey | 0) + n;
+  cue = 'Honey!';
+  addFlowerPoints(n);
+  AudioFX.grow();
+  snapshotRuntime();
+}
+
+function hivePourJar() {
+  if ((EX().honey | 0) <= 0) { cue = 'Need honey'; return; }
+  if ((EX().jarsEmpty | 0) <= 0) { cue = 'Need empty jars'; return; }
+  EX().honey -= 1;
+  EX().jarsEmpty -= 1;
+  EX().jarsFull = (EX().jarsFull | 0) + 1;
+  cue = 'Jar filled!';
+  addFlowerPoints(2);
+  AudioFX.plant();
+  snapshotRuntime();
+}
+
+function drawHiveScene() {
+  const bg = Assets.get('conceptHive');
+  if (bg) drawFullPlate(bg, 1);
+  else {
+    cx.fillStyle = '#96cdf0'; cx.fillRect(0, 0, W, H);
+    cx.fillStyle = '#78c35f'; cx.fillRect(0, H * 0.55, W, H * 0.45);
+  }
+  // Soft panels so comps stay visible
+  cx.fillStyle = 'rgba(255,250,240,.88)';
+  rr(18, padT + 60, W - 36, 210, 18); cx.fill();
+  cx.fillStyle = '#2a2418';
+  cx.font = '800 22px Fredoka, system-ui, sans-serif';
+  cx.textAlign = 'center';
+  cx.fillText('Hive & jars', W / 2, padT + 92);
+  cx.font = '700 14px system-ui';
+  cx.fillStyle = '#6a6258';
+  cx.fillText('Bees ' + (EX().bees | 0) + ' · Honey ' + (EX().honey | 0) + ' · Jars ' + (EX().jarsFull | 0) + '/' + ((EX().jarsFull | 0) + (EX().jarsEmpty | 0)), W / 2, padT + 118);
+
+  cx.fillStyle = '#ffd24a';
+  rr(40, padT + 140, W - 80, 48, 14); cx.fill();
+  cx.fillStyle = '#2a2418';
+  cx.font = '800 16px Fredoka, system-ui, sans-serif';
+  cx.fillText('Harvest honey', W / 2, padT + 170);
+  hit.hiveHarvest = { x: 40, y: padT + 140, w: W - 80, h: 48 };
+
+  cx.fillStyle = '#7ec8ff';
+  rr(40, padT + 200, W - 80, 48, 14); cx.fill();
+  cx.fillStyle = '#2a2418';
+  cx.fillText('Pour a jar', W / 2, padT + 230);
+  hit.hivePour = { x: 40, y: padT + 200, w: W - 80, h: 48 };
+
+  drawGirl(W * 0.5, contentBottom() - 20, false);
+  if (cue) drawCue(cue);
+}
+
+function drawShopScene() {
+  const bg = Assets.get('conceptShop');
+  if (bg) drawFullPlate(bg, 1);
+  else drawMeadowBG('day');
+  cx.fillStyle = 'rgba(255,250,240,.92)';
+  rr(16, padT + 56, W - 32, contentBottom() - padT - 70, 20); cx.fill();
+  cx.fillStyle = '#2a2418';
+  cx.font = '800 22px Fredoka, system-ui, sans-serif';
+  cx.textAlign = 'center';
+  cx.fillText('Shop', W / 2, padT + 88);
+  cx.font = '700 13px system-ui';
+  cx.fillStyle = '#6a6258';
+  cx.fillText(flowerPoints() + ' flower points', W / 2, padT + 110);
+
+  hit.shopItems = [];
+  HGSystems.SHOP.forEach((it, i) => {
+    const y = padT + 130 + i * 78;
+    const owned = !!(EX().owned && EX().owned[it.id]);
+    cx.fillStyle = owned ? 'rgba(160,150,140,.35)' : '#fff';
+    rr(28, y, W - 56, 68, 16); cx.fill();
+    cx.strokeStyle = '#1e1814'; cx.lineWidth = 2;
+    rr(28, y, W - 56, 68, 16); cx.stroke();
+    cx.fillStyle = '#2a2418';
+    cx.font = '800 16px Fredoka, system-ui, sans-serif';
+    cx.textAlign = 'left';
+    cx.fillText(it.label, 44, y + 28);
+    cx.font = '700 12px system-ui';
+    cx.fillStyle = '#6a6258';
+    cx.fillText(owned ? 'Owned' : (it.cost + ' ✿ · ' + it.desc), 44, y + 50);
+    hit.shopItems.push({ id: it.id, x: 28, y, w: W - 56, h: 68 });
+  });
+  if (shopFlash) {
+    cx.fillStyle = '#a05010';
+    cx.font = '800 14px Fredoka, system-ui, sans-serif';
+    cx.textAlign = 'center';
+    cx.fillText(shopFlash, W / 2, contentBottom() - 28);
+  }
+}
+
+function drawCbnMap() {
+  const bg = Assets.get('cbnLadder');
+  if (bg) drawFullPlate(bg, 1);
+  else {
+    cx.fillStyle = '#fff8f0'; cx.fillRect(0, 0, W, H);
+  }
+  cx.fillStyle = 'rgba(255,250,240,.9)';
+  rr(16, padT + 56, W - 32, 64, 16); cx.fill();
+  cx.fillStyle = '#2a2418';
+  cx.font = '800 20px Fredoka, system-ui, sans-serif';
+  cx.textAlign = 'center';
+  cx.fillText('Color · Easy → Hard', W / 2, padT + 88);
+  cx.font = '700 12px system-ui';
+  cx.fillStyle = '#6a6258';
+  cx.fillText((EX().cbnDone || []).length + ' / ' + HGSystems.CBN_PAGES.length + ' done', W / 2, padT + 108);
+
+  hit.cbnLevels = [];
+  const cols = 3, rows = 5;
+  const gridTop = padT + 140;
+  const cellW = (W - 48) / cols;
+  const cellH = (contentBottom() - gridTop - 12) / rows;
+  for (let i = 0; i < HGSystems.CBN_PAGES.length; i++) {
+    const c = i % cols, r = (i / cols) | 0;
+    const x = 24 + c * cellW + 4;
+    const y = gridTop + r * cellH + 4;
+    const done = (EX().cbnDone || []).indexOf(HGSystems.CBN_PAGES[i].id) >= 0;
+    cx.fillStyle = done ? '#9fe870' : '#fff';
+    rr(x, y, cellW - 8, cellH - 8, 12); cx.fill();
+    cx.strokeStyle = '#1e1814'; cx.lineWidth = 2;
+    rr(x, y, cellW - 8, cellH - 8, 12); cx.stroke();
+    cx.fillStyle = '#2a2418';
+    cx.font = '800 18px Fredoka, system-ui, sans-serif';
+    cx.textAlign = 'center';
+    cx.fillText(String(i + 1), x + (cellW - 8) / 2, y + (cellH - 8) / 2 + 6);
+    hit.cbnLevels.push({ i, x, y, w: cellW - 8, h: cellH - 8 });
+  }
+}
+
+function drawCbnPage() {
+  const page = HGSystems.CBN_PAGES[EX().cbnPage | 0];
+  if (!page) return;
+  const fill = EX().cbnFill[page.id] || {};
+  // Art plate or flat coloring-book ground
+  const bg = page.bg ? Assets.get(page.bg) : null;
+  if (bg) drawFullPlate(bg, 1);
+  else {
+    cx.fillStyle = '#fffaf2'; cx.fillRect(0, 0, W, H);
+  }
+  // Dim unfilled look: white wash then paint filled regions
+  cx.fillStyle = 'rgba(255,255,255,0.35)';
+  cx.fillRect(0, 0, W, H);
+
+  const top = padT + 52;
+  const bot = contentBottom() - 70;
+  const left = 12, right = W - 12;
+  const pw = right - left, ph = bot - top;
+
+  page.regions.forEach((reg) => {
+    const col = fill[reg.id];
+    if (!col) return;
+    cx.fillStyle = col;
+    if (reg.shape === 'rect') {
+      cx.fillRect(left + reg.x * pw, top + reg.y * ph, reg.w * pw, reg.h * ph);
+    } else {
+      cx.beginPath();
+      cx.ellipse(left + reg.x * pw, top + reg.y * ph, (reg.w * pw) / 2, (reg.h * ph) / 2, 0, 0, 7);
+      cx.fill();
+    }
+  });
+  // Numbers for unfilled
+  page.regions.forEach((reg) => {
+    if (fill[reg.id]) return;
+    const nx = left + (reg.shape === 'rect' ? reg.x + reg.w / 2 : reg.x) * pw;
+    const ny = top + (reg.shape === 'rect' ? reg.y + reg.h / 2 : reg.y) * ph;
+    cx.fillStyle = 'rgba(30,24,20,0.75)';
+    cx.font = '800 14px Fredoka, system-ui, sans-serif';
+    cx.textAlign = 'center';
+    cx.fillText(String(reg.n), nx, ny + 5);
+  });
+
+  // Palette
+  const colors = Math.min(page.colors || 5, HGSystems.CBN_PALETTE.length);
+  const pwPill = Math.min(W - 24, colors * 44 + 16);
+  const px0 = (W - pwPill) / 2;
+  const py = contentBottom() - 58;
+  cx.fillStyle = 'rgba(255,250,240,.96)';
+  rr(px0, py, pwPill, 48, 16); cx.fill();
+  hit.cbnPalette = [];
+  for (let i = 0; i < colors; i++) {
+    const cx0 = px0 + 20 + i * 44;
+    const cy0 = py + 24;
+    cx.fillStyle = HGSystems.CBN_PALETTE[i];
+    cx.beginPath(); cx.arc(cx0, cy0, 16, 0, 7); cx.fill();
+    cx.strokeStyle = cbnSelected === (i + 1) ? '#1e1814' : 'rgba(0,0,0,0.2)';
+    cx.lineWidth = cbnSelected === (i + 1) ? 3 : 1;
+    cx.stroke();
+    cx.fillStyle = '#1e1814';
+    cx.font = '800 11px system-ui';
+    cx.textAlign = 'center';
+    cx.fillText(String(i + 1), cx0, cy0 + 4);
+    hit.cbnPalette.push({ n: i + 1, x: cx0 - 18, y: cy0 - 18, w: 36, h: 36 });
+  }
+  hit.cbnPageBox = { x: left, y: top, w: pw, h: ph, page };
+}
+
+function cbnTap(p) {
+  if (hit.cbnPalette) {
+    for (const sw of hit.cbnPalette) {
+      if (inRect(p, sw)) { cbnSelected = sw.n; AudioFX.ui(); return; }
+    }
+  }
+  const box = hit.cbnPageBox;
+  if (!box) return;
+  const nx = (p.x - box.x) / box.w;
+  const ny = (p.y - box.y) / box.h;
+  const page = box.page;
+  // Topmost region under tap (iterate reverse for smaller overlays)
+  for (let i = page.regions.length - 1; i >= 0; i--) {
+    const reg = page.regions[i];
+    if (!HGSystems.hitRegion(reg, nx, ny)) continue;
+    if (reg.n !== cbnSelected) { cue = 'Color ' + reg.n; AudioFX.rustle(); return; }
+    const fill = EX().cbnFill[page.id] || (EX().cbnFill[page.id] = {});
+    fill[reg.id] = HGSystems.CBN_PALETTE[reg.n - 1];
+    AudioFX.plant();
+    // Complete?
+    const done = page.regions.every((r) => fill[r.id]);
+    if (done) {
+      if ((EX().cbnDone || []).indexOf(page.id) < 0) EX().cbnDone.push(page.id);
+      addFlowerPoints(5);
+      cue = 'Done!';
+      startParty('bigger');
+      snapshotRuntime();
+      setTimeout(() => { if (state === ST.CBN) enterCbnMap(); }, 900);
+    }
+    snapshotRuntime();
+    return;
   }
 }
 
@@ -1268,49 +1756,43 @@ function drawPlateOffset(img, ox, oy, alpha) {
   cx.restore();
 }
 
-/** Living open field: parallax plate tiles + scrolling grass (camera follows Haven). */
+/** Living open field: coloring-book plate + scrolling grass (camera follows Haven). */
 function drawLivingField(mode, opts) {
   opts = opts || {};
   mode = mode || 'day';
-  const plate = Assets.meadow(mode);
-  // Sky wash
+  const concept = Assets.get('conceptMeadow');
+  const plate = concept || Assets.meadow(mode);
+  // Soft sky — kid coloring-book, not painterly bands
   const sky = mode === 'sunset' ? '#fa8c5a' : mode === 'sunrise' ? '#ffd6a0' : '#8ec8f5';
   cx.fillStyle = sky;
   cx.fillRect(0, 0, W, H);
 
-  // Far hills / painted meadow — slow parallax, tiled so the world never ends
-  const farX = (-cam.x * 0.22 + (opts.drift || 0) * 0.15) % W;
-  const farY = (-cam.y * 0.08);
+  // Single wide plate with gentle parallax (NO hard tiling / band seams)
   if (plate) {
-    for (let i = -1; i <= 1; i++) drawPlateOffset(plate, farX + i * W, farY - H * 0.04, 1);
+    const ox = ((-cam.x * 0.18 + (opts.drift || 0) * 0.12) % (W * 0.35));
+    const oy = (-cam.y * 0.06) % (H * 0.08);
+    drawPlateOffset(plate, ox, oy - H * 0.02, 1);
+    // Soft edge fade so the plate never reads as a postage stamp
+    const edge = cx.createLinearGradient(0, playfieldBot() - 80, 0, playfieldBot());
+    edge.addColorStop(0, 'rgba(120, 180, 80, 0)');
+    edge.addColorStop(1, 'rgba(90, 150, 55, 0.55)');
+    cx.fillStyle = edge;
+    cx.fillRect(0, playfieldBot() - 80, W, 80);
   }
 
-  // Mid ground — stronger scroll
-  const midX = (-cam.x * 0.55) % W;
-  const midY = (-cam.y * 0.25);
-  if (plate) {
-    cx.save();
-    cx.beginPath();
-    cx.rect(0, H * 0.28, W, H * 0.72);
-    cx.clip();
-    for (let i = -1; i <= 1; i++) drawPlateOffset(plate, midX + i * W, midY + H * 0.02, 0.92);
-    cx.restore();
-  }
-
-  // Ground wash under playfield so tiles never read as a frozen postcard
-  const g0 = playfieldTop() + (playfieldBot() - playfieldTop()) * 0.25;
+  // Ground wash + path hint under playfield (camera-follow living field)
+  const g0 = playfieldTop() + (playfieldBot() - playfieldTop()) * 0.22;
   const grd = cx.createLinearGradient(0, g0, 0, playfieldBot());
-  grd.addColorStop(0, 'rgba(110, 170, 70, 0.15)');
-  grd.addColorStop(0.35, 'rgba(90, 150, 55, 0.55)');
-  grd.addColorStop(1, 'rgba(70, 130, 45, 0.82)');
+  grd.addColorStop(0, 'rgba(110, 170, 70, 0.12)');
+  grd.addColorStop(0.4, 'rgba(90, 150, 55, 0.45)');
+  grd.addColorStop(1, 'rgba(70, 130, 45, 0.78)');
   cx.fillStyle = grd;
   cx.fillRect(0, g0, W, playfieldBot() - g0 + 4);
 
-  // Distant greenhouse landmark (slow parallax) — a place in the field, not a rail goal
+  // Distant greenhouse landmark
   const ghImg = Assets.greenhouse(SAVE.ghSize | 0, false, 'day');
   if (ghImg) {
     const lx = FIELD_W * 0.78, ly = FIELD_H * 0.40;
-    const s = worldToScreen(lx - cam.x * 0.35 + cam.x * 0.35, ly); // use reduced parallax manually
     const sx = (lx - cam.x) * 0.45 + W * 0.5;
     const sy = (ly - cam.y) * 0.35 + (playfieldTop() + playfieldBot()) * 0.42;
     const h = Y(210);
@@ -1438,7 +1920,7 @@ function drawBasketFlowers(bx, by, ids, flyingId) {
 }
 
 function drawGirl(x, y, walking) {
-  const h = Y(320) * girl.squash;
+  const h = H * GIRL_FRAME_FRAC * girl.squash;
   let img = null;
   let bob = 0;
   const pose = girlPoseT > 0 ? girlPose : (walking ? 'walk' : 'idle');
@@ -1499,31 +1981,29 @@ function drawFinger(x, y, a) {
   cx.globalAlpha = 1;
 }
 
-function drawBouquetPips() {
-  // Basket fill meter above the dock — small basket icon, not giant bouquet art
-  if (state !== ST.MEADOW && state !== ST.PAUSED) return;
-  const y = contentBottom() - 52;
+/** Compact bordered flower counter — top-right only (06b). No duplicate bottom meter. */
+function drawFlowerCounter() {
+  if (state !== ST.MEADOW && state !== ST.PAUSED && state !== ST.GREENHOUSE) return;
   const full = bouquet.length >= BOUQUET_GOAL;
-  const bw = Math.min(W - 36, 280);
-  const bx = (W - bw) / 2;
-  cx.fillStyle = full ? 'rgba(255,230,140,.96)' : 'rgba(255,250,240,.92)';
-  rr(bx, y - 30, bw, 60, 18); cx.fill();
-  if (full) { cx.strokeStyle = '#ff9a2a'; cx.lineWidth = 3; rr(bx, y - 30, bw, 60, 18); cx.stroke(); }
-
-  drawWickerBasket(bx + 36, y + 4, 0.72);
-  if (bouquet.length) drawBasketFlowers(bx + 36, y + 2, bouquet.slice(0, 8), null);
-
-  cx.fillStyle = '#2a2418';
-  cx.font = '800 22px Fredoka, system-ui, sans-serif';
+  const label = bouquet.length + '/' + BOUQUET_GOAL;
+  const bw = 108;
+  const bh = 40;
+  const bx = W - bw - 14;
+  const by = padT + 56;
+  cx.fillStyle = '#fff';
+  rr(bx, by, bw, bh, 14); cx.fill();
+  cx.strokeStyle = '#1e1814';
+  cx.lineWidth = 2.5;
+  rr(bx, by, bw, bh, 14); cx.stroke();
+  // Mini daisy icon
+  drawFlowerSprite(SPECIES[0], bx + 22, by + 30, 0.28);
+  cx.fillStyle = full ? '#a05010' : '#1e1814';
+  cx.font = '800 18px Fredoka, system-ui, sans-serif';
   cx.textAlign = 'left';
-  cx.fillText(bouquet.length + ' / ' + BOUQUET_GOAL, bx + 78, y + 8);
-  if (full) {
-    cx.font = '800 14px Fredoka, system-ui, sans-serif';
-    cx.fillStyle = '#a05010';
-    cx.fillText('Go plant!', bx + 78, y + 24);
-  }
-  hit.homeBar = full ? { x: bx, y: y - 30, w: bw, h: 60 } : null;
+  cx.fillText(label, bx + 40, by + 27);
+  hit.homeBar = full ? { x: bx, y: by, w: bw, h: bh } : null;
 }
+function drawBouquetPips() { drawFlowerCounter(); }
 
 /** Greenhouse “go plant” button (when bouquet full) — top-right, clear of nav dock. */
 function drawGoPlantBtn() {
@@ -1544,7 +2024,7 @@ function drawGoPlantBtn() {
 }
 
 function drawChrome() {
-  // Compact header — no greenhouse S/M/L chip crowding the title
+  // Slim header — title + mute. Flower count lives top-right (drawFlowerCounter), not here.
   cx.fillStyle = 'rgba(255,250,240,.94)';
   rr(10, padT, W - 20, 48, 16); cx.fill();
   cx.fillStyle = '#2a2418';
@@ -1553,12 +2033,12 @@ function drawChrome() {
   const titleX = (state === ST.MEADOW || state === ST.PAUSED) ? 52 : 24;
   cx.fillText("Haven's Garden", titleX, padT + 30);
 
-  // Mute — large hit target
+  // Flower points (shop currency) — small, left of mute
   const mx = W - 58, my = padT + 8;
-  cx.font = '700 11px system-ui';
+  cx.font = '700 12px Fredoka, system-ui, sans-serif';
   cx.fillStyle = '#6a6258';
   cx.textAlign = 'right';
-  cx.fillText(VER, mx - 10, padT + 30);
+  cx.fillText(flowerPoints() + ' ✿  ' + VER, mx - 10, padT + 30);
   cx.fillStyle = muted ? '#ff8ab0' : '#5ecf7a';
   rr(mx, my, 40, 40, 12); cx.fill();
   cx.fillStyle = '#fff'; cx.font = '18px system-ui'; cx.textAlign = 'center';
@@ -1624,9 +2104,17 @@ function drawNavDock() {
 
 function drawPlacesMenu() {
   const panelW = Math.min(W - 28, 340);
-  const panelH = 280;
+  const items = [
+    { id: 'meadow', label: 'Meadow', sub: 'Pick & chase', fill: '#9fe870' },
+    { id: 'greenhouse', label: 'Greenhouse', sub: 'Plant & water', fill: '#7ec8ff' },
+    { id: 'hive', label: 'Hive', sub: 'Bees & honey', fill: '#ffd24a' },
+    { id: 'color', label: 'Color', sub: 'Color-by-number', fill: '#c8a0ff' },
+    { id: 'shop', label: 'Shop', sub: '3 upgrades', fill: '#ffb4c8' },
+    { id: 'home', label: 'Home', sub: 'Start screen', fill: '#ffe566' }
+  ];
+  const panelH = 54 + items.length * 48 + 20;
   const px = (W - panelW) / 2;
-  const py = Math.max(padT + 60, H * 0.22);
+  const py = Math.max(padT + 56, (H - panelH) * 0.35);
   cx.fillStyle = 'rgba(30,24,20,.45)';
   cx.fillRect(0, 0, W, H);
   cx.fillStyle = 'rgba(255,250,240,.98)';
@@ -1636,16 +2124,10 @@ function drawPlacesMenu() {
   cx.textAlign = 'center';
   cx.fillText('Where to?', W / 2, py + 36);
 
-  const items = [
-    { id: 'meadow', label: '🌸  Meadow', sub: 'Pick flowers', fill: '#9fe870' },
-    { id: 'greenhouse', label: '🏡  Greenhouse', sub: 'Plant & water', fill: '#7ec8ff' },
-    { id: 'play', label: '▶  Keep playing', sub: 'Stay here', fill: '#ffd24a' },
-    { id: 'home', label: '🏠  Start screen', sub: 'Title menu', fill: '#ffb4c8' }
-  ];
   hit.places = [];
   items.forEach((it, i) => {
-    const iy = py + 54 + i * 52;
-    const ih = 46;
+    const iy = py + 50 + i * 48;
+    const ih = 42;
     cx.fillStyle = it.fill;
     rr(px + 16, iy, panelW - 32, ih, 14); cx.fill();
     cx.fillStyle = '#1e1814';
@@ -1801,9 +2283,14 @@ function drawInterior() {
   plantSpots().forEach((s, i) => {
     s.i = i;
     const b = bedAt(i);
-    const hl = (nurseryMode === 'plant' && bouquet.length && bedHasRoom(b) && !(b && b.grown)) ||
+    let hl = (nurseryMode === 'plant' && bouquet.length && bedHasRoom(b) && !(b && b.grown)) ||
       (nurseryMode === 'water' && b && !b.watered) ||
       ((nurseryMode === 'ready' || nurseryMode === 'look') && b && b.grown);
+    // Color-row tip: pulse beds that match a bouquet flower
+    if (nurseryMode === 'plant' && EX().colorRows && bouquet.length && bedHasRoom(b) && !(b && b.grown)) {
+      const mix = bedMix(b);
+      if (mix.length && bouquet.indexOf(mix[0]) >= 0) hl = 1;
+    }
     drawBedSoil(s);
     drawBedHighlight(s, hl);
     drawBedFlowers(s, b);
@@ -1887,6 +2374,7 @@ function drawInterior() {
 function drawMeadow() {
   drawLivingField(skyMode(), {});
   drawMeadowCritters();
+  drawFieldBugs();
 
   const sorted = flowers.slice().sort((a, b) => a.y - b.y);
   sorted.forEach((f) => {
@@ -1933,6 +2421,14 @@ function drawMeadow() {
 
   const gs = worldToScreen(girl.x, girl.y);
   drawGirl(gs.x, gs.y, girl.walking || dragging);
+  // Kid bug net — always handy in the field for chase/capture
+  drawBugNet(gs.x, gs.y);
+  if (netSwing > 0) {
+    cx.fillStyle = 'rgba(255,230,120,0.25)';
+    cx.beginPath();
+    cx.arc(gs.x + (girl.face || 1) * X(70), gs.y - H * 0.18, X(36) * netSwing, 0, 7);
+    cx.fill();
+  }
 
   if (showDemo && bouquet.length < BOUQUET_GOAL) {
     const f = flowers.find((x) => !x.picked && (x.state === 'open' || x.state === 'blooming'));
@@ -2203,6 +2699,8 @@ function update(dt) {
     girl.x = clamped.x; girl.y = clamped.y;
     updateCamera(dt);
     updateMeadowCritters(dt);
+    updateFieldBugs(dt);
+    if (netSwing > 0) netSwing = Math.max(0, netSwing - dt * 2.2);
     grassTufts.forEach((t) => { t.phase += dt; });
 
     if (pendingPick && !pendingPick.picked) {
@@ -2371,6 +2869,13 @@ function onDown(e) {
     const wpt = screenToWorld(p.x, p.y);
     const f = nearestFlower(wpt.x, wpt.y, PICK_RADIUS);
     if (f) { requestPick(f); dragging = 1; return; }
+    // Chase/capture bugs with the net when not picking
+    if (tryCatchBugAt(wpt.x, wpt.y)) {
+      girl.tx = wpt.x; girl.ty = wpt.y;
+      girlPose = 'pick'; girlPoseT = 0.35;
+      dragging = 1;
+      return;
+    }
     if (p.y > playfieldTop() && p.y < playfieldBot()) {
       pendingPick = null;
       const c = clampField(wpt.x, wpt.y);
@@ -2378,6 +2883,28 @@ function onDown(e) {
       AudioFX.rustle();
       dragging = 1;
     }
+    return;
+  }
+
+  if (state === ST.HIVE) {
+    if (inRect(p, hit.hiveHarvest)) { hiveHarvest(); return; }
+    if (inRect(p, hit.hivePour)) { hivePourJar(); return; }
+    return;
+  }
+  if (state === ST.SHOP) {
+    for (const it of (hit.shopItems || [])) {
+      if (inRect(p, it)) { buyUpgrade(it.id); AudioFX.ui(); return; }
+    }
+    return;
+  }
+  if (state === ST.CBNMAP) {
+    for (const lv of (hit.cbnLevels || [])) {
+      if (inRect(p, lv)) { openCbnPage(lv.i); return; }
+    }
+    return;
+  }
+  if (state === ST.CBN) {
+    cbnTap(p);
     return;
   }
 
@@ -2441,6 +2968,10 @@ function onMove(e) {
   if (state !== ST.MEADOW) { lastPtr = p; return; }
   if (p.y >= contentBottom()) { lastPtr = p; return; }
   const wpt = screenToWorld(p.x, p.y);
+  if (dragging && Math.hypot(wpt.x - girl.x, wpt.y - girl.y) < 90 && tryCatchBugAt(wpt.x, wpt.y)) {
+    lastPtr = p;
+    return;
+  }
   const f = nearestFlower(wpt.x, wpt.y, PICK_RADIUS * 0.85);
   if (f && bouquet.length < BOUQUET_GOAL) requestPick(f);
   else if (dragging) {
@@ -2538,6 +3069,10 @@ function frame(now) {
   else if (state === ST.MENU) drawMenu();
   else if (state === ST.HOWTO) drawHowTo();
   else if (state === ST.GREENHOUSE) drawGreenhouse();
+  else if (state === ST.HIVE) drawHiveScene();
+  else if (state === ST.SHOP) drawShopScene();
+  else if (state === ST.CBNMAP) drawCbnMap();
+  else if (state === ST.CBN) drawCbnPage();
   else drawMeadow();
   if (state !== ST.BOOT) drawChrome();
   requestAnimationFrame(frame);
@@ -2741,7 +3276,7 @@ async function boot() {
   }
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js?v=0.9-basket').catch(() => {});
+    navigator.serviceWorker.register('./sw.js?v=0.9-go').catch(() => {});
   }
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));
 }
