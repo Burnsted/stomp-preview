@@ -10,8 +10,8 @@
 
 ## Tip / PR
 
-- **Tip SHA:** _(filled after push — see PR head)_
-- **Draft PR:** _(filled on open)_ — *DRAFT t1238u — Spot / Stash / Keeper (NO MERGE)*
+- **Tip SHA:** `6dae3165f4559903da1b748f5b51e1e989cdf3a7`
+- **Draft PR:** _(opened after push)_ — *DRAFT t1238u — Spot / Stash / Keeper (NO MERGE)*
 
 ## CI (both checks required)
 
