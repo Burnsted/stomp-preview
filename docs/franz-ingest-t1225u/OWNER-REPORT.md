@@ -8,7 +8,7 @@
 |---|---|
 | Branch | `cursor/stomper-ingest-t1225u-bfa0` |
 | Base / starting_ref | `9339cc6b30df13beb445c90682d17536d8471db0` (draft PR #60 tip) |
-| Tip SHA | `2e83fc55a09390ad283e4ec8e8643bca48c6bcc2` |
+| Tip SHA | `77e6587bf087dab0a374dfa66f61304990cebc5e` |
 | Stack | New isolated draft PR #70 from #60 tip — **does not push onto #60** |
 | Draft PR | https://github.com/Burnsted/stomp-preview/pull/70 |
 | Follow-up | **t1228u** Hey Session FAB Trails clearance (same draft PR) |
@@ -109,7 +109,7 @@ Flow: Form #7 welcome → STOMPER selection/customization → personalize → ST
 | `gb-phone` `npm run test:woz` | **1082 passed / 42 files** |
 | `batch1` `npm test` | **608 passed / 8 skipped / 37 files** |
 
-CI both jobs: *(pin run URL after t1228u push green)*.
+CI both jobs: **GREEN** — [pr-verify `77e6587`](https://github.com/Burnsted/stomp-preview/actions/runs/42219664956) (batch1 + gb-phone).
 
 ## 7. Real-device test status
 
