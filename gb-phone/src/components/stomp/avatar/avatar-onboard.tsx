@@ -11,7 +11,7 @@ import { BACKGROUNDS, unlockedForSlot } from "@/lib/stomp/avatar/locker";
 import { isValidStomperDisplayName, lookOrdinalLabel } from "@/lib/stomp/avatar/identity";
 import { evaluateLook2MintGate, lookPlateSlotByStarterId } from "@/lib/stomp/avatar/plate-registry";
 import {
-  allRosterArtworkSlots,
+  createScreenRosterSlots,
   type RosterArtworkSlot,
 } from "@/lib/stomp/avatar/roster-artwork-status";
 import { ADULT_STARTERS, configFromStarter, starterById } from "@/lib/stomp/avatar/starters";
@@ -71,24 +71,28 @@ export function AvatarOnboard() {
 
 function Screen1Starter({ onSkip }: { onSkip: () => void }) {
   const selectStarter = useAvatar((s) => s.selectStarter);
-  const slots = allRosterArtworkSlots();
-  /** Ingested Woman/Man/Grom N first; SOURCE MISSING after — never invent fillers. */
-  const byAvailability = (a: RosterArtworkSlot, b: RosterArtworkSlot) => {
-    if (a.selectable !== b.selectable) return a.selectable ? -1 : 1;
-    return a.slotLabel.localeCompare(b.slotLabel, undefined, { numeric: true });
-  };
+  /** First-ship lock: omit SOURCE MISSING + OPEN prototypes (Woman 2 / Man 1). */
+  const slots = createScreenRosterSlots();
+  const byLabel = (a: RosterArtworkSlot, b: RosterArtworkSlot) =>
+    a.slotLabel.localeCompare(b.slotLabel, undefined, { numeric: true });
   const adultFemale = slots
     .filter((s) => s.ageBand === "adult" && s.presenting === "female")
-    .sort(byAvailability);
+    .sort(byLabel);
   const adultMale = slots
     .filter((s) => s.ageBand === "adult" && s.presenting === "male")
-    .sort(byAvailability);
-  const groms = slots.filter((s) => s.ageBand === "grom").sort(byAvailability);
-  const ingested = slots.filter((s) => s.selectable).length;
-  const missing = slots.filter((s) => !s.selectable).length;
+    .sort(byLabel);
+  const groms = slots.filter((s) => s.ageBand === "grom").sort(byLabel);
+  const partialVisible = slots.length;
+  const createCleared = slots.filter((s) => s.createShipStatus === "create-cleared").length;
 
   return (
-    <div className="pb-28" data-testid="avatar-onboard-1">
+    <div
+      className="pb-28"
+      data-testid="avatar-onboard-1"
+      data-create-ship-lock="t1225u-first-ship"
+      data-create-cleared={String(createCleared)}
+      data-create-partial={String(partialVisible)}
+    >
       <AlpineTopBar
         title="Create"
         showBack
@@ -98,34 +102,39 @@ function Screen1Starter({ onSkip }: { onSkip: () => void }) {
       <div className="px-5 pt-2">
         <p className="font-display text-4xl leading-none tracking-wide text-ink">Create Your STOMPER</p>
         <p className="mt-2 text-sm text-muted">
-          Pick an available look. Missing slots stay unavailable — no invented art.
+          Partial looks for review only — none Create-cleared this pass. Missing art and
+          OPEN prototypes (Woman 2 / Man 1) are omitted. No invented art.
         </p>
-        <p className="mt-4 text-xs font-bold tracking-widest text-accent">WOMAN · 6 ADULT SLOTS</p>
+        <p className="mt-4 text-xs font-bold tracking-widest text-accent">
+          WOMAN · PARTIAL · NOT CREATE-CLEARED
+        </p>
         <div className="mt-2 grid grid-cols-3 gap-2" data-testid="starter-grid-female">
           {adultFemale.map((slot, i) => (
             <StarterCard
               key={slot.starterId}
               slot={slot}
               lookIndex={i + 1}
-              lookTotal={12}
+              lookTotal={adultFemale.length}
               onPick={() => selectStarter(slot.starterId)}
             />
           ))}
         </div>
-        <p className="mt-5 text-xs font-bold tracking-widest text-sky">MAN · 6 ADULT SLOTS</p>
+        <p className="mt-5 text-xs font-bold tracking-widest text-sky">
+          MAN · PARTIAL · NOT CREATE-CLEARED
+        </p>
         <div className="mt-2 grid grid-cols-3 gap-2" data-testid="starter-grid-male">
           {adultMale.map((slot, i) => (
             <StarterCard
               key={slot.starterId}
               slot={slot}
-              lookIndex={adultFemale.length + i + 1}
-              lookTotal={12}
+              lookIndex={i + 1}
+              lookTotal={adultMale.length}
               onPick={() => selectStarter(slot.starterId)}
             />
           ))}
         </div>
         <p className="mt-5 text-xs font-bold tracking-widest text-muted">
-          GROM PREVIEWS · FICTIONAL ONLY · 6 SLOTS
+          GROM PREVIEWS · FICTIONAL ONLY · NOT CREATE-CLEARED
         </p>
         <p className="mt-1 text-[11px] text-muted">
           Appearance previews only. No youth social or live enrollment.
@@ -136,7 +145,7 @@ function Screen1Starter({ onSkip }: { onSkip: () => void }) {
               key={slot.starterId}
               slot={slot}
               lookIndex={i + 1}
-              lookTotal={6}
+              lookTotal={groms.length}
               onPick={() => selectStarter(slot.starterId)}
             />
           ))}
@@ -144,10 +153,13 @@ function Screen1Starter({ onSkip }: { onSkip: () => void }) {
         <p
           className="mt-4 text-center text-xs text-muted"
           data-testid="roster-availability-summary"
-          data-ingested={String(ingested)}
-          data-missing={String(missing)}
+          data-create-cleared={String(createCleared)}
+          data-create-partial={String(partialVisible)}
+          data-open-omitted="2"
+          data-missing-omitted="10"
         >
-          {ingested} ingested · {missing} artwork unavailable · 18 slots
+          {createCleared} Create-cleared · {partialVisible} partial on Create · OPEN + missing
+          omitted
         </p>
       </div>
     </div>
@@ -167,9 +179,7 @@ function StarterCard({
 }) {
   const starterId = slot.starterId;
   const s = starterById(starterId)!;
-  const lookLabel = slot.selectable
-    ? slot.slotLabel
-    : lookOrdinalLabel(lookIndex, lookTotal);
+  const lookLabel = slot.slotLabel || lookOrdinalLabel(lookIndex, lookTotal);
   const cfg = useMemo(
     () => configFromStarter(s, { stomperId: "preview", displayName: lookLabel }),
     [s, lookLabel],
@@ -189,40 +199,16 @@ function StarterCard({
     plateSlot?.status === "prototype-ingest-ready" ||
     slot.availability === "appearance-preview" ||
     slot.availability === "modular-prototype";
-  const unavailable = !slot.selectable;
-
-  if (unavailable) {
-    return (
-      <div
-        data-testid={`starter-${starterId}`}
-        data-availability="source-missing"
-        data-selectable="false"
-        data-acceptance-eligible="false"
-        data-missing-plates="all"
-        data-plate-slot-status="missing-plates"
-        data-look-of-m={lookLabel}
-        className="flex flex-col items-center rounded-2xl bg-snow/5 p-2 ring-1 ring-dashed ring-line opacity-70"
-        aria-disabled="true"
-      >
-        <div
-          className="flex size-[88px] items-center justify-center rounded-2xl bg-navy/40 text-center text-[10px] font-semibold leading-tight text-muted"
-          data-testid={`starter-unavailable-${starterId}`}
-        >
-          Artwork
-          <br />
-          unavailable
-        </div>
-        <span className="mt-1 text-xs font-semibold text-muted">Unavailable</span>
-        <span className="text-[10px] text-muted">No approved art</span>
-      </div>
-    );
-  }
+  // Create first-ship: SOURCE MISSING tiles are omitted upstream — never render here.
+  const createCleared = slot.createShipStatus === "create-cleared";
 
   return (
     <button
       type="button"
       data-testid={`starter-${starterId}`}
       data-availability={slot.availability}
+      data-create-ship-status={slot.createShipStatus}
+      data-create-cleared={createCleared ? "true" : "false"}
       data-selectable="true"
       data-acceptance-eligible={acceptanceEligible ? "true" : "false"}
       data-missing-plates={String(missingCount)}
@@ -249,7 +235,11 @@ function StarterCard({
         {slot.slotLabel}
       </span>
       <span className="text-[10px] text-muted">
-        {slot.availability === "appearance-preview" ? "preview only" : s.silhouette}
+        {createCleared
+          ? "Create-cleared"
+          : slot.availability === "appearance-preview"
+            ? "partial · preview only"
+            : "partial · not Create-cleared"}
       </span>
     </button>
   );

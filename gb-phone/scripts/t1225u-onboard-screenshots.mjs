@@ -47,11 +47,13 @@ await page.click('[data-testid="welcome-create-stomper"]');
 await page.waitForSelector('[data-testid="avatar-onboard-1"]', { timeout: 10000 });
 await shot("onboard-02-starter-roster");
 
-await page.click('[data-testid="starter-m-samir"]');
+// Create first-ship: Man 1 / Woman 2 OPEN prototypes are omitted from Create.
+// Use Woman 3 (PARTIAL · not Create-cleared) for the journey proof.
+await page.click('[data-testid="starter-f-priya"]');
 await page.waitForSelector('[data-testid="avatar-onboard-2"]', { timeout: 8000 });
-await shot("onboard-03-look-man1");
+await shot("onboard-03-look-woman3");
 
-await page.fill('[data-testid="onboard-display-name"]', "RiderOne");
+await page.fill('[data-testid="onboard-display-name"]', "PowderFox");
 await page.click('[data-testid="onboard-to-vibe"]');
 await page.waitForSelector('[data-testid="avatar-onboard-3"]', { timeout: 8000 });
 await shot("onboard-04-vibe");

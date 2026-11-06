@@ -282,27 +282,30 @@ describe("t1182u — plate ingest + Look-2 mint gate", () => {
     expect(screen.getByText("LockerRider")).toBeTruthy();
   });
 
-  it("Look N of M selector: Look 2 gate open but prototype not acceptance-eligible", () => {
+  it("Create first-ship: OPEN Woman 2 / Man 1 omitted; PARTIAL Woman 3 / Man 2 shown", () => {
     act(() => {
       useAvatar.getState().startOnboarding("adult");
       useStomp.getState().setScreen("avatar-onboard");
     });
     render(<AvatarOnboard />);
-    const hana = screen.getByTestId("starter-f-hana");
-    expect(hana.getAttribute("data-android-acceptance-gate")).toBe("true");
-    expect(hana.getAttribute("data-acceptance-eligible")).toBe("false");
-    expect(hana.getAttribute("data-prototype-only")).toBe("true");
-    expect(hana.getAttribute("data-missing-plates")).toBe("0");
-    expect(hana.getAttribute("data-plate-slot-status")).toBe("ingest-ready");
-    expect(hana.getAttribute("data-look-of-m")).toBe("Woman 2");
-    expect(hana.getAttribute("data-slot-label")).toBe("Woman 2");
+    // OPEN prototypes stay QA-ingestable via store, but are not Create-screen characters.
+    expect(screen.queryByTestId("starter-f-hana")).toBeNull();
+    expect(screen.queryByTestId("starter-m-samir")).toBeNull();
 
-    const samir = screen.getByTestId("starter-m-samir");
-    expect(samir.getAttribute("data-android-acceptance-gate")).toBe("false");
-    expect(samir.getAttribute("data-acceptance-eligible")).toBe("false");
-    expect(samir.getAttribute("data-plate-slot-status")).toBe("prototype-ingest-ready");
-    expect(samir.getAttribute("data-prototype-only")).toBe("true");
-    expect(samir.getAttribute("data-slot-label")).toBe("Man 1");
+    const priya = screen.getByTestId("starter-f-priya");
+    expect(priya.getAttribute("data-create-ship-status")).toBe("partial-not-create-cleared");
+    expect(priya.getAttribute("data-create-cleared")).toBe("false");
+    expect(priya.getAttribute("data-acceptance-eligible")).toBe("false");
+    expect(priya.getAttribute("data-slot-label")).toBe("Woman 3");
+
+    const devon = screen.getByTestId("starter-m-devon");
+    expect(devon.getAttribute("data-create-ship-status")).toBe("partial-not-create-cleared");
+    expect(devon.getAttribute("data-create-cleared")).toBe("false");
+    expect(devon.getAttribute("data-slot-label")).toBe("Man 2");
+
+    // Gate metadata for Look 2 remains available off Create (registry).
+    expect(lookPlateSlotByStarterId(LOOK2_STARTER_ID)?.androidAcceptanceGate).toBe(true);
+    expect(lookPlateSlotByStarterId("m-samir")?.status).toBe("prototype-ingest-ready");
   });
 
   it("Home / five-tab / gromFlow / identity locks stay green", () => {

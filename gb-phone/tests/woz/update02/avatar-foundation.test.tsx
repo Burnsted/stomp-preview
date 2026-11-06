@@ -204,13 +204,17 @@ describe("Update02 — adult onboarding Screens 1–5", () => {
     });
     render(<StompApp />);
     expect(screen.getByTestId("avatar-onboard-1")).toBeTruthy();
-    expect(within(screen.getByTestId("starter-grid-female")).getAllByTestId(/^starter-f-/)).toHaveLength(6);
-    expect(within(screen.getByTestId("starter-grid-male")).getAllByTestId(/^starter-m-/)).toHaveLength(6);
+    // First-ship Create lock: omit SOURCE MISSING + OPEN (Woman 2 / Man 1).
+    expect(within(screen.getByTestId("starter-grid-female")).getAllByTestId(/^starter-f-/)).toHaveLength(2);
+    expect(within(screen.getByTestId("starter-grid-male")).getAllByTestId(/^starter-m-/)).toHaveLength(2);
     expect(screen.getByTestId("starter-look-label-f-nova").textContent).toBe("Woman 1");
-    expect(screen.getByTestId("starter-unavailable-m-kai")).toBeTruthy();
-    expect(screen.getByTestId("starter-m-kai").getAttribute("data-availability")).toBe(
-      "source-missing",
+    expect(screen.getByTestId("starter-f-nova").getAttribute("data-create-ship-status")).toBe(
+      "partial-not-create-cleared",
     );
+    expect(screen.queryByTestId("starter-f-hana")).toBeNull();
+    expect(screen.queryByTestId("starter-m-samir")).toBeNull();
+    expect(screen.queryByTestId("starter-unavailable-m-kai")).toBeNull();
+    expect(screen.queryByTestId("starter-m-kai")).toBeNull();
     expect(screen.queryByText("Nova")).toBeNull();
     expect(screen.queryByText("Kai")).toBeNull();
 

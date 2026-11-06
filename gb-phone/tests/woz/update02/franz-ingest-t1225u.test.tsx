@@ -12,7 +12,12 @@ import { LOOK2_GATE_STATUS } from "@/lib/stomp/avatar/look2-acceptance";
 import { modularRiderByStarterId } from "@/lib/stomp/avatar/modular-riders";
 import { eightLookPlateMatrix } from "@/lib/stomp/avatar/plate-registry";
 import {
+  CREATE_DISPLAY_SCALE_TARGET,
+  isOpenPrototypeStarter,
+} from "@/lib/stomp/avatar/create-ship-gate";
+import {
   assertEighteenSlotRoster,
+  createScreenRosterSlots,
   missingArtworkSlots,
   rosterArtworkSlot,
 } from "@/lib/stomp/avatar/roster-artwork-status";
@@ -41,6 +46,8 @@ describe("t1225u Franz ingest + 18-slot roster", () => {
       total: 18,
       ingested: 8,
       missing: 10,
+      createVisible: 6,
+      openOmitted: 2,
     });
   });
 
@@ -139,6 +146,25 @@ describe("t1225u Franz ingest + 18-slot roster", () => {
     expect(
       [...ADULT_STARTERS, ...GROM_STARTERS].some((s) => /woz/i.test(s.label)),
     ).toBe(false);
+  });
+
+  it("Create first-ship lock: omit OPEN + SOURCE MISSING; no Create-cleared", () => {
+    const create = createScreenRosterSlots();
+    expect(create.map((s) => s.starterId).sort()).toEqual(
+      ["f-nova", "f-priya", "g-aria", "g-milo", "m-devon", "m-leo"].sort(),
+    );
+    expect(create.every((s) => s.createShipStatus === "partial-not-create-cleared")).toBe(
+      true,
+    );
+    expect(isOpenPrototypeStarter("f-hana")).toBe(true);
+    expect(isOpenPrototypeStarter("m-samir")).toBe(true);
+    expect(rosterArtworkSlot("f-hana")!.createScreenVisible).toBe(false);
+    expect(rosterArtworkSlot("m-samir")!.createScreenVisible).toBe(false);
+    expect(rosterArtworkSlot("m-kai")!.createScreenVisible).toBe(false);
+    expect(CREATE_DISPLAY_SCALE_TARGET.status).toBe(
+      "DOCUMENTED_WAIT_TED_CREATE_ELIGIBLE",
+    );
+    expect(CREATE_DISPLAY_SCALE_TARGET.targetDrawnPx).toBe(565);
   });
 
   it("applies Franz QA v2 alpha fills (4 promoted; Man 1 glove quarantined)", () => {

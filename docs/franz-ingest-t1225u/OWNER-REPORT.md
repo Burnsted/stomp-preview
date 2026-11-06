@@ -45,22 +45,30 @@ Provenance: `docs/franz-ingest-t1225u/alpha-fill-v2/`, `alpha-fill-v2-receipt.js
 
 ## 3. Completed roster matrix (18 slots)
 
-| Audit id | Slot | starterId | Ingest | Status |
-|---|---|---|---|---|
-| adult-f-01 | Woman 1 | `f-nova` | YES | SOURCE_APPEARANCE_PREVIEW_ONLY |
-| adult-f-02 | Woman 2 | `f-hana` | YES | REGISTERED_VISUAL_PROTOTYPE_ONLY (+ v2 pants fill) |
-| adult-f-03 | Woman 3 | `f-priya` | YES | REGISTERED_VISUAL_PROTOTYPE_ONLY (+ v2 jacket/pants fills) |
-| adult-m-01 | Man 1 / Rider 1 | `m-samir` | YES | REGISTERED_VISUAL_PROTOTYPE_ONLY (restored Rider 1) |
-| adult-m-02 | Man 2 / Look 4 | `m-devon` | YES | REGISTERED_VISUAL_PROTOTYPE_ONLY · **NOT owner visual PASS** · white = **FIT TEST ≠ Man 3** |
-| adult-m-03 | Man 3 | `m-leo` | YES | SOURCE_APPEARANCE_PREVIEW_ONLY |
-| grom-m-01 | Grom 1 | `g-milo` | YES | SOURCE_APPEARANCE_PREVIEW_ONLY · fictional |
-| grom-f-01 | Grom 2 | `g-aria` | YES | SOURCE_APPEARANCE_PREVIEW_ONLY · fictional |
-| adult-f-04..06 | — | `f-mira` `f-jade` `f-elena` | NO | **SOURCE MISSING** · honest unavailable UI |
-| adult-m-04..06 | — | `m-kai` `m-owen` `m-jonas` | NO | **SOURCE MISSING** · honest unavailable UI |
-| grom-f-02..03 | — | `g-zoe` `g-nina` | NO | **SOURCE MISSING** |
-| grom-m-02..03 | — | `g-reed` `g-theo` | NO | **SOURCE MISSING** |
+| Audit id | Slot | starterId | Ingest | Artwork | Create ship |
+|---|---|---|---|---|---|
+| adult-f-01 | Woman 1 | `f-nova` | YES | SOURCE_APPEARANCE_PREVIEW_ONLY | **PARTIAL · not Create-cleared** (on Create) |
+| adult-f-02 | Woman 2 | `f-hana` | YES | REGISTERED_VISUAL_PROTOTYPE_ONLY (+ v2 pants fill) | **OPEN prototype · QA only · omitted from Create** |
+| adult-f-03 | Woman 3 | `f-priya` | YES | REGISTERED_VISUAL_PROTOTYPE_ONLY (+ v2 jacket/pants fills) | **PARTIAL · not Create-cleared** (on Create) |
+| adult-m-01 | Man 1 / Rider 1 | `m-samir` | YES | REGISTERED_VISUAL_PROTOTYPE_ONLY (restored Rider 1) | **OPEN prototype · QA only · omitted from Create** |
+| adult-m-02 | Man 2 / Look 4 | `m-devon` | YES | REGISTERED_VISUAL_PROTOTYPE_ONLY · **NOT owner visual PASS** · white = **FIT TEST ≠ Man 3** | **PARTIAL · not Create-cleared** (on Create) |
+| adult-m-03 | Man 3 | `m-leo` | YES | SOURCE_APPEARANCE_PREVIEW_ONLY | **PARTIAL · not Create-cleared** (on Create) |
+| grom-m-01 | Grom 1 | `g-milo` | YES | SOURCE_APPEARANCE_PREVIEW_ONLY · fictional | **PARTIAL · not Create-cleared** (on Create) |
+| grom-f-01 | Grom 2 | `g-aria` | YES | SOURCE_APPEARANCE_PREVIEW_ONLY · fictional | **PARTIAL · not Create-cleared** (on Create) |
+| adult-f-04..06 | — | `f-mira` `f-jade` `f-elena` | NO | **SOURCE MISSING** | **Omitted from Create** |
+| adult-m-04..06 | — | `m-kai` `m-owen` `m-jonas` | NO | **SOURCE MISSING** | **Omitted from Create** |
+| grom-f-02..03 | — | `g-zoe` `g-nina` | NO | **SOURCE MISSING** | **Omitted from Create** |
+| grom-m-02..03 | — | `g-reed` `g-theo` | NO | **SOURCE MISSING** | **Omitted from Create** |
 
-**Counts remain 0 visually complete / 8 partial / 10 SOURCE MISSING.** No invented art. No Woz character. Form #7 untouched.
+**Counts remain 0 visually complete / 8 partial / 10 SOURCE MISSING.** **Create-cleared = 0.** No invented art. No Woz character. Form #7 untouched.
+
+### Create first-ship lock (DESIGN TEAM)
+
+See `CREATE-FIRST-SHIP.md`. No isolated-cutout repair file present — do not invent one. Create omits the ten SOURCE MISSING slots and OPEN prototypes (Woman 2 / Man 1). PARTIAL six appear with honest labels only.
+
+### SCALE-SPEC (document only — not shipped Create composition)
+
+Franz study target **67% drawn height** (~**565 px** on 390×844; range 65–70% = 548–591 px), uniform scale on registered 1024 composite, stand-line ~25–35% from bottom. **Wait for Ted Create-eligible clearance** before implementing Create display scale (`CREATE_DISPLAY_SCALE_TARGET.status = DOCUMENTED_WAIT_TED_CREATE_ELIGIBLE`). Alpine Summit (`env-alpine-summit-390x844`) Ted-review only — do not invent other environments. Face/hair research only — no photo processing.
 
 ## 4. Before/after character screenshots
 
@@ -75,7 +83,7 @@ Fresh post-ingest 390×844 A/B/C (browser viewport ≠ Android PASS):
 
 ## 5. Full onboarding screenshots
 
-`onboard-01-welcome` → `02-starter-roster` → `03-look-man1` → `04-vibe` → `05-personalize` → `06-id-reveal` → `07-stomper-id` → `08-meet-sesh` → `09-trip-choice` → `10-home-with-stomper` → `11-home-fab` → `12-trails-fab-clear`.
+`onboard-01-welcome` → `02-starter-roster` (Create first-ship: PARTIAL only; OPEN + missing omitted) → `03-look-woman3` → `04-vibe` → `05-personalize` → `06-id-reveal` → `07-stomper-id` → `08-meet-sesh` → `09-trip-choice` → `10-home-with-stomper` → `11-home-fab` → `12-trails-fab-clear`.
 
 Flow: Form #7 welcome → STOMPER selection/customization → personalize → STOMPER ID → Meet Sesh → Trip Drop / Explore Solo → Home with selected STOMPER. Partial drafts resume; completed profiles skip welcome; Reset Demo → welcome. **STOMPER-first** (never Home/greet as first-visit default). `greet.tsx` / CrewLink preserved.
 
@@ -84,7 +92,7 @@ Flow: Form #7 welcome → STOMPER selection/customization → personalize → ST
 | Suite | Result |
 |---|---|
 | `gb-phone` `npm run typecheck` | **PASS** |
-| `gb-phone` `npm run test:woz` | **1078 passed / 41 files** |
+| `gb-phone` `npm run test:woz` | **1079 passed / 41 files** |
 | `batch1` `npm test` | **608 passed / 8 skipped / 37 files** |
 
 CI both jobs: *(awaiting push — pin run URL + tip SHA when green)*.
@@ -103,7 +111,10 @@ From Franz `KNOWN-DEFECTS.md` (still apply) + this ingest:
 - Man 1: locked-head tan chin/collar sliver; hard sleeve crop; residual gray; **glove v2 fill quarantined**.
 - Woman 2 / Woman 3 / Man 2: residual head/edge artifacts; Man 2 **NOT owner visual PASS**.
 - Woman 1 / Man 3 / Grom 1 / Grom 2: appearance-preview only — no modular swaps.
-- Ten SOURCE MISSING slots — honest unavailable UI only.
+- Ten SOURCE MISSING slots — **omitted from Create** (no broken tiles).
+- Woman 2 / Man 1 OPEN prototypes — QA art only; **not Create-screen characters**.
+- Create scale 67% — documented; **not** shipped pending Ted Create-eligible clearance.
+- No isolated-cutout repair file — none invented.
 - A-state flat torsos: ART + dark-UI (Franz QA) — keep jacket-off = omit jacket plate.
 - Possible Man 1 pants fringe/halo on dark chrome — recheck on magenta after owner review (`WOZ-RENDER-NOTES.md`).
 
@@ -120,7 +131,7 @@ From Franz `KNOWN-DEFECTS.md` (still apply) + this ingest:
 ## Workstream notes
 
 - **A:** Rider 1 restored from Man 1 package; eight packages + four v2 fills ingested into `gb-phone/public/stomper/`; ten slots unavailable.
-- **B:** STOMPER-first onboard preserved/extended; appearance-preview looks skip fake clothing controls.
+- **B:** STOMPER-first onboard + Create first-ship lock (omit OPEN + SOURCE MISSING; PARTIAL labeled not Create-cleared); appearance-preview looks skip fake clothing controls.
 - **C:** #57–#60 decisions retained; Hey Session FAB bottom padding lifted to clear player chrome (`10.5rem` / safe-area+`9.25rem`).
 - **D:** Fresh / partial / reset / missing-art paths exercised in automated + browser screenshots.
 
