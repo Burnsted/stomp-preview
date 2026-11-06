@@ -1,31 +1,36 @@
 'use strict';
 /* ============================================================
-   Haven's Garden v0.9-grow
+   Haven's Garden v0.9-field
    Standalone birthday garden — NOT part of STOMP.
-   Small meadow cuttings → plant tiny → Growing… time-lapse
-   makes them bigger. Empty nursery until she plants.
+   Living open field: camera follows Haven (parallax wander),
+   bees/butterflies, small cuttings → plant → grow.
    Batch-2 art kept; no new Franz files.
    ============================================================ */
 
-const VER = 'v0.9-grow';
+const VER = 'v0.9-field';
 const PK = 'havensGarden.v1';
 const MUTE_K = 'havensGarden.mute';
 const QUIET_K = 'havensGarden.quiet';
 
 const BOUQUET_GOAL = 20;
 const FLOWERS_PER_BED = 6;
-const PICK_RADIUS = 64;
-const ARRIVE_RADIUS = 48;
-const TARGET_SPACING = 88;
-const SPAWN_INTERVAL = 900;
-const SPAWN_HOLD = 28000;
-const GIRL_SPEED = 165;
-const MAX_FIELD = 12;
+const PICK_RADIUS = 72;
+const ARRIVE_RADIUS = 52;
+const TARGET_SPACING = 110;
+const SPAWN_INTERVAL = 850;
+const SPAWN_HOLD = 32000;
+const GIRL_SPEED = 175;
+const MAX_FIELD = 14;
 const MAX_PARTICLES = 100;
 const DPR_CAP = 2.5;
 const DT_CAP = 1 / 20;
-const SAFE_UI = 110;
+const DOCK_H = 76;          // solid nav bar height (buttons live inside)
+const SAFE_UI = 118;        // playfield clears the dock
 const OUTDOOR_SLOTS = 12;
+/* Giant walkable field (world units) — camera scrolls; not a rail runner. */
+const FIELD_W = 3600;
+const FIELD_H = 2400;
+const FIELD_PAD = 140;
 /* Batch-2 backgrounds are 585×1266 (1.5× a 390×844 viewport) — not 780×1688. */
 const DW = 585;
 const DH = 1266;
@@ -192,7 +197,7 @@ function resize() {
   dpr = Math.min(devicePixelRatio || 1, DPR_CAP);
   const vv = viewSize();
   W = vv.w; H = vv.h; SX = W / DW; SY = H / DH;
-  padB = Math.max(SAFE_UI, SAFE_UI + safeInsetBottom());
+  padB = Math.max(SAFE_UI, DOCK_H + 12 + safeInsetBottom());
   padT = 12;
   cv.style.left = vv.ox + 'px';
   cv.style.top = vv.oy + 'px';
@@ -221,6 +226,10 @@ let particles = [];
 let arcs = [];
 let confetti = [];
 let pollinators = [];
+let meadowCritters = []; // meadow bees / butterflies (world space)
+let grassTufts = [];     // world-space grass patches for motion
+let cam = { x: FIELD_W * 0.5, y: FIELD_H * 0.55 };
+let titleDrift = 0;
 let bouquet = Array.isArray(SAVE.bouquet) ? SAVE.bouquet.slice() : [];
 let spawnTypeIdx = 0;
 let spawnT = 0;
@@ -290,8 +299,33 @@ function pickSp() {
   spawnTypeIdx++;
   return sp;
 }
-function fieldTop() { return H * 0.52; }
-function fieldBot() { return contentBottom() - 110; }
+function playfieldTop() { return padT + 56; }
+function playfieldBot() { return contentBottom(); }
+/** Legacy screen-band helpers (menu/howto); meadow uses world coords. */
+function fieldTop() { return playfieldTop() + (playfieldBot() - playfieldTop()) * 0.35; }
+function fieldBot() { return playfieldBot() - 8; }
+
+function worldToScreen(wx, wy) {
+  const midY = (playfieldTop() + playfieldBot()) * 0.5;
+  return { x: wx - cam.x + W * 0.5, y: wy - cam.y + midY };
+}
+function screenToWorld(sx, sy) {
+  const midY = (playfieldTop() + playfieldBot()) * 0.5;
+  return { x: sx + cam.x - W * 0.5, y: sy + cam.y - midY };
+}
+function clampField(x, y) {
+  return {
+    x: Math.max(FIELD_PAD, Math.min(FIELD_W - FIELD_PAD, x)),
+    y: Math.max(FIELD_H * 0.30, Math.min(FIELD_H * 0.88, y))
+  };
+}
+function updateCamera(dt) {
+  const k = Math.min(1, dt * 5.2);
+  cam.x += (girl.x - cam.x) * k;
+  cam.y += (girl.y - cam.y) * k;
+  cam.x = Math.max(W * 0.35, Math.min(FIELD_W - W * 0.35, cam.x));
+  cam.y = Math.max(H * 0.28, Math.min(FIELD_H - H * 0.28, cam.y));
+}
 function bedAt(i) { return SAVE.beds[i] || null; }
 function outdoorAt(i) { return SAVE.outdoorBeds[i] || null; }
 function bedMix(b) {
@@ -483,8 +517,13 @@ function snapshotRuntime() {
       : state === ST.HOWTO ? 'howto' : 'menu';
   SAVE.nurseryMode = nurseryMode;
   SAVE.dayPhase = dayNight;
-  SAVE.girlNX = girl.x / Math.max(1, W);
-  SAVE.girlNY = girl.y / Math.max(1, H);
+  if (state === ST.MEADOW || state === ST.PAUSED) {
+    SAVE.girlNX = girl.x / Math.max(1, FIELD_W);
+    SAVE.girlNY = girl.y / Math.max(1, FIELD_H);
+  } else {
+    SAVE.girlNX = Math.min(0.95, Math.max(0.05, girl.x / Math.max(1, W)));
+    SAVE.girlNY = Math.min(0.95, Math.max(0.05, girl.y / Math.max(1, H)));
+  }
   persist();
 }
 
@@ -525,24 +564,99 @@ function pushNav(place) {
   if (navStack.length > 8) navStack.shift();
 }
 
-/* ---------- Meadow flowers ---------- */
+/* ---------- Meadow flowers (world space) ---------- */
 function spawnFlower(opts) {
   opts = opts || {};
   const alive = flowers.filter((f) => !f.picked && f.state !== 'gone').length;
   if (!opts.force && alive >= MAX_FIELD) return null;
-  const margin = X(70);
   let x, y, tries = 0;
   do {
-    x = opts.x != null ? opts.x : margin + Math.random() * (W - margin * 2);
-    y = opts.y != null ? opts.y : fieldTop() + Y(50) + Math.random() * (fieldBot() - fieldTop() - Y(90));
+    if (opts.x != null) {
+      x = opts.x; y = opts.y;
+    } else {
+      // Pop up near Haven in the giant field (searchable, not a conveyor)
+      const ang = Math.random() * Math.PI * 2;
+      const dist = 140 + Math.random() * 420;
+      x = girl.x + Math.cos(ang) * dist;
+      y = girl.y + Math.sin(ang) * dist * 0.65;
+      const c = clampField(x, y); x = c.x; y = c.y;
+    }
     tries++;
-  } while (tries < 14 && flowers.some((f) => !f.picked && Math.hypot(f.x - x, f.y - y) < TARGET_SPACING));
-  if (tries >= 14 && !opts.force) return null;
+  } while (tries < 16 && flowers.some((f) => !f.picked && Math.hypot(f.x - x, f.y - y) < TARGET_SPACING));
+  if (tries >= 16 && !opts.force) return null;
   const sp = opts.sp || pickSp();
   const f = { x, y, sp, state: 'blooming', age: 0, scale: 0.2, picked: 0, sway: Math.random() * 6.28, hold: SPAWN_HOLD };
   flowers.push(f);
   if (!quiet) AudioFX.bloom();
   return f;
+}
+
+function seedGrassTufts() {
+  grassTufts = [];
+  for (let i = 0; i < 90; i++) {
+    grassTufts.push({
+      x: FIELD_PAD + Math.random() * (FIELD_W - FIELD_PAD * 2),
+      y: FIELD_H * 0.32 + Math.random() * (FIELD_H * 0.55),
+      w: 18 + Math.random() * 36,
+      h: 8 + Math.random() * 14,
+      hue: 95 + Math.random() * 40,
+      phase: Math.random() * 6.28
+    });
+  }
+}
+
+function ensureMeadowCritters() {
+  while (meadowCritters.length < 10) {
+    const kind = meadowCritters.length % 2 ? 'bee' : 'butterfly';
+    meadowCritters.push({
+      kind,
+      x: girl.x + (Math.random() - 0.5) * 700,
+      y: girl.y - 40 - Math.random() * 220,
+      vx: (Math.random() - 0.5) * 70,
+      vy: (Math.random() - 0.5) * 40,
+      phase: Math.random() * 6.28,
+      bob: 10 + Math.random() * 16
+    });
+  }
+}
+
+function updateMeadowCritters(dt) {
+  ensureMeadowCritters();
+  meadowCritters.forEach((p) => {
+    p.phase += dt * (p.kind === 'bee' ? 3.1 : 2.2);
+    p.x += p.vx * dt;
+    p.y += p.vy * dt + Math.sin(p.phase) * p.bob * dt;
+    // Loose flocking toward Haven so they stay in the living field around her
+    p.vx += (girl.x - p.x) * dt * 0.08;
+    p.vy += ((girl.y - 120) - p.y) * dt * 0.06;
+    const sp = Math.hypot(p.vx, p.vy) || 1;
+    const maxSp = p.kind === 'bee' ? 110 : 90;
+    if (sp > maxSp) { p.vx *= maxSp / sp; p.vy *= maxSp / sp; }
+    if (Math.random() < dt * 0.35) {
+      p.vx += (Math.random() - 0.5) * 50;
+      p.vy += (Math.random() - 0.5) * 30;
+    }
+    if (p.kind === 'bee' && Math.random() < dt * 0.05) AudioFX.bee();
+    if (p.kind === 'butterfly' && Math.random() < dt * 0.04) AudioFX.flutter();
+  });
+}
+
+function drawMeadowCritters() {
+  const now = performance.now();
+  const flap = ((now / POLLINATOR_FLAP_MS) | 0) % 2;
+  const box = X(40);
+  meadowCritters.forEach((p) => {
+    const s = worldToScreen(p.x, p.y + Math.sin(p.phase) * 6);
+    if (s.x < -60 || s.x > W + 60 || s.y < -60 || s.y > H + 60) return;
+    let img = null;
+    if (p.kind === 'bee') img = Assets.get(flap ? 'bee02' : 'bee01');
+    else img = Assets.get(flap ? 'butterfly02' : 'butterfly01');
+    if (img) cx.drawImage(img, s.x - box / 2, s.y - box / 2, box, box);
+    else {
+      cx.fillStyle = p.kind === 'bee' ? '#ffd23c' : '#f078be';
+      cx.beginPath(); cx.ellipse(s.x, s.y, 12, 9, 0, 0, 7); cx.fill();
+    }
+  });
 }
 
 function nearestFlower(x, y, rad) {
@@ -560,7 +674,8 @@ function requestPick(f) {
   if (!f || f.picked || bouquet.length >= BOUQUET_GOAL) return;
   pendingPick = f;
   girl.tx = f.x;
-  girl.ty = Math.min(f.y + 12, fieldBot() - 10);
+  girl.ty = f.y + 14;
+  const c = clampField(girl.tx, girl.ty); girl.tx = c.x; girl.ty = c.y;
   girl.face = f.x >= girl.x ? 1 : -1;
   showDemo = 0;
   AudioFX.rustle();
@@ -594,6 +709,7 @@ function doPick(f) {
 /* ---------- Scene transitions ---------- */
 function startMeadow(resetBouquet) {
   flowers = []; particles = []; arcs = []; confetti = []; pollinators = []; flowerPops = [];
+  meadowCritters = [];
   pendingPick = null;
   girlPose = 'idle'; girlPoseT = 0;
   wateringHeld = 0; waterPtr = null; placesOpen = 0;
@@ -601,12 +717,24 @@ function startMeadow(resetBouquet) {
   spawnTypeIdx = 0; spawnT = 0;
   dayNight = 0; dayNightT = 0; growAnim = 0; growT = 0;
   cue = bouquet.length >= BOUQUET_GOAL ? 'Go plant!' : (bouquet.length ? bouquet.length + ' / ' + BOUQUET_GOAL : 'Pick!');
-  girl.x = W * 0.5;
-  girl.y = (fieldTop() + fieldBot()) / 2;
+  // Haven starts mid-field; camera follows her through the giant meadow
+  girl.x = FIELD_W * 0.5;
+  girl.y = FIELD_H * 0.58;
   girl.tx = girl.x; girl.ty = girl.y;
   girl.phase = 0; girl.squash = 1; girl.face = 1; girl.walking = 0;
+  cam.x = girl.x; cam.y = girl.y;
+  seedGrassTufts();
+  ensureMeadowCritters();
   const pool = outingTypes();
-  for (let i = 0; i < Math.min(7, pool.length + 3); i++) spawnFlower({ force: 1, sp: pool[i % pool.length] });
+  for (let i = 0; i < Math.min(9, pool.length + 5); i++) {
+    const ang = (i / 9) * Math.PI * 2;
+    spawnFlower({
+      force: 1,
+      sp: pool[i % pool.length],
+      x: girl.x + Math.cos(ang) * (160 + (i % 3) * 90),
+      y: girl.y + Math.sin(ang) * (110 + (i % 3) * 70)
+    });
+  }
   state = ST.MEADOW;
   nurseryMode = 'look';
   if (SAVE.awaitingReturnGrowth) SAVE.leftForOuting = 1;
@@ -1102,17 +1230,99 @@ function drawFlowerPops() {
   });
 }
 
-function drawMeadowBG(mode) {
+function drawPlateOffset(img, ox, oy, alpha) {
+  if (!img) return;
+  cx.save();
+  cx.globalAlpha = alpha == null ? 1 : alpha;
+  const ir = img.width / img.height;
+  const cr = W / H;
+  let dw, dh, dx, dy;
+  if (cr > ir) { dw = W; dh = W / ir; dx = 0; dy = (H - dh) / 2; }
+  else { dh = H; dw = H * ir; dx = (W - dw) / 2; dy = 0; }
+  cx.drawImage(img, dx + ox, dy + oy, dw, dh);
+  cx.restore();
+}
+
+/** Living open field: parallax plate tiles + scrolling grass (camera follows Haven). */
+function drawLivingField(mode, opts) {
+  opts = opts || {};
   mode = mode || 'day';
   const plate = Assets.meadow(mode);
-  ensureBgCrossfade('meadow-' + mode, plate);
-  if (plate || bgFrom || bgTo) {
-    drawCrossfadedPlate(bgFrom, bgTo || plate, bgBlend);
+  // Sky wash
+  const sky = mode === 'sunset' ? '#fa8c5a' : mode === 'sunrise' ? '#ffd6a0' : '#8ec8f5';
+  cx.fillStyle = sky;
+  cx.fillRect(0, 0, W, H);
+
+  // Far hills / painted meadow — slow parallax, tiled so the world never ends
+  const farX = (-cam.x * 0.22 + (opts.drift || 0) * 0.15) % W;
+  const farY = (-cam.y * 0.08);
+  if (plate) {
+    for (let i = -1; i <= 1; i++) drawPlateOffset(plate, farX + i * W, farY - H * 0.04, 1);
+  }
+
+  // Mid ground — stronger scroll
+  const midX = (-cam.x * 0.55) % W;
+  const midY = (-cam.y * 0.25);
+  if (plate) {
+    cx.save();
+    cx.beginPath();
+    cx.rect(0, H * 0.28, W, H * 0.72);
+    cx.clip();
+    for (let i = -1; i <= 1; i++) drawPlateOffset(plate, midX + i * W, midY + H * 0.02, 0.92);
+    cx.restore();
+  }
+
+  // Ground wash under playfield so tiles never read as a frozen postcard
+  const g0 = playfieldTop() + (playfieldBot() - playfieldTop()) * 0.25;
+  const grd = cx.createLinearGradient(0, g0, 0, playfieldBot());
+  grd.addColorStop(0, 'rgba(110, 170, 70, 0.15)');
+  grd.addColorStop(0.35, 'rgba(90, 150, 55, 0.55)');
+  grd.addColorStop(1, 'rgba(70, 130, 45, 0.82)');
+  cx.fillStyle = grd;
+  cx.fillRect(0, g0, W, playfieldBot() - g0 + 4);
+
+  // Distant greenhouse landmark (slow parallax) — a place in the field, not a rail goal
+  const ghImg = Assets.greenhouse(SAVE.ghSize | 0, false, 'day');
+  if (ghImg) {
+    const lx = FIELD_W * 0.78, ly = FIELD_H * 0.40;
+    const s = worldToScreen(lx - cam.x * 0.35 + cam.x * 0.35, ly); // use reduced parallax manually
+    const sx = (lx - cam.x) * 0.45 + W * 0.5;
+    const sy = (ly - cam.y) * 0.35 + (playfieldTop() + playfieldBot()) * 0.42;
+    const h = Y(210);
+    const w = h * (ghImg.width / ghImg.height);
+    if (sx > -w && sx < W + w) cx.drawImage(ghImg, sx - w / 2, sy - h, w, h);
+  }
+
+  // Near grass tufts (world space) — sell motion as she walks
+  grassTufts.forEach((t) => {
+    const s = worldToScreen(t.x, t.y);
+    if (s.x < -40 || s.x > W + 40 || s.y < playfieldTop() || s.y > playfieldBot() + 20) return;
+    const bob = Math.sin(performance.now() / 420 + t.phase) * 2;
+    cx.fillStyle = `hsla(${t.hue}, 45%, 38%, 0.55)`;
+    cx.beginPath();
+    cx.ellipse(s.x, s.y + bob, t.w * 0.5, t.h * 0.5, 0, 0, 7);
+    cx.fill();
+  });
+}
+
+function drawMeadowBG(mode) {
+  // Title / howto stills use a gentle drifting living field (not a frozen plate)
+  mode = mode || 'day';
+  if (!grassTufts.length) seedGrassTufts();
+  const driftCam = { x: cam.x, y: cam.y };
+  if (state === ST.MENU || state === ST.HOWTO || state === ST.BOOT) {
+    titleDrift += 0.35;
+    cam.x = FIELD_W * 0.5 + Math.sin(titleDrift / 90) * 220;
+    cam.y = FIELD_H * 0.52 + Math.cos(titleDrift / 110) * 80;
+    if (!meadowCritters.length) {
+      girl.x = FIELD_W * 0.5; girl.y = FIELD_H * 0.55;
+      ensureMeadowCritters();
+    }
+    drawLivingField(mode, { drift: titleDrift });
+    drawMeadowCritters();
+    cam.x = driftCam.x; cam.y = driftCam.y;
   } else {
-    cx.fillStyle = mode === 'night' ? '#141c46' : mode === 'sunset' ? '#fa8c5a' : '#96cdf0';
-    cx.fillRect(0, 0, W, H);
-    cx.fillStyle = mode === 'night' ? '#2d503c' : '#78c35f';
-    cx.fillRect(0, H * 0.45, W, H * 0.55);
+    drawLivingField(mode, {});
   }
 }
 
@@ -1203,7 +1413,7 @@ function drawFinger(x, y, a) {
 function drawBouquetPips() {
   // Compact fill-up meter: bouquet art stage + N / 20 (not 20 tiny pips)
   if (state !== ST.MEADOW && state !== ST.PAUSED) return;
-  const y = contentBottom() - 44;
+  const y = contentBottom() - 52;
   const full = bouquet.length >= BOUQUET_GOAL;
   const bw = Math.min(W - 36, 280);
   const bx = (W - bw) / 2;
@@ -1253,20 +1463,21 @@ function drawGoPlantBtn() {
 }
 
 function drawChrome() {
-  cx.fillStyle = 'rgba(255,250,240,.92)';
+  // Compact header — no greenhouse S/M/L chip crowding the title
+  cx.fillStyle = 'rgba(255,250,240,.94)';
   rr(10, padT, W - 20, 48, 16); cx.fill();
   cx.fillStyle = '#2a2418';
   cx.font = '800 16px Fredoka, system-ui, sans-serif';
   cx.textAlign = 'left';
   const titleX = (state === ST.MEADOW || state === ST.PAUSED) ? 52 : 24;
   cx.fillText("Haven's Garden", titleX, padT + 30);
-  cx.font = '700 11px system-ui';
-  cx.fillStyle = '#6a6258';
-  cx.textAlign = 'right';
-  cx.fillText('v0.9 · ' + gh().id, W - 100, padT + 30);
 
   // Mute — large hit target
   const mx = W - 58, my = padT + 8;
+  cx.font = '700 11px system-ui';
+  cx.fillStyle = '#6a6258';
+  cx.textAlign = 'right';
+  cx.fillText(VER, mx - 10, padT + 30);
   cx.fillStyle = muted ? '#ff8ab0' : '#5ecf7a';
   rr(mx, my, 40, 40, 12); cx.fill();
   cx.fillStyle = '#fff'; cx.font = '18px system-ui'; cx.textAlign = 'center';
@@ -1290,14 +1501,25 @@ function drawChrome() {
   if (placesOpen) drawPlacesMenu();
 }
 
-/** Thumb-reach nav dock: Back · Places · Home (safe-area bottom). */
+/** Thumb-reach nav dock in a solid bar BELOW the playfield (never over meadow art). */
 function drawNavDock() {
-  if (state === ST.BOOT) { hit.navBack = hit.navPlaces = hit.navHome = null; return; }
+  // Title menu owns its own buttons — no dock stacking on top of them
+  if (state === ST.BOOT || state === ST.MENU) {
+    hit.navBack = hit.navPlaces = hit.navHome = null;
+    return;
+  }
+  const barTop = contentBottom();
+  cx.fillStyle = 'rgba(255, 248, 236, 0.98)';
+  cx.fillRect(0, barTop, W, H - barTop);
+  cx.strokeStyle = 'rgba(60, 48, 36, 0.14)';
+  cx.lineWidth = 2;
+  cx.beginPath(); cx.moveTo(0, barTop + 1); cx.lineTo(W, barTop + 1); cx.stroke();
+
   const btnH = 56;
   const gap = 10;
   const dockW = Math.min(W - 24, 360);
   const x0 = (W - dockW) / 2;
-  const y = H - Math.max(padB, SAFE_UI) + 8;
+  const y = barTop + Math.max(8, (padB - btnH) * 0.35);
   const bw = (dockW - gap * 2) / 3;
 
   const buttons = [
@@ -1307,7 +1529,7 @@ function drawNavDock() {
   ];
   buttons.forEach((b, i) => {
     const x = x0 + i * (bw + gap);
-    cx.fillStyle = 'rgba(30,24,20,.18)';
+    cx.fillStyle = 'rgba(30,24,20,.14)';
     rr(x + 2, y + 3, bw, btnH, 16); cx.fill();
     cx.fillStyle = b.fill;
     rr(x, y, bw, btnH, 16); cx.fill();
@@ -1577,37 +1799,61 @@ function drawInterior() {
 }
 
 function drawMeadow() {
-  drawMeadowBG(skyMode());
+  drawLivingField(skyMode(), {});
+  drawMeadowCritters();
+
   const sorted = flowers.slice().sort((a, b) => a.y - b.y);
   sorted.forEach((f) => {
     if (f.state === 'gone' || f.state === 'pop') return;
     let sc = f.scale;
     if (sc < 0.05) return;
-    // Soft glow marks the generous kid tap target; sprite stays a little wildflower
+    const s = worldToScreen(f.x, f.y);
+    if (s.x < -80 || s.x > W + 80 || s.y < playfieldTop() - 40 || s.y > playfieldBot() + 40) return;
+    // Soft glow = generous kid tap target; sprite stays a little wildflower
     if (f.state === 'blooming' || f.state === 'open') {
       const glow = pendingPick === f ? 0.40 : 0.18;
       cx.fillStyle = `rgba(255,255,200,${glow})`;
-      cx.beginPath(); cx.ellipse(f.x, f.y + Y(4), X(30), Y(14), 0, 0, 7); cx.fill();
+      cx.beginPath(); cx.ellipse(s.x, s.y + Y(4), X(32), Y(15), 0, 0, 7); cx.fill();
     }
-    drawFlowerSprite(f.sp, f.x, f.y, sc * MEADOW_FLOWER_DRAW);
+    drawFlowerSprite(f.sp, s.x, s.y, sc * MEADOW_FLOWER_DRAW);
   });
-  drawFlowerPops();
-  arcs.forEach((a) => drawFlowerSprite(a.sp, a.x, a.y, MEADOW_FLOWER_DRAW * (0.55 + 0.25 * (1 - a.u))));
+
+  flowerPops.forEach((p) => {
+    const s = worldToScreen(p.x, p.y);
+    const u = Math.min(1, p.t / p.life);
+    const scale = 0.35 + 0.35 * u;
+    const img = Assets.flowerPop();
+    const h = Y(56) * scale;
+    cx.save();
+    cx.globalAlpha = Math.max(0, 1 - u);
+    if (img) drawAnchored(img, s.x, s.y, h, 1, 0);
+    cx.restore();
+  });
+
+  arcs.forEach((a) => {
+    const s = worldToScreen(a.x, a.y);
+    drawFlowerSprite(a.sp, s.x, s.y, MEADOW_FLOWER_DRAW * (0.55 + 0.25 * (1 - a.u)));
+  });
   particles.forEach((p) => {
+    const s = worldToScreen(p.x, p.y);
     cx.globalAlpha = Math.max(0, 1 - p.t / p.life);
     cx.fillStyle = p.col;
     cx.beginPath();
-    if (p.spark) cx.arc(p.x, p.y, p.r, 0, 7);
-    else cx.ellipse(p.x, p.y, p.r, p.r * 0.6, p.t * 4, 0, 7);
+    if (p.spark) cx.arc(s.x, s.y, p.r, 0, 7);
+    else cx.ellipse(s.x, s.y, p.r, p.r * 0.6, p.t * 4, 0, 7);
     cx.fill();
     cx.globalAlpha = 1;
   });
-  drawGirl(girl.x, girl.y, girl.walking || dragging);
+
+  const gs = worldToScreen(girl.x, girl.y);
+  drawGirl(gs.x, gs.y, girl.walking || dragging);
+
   if (showDemo && bouquet.length < BOUQUET_GOAL) {
     const f = flowers.find((x) => !x.picked && (x.state === 'open' || x.state === 'blooming'));
     if (f) {
+      const s = worldToScreen(f.x, f.y);
       const t = (performance.now() / 900) % 1;
-      drawFinger(f.x, f.y - 10 + t * 10, 0.65 * (1 - t));
+      drawFinger(s.x, s.y - 10 + t * 10, 0.65 * (1 - t));
     }
   }
   drawBouquetPips();
@@ -1660,52 +1906,56 @@ function drawGreenhouse() {
 }
 
 function drawMenu() {
+  // Living title field — Haven clear in the upper half; menu is its own bottom sheet
   drawMeadowBG('day');
+
   const prev = bouquet;
   bouquet = ['tulip', 'daisy', 'sunflower'];
-  drawGirl(W * 0.5, H * 0.48, false);
+  drawGirl(W * 0.5, H * 0.36, false);
   bouquet = prev;
 
-  cx.fillStyle = 'rgba(255,250,240,.94)';
-  rr(20, H * 0.55, W - 40, contentBottom() - H * 0.55 - 4, 22); cx.fill();
+  // Bottom sheet — stacked actions, no overlap, no S/M/L chips, no nav dock on title
+  const sheetH = Math.min(280, H * 0.42);
+  const sheetY = H - sheetH - Math.max(12, safeInsetBottom());
+  cx.fillStyle = 'rgba(255,250,240,.97)';
+  rr(16, sheetY, W - 32, sheetH, 22); cx.fill();
+  cx.strokeStyle = 'rgba(60,48,36,0.10)';
+  cx.lineWidth = 2;
+  rr(16, sheetY, W - 32, sheetH, 22); cx.stroke();
+
   cx.fillStyle = '#2a2418';
   cx.textAlign = 'center';
   cx.font = '800 26px Fredoka, system-ui, sans-serif';
-  cx.fillText("Haven's Garden", W / 2, H * 0.55 + 34);
+  cx.fillText("Haven's Garden", W / 2, sheetY + 36);
   cx.font = '700 13px system-ui';
   cx.fillStyle = '#6a6258';
-  cx.fillText('Greenhouse ' + gh().id + (SAVE.outdoorUnlocked ? ' + garden' : ''), W / 2, H * 0.55 + 56);
+  cx.fillText('Find flowers in a giant field', W / 2, sheetY + 58);
 
-  ['S', 'M', 'L'].forEach((lab, i) => {
-    const x = W / 2 - 50 + i * 50;
-    const on = (SAVE.ghSize | 0) >= i;
-    cx.fillStyle = on ? '#ffd24a' : 'rgba(160,150,140,.35)';
-    rr(x - 16, H * 0.55 + 66, 32, 20, 8); cx.fill();
-    cx.fillStyle = on ? '#2a2418' : '#7a7268';
-    cx.font = '800 11px system-ui';
-    cx.fillText(lab, x, H * 0.55 + 80);
-  });
-
+  const btnW = W - 64;
+  const playY = sheetY + 78;
   cx.fillStyle = '#5ecf7a';
-  rr(32, H * 0.55 + 100, W - 64, 56, 16); cx.fill();
+  rr(32, playY, btnW, 56, 16); cx.fill();
   cx.fillStyle = '#fff';
   cx.font = '800 18px Fredoka, system-ui, sans-serif';
-  cx.fillText('Pick flowers!', W / 2, H * 0.55 + 136);
-  hit.play = { x: 32, y: H * 0.55 + 100, w: W - 64, h: 56 };
+  cx.fillText('Pick flowers!', W / 2, playY + 36);
+  hit.play = { x: 32, y: playY, w: btnW, h: 56 };
 
-  const by = contentBottom() - 78;
+  const rowY = playY + 68;
+  const half = (btnW - 12) / 2;
   cx.fillStyle = '#7ec8ff';
-  rr(32, by, W / 2 - 44, 56, 16); cx.fill();
+  rr(32, rowY, half, 52, 16); cx.fill();
   cx.fillStyle = '#2a2418';
   cx.font = '800 15px Fredoka, system-ui, sans-serif';
-  cx.fillText('Greenhouse', 32 + (W / 2 - 44) / 2, by + 34);
-  hit.nursery = { x: 32, y: by, w: W / 2 - 44, h: 56 };
+  cx.fillText('Greenhouse', 32 + half / 2, rowY + 32);
+  hit.nursery = { x: 32, y: rowY, w: half, h: 52 };
 
   cx.fillStyle = '#c8a0ff';
-  rr(W / 2 + 12, by, W / 2 - 44, 56, 16); cx.fill();
+  rr(32 + half + 12, rowY, half, 52, 16); cx.fill();
   cx.fillStyle = '#2a2418';
-  cx.fillText('How-to', W / 2 + 12 + (W / 2 - 44) / 2, by + 34);
-  hit.howtoBtn = { x: W / 2 + 12, y: by, w: W / 2 - 44, h: 56 };
+  cx.fillText('How-to', 32 + half + 12 + half / 2, rowY + 32);
+  hit.howtoBtn = { x: 32 + half + 12, y: rowY, w: half, h: 52 };
+
+  hit.navBack = hit.navPlaces = hit.navHome = null;
 }
 
 function drawHowTo() {
@@ -1853,11 +2103,13 @@ function update(dt) {
       const step = Math.min(d, GIRL_SPEED * dt);
       girl.x += dx / d * step;
       girl.y += dy / d * step;
-      // Frames face right — face=-1 mirrors for walking left
       girl.face = dx >= 0 ? 1 : -1;
     }
-    girl.y = Math.min(fieldBot() - 10, Math.max(fieldTop() + 50, girl.y));
-    girl.x = Math.min(W - 30, Math.max(30, girl.x));
+    const clamped = clampField(girl.x, girl.y);
+    girl.x = clamped.x; girl.y = clamped.y;
+    updateCamera(dt);
+    updateMeadowCritters(dt);
+    grassTufts.forEach((t) => { t.phase += dt; });
 
     if (pendingPick && !pendingPick.picked) {
       const pd = Math.hypot(girl.x - pendingPick.x, girl.y - pendingPick.y);
@@ -1890,6 +2142,10 @@ function update(dt) {
       const alive = flowers.filter((f) => !f.picked).length;
       if (spawnT >= SPAWN_INTERVAL && alive < MAX_FIELD) { spawnT = 0; spawnFlower({}); }
     }
+  }
+
+  if (state === ST.MENU || state === ST.HOWTO) {
+    updateMeadowCritters(dt * 0.65);
   }
 
   if (state === ST.GREENHOUSE) {
@@ -2011,11 +2267,14 @@ function onDown(e) {
   if (state === ST.MEADOW) {
     if (inRect(p, hit.pause)) { prevState = state; state = ST.PAUSED; snapshotRuntime(); AudioFX.ui(); return; }
     if (inRect(p, hit.goPlant) || inRect(p, hit.homeBar)) { goPlantHome(); return; }
-    const f = nearestFlower(p.x, p.y, PICK_RADIUS);
+    if (p.y >= contentBottom()) return;
+    const wpt = screenToWorld(p.x, p.y);
+    const f = nearestFlower(wpt.x, wpt.y, PICK_RADIUS);
     if (f) { requestPick(f); dragging = 1; return; }
-    if (p.y < fieldBot() + 10 && p.y > fieldTop()) {
+    if (p.y > playfieldTop() && p.y < playfieldBot()) {
       pendingPick = null;
-      girl.tx = p.x; girl.ty = p.y;
+      const c = clampField(wpt.x, wpt.y);
+      girl.tx = c.x; girl.ty = c.y;
       AudioFX.rustle();
       dragging = 1;
     }
@@ -2080,11 +2339,13 @@ function onMove(e) {
   }
 
   if (state !== ST.MEADOW) { lastPtr = p; return; }
-  const f = nearestFlower(p.x, p.y, PICK_RADIUS * 0.85);
+  if (p.y >= contentBottom()) { lastPtr = p; return; }
+  const wpt = screenToWorld(p.x, p.y);
+  const f = nearestFlower(wpt.x, wpt.y, PICK_RADIUS * 0.85);
   if (f && bouquet.length < BOUQUET_GOAL) requestPick(f);
   else if (dragging) {
-    girl.tx = p.x;
-    girl.ty = Math.min(Math.max(p.y, fieldTop() + 50), fieldBot() - 10);
+    const c = clampField(wpt.x, wpt.y);
+    girl.tx = c.x; girl.ty = c.y;
   }
   lastPtr = p;
 }
@@ -2135,9 +2396,18 @@ function tryResumeFromSave() {
   }
   if (SAVE.scene === 'meadow') {
     startMeadow(false);
-    girl.x = W * (SAVE.girlNX || 0.5);
-    girl.y = Math.min(fieldBot() - 10, Math.max(fieldTop() + 50, H * (SAVE.girlNY || 0.55)));
+    // Prefer field-normalized saves from v0.9-field; fall back mid-field
+    const nx = SAVE.girlNX || 0.5;
+    const ny = SAVE.girlNY || 0.55;
+    if (nx > 1.01 || ny > 1.01) {
+      // Legacy screen-space save — start mid-field
+      girl.x = FIELD_W * 0.5; girl.y = FIELD_H * 0.58;
+    } else {
+      girl.x = nx * FIELD_W; girl.y = ny * FIELD_H;
+    }
+    const c = clampField(girl.x, girl.y); girl.x = c.x; girl.y = c.y;
     girl.tx = girl.x; girl.ty = girl.y;
+    cam.x = girl.x; cam.y = girl.y;
     return true;
   }
   return false;
@@ -2371,7 +2641,7 @@ async function boot() {
   }
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js?v=0.9-grow').catch(() => {});
+    navigator.serviceWorker.register('./sw.js?v=0.9-field').catch(() => {});
   }
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));
 }
