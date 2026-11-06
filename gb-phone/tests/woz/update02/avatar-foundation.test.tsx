@@ -411,7 +411,9 @@ describe("Update02 — canonical avatar surfaces", () => {
       useStomp.setState({ screen: "greet" });
     });
     const { unmount } = render(<StompApp />);
-    expect(screen.getByTestId("home-canonical-avatar").getAttribute("data-starter")).toBe("m-samir");
+    // t1223u: canonical Home avatar is the Stomper stage (not the corner dock).
+    expect(screen.getByTestId("home-stomper-avatar").getAttribute("data-starter")).toBe("m-samir");
+    expect(screen.getByTestId("home-stomper-stage")).toBeTruthy();
     unmount();
 
     act(() => useStomp.setState({ screen: "stompers" }));

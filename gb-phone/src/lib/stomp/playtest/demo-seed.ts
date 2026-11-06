@@ -105,6 +105,7 @@ export function seedFamilyPlaytestSocial(): SocialState {
       id: FAMILY_TRIP_META.id,
       name: FAMILY_TRIP_META.name,
       place: FAMILY_TRIP_META.place,
+      resortId: "beaver-creek",
       day: FAMILY_TRIP_META.day,
       hostId: "woman-2",
       cohosts: ["man-1"],

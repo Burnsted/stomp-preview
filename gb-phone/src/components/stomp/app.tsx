@@ -15,6 +15,7 @@ import { MiniPlayerUi } from "@/components/stomp/mini-player-ui";
 import { AirLog, Guide, Playlist, StashPins } from "@/components/stomp/more";
 import { OfflineScreen } from "@/components/stomp/offline-screen";
 import { Goals, TerrainPark } from "@/components/stomp/park";
+import { HeySessionFab } from "@/components/stomp/hey-session-fab";
 import { PlaylistFab } from "@/components/stomp/playlist-chrome";
 import { ExploreDemoScreen } from "@/components/stomp/playtest/explore-demo";
 import { FeedbackPanel } from "@/components/stomp/playtest/feedback-panel";
@@ -31,6 +32,7 @@ import { WozLab } from "@/components/stomp/woz-lab";
 import { GreetCrewToolsHint } from "@/components/stomp/woz-entry";
 import { useAvatar } from "@/lib/stomp/avatar/store";
 import { applyTheme, useTheme } from "@/lib/stomp/avatar/theme";
+import { configFromStarter, starterById } from "@/lib/stomp/avatar/starters";
 import { resolvePlaytestEntry } from "@/lib/stomp/playtest/entry";
 import { useStomp } from "@/lib/stomp/store";
 import { startGbInviteMirror } from "@/lib/stomp/woz-bridge/invite-mirror-gb";
@@ -69,6 +71,35 @@ export function StompApp() {
   useEffect(() => {
     applyTheme(theme);
   }, [theme]);
+
+  useEffect(() => {
+    // Dev / screenshot hooks (t1223u) — seed Home Stomper stage without live APIs.
+    if (import.meta.env.DEV && typeof window !== "undefined") {
+      const w = window as unknown as {
+        __stompAvatar?: typeof useAvatar;
+        __stompLine?: typeof useStomp;
+        __stompSeedHomeStomper?: (starterId?: string, displayName?: string) => boolean;
+      };
+      w.__stompAvatar = useAvatar;
+      w.__stompLine = useStomp;
+      w.__stompSeedHomeStomper = (starterId = "m-kai", displayName = "Kai") => {
+        const starter = starterById(starterId);
+        if (!starter) return false;
+        const cfg = configFromStarter(starter, {
+          stomperId: "ME-SHOT",
+          displayName,
+        });
+        useAvatar.setState({
+          config: cfg,
+          onboardComplete: true,
+          activePose: "idle",
+          reducedMotion: false,
+        });
+        useStomp.getState().setScreen("greet");
+        return true;
+      };
+    }
+  }, []);
 
   const hideChrome = screen === "greet" ? false : false;
   const journeyFocus =
@@ -128,6 +159,8 @@ export function StompApp() {
             {screen === "trip-choice" ? <TripChoiceScreen /> : null}
           </ScreenErrorBoundary>
           {!hideChrome && !avatarScreens ? <MiniPlayerUi /> : null}
+          {/* t1224u: little-snowboarder Hey Session FAB — every chrome page, bottom-right */}
+          <HeySessionFab />
           {!avatarScreens ? <PlaylistFab /> : null}
           {showNav ? <BottomNav playtestTools={<PlaytestBottomChrome />} /> : null}
         </div>

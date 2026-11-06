@@ -1,5 +1,4 @@
 import { ChevronLeft } from "lucide-react";
-import { HeySessionCompact } from "@/components/stomp/alpine-chrome";
 import { Form7Brand } from "@/components/stomp/brand/form7-brand";
 import { PlaylistLink } from "@/components/stomp/playlist-chrome";
 import { useStomp } from "@/lib/stomp/store";
@@ -128,7 +127,7 @@ export function BackBar({ title }: { title: string }) {
       </button>
       <h1 className="font-display text-4xl tracking-wide">{title}</h1>
       <div className="ml-auto flex items-center gap-2">
-        {screen !== "greet" && screen !== "home" ? <HeySessionCompact /> : null}
+        {/* t1224u: Hey Session primary is bottom-right snowboarder FAB — not a header chip */}
         <PlaylistLink />
         <CrewToolsLink />
       </div>

@@ -10,6 +10,8 @@ export type Trip = {
   id: string;
   name: string;
   place: string;
+  /** Shared selectedResortId with Home / Map (t1221u). */
+  resortId?: string;
   day: string;
   hostId: string;
   cohosts: string[];
@@ -89,6 +91,7 @@ export function seedSocial(): SocialState {
       id: "trip-bc",
       name: "Beaver Creek Saturday",
       place: "Beaver Creek",
+      resortId: "beaver-creek",
       day: "Saturday",
       hostId: "woman-2",
       cohosts: [],

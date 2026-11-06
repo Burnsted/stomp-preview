@@ -460,3 +460,8 @@ export const useAvatar = create<AvatarState>()(
 );
 
 export type { Pose as PoseId };
+
+/** Dev / screenshot hook for Home Stomper stage seeding (t1223u). */
+if (typeof window !== "undefined" && import.meta.env?.DEV) {
+  (window as unknown as { __stompAvatar?: typeof useAvatar }).__stompAvatar = useAvatar;
+}
