@@ -1,34 +1,34 @@
-# Greenhouse v2 (Ted-approved)
+# Greenhouse v2 / redo-v2 production (Ted-approved)
 
-Illustration masters — **not** registered Franz layers. Rejected pack `greenhouse-layers-v1` removed from rendering.
+## Plates (585×1266)
+| Size | Plate | Active slots |
+|------|-------|--------------|
+| small | `plates/small-empty.webp` | **12** (2×6) |
+| medium | `plates/medium-empty.webp` (unchanged concept) | **20** |
+| large | `plates/large-empty.webp` | **30** (rows **7/8/8/7**) |
+| outdoor | `plates/outdoor-empty.webp` | **12** (2×6) |
 
-## Live plate
-`assets/greenhouse-v2/plates/medium-empty.webp` (from `medium-empty-concept.png`).
+## Growth
+`growth/<species>-<0..3>-*.png` (+ `.webp`) for daisy / tulip / sunflower / bluebell.  
+Canvas **224×224**, root at **(112, 208)**.  
+Scale ≈ **0.48** near rows, **0.30–0.36** far. Depth-sort by `rootY`.
 
-## Capacities (slots placed on soil rows)
-| Size | Layout on medium-empty | Active |
-|------|------------------------|--------|
-| small | 2 inner long beds × 6 | **12** |
-| medium | 4 beds × 5 | **20** |
-| large | 4 beds × 8/7/8/7 (denser) | **30** |
-| outdoor | 2 long beds × 6 (same plate for now) | **12** |
+## Touch (honest)
+Native hitBounds are **66×66** (= **44 CSS @390**) but they **overlap**:
+- small **10** pairs · outdoor **10** · large **27**
+These are **candidate zones**, not exclusive 44px targets.  
+Routing: among candidates, pick **nearest root** (tie → lowest slot id).  
+If outside bounds, may expand to nearest empty slot within a radius.  
+`HavensGarden.measureHits(390)` reports exclusive Voronoi-ish CSS sizes — do **not** claim 44px exclusive if the median is lower.
 
-Hit: native **66×66** → **44×44** CSS at 390px.
+## Cyan fringe
+Cheap edge defringe applied on import; faint cyan may remain at magnification.
 
-## Rendering
-Empty plate → growth sprites (seedling / leaves / bud / bloom) at `rootAnchor`.  
-No `soil_wet`/`soil_dry`, no `front_lip`, no opaque code soil masks/dots.  
-Do **not** subtract empty/planted as masks.
-
-## Franz should still supply (ideal)
-- `small-empty` — 2-bed framing only  
-- `large-empty` — 5 beds or longer rows for true L30 spacing  
-- `outdoor-empty` — outdoor yard matching this art style  
-- Optional wet-soil tint if watering should change dirt look  
-
-Until those land, S/L/outdoor reuse the medium empty plate with derived slot maps.
+## Pack provenance
+`HAVENS-GARDEN-GREENHOUSE-REDO-V2-PRODUCTION_ea13.zip`  
+SHA-256 `21e0a31e435086a4f92b3d0d875143779c7921ca8637d7bf114ca92a6208ebec`
 
 ## Code
-- `js/nursery.js` — loads `maps/*.json` + `growth.json`, remeshes saves  
-- `js/game.js` — `drawFranzComposite` draws plate + plants only  
+- `js/nursery.js` — maps + per-species growth + `nearestRootIndex` / `measureExclusiveHits`
+- `js/game.js` — `pickSpotNearestRoot`, plate→growth draw
 - Save key stays `havensGarden.birthday.v2`

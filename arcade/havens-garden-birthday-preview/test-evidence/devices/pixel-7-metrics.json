@@ -1,0 +1,19 @@
+{
+  "device": {
+    "name": "pixel-7",
+    "viewport": {
+      "width": 412,
+      "height": 915
+    },
+    "dpr": 2.625
+  },
+  "metrics": {
+    "ver": "v0.9-birthday-harden",
+    "w": 412,
+    "h": 915,
+    "hitsSmallExclusiveMin": 35.6,
+    "hitsSmallCandidate": 46.5,
+    "navBtnCss": 56
+  },
+  "note": "EMULATED Playwright profile — not a real device cloud run"
+}

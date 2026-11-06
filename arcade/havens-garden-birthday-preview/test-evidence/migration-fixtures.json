@@ -1,0 +1,27 @@
+{
+  "havensGarden.v1": {
+    "note": "Prior preview / main garden save shape",
+    "example": {
+      "v": 6,
+      "beds": [
+        { "mix": ["daisy", "tulip"], "watered": 1, "grown": 2 },
+        { "id": "sunflower", "watered": 1, "grown": 3 }
+      ],
+      "outdoorBeds": [{ "mix": ["bluebell"], "watered": 1, "grown": 1 }],
+      "flowerPoints": 77,
+      "bees": 3,
+      "honey": 5,
+      "jarsFull": 2,
+      "jarsEmpty": 6,
+      "owned": { "shovel": 1 },
+      "ghSize": 0
+    },
+    "expect": "No flower/coin/jar loss into havensGarden.birthday.v2"
+  },
+  "priorKeysChecked": [
+    "havensGarden.v1",
+    "havensGarden.birthday.v1",
+    "havensGarden.preview.v1",
+    "havensGarden.polish.v1"
+  ]
+}

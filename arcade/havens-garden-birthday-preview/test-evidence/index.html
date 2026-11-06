@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Haven's Garden — hardening evidence</title>
+<style>
+  body{font-family:system-ui,sans-serif;margin:24px;max-width:1100px;color:#1e1814;background:#f7f0e4}
+  h1,h2{font-family:Georgia,serif}
+  table{border-collapse:collapse;width:100%;margin:12px 0 28px}
+  th,td{border:1px solid #cbb8a0;padding:8px 10px;text-align:left;font-size:14px}
+  th{background:#efe4d4}
+  .pass{color:#1a7a3c;font-weight:700}
+  .fail{color:#b00020;font-weight:700}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+  figure{margin:0;background:#fff;border:1px solid #cbb8a0;padding:8px}
+  img{width:100%;height:auto;display:block}
+  figcaption{font-size:12px;margin-top:6px;color:#4a4034}
+  code{background:#efe4d4;padding:1px 4px;border-radius:4px}
+  .note{background:#fff8e8;border-left:4px solid #c07018;padding:10px 14px;margin:16px 0}
+</style>
+</head>
+<body>
+<h1>Haven's Garden birthday preview — hardening evidence</h1>
+<p><strong>VER</strong> <code>v0.9-birthday-harden</code> · pack <code>greenhouse-redo-v2</code> ·
+SHA-256 <code>21e0a31e435086a4f92b3d0d875143779c7921ca8637d7bf114ca92a6208ebec</code></p>
+<p>Generated 2026-11-06T23:51:38.415Z</p>
+
+<div class="note"><strong>Device limitation:</strong> phone profiles are <em>Playwright-emulated</em>
+(iPhone SE / 14 / Pixel 7 / small Android / iPad). Not a real-device cloud lab.</div>
+
+<h2>Test results (17/17 pass)</h2>
+<table>
+<tr><th>Test</th><th>Result</th></tr>
+<tr><td>persist survives full reload</td><td class="pass">PASS</td></tr>
+<tr><td>shop: greenhouse 50, shovel 10, multi-pick 15; deduct; no double-buy; persists</td><td class="pass">PASS</td></tr>
+<tr><td>harvest intentional only + undo; never wipes unarmed</td><td class="pass">PASS</td></tr>
+<tr><td>parent reset gated + full clean; no leftovers after reload</td><td class="pass">PASS</td></tr>
+<tr><td>migrate v1 + prior shapes → birthday.v2 without flower/coin/jar loss</td><td class="pass">PASS</td></tr>
+<tr><td>pack capacities + plates + per-species growth</td><td class="pass">PASS</td></tr>
+<tr><td>nearest-root routing (not first-match) + honest exclusive sizes</td><td class="pass">PASS</td></tr>
+<tr><td>service worker registers unique harden cache</td><td class="pass">PASS</td></tr>
+<tr><td>offline: network cut + reload still boots from cache/local</td><td class="pass">PASS</td></tr>
+<tr><td>resume mid-Growing after reload</td><td class="pass">PASS</td></tr>
+<tr><td>pick→plant S→water→grow→harvest→earn→buy→M→L fully grown/harvested</td><td class="pass">PASS</td></tr>
+<tr><td>frost UI @ iphone-se 375x667 dpr2</td><td class="pass">PASS</td></tr>
+<tr><td>frost UI @ iphone-14 390x844 dpr3</td><td class="pass">PASS</td></tr>
+<tr><td>frost UI @ pixel-7 412x915 dpr2.625</td><td class="pass">PASS</td></tr>
+<tr><td>frost UI @ android-small 360x780 dpr2</td><td class="pass">PASS</td></tr>
+<tr><td>frost UI @ ipad 768x1024 dpr2</td><td class="pass">PASS</td></tr>
+<tr><td>cold vs warm load bytes + timing</td><td class="pass">PASS</td></tr>
+</table>
+
+<h2>Hit measurements @390 (honest)</h2>
+<p>Candidate bounds are 66 native → ~44 CSS, but they <strong>overlap</strong>. Exclusive sizes are Voronoi half-distances — not 44px.</p>
+<pre>{
+  "small": {
+    "overlaps": 10,
+    "candidateCss": 44,
+    "exclusiveMin": 33.7,
+    "exclusiveMedian": 34.4,
+    "below44": 12
+  },
+  "large": {
+    "overlaps": 27,
+    "candidateCss": 44,
+    "exclusiveMin": 28.5,
+    "exclusiveMedian": 28.6,
+    "below44": 30
+  },
+  "outdoor": {
+    "overlaps": 10,
+    "exclusiveMin": 37.1,
+    "below44": 12
+  }
+}</pre>
+
+<h2>Load metrics</h2>
+<pre>{
+  "coldMs": 830,
+  "warmMs": 682,
+  "coldMB": 5.53,
+  "warmMB": 4.41,
+  "note": "Lazy core load — expect cold << prior ~21MB full preload"
+}</pre>
+
+<h2>Full-cycle summary</h2>
+<pre>{
+  "n": 30,
+  "left": 0,
+  "gh": 2,
+  "hits": {
+    "small": {
+      "key": "small",
+      "active": 12,
+      "overlapPairs": 10,
+      "candidateCss": 44,
+      "exclusiveCssMin": 33.7,
+      "exclusiveCssMedian": 34.4,
+      "exclusiveCssMax": 34.6,
+      "below44": 12,
+      "cells": [
+        {
+          "i": 0,
+          "rootX": 193,
+          "rootY": 810,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 51.9,
+          "exclusiveCss": 34.6,
+          "plantScale": 0.37846153846153846
+        },
+        {
+          "i": 1,
+          "rootX": 176,
+          "rootY": 859,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 51.5,
+          "exclusiveCss": 34.4,
+          "plantScale": 0.39353846153846156
+        },
+        {
+          "i": 2,
+          "rootX": 160,
+          "rootY": 908,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 50.9,
+          "exclusiveCss": 33.9,
+          "plantScale": 0.4086153846153846
+        },
+        {
+          "i": 3,
+          "rootX": 143,
+          "rootY": 956,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 50.9,
+          "exclusiveCss": 33.9,
+          "plantScale": 0.4233846153846154
+        },
+        {
+          "i": 4,
+          "rootX": 126,
+          "rootY": 1005,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 51.9,
+          "exclusiveCss": 34.6,
+          "plantScale": 0.43846153846153846
+        },
+        {
+          "i": 5,
+          "rootX": 109,
+          "rootY": 1054,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 51.9,
+          "exclusiveCss": 34.6,
+          "plantScale": 0.45353846153846156
+        },
+        {
+          "i": 6,
+          "rootX": 381,
+          "rootY": 810,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 51.2,
+          "exclusiveCss": 34.2,
+          "plantScale": 0.37846153846153846
+        },
+        {
+          "i": 7,
+          "rootX": 396,
+          "rootY": 859,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 51.2,
+          "exclusiveCss": 34.2,
+          "plantScale": 0.39353846153846156
+        },
+        {
+          "i": 8,
+          "rootX": 412,
+          "rootY": 908,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 50.6,
+          "exclusiveCss": 33.7,
+          "plantScale": 0.4086153846153846
+        },
+        {
+          "i": 9,
+          "rootX": 428,
+          "rootY": 956,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 50.6,
+          "exclusiveCss": 33.7,
+          "plantScale": 0.4233846153846154
+        },
+        {
+          "i": 10,
+          "rootX": 444,
+          "rootY": 1005,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 51.5,
+          "exclusiveCss": 34.4,
+          "plantScale": 0.43846153846153846
+        },
+        {
+          "i": 11,
+          "rootX": 460,
+          "rootY": 1054,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 51.5,
+          "exclusiveCss": 34.4,
+          "plantScale": 0.45353846153846156
+        }
+      ]
+    },
+    "medium": {
+      "key": "medium",
+      "active": 20,
+      "overlapPairs": 0,
+      "candidateCss": 44,
+      "exclusiveCssMin": 33,
+      "exclusiveCssMedian": 41.2,
+      "exclusiveCssMax": 44,
+      "below44": 14,
+      "cells": [
+        {
+          "i": 0,
+          "rootX": 121,
+          "rootY": 742,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 60,
+          "exclusiveCss": 40,
+          "plantScale": 0.215
+        },
+        {
+          "i": 1,
+          "rootX": 85,
+          "rootY": 790,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 58.2,
+          "exclusiveCss": 38.8,
+          "plantScale": 0.243
+        },
+        {
+          "i": 2,
+          "rootX": 52,
+          "rootY": 838,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 56.6,
+          "exclusiveCss": 37.7,
+          "plantScale": 0.27
+        },
+        {
+          "i": 3,
+          "rootX": 35,
+          "rootY": 892,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 49.7,
+          "exclusiveCss": 33.2,
+          "plantScale": 0.297
+        },
+        {
+          "i": 4,
+          "rootX": 22,
+          "rootY": 940,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 49.7,
+          "exclusiveCss": 33.2,
+          "plantScale": 0.325
+        },
+        {
+          "i": 5,
+          "rootX": 215,
+          "rootY": 760,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 66,
+          "exclusiveCss": 44,
+          "plantScale": 0.215
+        },
+        {
+          "i": 6,
+          "rootX": 195,
+          "rootY": 832,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 66,
+          "exclusiveCss": 44,
+          "plantScale": 0.243
+        },
+        {
+          "i": 7,
+          "rootX": 175,
+          "rootY": 904,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 62.4,
+          "exclusiveCss": 41.6,
+          "plantScale": 0.27
+        },
+        {
+          "i": 8,
+          "rootX": 158,
+          "rootY": 964,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 62.4,
+          "exclusiveCss": 41.6,
+          "plantScale": 0.297
+        },
+        {
+          "i": 9,
+          "rootX": 134,
+          "rootY": 1048,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 66,
+          "exclusiveCss": 44,
+          "plantScale": 0.325
+        },
+        {
+          "i": 10,
+          "rootX": 367,
+          "rootY": 760,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 66,
+          "exclusiveCss": 44,
+          "plantScale": 0.215
+        },
+        {
+          "i": 11,
+          "rootX": 384,
+          "rootY": 832,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 66,
+          "exclusiveCss": 44,
+          "plantScale": 0.243
+        },
+        {
+          "i": 12,
+          "rootX": 400,
+          "rootY": 904,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 61.8,
+          "exclusiveCss": 41.2,
+          "plantScale": 0.27
+        },
+        {
+          "i": 13,
+          "rootX": 415,
+          "rootY": 964,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 61.8,
+          "exclusiveCss": 41.2,
+          "plantScale": 0.297
+        },
+        {
+          "i": 14,
+          "rootX": 433,
+          "rootY": 1048,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 66,
+          "exclusiveCss": 44,
+          "plantScale": 0.325
+        },
+        {
+          "i": 15,
+          "rootX": 472,
+          "rootY": 742,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 58.2,
+          "exclusiveCss": 38.8,
+          "plantScale": 0.215
+        },
+        {
+          "i": 16,
+          "rootX": 505,
+          "rootY": 790,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 56.1,
+          "exclusiveCss": 37.4,
+          "plantScale": 0.243
+        },
+        {
+          "i": 17,
+          "rootX": 534,
+          "rootY": 838,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 55.5,
+          "exclusiveCss": 37,
+          "plantScale": 0.27
+        },
+        {
+          "i": 18,
+          "rootX": 547,
+          "rootY": 892,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 49.5,
+          "exclusiveCss": 33,
+          "plantScale": 0.297
+        },
+        {
+          "i": 19,
+          "rootX": 559,
+          "rootY": 940,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 49.5,
+          "exclusiveCss": 33,
+          "plantScale": 0.325
+        }
+      ]
+    },
+    "large": {
+      "key": "large",
+      "active": 30,
+      "overlapPairs": 27,
+      "candidateCss": 44,
+      "exclusiveCssMin": 28.5,
+      "exclusiveCssMedian": 28.6,
+      "exclusiveCssMax": 35.5,
+      "below44": 30,
+      "cells": [
+        {
+          "i": 0,
+          "rootX": 164,
+          "rootY": 760,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 52.9,
+          "exclusiveCss": 35.3,
+          "plantScale": 0.3630769230769231
+        },
+        {
+          "i": 1,
+          "rootX": 144,
+          "rootY": 809,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 52.9,
+          "exclusiveCss": 35.3,
+          "plantScale": 0.3781538461538462
+        },
+        {
+          "i": 2,
+          "rootX": 124,
+          "rootY": 858,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 52.9,
+          "exclusiveCss": 35.3,
+          "plantScale": 0.3932307692307692
+        },
+        {
+          "i": 3,
+          "rootX": 104,
+          "rootY": 908,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 53.3,
+          "exclusiveCss": 35.5,
+          "plantScale": 0.4086153846153846
+        },
+        {
+          "i": 4,
+          "rootX": 83,
+          "rootY": 957,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 52.9,
+          "exclusiveCss": 35.3,
+          "plantScale": 0.4236923076923077
+        },
+        {
+          "i": 5,
+          "rootX": 63,
+          "rootY": 1006,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 52.9,
+          "exclusiveCss": 35.3,
+          "plantScale": 0.4387692307692308
+        },
+        {
+          "i": 6,
+          "rootX": 43,
+          "rootY": 1055,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 52.9,
+          "exclusiveCss": 35.3,
+          "plantScale": 0.4538461538461539
+        },
+        {
+          "i": 7,
+          "rootX": 235,
+          "rootY": 760,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 43,
+          "exclusiveCss": 28.6,
+          "plantScale": 0.3630769230769231
+        },
+        {
+          "i": 8,
+          "rootX": 226,
+          "rootY": 802,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 43,
+          "exclusiveCss": 28.6,
+          "plantScale": 0.376
+        },
+        {
+          "i": 9,
+          "rootX": 217,
+          "rootY": 844,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 42.8,
+          "exclusiveCss": 28.5,
+          "plantScale": 0.3889230769230769
+        },
+        {
+          "i": 10,
+          "rootX": 209,
+          "rootY": 886,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 42.8,
+          "exclusiveCss": 28.5,
+          "plantScale": 0.40184615384615385
+        },
+        {
+          "i": 11,
+          "rootX": 200,
+          "rootY": 929,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 43,
+          "exclusiveCss": 28.6,
+          "plantScale": 0.41507692307692307
+        },
+        {
+          "i": 12,
+          "rootX": 191,
+          "rootY": 971,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 43,
+          "exclusiveCss": 28.6,
+          "plantScale": 0.42800000000000005
+        },
+        {
+          "i": 13,
+          "rootX": 182,
+          "rootY": 1013,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 42.8,
+          "exclusiveCss": 28.5,
+          "plantScale": 0.4409230769230769
+        },
+        {
+          "i": 14,
+          "rootX": 174,
+          "rootY": 1055,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 42.8,
+          "exclusiveCss": 28.5,
+          "plantScale": 0.4538461538461539
+        },
+        {
+          "i": 15,
+          "rootX": 349,
+          "rootY": 760,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 42.8,
+          "exclusiveCss": 28.5,
+          "plantScale": 0.3630769230769231
+        },
+        {
+          "i": 16,
+          "rootX": 357,
+          "rootY": 802,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 42.8,
+          "exclusiveCss": 28.5,
+          "plantScale": 0.376
+        },
+        {
+          "i": 17,
+          "rootX": 365,
+          "rootY": 844,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 42.8,
+          "exclusiveCss": 28.5,
+          "plantScale": 0.3889230769230769
+        },
+        {
+          "i": 18,
+          "rootX": 373,
+          "rootY": 886,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 42.8,
+          "exclusiveCss": 28.5,
+          "plantScale": 0.40184615384615385
+        },
+        {
+          "i": 19,
+          "rootX": 382,
+          "rootY": 929,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 42.8,
+          "exclusiveCss": 28.5,
+          "plantScale": 0.41507692307692307
+        },
+        {
+          "i": 20,
+          "rootX": 390,
+          "rootY": 971,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 42.8,
+          "exclusiveCss": 28.5,
+          "plantScale": 0.42800000000000005
+        },
+        {
+          "i": 21,
+          "rootX": 398,
+          "rootY": 1013,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 42.8,
+          "exclusiveCss": 28.5,
+          "plantScale": 0.4409230769230769
+        },
+        {
+          "i": 22,
+          "rootX": 406,
+          "rootY": 1055,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 42.8,
+          "exclusiveCss": 28.5,
+          "plantScale": 0.4538461538461539
+        },
+        {
+          "i": 23,
+          "rootX": 429,
+          "rootY": 760,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 52.6,
+          "exclusiveCss": 35,
+          "plantScale": 0.3630769230769231
+        },
+        {
+          "i": 24,
+          "rootX": 448,
+          "rootY": 809,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 52.6,
+          "exclusiveCss": 35,
+          "plantScale": 0.3781538461538462
+        },
+        {
+          "i": 25,
+          "rootX": 467,
+          "rootY": 858,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 52.6,
+          "exclusiveCss": 35,
+          "plantScale": 0.3932307692307692
+        },
+        {
+          "i": 26,
+          "rootX": 486,
+          "rootY": 908,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 52.6,
+          "exclusiveCss": 35,
+          "plantScale": 0.4086153846153846
+        },
+        {
+          "i": 27,
+          "rootX": 505,
+          "rootY": 957,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 52.6,
+          "exclusiveCss": 35,
+          "plantScale": 0.4236923076923077
+        },
+        {
+          "i": 28,
+          "rootX": 524,
+          "rootY": 1006,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 52.6,
+          "exclusiveCss": 35,
+          "plantScale": 0.4387692307692308
+        },
+        {
+          "i": 29,
+          "rootX": 543,
+          "rootY": 1055,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 52.6,
+          "exclusiveCss": 35,
+          "plantScale": 0.4538461538461539
+        }
+      ]
+    },
+    "outdoor": {
+      "key": "outdoor",
+      "active": 12,
+      "overlapPairs": 10,
+      "candidateCss": 44,
+      "exclusiveCssMin": 37.1,
+      "exclusiveCssMedian": 37.3,
+      "exclusiveCssMax": 37.5,
+      "below44": 12,
+      "cells": [
+        {
+          "i": 0,
+          "rootX": 199,
+          "rootY": 783,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 56.3,
+          "exclusiveCss": 37.5,
+          "plantScale": 0.37015384615384617
+        },
+        {
+          "i": 1,
+          "rootX": 180,
+          "rootY": 836,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 56,
+          "exclusiveCss": 37.3,
+          "plantScale": 0.38646153846153847
+        },
+        {
+          "i": 2,
+          "rootX": 162,
+          "rootY": 889,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 56,
+          "exclusiveCss": 37.3,
+          "plantScale": 0.40276923076923077
+        },
+        {
+          "i": 3,
+          "rootX": 144,
+          "rootY": 942,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 56,
+          "exclusiveCss": 37.3,
+          "plantScale": 0.41907692307692307
+        },
+        {
+          "i": 4,
+          "rootX": 125,
+          "rootY": 995,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 56,
+          "exclusiveCss": 37.3,
+          "plantScale": 0.43538461538461537
+        },
+        {
+          "i": 5,
+          "rootX": 107,
+          "rootY": 1048,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 56,
+          "exclusiveCss": 37.3,
+          "plantScale": 0.4516923076923077
+        },
+        {
+          "i": 6,
+          "rootX": 380,
+          "rootY": 783,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 55.7,
+          "exclusiveCss": 37.1,
+          "plantScale": 0.37015384615384617
+        },
+        {
+          "i": 7,
+          "rootX": 397,
+          "rootY": 836,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 55.7,
+          "exclusiveCss": 37.1,
+          "plantScale": 0.38646153846153847
+        },
+        {
+          "i": 8,
+          "rootX": 414,
+          "rootY": 889,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 55.7,
+          "exclusiveCss": 37.1,
+          "plantScale": 0.40276923076923077
+        },
+        {
+          "i": 9,
+          "rootX": 432,
+          "rootY": 942,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 55.7,
+          "exclusiveCss": 37.1,
+          "plantScale": 0.41907692307692307
+        },
+        {
+          "i": 10,
+          "rootX": 449,
+          "rootY": 995,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 55.7,
+          "exclusiveCss": 37.1,
+          "plantScale": 0.43538461538461537
+        },
+        {
+          "i": 11,
+          "rootX": 466,
+          "rootY": 1048,
+          "candidateNative": 66,
+          "candidateCss": 44,
+          "exclusiveNative": 55.7,
+          "exclusiveCss": 37.1,
+          "plantScale": 0.4516923076923077
+        }
+      ]
+    }
+  }
+}</pre>
+
+<h2>Full-cycle screenshots</h2>
+<div class="grid">
+<figure><img src="full-cycle/01-meadow-bouquet.png" alt=""/><figcaption>full-cycle/01-meadow-bouquet.png</figcaption></figure>
+<figure><img src="full-cycle/02-small-planted.png" alt=""/><figcaption>full-cycle/02-small-planted.png</figcaption></figure>
+<figure><img src="full-cycle/03-small-grown.png" alt=""/><figcaption>full-cycle/03-small-grown.png</figcaption></figure>
+<figure><img src="full-cycle/04-shop-upgraded.png" alt=""/><figcaption>full-cycle/04-shop-upgraded.png</figcaption></figure>
+<figure><img src="full-cycle/05-large-grown.png" alt=""/><figcaption>full-cycle/05-large-grown.png</figcaption></figure>
+<figure><img src="full-cycle/06-large-after-reload.png" alt=""/><figcaption>full-cycle/06-large-after-reload.png</figcaption></figure>
+<figure><img src="full-cycle/07-large-harvested.png" alt=""/><figcaption>full-cycle/07-large-harvested.png</figcaption></figure>
+</div>
+
+<h2>Device screenshots (emulated)</h2>
+<div class="grid">
+<figure><img src="devices/android-small-cbn.png" alt=""/><figcaption>devices/android-small-cbn.png</figcaption></figure>
+<figure><img src="devices/android-small-greenhouse.png" alt=""/><figcaption>devices/android-small-greenhouse.png</figcaption></figure>
+<figure><img src="devices/android-small-meadow.png" alt=""/><figcaption>devices/android-small-meadow.png</figcaption></figure>
+<figure><img src="devices/ipad-cbn.png" alt=""/><figcaption>devices/ipad-cbn.png</figcaption></figure>
+<figure><img src="devices/ipad-greenhouse.png" alt=""/><figcaption>devices/ipad-greenhouse.png</figcaption></figure>
+<figure><img src="devices/ipad-meadow.png" alt=""/><figcaption>devices/ipad-meadow.png</figcaption></figure>
+<figure><img src="devices/iphone-14-cbn.png" alt=""/><figcaption>devices/iphone-14-cbn.png</figcaption></figure>
+<figure><img src="devices/iphone-14-greenhouse.png" alt=""/><figcaption>devices/iphone-14-greenhouse.png</figcaption></figure>
+<figure><img src="devices/iphone-14-meadow.png" alt=""/><figcaption>devices/iphone-14-meadow.png</figcaption></figure>
+<figure><img src="devices/iphone-se-cbn.png" alt=""/><figcaption>devices/iphone-se-cbn.png</figcaption></figure>
+<figure><img src="devices/iphone-se-greenhouse.png" alt=""/><figcaption>devices/iphone-se-greenhouse.png</figcaption></figure>
+<figure><img src="devices/iphone-se-meadow.png" alt=""/><figcaption>devices/iphone-se-meadow.png</figcaption></figure>
+<figure><img src="devices/pixel-7-cbn.png" alt=""/><figcaption>devices/pixel-7-cbn.png</figcaption></figure>
+<figure><img src="devices/pixel-7-greenhouse.png" alt=""/><figcaption>devices/pixel-7-greenhouse.png</figcaption></figure>
+<figure><img src="devices/pixel-7-meadow.png" alt=""/><figcaption>devices/pixel-7-meadow.png</figcaption></figure>
+</div>
+
+<h2>Migration fixtures</h2>
+<p>Covered in automated tests: <code>havensGarden.v1</code> multi-mix beds, root economy fields, jars/honey/bees/owned → <code>havensGarden.birthday.v2</code> with no flower/coin/jar loss.</p>
+
+<p><a href="playwright-results.json">playwright-results.json</a> ·
+<a href="hit-measurements.json">hit-measurements.json</a> ·
+<a href="load-metrics.json">load-metrics.json</a></p>
+</body>
+</html>

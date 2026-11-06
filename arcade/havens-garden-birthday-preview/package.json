@@ -1,0 +1,16 @@
+{
+  "name": "havens-garden-birthday-preview",
+  "private": true,
+  "version": "0.9.0",
+  "description": "Haven's Garden birthday preview — hardening tests + evidence",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:evidence": "playwright test --reporter=list,json && node scripts/build-evidence.mjs",
+    "test:ci": "playwright test --reporter=list,json",
+    "serve": "node scripts/static-server.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}

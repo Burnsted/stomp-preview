@@ -4,7 +4,7 @@
 */
 'use strict';
 
-const ASSET_VER = 'birthday-ui-frost';
+const ASSET_VER = 'birthday-harden';
 
 const CBN_PAGE_STEMS = [
   'page-13-one-daisy',
@@ -157,43 +157,126 @@ function buildInteriorPaths() {
 
 const AssetManifest = Object.assign({}, AssetPaths, buildGreenhousePaths(), buildInteriorPaths());
 
+/** First-scene (meadow/menu) — keep cold load small. No CBN/concept/all GH sizes. */
+const CORE_KEYS = [
+  'plateMeadow', 'meadowDay',
+  'havenRun', 'havenJump', 'havenPick', 'havenChase', 'havenSkip', 'havenPlant',
+  'havenWalk01', 'havenWalk02', 'havenWalk03', 'havenWalk04',
+  'bouquet0', 'bouquet1', 'bouquet2', 'bouquet3', 'bouquetFull',
+  'flowerDaisy', 'flowerTulip', 'flowerSunflower', 'flowerBluebell', 'flowerPop',
+  'wateringCan', 'basket', 'bugNet', 'multiPickBasket',
+  'bugLadybug', 'bugGrasshopper', 'bugBee', 'bugButterfly',
+  'bee01', 'bee02', 'butterfly01', 'butterfly02',
+  'appIcon'
+];
+const SCENE_KEYS = {
+  meadow: CORE_KEYS.slice(),
+  greenhouse: [
+    'plateGreenhouse',
+    'havenPlant', 'wateringCan', 'basket', 'shovelBig',
+    'flowerDaisy', 'flowerTulip', 'flowerSunflower', 'flowerBluebell',
+    // Prefer current size empty interiors; Franz may drop distinct S/L/outdoor later
+    'gh_small_closed_day', 'gh_small_open_day',
+    'gh_medium_closed_day', 'gh_medium_open_day',
+    'gh_large_closed_day', 'gh_large_open_day',
+    'int_small_empty', 'int_medium_empty', 'int_large_empty',
+    'int_small_grown', 'int_medium_grown', 'int_large_grown'
+  ],
+  hive: ['plateHive', 'hive', 'jarFull', 'jarEmpty', 'bugBee', 'bee01', 'bee02'],
+  shop: ['plateShop', 'shovelBig', 'multiPickBasket', 'basket'],
+  cbn: ['cbnLadder']
+};
+
 const Assets = {
   ready: false,
   map: Object.create(null),
   missing: [],
   layout: null,
+  _loading: Object.create(null),
+  _sceneLoaded: Object.create(null),
+  _bytesHint: 0,
 
   loadImage(src) {
     return new Promise((resolve) => {
-      const img = new Image();
-      img.decoding = 'async';
-      img.onload = () => resolve({ ok: true, img, src });
-      img.onerror = () => resolve({ ok: false, img: null, src });
-      img.src = src + (src.includes('?') ? '&' : '?') + 'v=' + ASSET_VER;
+      const tryLoad = (url, fallback) => {
+        const img = new Image();
+        img.decoding = 'async';
+        img.onload = () => resolve({ ok: true, img, src: url });
+        img.onerror = () => {
+          if (fallback) tryLoad(fallback, null);
+          else resolve({ ok: false, img: null, src });
+        };
+        img.src = url + (url.includes('?') ? '&' : '?') + 'v=' + ASSET_VER;
+      };
+      // Prefer sibling .webp when listed path is PNG (lossless-looking drop-ins).
+      if (/\.png$/i.test(src)) tryLoad(src.replace(/\.png$/i, '.webp'), src);
+      else tryLoad(src, null);
     });
   },
 
-  async loadAll(onProgress) {
-    const entries = Object.entries(AssetManifest);
+  async loadKeys(keys, onProgress) {
+    const uniq = [];
+    const seen = Object.create(null);
+    keys.forEach((k) => {
+      if (!k || seen[k] || this.map[k] || !AssetManifest[k]) return;
+      seen[k] = 1;
+      uniq.push(k);
+    });
     let done = 0;
-    const batch = 8;
-    for (let i = 0; i < entries.length; i += batch) {
-      const slice = entries.slice(i, i + batch);
-      const results = await Promise.all(slice.map(([, src]) => this.loadImage(src)));
+    const batch = 6;
+    for (let i = 0; i < uniq.length; i += batch) {
+      const slice = uniq.slice(i, i + batch);
+      const results = await Promise.all(slice.map((k) => this.loadImage(AssetManifest[k])));
       results.forEach((res, j) => {
-        const key = slice[j][0];
+        const key = slice[j];
         if (res.ok) this.map[key] = res.img;
         else this.missing.push(res.src);
       });
       done += slice.length;
-      if (onProgress) onProgress(done / entries.length, slice[slice.length - 1][1]);
+      if (onProgress) onProgress(uniq.length ? done / uniq.length : 1, slice[slice.length - 1]);
     }
+    return this;
+  },
+
+  /** Boot: meadow/menu only. */
+  async loadCore(onProgress) {
+    await this.loadKeys(CORE_KEYS, onProgress);
     try {
       const r = await fetch('assets/asset-layout.json?v=' + ASSET_VER);
       if (r.ok) this.layout = await r.json();
     } catch (e) {}
     this.ready = true;
+    this._sceneLoaded.meadow = 1;
     return this;
+  },
+
+  /** Lazy load a scene pack once. */
+  async ensureScene(scene, onProgress) {
+    const name = scene || 'meadow';
+    if (this._sceneLoaded[name]) return this;
+    if (this._loading[name]) return this._loading[name];
+    const keys = SCENE_KEYS[name] || CORE_KEYS;
+    this._loading[name] = this.loadKeys(keys, onProgress).then(() => {
+      this._sceneLoaded[name] = 1;
+      delete this._loading[name];
+      return this;
+    });
+    return this._loading[name];
+  },
+
+  async ensureCbnPage(stem) {
+    if (!stem) return this;
+    const keys = [
+      cbnAssetKey(stem, 'page'),
+      cbnAssetKey(stem, 'ink'),
+      cbnAssetKey(stem, 'mask')
+    ];
+    return this.loadKeys(keys);
+  },
+
+  /** Backward-compatible: core first (not full 21MB). */
+  async loadAll(onProgress) {
+    return this.loadCore(onProgress);
   },
 
   get(key) {

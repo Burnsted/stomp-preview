@@ -1,304 +1,273 @@
 {
+  "size": [
+    585,
+    1266
+  ],
+  "activeCount": 12,
+  "beds": [
+    {
+      "id": 0,
+      "soilPolygon": [
+        [
+          181,
+          772
+        ],
+        [
+          232,
+          772
+        ],
+        [
+          154,
+          1092
+        ],
+        [
+          38,
+          1092
+        ]
+      ],
+      "count": 6
+    },
+    {
+      "id": 1,
+      "soilPolygon": [
+        [
+          348,
+          772
+        ],
+        [
+          388,
+          772
+        ],
+        [
+          530,
+          1092
+        ],
+        [
+          415,
+          1092
+        ]
+      ],
+      "count": 6
+    }
+  ],
+  "slots": [
+    {
+      "id": 0,
+      "bedId": 0,
+      "rootX": 193,
+      "rootY": 810,
+      "hitBounds": {
+        "x": 160,
+        "y": 777,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 810
+    },
+    {
+      "id": 1,
+      "bedId": 0,
+      "rootX": 176,
+      "rootY": 859,
+      "hitBounds": {
+        "x": 143,
+        "y": 826,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 859
+    },
+    {
+      "id": 2,
+      "bedId": 0,
+      "rootX": 160,
+      "rootY": 908,
+      "hitBounds": {
+        "x": 127,
+        "y": 875,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 908
+    },
+    {
+      "id": 3,
+      "bedId": 0,
+      "rootX": 143,
+      "rootY": 956,
+      "hitBounds": {
+        "x": 110,
+        "y": 923,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 956
+    },
+    {
+      "id": 4,
+      "bedId": 0,
+      "rootX": 126,
+      "rootY": 1005,
+      "hitBounds": {
+        "x": 93,
+        "y": 972,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 1005
+    },
+    {
+      "id": 5,
+      "bedId": 0,
+      "rootX": 109,
+      "rootY": 1054,
+      "hitBounds": {
+        "x": 76,
+        "y": 1021,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 1054
+    },
+    {
+      "id": 6,
+      "bedId": 1,
+      "rootX": 381,
+      "rootY": 810,
+      "hitBounds": {
+        "x": 348,
+        "y": 777,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 810
+    },
+    {
+      "id": 7,
+      "bedId": 1,
+      "rootX": 396,
+      "rootY": 859,
+      "hitBounds": {
+        "x": 363,
+        "y": 826,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 859
+    },
+    {
+      "id": 8,
+      "bedId": 1,
+      "rootX": 412,
+      "rootY": 908,
+      "hitBounds": {
+        "x": 379,
+        "y": 875,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 908
+    },
+    {
+      "id": 9,
+      "bedId": 1,
+      "rootX": 428,
+      "rootY": 956,
+      "hitBounds": {
+        "x": 395,
+        "y": 923,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 956
+    },
+    {
+      "id": 10,
+      "bedId": 1,
+      "rootX": 444,
+      "rootY": 1005,
+      "hitBounds": {
+        "x": 411,
+        "y": 972,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 1005
+    },
+    {
+      "id": 11,
+      "bedId": 1,
+      "rootX": 460,
+      "rootY": 1054,
+      "hitBounds": {
+        "x": 427,
+        "y": 1021,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 1054
+    }
+  ],
+  "minimumHitNative": [
+    66,
+    66
+  ],
+  "minimumHitAt390": [
+    44,
+    44
+  ],
+  "overlapPairs": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      6,
+      7
+    ],
+    [
+      7,
+      8
+    ],
+    [
+      8,
+      9
+    ],
+    [
+      9,
+      10
+    ],
+    [
+      10,
+      11
+    ]
+  ],
+  "routing": "HitBounds are candidate zones, not painted soil boundaries. Among candidates pick smallest squared distance to rootX/rootY; exact tie lowest slot id. Do not first-match overlapping rectangles. Outside all bounds do not plant.",
+  "plate": "plates/small-empty.webp",
+  "plateNoLip": "plates/small-empty.webp",
   "key": "small",
   "kind": "greenhouse-interior",
   "capacityTarget": 12,
-  "slotsPerBed": 6,
   "plateSize": [
     585,
     1266
   ],
   "phoneScale": 0.6666666666666666,
-  "plate": "plates/medium-empty.webp",
-  "plateNoLip": "plates/medium-empty.webp",
-  "layers": {},
-  "beds": [
-    {
-      "id": "bed1",
-      "index": 1,
-      "soilBounds": {
-        "x": 52,
-        "y": 718,
-        "w": 202,
-        "h": 372
-      }
-    },
-    {
-      "id": "bed2",
-      "index": 2,
-      "soilBounds": {
-        "x": 329,
-        "y": 718,
-        "w": 181,
-        "h": 372
-      }
-    }
-  ],
-  "slots": [
-    {
-      "index": 0,
-      "id": "bed1_s0",
-      "bedId": "bed1",
-      "grid": {
-        "row": 1,
-        "col": 0
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 217.0,
-        "y": 754.0
-      },
-      "hitBounds": {
-        "x": 184.0,
-        "y": 706.5,
-        "w": 66,
-        "h": 66
-      },
-      "recommendedPlantScale": 0.213,
-      "drawOrder": 0
-    },
-    {
-      "index": 1,
-      "id": "bed1_s1",
-      "bedId": "bed1",
-      "grid": {
-        "row": 1,
-        "col": 1
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 200.0,
-        "y": 814.0
-      },
-      "hitBounds": {
-        "x": 167.0,
-        "y": 766.5,
-        "w": 66,
-        "h": 66
-      },
-      "recommendedPlantScale": 0.236,
-      "drawOrder": 2
-    },
-    {
-      "index": 2,
-      "id": "bed1_s2",
-      "bedId": "bed1",
-      "grid": {
-        "row": 1,
-        "col": 2
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 183.0,
-        "y": 874.0
-      },
-      "hitBounds": {
-        "x": 150.0,
-        "y": 826.5,
-        "w": 66,
-        "h": 66
-      },
-      "recommendedPlantScale": 0.259,
-      "drawOrder": 4
-    },
-    {
-      "index": 3,
-      "id": "bed1_s3",
-      "bedId": "bed1",
-      "grid": {
-        "row": 1,
-        "col": 3
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 167.0,
-        "y": 934.0
-      },
-      "hitBounds": {
-        "x": 134.0,
-        "y": 886.5,
-        "w": 66,
-        "h": 66
-      },
-      "recommendedPlantScale": 0.281,
-      "drawOrder": 6
-    },
-    {
-      "index": 4,
-      "id": "bed1_s4",
-      "bedId": "bed1",
-      "grid": {
-        "row": 1,
-        "col": 4
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 151.0,
-        "y": 994.0
-      },
-      "hitBounds": {
-        "x": 118.0,
-        "y": 946.5,
-        "w": 66,
-        "h": 66
-      },
-      "recommendedPlantScale": 0.304,
-      "drawOrder": 8
-    },
-    {
-      "index": 5,
-      "id": "bed1_s5",
-      "bedId": "bed1",
-      "grid": {
-        "row": 1,
-        "col": 5
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 133.0,
-        "y": 1054.0
-      },
-      "hitBounds": {
-        "x": 100.0,
-        "y": 1006.5,
-        "w": 66,
-        "h": 66
-      },
-      "recommendedPlantScale": 0.327,
-      "drawOrder": 10
-    },
-    {
-      "index": 6,
-      "id": "bed2_s0",
-      "bedId": "bed2",
-      "grid": {
-        "row": 2,
-        "col": 0
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 366.0,
-        "y": 754.0
-      },
-      "hitBounds": {
-        "x": 333.0,
-        "y": 706.5,
-        "w": 66,
-        "h": 66
-      },
-      "recommendedPlantScale": 0.213,
-      "drawOrder": 1
-    },
-    {
-      "index": 7,
-      "id": "bed2_s1",
-      "bedId": "bed2",
-      "grid": {
-        "row": 2,
-        "col": 1
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 379.0,
-        "y": 814.0
-      },
-      "hitBounds": {
-        "x": 346.0,
-        "y": 766.5,
-        "w": 66,
-        "h": 66
-      },
-      "recommendedPlantScale": 0.236,
-      "drawOrder": 3
-    },
-    {
-      "index": 8,
-      "id": "bed2_s2",
-      "bedId": "bed2",
-      "grid": {
-        "row": 2,
-        "col": 2
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 392.0,
-        "y": 874.0
-      },
-      "hitBounds": {
-        "x": 359.0,
-        "y": 826.5,
-        "w": 66,
-        "h": 66
-      },
-      "recommendedPlantScale": 0.259,
-      "drawOrder": 5
-    },
-    {
-      "index": 9,
-      "id": "bed2_s3",
-      "bedId": "bed2",
-      "grid": {
-        "row": 2,
-        "col": 3
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 407.0,
-        "y": 934.0
-      },
-      "hitBounds": {
-        "x": 374.0,
-        "y": 886.5,
-        "w": 66,
-        "h": 66
-      },
-      "recommendedPlantScale": 0.281,
-      "drawOrder": 7
-    },
-    {
-      "index": 10,
-      "id": "bed2_s4",
-      "bedId": "bed2",
-      "grid": {
-        "row": 2,
-        "col": 4
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 421.0,
-        "y": 994.0
-      },
-      "hitBounds": {
-        "x": 388.0,
-        "y": 946.5,
-        "w": 66,
-        "h": 66
-      },
-      "recommendedPlantScale": 0.304,
-      "drawOrder": 9
-    },
-    {
-      "index": 11,
-      "id": "bed2_s5",
-      "bedId": "bed2",
-      "grid": {
-        "row": 2,
-        "col": 5
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 434.0,
-        "y": 1054.0
-      },
-      "hitBounds": {
-        "x": 401.0,
-        "y": 1006.5,
-        "w": 66,
-        "h": 66
-      },
-      "recommendedPlantScale": 0.327,
-      "drawOrder": 11
-    }
-  ],
-  "pack": "greenhouse-v2",
-  "note": "Illustration master plate; slots hand-placed on soil rows. No lip/soil overlays."
+  "pack": "greenhouse-redo-v2"
 }

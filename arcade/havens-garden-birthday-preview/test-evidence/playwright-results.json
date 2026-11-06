@@ -1,0 +1,782 @@
+{
+  "config": {
+    "argv": [
+      "/exec-daemon/node",
+      "/agent/repos/stomp-preview/arcade/havens-garden-birthday-preview/node_modules/.bin/playwright",
+      "test"
+    ],
+    "configFile": "/agent/repos/stomp-preview/arcade/havens-garden-birthday-preview/playwright.config.js",
+    "rootDir": "/agent/repos/stomp-preview/arcade/havens-garden-birthday-preview/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/agent/repos/stomp-preview/arcade/havens-garden-birthday-preview/test-evidence/test-output",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-phone",
+        "name": "chromium-phone",
+        "testDir": "/agent/repos/stomp-preview/arcade/havens-garden-birthday-preview/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/agent/repos/stomp-preview/arcade/havens-garden-birthday-preview/test-evidence/test-output",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "chromium-phone",
+        "testDir": "/agent/repos/stomp-preview/arcade/havens-garden-birthday-preview/tests",
+        "snapshotDir": "/agent/repos/stomp-preview/arcade/havens-garden-birthday-preview/tests",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 180000,
+        "use": {
+          "baseURL": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/",
+          "trace": "off",
+          "video": "off",
+          "screenshot": "only-on-failure",
+          "browserName": "chromium",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "deviceScaleFactor": 3,
+          "isMobile": true,
+          "hasTouch": true,
+          "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chromium-phone"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-evidence/playwright-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.0",
+    "workers": 1,
+    "webServer": {
+      "command": "node arcade/havens-garden-birthday-preview/scripts/static-server.mjs 8799",
+      "url": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/index.html",
+      "reuseExistingServer": true,
+      "timeout": 120000,
+      "cwd": "/agent/repos/stomp-preview"
+    }
+  },
+  "suites": [
+    {
+      "title": "01-save-shop-harvest.spec.js",
+      "file": "01-save-shop-harvest.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "save / shop / harvest / reset / migration",
+          "file": "01-save-shop-harvest.spec.js",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "persist survives full reload",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2286,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-06T23:50:34.670Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d1bb653ed4ade1e5618e-43af0e9cc51ffbb467cb",
+              "file": "01-save-shop-harvest.spec.js",
+              "line": 5,
+              "column": 3
+            },
+            {
+              "title": "shop: greenhouse 50, shovel 10, multi-pick 15; deduct; no double-buy; persists",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2298,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-06T23:50:37.030Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d1bb653ed4ade1e5618e-8c6b7fc7103ce5349f28",
+              "file": "01-save-shop-harvest.spec.js",
+              "line": 30,
+              "column": 3
+            },
+            {
+              "title": "harvest intentional only + undo; never wipes unarmed",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2443,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-06T23:50:39.342Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d1bb653ed4ade1e5618e-c7467948becae5a35280",
+              "file": "01-save-shop-harvest.spec.js",
+              "line": 91,
+              "column": 3
+            },
+            {
+              "title": "parent reset gated + full clean; no leftovers after reload",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2241,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-06T23:50:41.796Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d1bb653ed4ade1e5618e-5b58fea14e89142a50e4",
+              "file": "01-save-shop-harvest.spec.js",
+              "line": 140,
+              "column": 3
+            },
+            {
+              "title": "migrate v1 + prior shapes → birthday.v2 without flower/coin/jar loss",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1922,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-06T23:50:44.043Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d1bb653ed4ade1e5618e-d22f5c853fd0bb2a3e6a",
+              "file": "01-save-shop-harvest.spec.js",
+              "line": 181,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "02-gh-pack-hits.spec.js",
+      "file": "02-gh-pack-hits.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "greenhouse redo-v2 pack + nearest-root hits",
+          "file": "02-gh-pack-hits.spec.js",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "pack capacities + plates + per-species growth",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2171,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-06T23:50:45.978Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "23428ea5fa56aa0eaf89-1bb8320f8f23ada7a21d",
+              "file": "02-gh-pack-hits.spec.js",
+              "line": 9,
+              "column": 3
+            },
+            {
+              "title": "nearest-root routing (not first-match) + honest exclusive sizes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1261,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-06T23:50:48.156Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "23428ea5fa56aa0eaf89-e669085dc8b579b1ee89",
+              "file": "02-gh-pack-hits.spec.js",
+              "line": 46,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "03-offline-resume.spec.js",
+      "file": "03-offline-resume.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "offline SW + resume mid-Growing",
+          "file": "03-offline-resume.spec.js",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "service worker registers unique harden cache",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1223,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-06T23:50:49.427Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fbb3b418e401c029f36a-1e9f0489c680a7bcf39f",
+              "file": "03-offline-resume.spec.js",
+              "line": 5,
+              "column": 3
+            },
+            {
+              "title": "offline: network cut + reload still boots from cache/local",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2643,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-06T23:50:50.657Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fbb3b418e401c029f36a-dbb74141d060b83f82f3",
+              "file": "03-offline-resume.spec.js",
+              "line": 34,
+              "column": 3
+            },
+            {
+              "title": "resume mid-Growing after reload",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2344,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-06T23:50:53.308Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fbb3b418e401c029f36a-46e7bce829d2899c996e",
+              "file": "03-offline-resume.spec.js",
+              "line": 55,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "04-full-cycle.spec.js",
+      "file": "04-full-cycle.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "full gardening cycle (one save, reloads between stages)",
+          "file": "04-full-cycle.spec.js",
+          "line": 14,
+          "column": 6,
+          "specs": [
+            {
+              "title": "pick→plant S→water→grow→harvest→earn→buy→M→L fully grown/harvested",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10147,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-06T23:50:55.666Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "df7896223e24fc61f543-e465c07762b6273c2c91",
+              "file": "04-full-cycle.spec.js",
+              "line": 15,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "05-devices-load.spec.js",
+      "file": "05-devices-load.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "device profiles (emulated) + load metrics",
+          "file": "05-devices-load.spec.js",
+          "line": 15,
+          "column": 6,
+          "specs": [
+            {
+              "title": "frost UI @ iphone-se 375x667 dpr2",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3030,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-06T23:51:05.825Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5392f01d775188fb50ba-b28fa4296e74896e3257",
+              "file": "05-devices-load.spec.js",
+              "line": 17,
+              "column": 5
+            },
+            {
+              "title": "frost UI @ iphone-14 390x844 dpr3",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4019,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-06T23:51:08.863Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5392f01d775188fb50ba-9480ba6a0cd9de737942",
+              "file": "05-devices-load.spec.js",
+              "line": 17,
+              "column": 5
+            },
+            {
+              "title": "frost UI @ pixel-7 412x915 dpr2.625",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4003,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-06T23:51:12.887Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5392f01d775188fb50ba-444242ccd56788997e8e",
+              "file": "05-devices-load.spec.js",
+              "line": 17,
+              "column": 5
+            },
+            {
+              "title": "frost UI @ android-small 360x780 dpr2",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3073,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-06T23:51:16.901Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5392f01d775188fb50ba-54e91be69b5c9f8e524c",
+              "file": "05-devices-load.spec.js",
+              "line": 17,
+              "column": 5
+            },
+            {
+              "title": "frost UI @ ipad 768x1024 dpr2",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4701,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-06T23:51:19.995Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5392f01d775188fb50ba-07c1568e29bbe969f503",
+              "file": "05-devices-load.spec.js",
+              "line": 17,
+              "column": 5
+            },
+            {
+              "title": "cold vs warm load bytes + timing",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2094,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-06T23:51:24.704Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5392f01d775188fb50ba-77db9062438bcaf8708d",
+              "file": "05-devices-load.spec.js",
+              "line": 69,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-06T23:50:34.244Z",
+    "duration": 52617.115,
+    "expected": 17,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

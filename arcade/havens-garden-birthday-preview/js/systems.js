@@ -6,7 +6,7 @@ const HGSystems = (() => {
   const SHOP = [
     { id: 'greenhouse', label: 'Bigger greenhouse', cost: 50, desc: 'More beds to plant' },
     { id: 'shovel', label: 'Shovel', cost: 10, desc: 'Faster planting' },
-    { id: 'sparkle', label: 'Sparkle basket', cost: 15, desc: 'Pick 2 at once · 30s' }
+    { id: 'sparkle', label: 'Multi-pick basket', cost: 15, desc: 'Pick 2 flowers at once' }
   ];
 
   const CBN_COLOR_HEX = {
@@ -86,16 +86,34 @@ const HGSystems = (() => {
   function migrateExtras(raw) {
     const base = freshExtras();
     if (!raw || typeof raw !== 'object') return base;
-    const e = Object.assign(base, raw);
+    // Accept prior preview shapes that nested economy under different keys
+    const src = (raw.extras && typeof raw.extras === 'object') ? raw.extras : raw;
+    const e = Object.assign(base, src);
     if (!e.bugs || typeof e.bugs !== 'object') e.bugs = { ladybug: 0, grasshopper: 0, butterfly: 0 };
+    e.bugs.ladybug = Math.max(0, e.bugs.ladybug | 0);
+    e.bugs.grasshopper = Math.max(0, e.bugs.grasshopper | 0);
+    e.bugs.butterfly = Math.max(0, e.bugs.butterfly | 0);
     if (!e.owned || typeof e.owned !== 'object') e.owned = { greenhouse: 0, shovel: 0, sparkle: 0 };
+    // Alias prior id names → current owned flags
+    if (src.owned && src.owned.multiPick) e.owned.sparkle = src.owned.multiPick | e.owned.sparkle | 0;
+    if (src.multiPickBasket) e.owned.sparkle = 1;
+    e.owned.greenhouse = e.owned.greenhouse ? 1 : 0;
+    e.owned.shovel = e.owned.shovel ? 1 : 0;
+    e.owned.sparkle = e.owned.sparkle ? 1 : 0;
     if (!Array.isArray(e.cbnDone)) e.cbnDone = [];
     if (!e.cbnFill || typeof e.cbnFill !== 'object') e.cbnFill = {};
     const known = Object.create(null);
     CBN_PAGES.forEach((p) => { known[p.id] = 1; });
     e.cbnDone = e.cbnDone.filter((id) => known[id]);
+    // Preserve coins / jars / honey / bees — never floor to zero on bad NaN
+    e.flowerPoints = Math.max(0, (e.flowerPoints | 0) || (src.points | 0) || (src.coins | 0) || 0);
+    e.bees = Math.max(0, e.bees | 0);
+    e.honey = Math.max(0, e.honey | 0);
     e.jarsEmpty = Math.max(0, e.jarsEmpty | 0);
     e.jarsFull = Math.max(0, e.jarsFull | 0);
+    // Keep jar stock coherent (never wipe filled jars)
+    if (e.jarsFull + e.jarsEmpty < 1) e.jarsEmpty = 8;
+    e.sparkleUntil = Math.max(0, e.sparkleUntil | 0);
     return e;
   }
 
