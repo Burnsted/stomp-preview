@@ -6,7 +6,7 @@
    bugs+net, bees→hive→jars, color rows, CBN, shop.
    ============================================================ */
 
-const VER = 'v0.9-birthday-haven-move';
+const VER = 'v0.9-birthday-ui-frost';
 const PK = 'havensGarden.birthday.v2';
 const PK_LEGACY = 'havensGarden.v1';
 const MUTE_K = 'havensGarden.mute';
@@ -1587,28 +1587,20 @@ function drawHiveScene() {
     cx.fillStyle = '#96cdf0'; cx.fillRect(0, 0, W, H);
     cx.fillStyle = '#78c35f'; cx.fillRect(0, H * 0.55, W, H * 0.45);
   }
-  // Soft panels so comps stay visible
-  cx.fillStyle = 'rgba(255,250,240,.88)';
-  rr(18, padT + 60, W - 36, 210, 18); cx.fill();
-  cx.fillStyle = '#2a2418';
-  cx.font = '800 22px Fredoka, system-ui, sans-serif';
-  cx.textAlign = 'center';
-  cx.fillText('Hive & jars', W / 2, padT + 92);
-  cx.font = '700 14px system-ui';
-  cx.fillStyle = '#6a6258';
-  cx.fillText('Bees ' + (EX().bees | 0) + ' · Honey ' + (EX().honey | 0) + ' · Jars ' + (EX().jarsFull | 0) + '/' + ((EX().jarsFull | 0) + (EX().jarsEmpty | 0)), W / 2, padT + 118);
+  drawUiChrome(18, padT + 60, W - 36, 210, 18, { fill: '#f4ebe0', alpha: 0.32 });
+  drawUiText('Hive & jars', W / 2, padT + 92, { font: '800 22px Fredoka, system-ui, sans-serif' });
+  drawUiText(
+    'Bees ' + (EX().bees | 0) + ' · Honey ' + (EX().honey | 0) + ' · Jars ' + (EX().jarsFull | 0) + '/' + ((EX().jarsFull | 0) + (EX().jarsEmpty | 0)),
+    W / 2, padT + 118,
+    { font: '700 14px system-ui', color: '#3a342c', halo: 3.5 }
+  );
 
-  cx.fillStyle = '#ffd24a';
-  rr(40, padT + 140, W - 80, 48, 14); cx.fill();
-  cx.fillStyle = '#2a2418';
-  cx.font = '800 16px Fredoka, system-ui, sans-serif';
-  cx.fillText('Harvest honey', W / 2, padT + 170);
+  drawUiChrome(40, padT + 140, W - 80, 48, 14, { fill: '#ffd24a', alpha: 0.36 });
+  drawUiText('Harvest honey', W / 2, padT + 170, { font: '800 16px Fredoka, system-ui, sans-serif' });
   hit.hiveHarvest = { x: 40, y: padT + 140, w: W - 80, h: 48 };
 
-  cx.fillStyle = '#7ec8ff';
-  rr(40, padT + 200, W - 80, 48, 14); cx.fill();
-  cx.fillStyle = '#2a2418';
-  cx.fillText('Pour a jar', W / 2, padT + 230);
+  drawUiChrome(40, padT + 200, W - 80, 48, 14, { fill: '#7ec8ff', alpha: 0.36 });
+  drawUiText('Pour a jar', W / 2, padT + 230, { font: '800 16px Fredoka, system-ui, sans-serif' });
   hit.hivePour = { x: 40, y: padT + 200, w: W - 80, h: 48 };
 
   // Player jar stock (plate already shows scenic hive/shelf — don't duplicate hive sprite)
@@ -1630,38 +1622,28 @@ function drawShopScene() {
   const bg = Assets.get('plateShop') || Assets.get('conceptShop');
   if (bg) drawFullPlate(bg, 1);
   else drawMeadowBG('day');
-  cx.fillStyle = 'rgba(255,250,240,.92)';
-  rr(16, padT + 56, W - 32, contentBottom() - padT - 70, 20); cx.fill();
-  cx.fillStyle = '#2a2418';
-  cx.font = '800 22px Fredoka, system-ui, sans-serif';
-  cx.textAlign = 'center';
-  cx.fillText('Shop', W / 2, padT + 88);
-  cx.font = '700 13px system-ui';
-  cx.fillStyle = '#6a6258';
-  cx.fillText(flowerPoints() + ' flower points', W / 2, padT + 110);
+  drawUiChrome(16, padT + 56, W - 32, contentBottom() - padT - 70, 20, { fill: '#f4ebe0', alpha: 0.3 });
+  drawUiText('Shop', W / 2, padT + 88, { font: '800 22px Fredoka, system-ui, sans-serif' });
+  drawUiText(flowerPoints() + ' flower points', W / 2, padT + 110, { font: '700 13px system-ui', color: '#3a342c', halo: 3.5 });
 
   hit.shopItems = [];
   HGSystems.SHOP.forEach((it, i) => {
     const y = padT + 130 + i * 78;
     const owned = !!(EX().owned && EX().owned[it.id]);
-    cx.fillStyle = owned ? 'rgba(160,150,140,.35)' : '#fff';
-    rr(28, y, W - 56, 68, 16); cx.fill();
-    cx.strokeStyle = '#1e1814'; cx.lineWidth = 2;
-    rr(28, y, W - 56, 68, 16); cx.stroke();
-    cx.fillStyle = '#2a2418';
-    cx.font = '800 16px Fredoka, system-ui, sans-serif';
-    cx.textAlign = 'left';
-    cx.fillText(it.label, 44, y + 28);
-    cx.font = '700 12px system-ui';
-    cx.fillStyle = '#6a6258';
-    cx.fillText(owned ? 'Owned' : (it.cost + ' ✿ · ' + it.desc), 44, y + 50);
+    drawUiChrome(28, y, W - 56, 68, 16, {
+      fill: owned ? '#a0968c' : '#f7f0e4',
+      alpha: owned ? 0.28 : 0.34
+    });
+    drawUiText(it.label, 44, y + 28, { font: '800 16px Fredoka, system-ui, sans-serif', align: 'left' });
+    drawUiText(owned ? 'Owned' : (it.cost + ' ✿ · ' + it.desc), 44, y + 50, {
+      font: '700 12px system-ui', align: 'left', color: '#3a342c', halo: 3
+    });
     hit.shopItems.push({ id: it.id, x: 28, y, w: W - 56, h: 68 });
   });
   if (shopFlash) {
-    cx.fillStyle = '#a05010';
-    cx.font = '800 14px Fredoka, system-ui, sans-serif';
-    cx.textAlign = 'center';
-    cx.fillText(shopFlash, W / 2, contentBottom() - 28);
+    drawUiText(shopFlash, W / 2, contentBottom() - 28, {
+      font: '800 14px Fredoka, system-ui, sans-serif', color: '#a05010', halo: 4
+    });
   }
 }
 
@@ -1774,18 +1756,16 @@ function drawCbnMap() {
   const bg = Assets.get('cbnLadder');
   if (bg) drawFullPlate(bg, 0.28);
   else {
-    cx.fillStyle = '#fff8f0'; cx.fillRect(0, 0, W, H);
+    // Soft meadow fallback — not a solid white sheet
+    cx.fillStyle = '#96cdf0'; cx.fillRect(0, 0, W, H);
+    cx.fillStyle = '#78c35f'; cx.fillRect(0, H * 0.55, W, H * 0.45);
   }
-  cx.fillStyle = 'rgba(255,250,240,.94)';
-  rr(16, padT + 48, W - 32, 64, 16); cx.fill();
-  cx.fillStyle = '#2a2418';
-  cx.font = '800 18px Fredoka, system-ui, sans-serif';
-  cx.textAlign = 'center';
-  cx.fillText('Color by Number', W / 2, padT + 74);
-  cx.font = '700 11px system-ui';
-  cx.fillStyle = '#6a6258';
+  drawUiChrome(16, padT + 48, W - 32, 64, 16, { fill: '#f4ebe0', alpha: 0.34 });
+  drawUiText('Color by Number', W / 2, padT + 74, { font: '800 18px Fredoka, system-ui, sans-serif' });
   const doneN = (EX().cbnDone || []).length;
-  cx.fillText(doneN + ' / ' + HGSystems.CBN_PAGES.length + ' · Extra easy → Easy → Hard', W / 2, padT + 96);
+  drawUiText(doneN + ' / ' + HGSystems.CBN_PAGES.length + ' · Extra easy → Easy → Hard', W / 2, padT + 96, {
+    font: '700 11px system-ui', color: '#3a342c', halo: 3
+  });
 
   hit.cbnLevels = [];
   const sections = [
@@ -1805,10 +1785,9 @@ function drawCbnMap() {
 
   sections.forEach((sec) => {
     const list = pagesByDiff[sec.diff] || [];
-    cx.fillStyle = '#2a2418';
-    cx.font = '800 12px Fredoka, system-ui, sans-serif';
-    cx.textAlign = 'left';
-    cx.fillText(sec.label + (sec.hint ? '  ' + sec.hint : '') + '  (' + list.length + ')', 22, y + rowH * 0.7);
+    drawUiText(sec.label + (sec.hint ? '  ' + sec.hint : '') + '  (' + list.length + ')', 22, y + rowH * 0.7, {
+      font: '800 12px Fredoka, system-ui, sans-serif', align: 'left', halo: 3.5
+    });
     y += rowH;
     const cols = 4;
     const gap = 6;
@@ -1820,17 +1799,17 @@ function drawCbnMap() {
       const x = 16 + c * (cellW + gap);
       const yy = y + r * rowH;
       const done = (EX().cbnDone || []).indexOf(page.id) >= 0;
-      cx.fillStyle = done ? '#9fe870' : '#fff';
-      rr(x, yy, cellW, cellH, 10); cx.fill();
-      cx.strokeStyle = '#1e1814'; cx.lineWidth = 1.25;
-      rr(x, yy, cellW, cellH, 10); cx.stroke();
-      cx.fillStyle = '#2a2418';
-      cx.font = '800 11px Fredoka, system-ui, sans-serif';
-      cx.textAlign = 'center';
+      drawUiChrome(x, yy, cellW, cellH, 10, {
+        fill: done ? '#9fe870' : '#f7f0e4',
+        alpha: done ? 0.4 : 0.32,
+        line: 1.8
+      });
       const label = page.subjectIndex ? String(page.subjectIndex) : String(i + 1);
       const short = (page.title || '').split('·')[0].trim();
       const show = short.length > 10 ? label : short;
-      cx.fillText(show.length > 11 ? label : show, x + cellW / 2, yy + cellH / 2 + 4);
+      drawUiText(show.length > 11 ? label : show, x + cellW / 2, yy + cellH / 2 + 4, {
+        font: '800 11px Fredoka, system-ui, sans-serif', halo: 3
+      });
       hit.cbnLevels.push({ i: HGSystems.pageIndexById(page.id), x, y: yy, w: cellW, h: cellH });
     });
     y += Math.ceil(list.length / cols) * rowH + 4;
@@ -1861,20 +1840,17 @@ function drawCbnPage() {
   cx.strokeRect(left + 0.5, top + 0.5, pw - 1, ph - 1);
 
   // title chip
-  cx.fillStyle = 'rgba(255,250,240,.92)';
-  rr(left, padT + 8, Math.min(pw, 280), 36, 12); cx.fill();
-  cx.fillStyle = '#2a2418';
-  cx.font = '800 13px Fredoka, system-ui, sans-serif';
-  cx.textAlign = 'left';
-  cx.fillText(page.title, left + 12, padT + 32);
+  drawUiChrome(left, padT + 8, Math.min(pw, 280), 36, 12, { fill: '#f4ebe0', alpha: 0.34 });
+  drawUiText(page.title, left + 12, padT + 32, {
+    font: '800 13px Fredoka, system-ui, sans-serif', align: 'left', halo: 3.5
+  });
 
   // Palette — only colors this page uses (stable IDs, incl. white=9)
   const colorNums = cbnPageColors(page);
   const pwPill = Math.min(W - 24, colorNums.length * 44 + 16);
   const px0 = (W - pwPill) / 2;
   const py = contentBottom() - 58;
-  cx.fillStyle = 'rgba(255,250,240,.96)';
-  rr(px0, py, pwPill, 48, 16); cx.fill();
+  drawUiChrome(px0, py, pwPill, 48, 16, { fill: '#f4ebe0', alpha: 0.34 });
   hit.cbnPalette = [];
   for (let i = 0; i < colorNums.length; i++) {
     const n = colorNums[i];
@@ -1971,6 +1947,62 @@ function rr(x, y, w, h, r) {
   cx.arcTo(x, y + h, x, y, a);
   cx.arcTo(x, y, x + w, y, a);
   cx.closePath();
+}
+
+/** Ted UI frost: translucent tinted fills + clear outlines so art shows through. */
+function hexToRgb(hex) {
+  let h = String(hex || '#ffffff').trim();
+  if (h.startsWith('rgba') || h.startsWith('rgb')) {
+    const m = h.match(/(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+    if (m) return { r: +m[1], g: +m[2], b: +m[3] };
+  }
+  h = h.replace('#', '');
+  if (h.length === 3) h = h.split('').map((c) => c + c).join('');
+  return {
+    r: parseInt(h.slice(0, 2), 16) || 245,
+    g: parseInt(h.slice(2, 4), 16) || 240,
+    b: parseInt(h.slice(4, 6), 16) || 230
+  };
+}
+function uiRgba(hex, a) {
+  const { r, g, b } = hexToRgb(hex);
+  return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+}
+function outlineFromFill(hex) {
+  const { r, g, b } = hexToRgb(hex);
+  // Darken tint for a readable colored outline
+  return 'rgb(' + Math.max(0, (r * 0.45) | 0) + ',' + Math.max(0, (g * 0.45) | 0) + ',' + Math.max(0, (b * 0.42) | 0) + ')';
+}
+/**
+ * Frosted / translucent pill or panel.
+ * opts: fill (hex), alpha (0.25–0.4), stroke, line, radius
+ */
+function drawUiChrome(x, y, w, h, rad, opts) {
+  opts = opts || {};
+  const fill = opts.fill || '#f4ebe0';
+  const alpha = opts.alpha != null ? opts.alpha : 0.34;
+  const stroke = opts.stroke || outlineFromFill(fill);
+  const lw = opts.line != null ? opts.line : 2.4;
+  cx.fillStyle = uiRgba(fill, alpha);
+  rr(x, y, w, h, rad); cx.fill();
+  cx.strokeStyle = stroke;
+  cx.lineWidth = lw;
+  rr(x, y, w, h, rad); cx.stroke();
+}
+/** Readable label over art — soft halo + dark fill. */
+function drawUiText(str, x, y, opts) {
+  opts = opts || {};
+  cx.font = opts.font || '800 16px Fredoka, system-ui, sans-serif';
+  cx.textAlign = opts.align || 'center';
+  cx.lineJoin = 'round';
+  cx.miterLimit = 2;
+  if (opts.halo !== 0) {
+    cx.strokeStyle = opts.haloColor || 'rgba(255,250,240,0.88)';
+    cx.lineWidth = opts.halo != null ? opts.halo : 4.5;
+    cx.strokeText(str, x, y);
+  }
+  cx.fillStyle = opts.color || '#1e1814';
+  cx.fillText(str, x, y);
 }
 
 /** Bottom-center flower sprite (Franz). `s` is relative size (meadow ~0.34, planted ~0.18, grown ~0.9). */
@@ -2215,21 +2247,20 @@ function drawCue(text) {
   const y = (state === ST.MEADOW || state === ST.PAUSED)
     ? contentBottom() - 92
     : contentBottom() - 20;
-  cx.fillStyle = 'rgba(255,250,240,.96)';
   const tw = Math.min(W - 40, Math.max(160, text.length * 11 + 36));
-  rr((W - tw) / 2, y - 16, tw, 32, 14); cx.fill();
-  cx.fillStyle = '#2a2418';
-  cx.font = '800 15px Fredoka, system-ui, sans-serif';
-  cx.textAlign = 'center';
-  cx.fillText(text, W / 2, y + 5);
+  drawUiChrome((W - tw) / 2, y - 16, tw, 32, 14, { fill: '#f4ebe0', alpha: 0.34 });
+  drawUiText(text, W / 2, y + 5, { font: '800 15px Fredoka, system-ui, sans-serif' });
 }
 
 function drawFinger(x, y, a) {
   cx.globalAlpha = a;
-  cx.fillStyle = 'rgba(42,36,24,.3)';
+  cx.fillStyle = 'rgba(42,36,24,.22)';
   cx.beginPath(); cx.ellipse(x, y + 10, 12, 16, 0.25, 0, 7); cx.fill();
-  cx.fillStyle = '#fff8f0';
+  cx.fillStyle = uiRgba('#f4ebe0', 0.38);
   cx.beginPath(); cx.arc(x, y, 10, 0, 7); cx.fill();
+  cx.strokeStyle = outlineFromFill('#f4ebe0');
+  cx.lineWidth = 2;
+  cx.beginPath(); cx.arc(x, y, 10, 0, 7); cx.stroke();
   cx.globalAlpha = 1;
 }
 
@@ -2242,17 +2273,14 @@ function drawFlowerCounter() {
   const bh = 40;
   const bx = W - bw - 14;
   const by = padT + 56;
-  cx.fillStyle = '#fff';
-  rr(bx, by, bw, bh, 14); cx.fill();
-  cx.strokeStyle = '#1e1814';
-  cx.lineWidth = 2.5;
-  rr(bx, by, bw, bh, 14); cx.stroke();
+  drawUiChrome(bx, by, bw, bh, 14, { fill: full ? '#ffd24a' : '#f7f0e4', alpha: 0.36, line: 2.5 });
   // Mini daisy icon
   drawFlowerSprite(SPECIES[0], bx + 22, by + 30, 0.28);
-  cx.fillStyle = full ? '#a05010' : '#1e1814';
-  cx.font = '800 18px Fredoka, system-ui, sans-serif';
-  cx.textAlign = 'left';
-  cx.fillText(label, bx + 40, by + 27);
+  drawUiText(label, bx + 40, by + 27, {
+    font: '800 18px Fredoka, system-ui, sans-serif',
+    align: 'left',
+    color: full ? '#6a3010' : '#1e1814'
+  });
   hit.homeBar = full ? { x: bx, y: by, w: bw, h: bh } : null;
 }
 function drawBouquetPips() { drawFlowerCounter(); }
@@ -2265,45 +2293,39 @@ function drawGoPlantBtn() {
   const pulse = 1 + Math.sin(performance.now() / 200) * 0.08;
   cx.save();
   cx.translate(x, y); cx.scale(pulse, pulse);
-  cx.fillStyle = '#ffd24a';
-  rr(-34, -34, 68, 68, 18); cx.fill();
-  cx.strokeStyle = '#ff9a2a'; cx.lineWidth = 3; cx.stroke();
-  cx.fillStyle = '#fff'; cx.fillRect(-14, -4, 28, 20);
+  drawUiChrome(-34, -34, 68, 68, 18, { fill: '#ffd24a', alpha: 0.4, stroke: '#c07018', line: 3 });
+  cx.fillStyle = uiRgba('#f7f0e4', 0.45);
+  cx.fillRect(-14, -4, 28, 20);
   cx.strokeStyle = '#3c322d'; cx.lineWidth = 2; cx.strokeRect(-14, -4, 28, 20);
-  cx.beginPath(); cx.moveTo(-18, -4); cx.lineTo(0, -20); cx.lineTo(18, -4); cx.closePath(); cx.fill(); cx.stroke();
+  cx.beginPath(); cx.moveTo(-18, -4); cx.lineTo(0, -20); cx.lineTo(18, -4); cx.closePath();
+  cx.fillStyle = uiRgba('#f7f0e4', 0.45); cx.fill(); cx.stroke();
   cx.restore();
   hit.goPlant = { x: x - 34, y: y - 34, w: 68, h: 68 };
 }
 
 function drawChrome() {
   // Slim header — title + mute. Flower count lives top-right (drawFlowerCounter), not here.
-  cx.fillStyle = 'rgba(255,250,240,.94)';
-  rr(10, padT, W - 20, 48, 16); cx.fill();
-  cx.fillStyle = '#2a2418';
-  cx.font = '800 16px Fredoka, system-ui, sans-serif';
-  cx.textAlign = 'left';
+  drawUiChrome(10, padT, W - 20, 48, 16, { fill: '#f4ebe0', alpha: 0.32 });
   const titleX = (state === ST.MEADOW || state === ST.PAUSED) ? 52 : 24;
-  cx.fillText("Haven's Garden", titleX, padT + 30);
+  drawUiText("Haven's Garden", titleX, padT + 30, {
+    font: '800 16px Fredoka, system-ui, sans-serif', align: 'left'
+  });
 
   // Flower points (shop currency) — small, left of mute
   const mx = W - 58, my = padT + 8;
-  cx.font = '700 12px Fredoka, system-ui, sans-serif';
-  cx.fillStyle = '#6a6258';
-  cx.textAlign = 'right';
-  cx.fillText(flowerPoints() + ' ✿  ' + VER, mx - 10, padT + 30);
+  drawUiText(flowerPoints() + ' ✿  ' + VER, mx - 10, padT + 30, {
+    font: '700 12px Fredoka, system-ui, sans-serif', align: 'right', color: '#3a342c', halo: 3.5
+  });
   // Invisible parent long-press target over version label (adult gate only)
   hit.verChip = { x: mx - 168, y: padT + 6, w: 150, h: 36 };
-  cx.fillStyle = muted ? '#ff8ab0' : '#5ecf7a';
-  rr(mx, my, 40, 40, 12); cx.fill();
-  cx.fillStyle = '#fff'; cx.font = '18px system-ui'; cx.textAlign = 'center';
-  cx.fillText(muted ? '×' : '♪', mx + 20, my + 27);
+  drawUiChrome(mx, my, 40, 40, 12, { fill: muted ? '#ff8ab0' : '#5ecf7a', alpha: 0.38 });
+  drawUiText(muted ? '×' : '♪', mx + 20, my + 27, { font: '800 18px system-ui', halo: 3 });
   hit.mute = { x: mx, y: my, w: 40, h: 40 };
 
   if (state === ST.MEADOW || state === ST.PAUSED) {
     hit.pause = { x: 14, y: padT + 8, w: 40, h: 40 };
-    cx.fillStyle = '#ffe566';
-    rr(14, padT + 8, 40, 40, 12); cx.fill();
-    cx.fillStyle = '#2a2418';
+    drawUiChrome(14, padT + 8, 40, 40, 12, { fill: '#ffe566', alpha: 0.38 });
+    cx.fillStyle = '#1e1814';
     if (state === ST.PAUSED) {
       cx.beginPath(); cx.moveTo(26, padT + 18); cx.lineTo(42, padT + 28); cx.lineTo(26, padT + 38); cx.fill();
     } else {
@@ -2316,7 +2338,7 @@ function drawChrome() {
   if (placesOpen) drawPlacesMenu();
 }
 
-/** Thumb-reach nav dock in a solid bar BELOW the playfield (never over meadow art). */
+/** Thumb-reach nav dock BELOW the playfield — frosted, art peeks through. */
 function drawNavDock() {
   // Title menu owns its own buttons — no dock stacking on top of them
   if (state === ST.BOOT || state === ST.MENU) {
@@ -2324,9 +2346,9 @@ function drawNavDock() {
     return;
   }
   const barTop = contentBottom();
-  cx.fillStyle = 'rgba(255, 248, 236, 0.98)';
+  cx.fillStyle = uiRgba('#f4ebe0', 0.28);
   cx.fillRect(0, barTop, W, H - barTop);
-  cx.strokeStyle = 'rgba(60, 48, 36, 0.14)';
+  cx.strokeStyle = uiRgba('#5a4838', 0.45);
   cx.lineWidth = 2;
   cx.beginPath(); cx.moveTo(0, barTop + 1); cx.lineTo(W, barTop + 1); cx.stroke();
 
@@ -2344,14 +2366,11 @@ function drawNavDock() {
   ];
   buttons.forEach((b, i) => {
     const x = x0 + i * (bw + gap);
-    cx.fillStyle = 'rgba(30,24,20,.14)';
+    // Soft drop shadow only (no solid white plate)
+    cx.fillStyle = 'rgba(30,24,20,.12)';
     rr(x + 2, y + 3, bw, btnH, 16); cx.fill();
-    cx.fillStyle = b.fill;
-    rr(x, y, bw, btnH, 16); cx.fill();
-    cx.fillStyle = '#1e1814';
-    cx.font = '800 17px Fredoka, system-ui, sans-serif';
-    cx.textAlign = 'center';
-    cx.fillText(b.label, x + bw / 2, y + 36);
+    drawUiChrome(x, y, bw, btnH, 16, { fill: b.fill, alpha: 0.36, line: 2.6 });
+    drawUiText(b.label, x + bw / 2, y + 36, { font: '800 17px Fredoka, system-ui, sans-serif' });
     hit[b.id] = { x, y, w: bw, h: btnH };
   });
 }
@@ -2369,28 +2388,22 @@ function drawPlacesMenu() {
   const panelH = 54 + items.length * 48 + 20;
   const px = (W - panelW) / 2;
   const py = Math.max(padT + 56, (H - panelH) * 0.35);
-  cx.fillStyle = 'rgba(30,24,20,.45)';
+  cx.fillStyle = 'rgba(30,24,20,.35)';
   cx.fillRect(0, 0, W, H);
-  cx.fillStyle = 'rgba(255,250,240,.98)';
-  rr(px, py, panelW, panelH, 22); cx.fill();
-  cx.fillStyle = '#2a2418';
-  cx.font = '800 22px Fredoka, system-ui, sans-serif';
-  cx.textAlign = 'center';
-  cx.fillText('Where to?', W / 2, py + 36);
+  drawUiChrome(px, py, panelW, panelH, 22, { fill: '#f4ebe0', alpha: 0.36, line: 2.6 });
+  drawUiText('Where to?', W / 2, py + 36, { font: '800 22px Fredoka, system-ui, sans-serif' });
 
   hit.places = [];
   items.forEach((it, i) => {
     const iy = py + 50 + i * 48;
     const ih = 42;
-    cx.fillStyle = it.fill;
-    rr(px + 16, iy, panelW - 32, ih, 14); cx.fill();
-    cx.fillStyle = '#1e1814';
-    cx.font = '800 16px Fredoka, system-ui, sans-serif';
-    cx.textAlign = 'left';
-    cx.fillText(it.label, px + 28, iy + 20);
-    cx.font = '700 12px system-ui';
-    cx.fillStyle = '#4a4450';
-    cx.fillText(it.sub, px + 28, iy + 36);
+    drawUiChrome(px + 16, iy, panelW - 32, ih, 14, { fill: it.fill, alpha: 0.36 });
+    drawUiText(it.label, px + 28, iy + 20, {
+      font: '800 16px Fredoka, system-ui, sans-serif', align: 'left'
+    });
+    drawUiText(it.sub, px + 28, iy + 36, {
+      font: '700 12px system-ui', align: 'left', color: '#3a342c', halo: 3
+    });
     hit.places.push({ id: it.id, x: px + 16, y: iy, w: panelW - 32, h: ih });
   });
 }
@@ -2407,12 +2420,8 @@ function drawParty() {
       cx.save();
       cx.translate(W / 2, padT + 70);
       cx.scale(1.02 + 0.08 * u, 1.02 + 0.08 * u);
-      cx.fillStyle = `rgba(255,250,240,${0.7 + 0.25 * u})`;
-      rr(-100, -20, 200, 40, 16); cx.fill();
-      cx.fillStyle = '#2a2418';
-      cx.font = '800 18px Fredoka, system-ui, sans-serif';
-      cx.textAlign = 'center';
-      cx.fillText(lab, 0, 8);
+      drawUiChrome(-100, -20, 200, 40, 16, { fill: '#f4ebe0', alpha: 0.28 + 0.12 * u });
+      drawUiText(lab, 0, 8, { font: '800 18px Fredoka, system-ui, sans-serif' });
       cx.restore();
     }
   }
@@ -2720,23 +2729,19 @@ function drawInterior() {
     drawPollinators();
     // Parent-safe intentional harvest control (not a normal kid tap target on flowers)
     const bx = W - 118, by = padT + 56, bw = 100, bh = 36;
-    cx.fillStyle = harvestArmed ? '#f0c060' : 'rgba(255,250,240,0.92)';
-    rr(bx, by, bw, bh, 12); cx.fill();
-    cx.strokeStyle = '#1e1814'; cx.lineWidth = 1.5;
-    rr(bx, by, bw, bh, 12); cx.stroke();
-    cx.fillStyle = '#2a2418';
-    cx.font = '800 11px Fredoka, system-ui, sans-serif';
-    cx.textAlign = 'center';
-    cx.fillText(harvestArmed ? 'Tap a bed' : 'Pick flowers', bx + bw / 2, by + 23);
+    drawUiChrome(bx, by, bw, bh, 12, {
+      fill: harvestArmed ? '#f0c060' : '#f4ebe0', alpha: 0.36, line: 1.8
+    });
+    drawUiText(harvestArmed ? 'Tap a bed' : 'Pick flowers', bx + bw / 2, by + 23, {
+      font: '800 11px Fredoka, system-ui, sans-serif', halo: 3
+    });
     hit.harvestArm = { x: bx, y: by, w: bw, h: bh };
     if (harvestUndo) {
       const ux = 16, uy = padT + 56;
-      cx.fillStyle = 'rgba(255,250,240,0.95)';
-      rr(ux, uy, 96, 36, 12); cx.fill();
-      cx.strokeStyle = '#1e1814'; cx.lineWidth = 1.5;
-      rr(ux, uy, 96, 36, 12); cx.stroke();
-      cx.fillStyle = '#2a2418';
-      cx.fillText('Put back', ux + 48, uy + 23);
+      drawUiChrome(ux, uy, 96, 36, 12, { fill: '#f4ebe0', alpha: 0.36, line: 1.8 });
+      drawUiText('Put back', ux + 48, uy + 23, {
+        font: '800 11px Fredoka, system-ui, sans-serif', halo: 3
+      });
       hit.harvestUndo = { x: ux, y: uy, w: 96, h: 36 };
     } else hit.harvestUndo = null;
   } else {
@@ -2822,16 +2827,12 @@ function drawMeadow() {
     drawFinger(W - 56, padT + 120 + Math.sin(performance.now() / 300) * 8, 0.85);
   }
   if (state === ST.PAUSED) {
-    cx.fillStyle = 'rgba(30,24,20,.4)'; cx.fillRect(0, 0, W, H);
-    cx.fillStyle = 'rgba(255,250,240,.95)';
-    rr(W / 2 - 100, H * 0.4, 200, 100, 20); cx.fill();
-    cx.fillStyle = '#2a2418';
-    cx.font = '800 20px Fredoka, system-ui, sans-serif';
-    cx.textAlign = 'center';
-    cx.fillText('Paused', W / 2, H * 0.4 + 44);
-    cx.font = '700 13px system-ui';
-    cx.fillStyle = '#6a6258';
-    cx.fillText('Tap ▶ to play', W / 2, H * 0.4 + 72);
+    cx.fillStyle = 'rgba(30,24,20,.35)'; cx.fillRect(0, 0, W, H);
+    drawUiChrome(W / 2 - 100, H * 0.4, 200, 100, 20, { fill: '#f4ebe0', alpha: 0.36 });
+    drawUiText('Paused', W / 2, H * 0.4 + 44, { font: '800 20px Fredoka, system-ui, sans-serif' });
+    drawUiText('Tap ▶ to play', W / 2, H * 0.4 + 72, {
+      font: '700 13px system-ui', color: '#3a342c', halo: 3.5
+    });
   }
 }
 
@@ -2856,12 +2857,8 @@ function drawGreenhouse() {
   // Only show leave button when she CAN leave — never a gray "Plant first" over beds
   if (canLeave) {
     const gy = contentBottom() - 52;
-    cx.fillStyle = '#5ecf7a';
-    rr(W / 2 - 110, gy, 220, 44, 16); cx.fill();
-    cx.fillStyle = '#fff';
-    cx.font = '800 15px Fredoka, system-ui, sans-serif';
-    cx.textAlign = 'center';
-    cx.fillText('Pick more!', W / 2, gy + 28);
+    drawUiChrome(W / 2 - 110, gy, 220, 44, 16, { fill: '#5ecf7a', alpha: 0.38 });
+    drawUiText('Pick more!', W / 2, gy + 28, { font: '800 15px Fredoka, system-ui, sans-serif' });
     hit.gate = { x: W / 2 - 110, y: gy, w: 220, h: 44 };
   } else {
     hit.gate = null;
@@ -2880,45 +2877,30 @@ function drawMenu() {
   drawGirl(W * 0.5, H * 0.36, false);
   bouquet = prev;
 
-  // Bottom sheet — stacked actions, no overlap, no S/M/L chips, no nav dock on title
+  // Bottom sheet — frosted; meadow art shows through
   const sheetH = Math.min(280, H * 0.42);
   const sheetY = H - sheetH - Math.max(12, safeInsetBottom());
-  cx.fillStyle = 'rgba(255,250,240,.97)';
-  rr(16, sheetY, W - 32, sheetH, 22); cx.fill();
-  cx.strokeStyle = 'rgba(60,48,36,0.10)';
-  cx.lineWidth = 2;
-  rr(16, sheetY, W - 32, sheetH, 22); cx.stroke();
+  drawUiChrome(16, sheetY, W - 32, sheetH, 22, { fill: '#f4ebe0', alpha: 0.34, line: 2.4 });
 
-  cx.fillStyle = '#2a2418';
-  cx.textAlign = 'center';
-  cx.font = '800 26px Fredoka, system-ui, sans-serif';
-  cx.fillText("Haven's Garden", W / 2, sheetY + 36);
-  cx.font = '700 13px system-ui';
-  cx.fillStyle = '#6a6258';
-  cx.fillText('Find flowers in a giant field', W / 2, sheetY + 58);
+  drawUiText("Haven's Garden", W / 2, sheetY + 36, { font: '800 26px Fredoka, system-ui, sans-serif' });
+  drawUiText('Find flowers in a giant field', W / 2, sheetY + 58, {
+    font: '700 13px system-ui', color: '#3a342c', halo: 3.5
+  });
 
   const btnW = W - 64;
   const playY = sheetY + 78;
-  cx.fillStyle = '#5ecf7a';
-  rr(32, playY, btnW, 56, 16); cx.fill();
-  cx.fillStyle = '#fff';
-  cx.font = '800 18px Fredoka, system-ui, sans-serif';
-  cx.fillText('Pick flowers!', W / 2, playY + 36);
+  drawUiChrome(32, playY, btnW, 56, 16, { fill: '#5ecf7a', alpha: 0.38 });
+  drawUiText('Pick flowers!', W / 2, playY + 36, { font: '800 18px Fredoka, system-ui, sans-serif' });
   hit.play = { x: 32, y: playY, w: btnW, h: 56 };
 
   const rowY = playY + 68;
   const half = (btnW - 12) / 2;
-  cx.fillStyle = '#7ec8ff';
-  rr(32, rowY, half, 52, 16); cx.fill();
-  cx.fillStyle = '#2a2418';
-  cx.font = '800 15px Fredoka, system-ui, sans-serif';
-  cx.fillText('Greenhouse', 32 + half / 2, rowY + 32);
+  drawUiChrome(32, rowY, half, 52, 16, { fill: '#7ec8ff', alpha: 0.36 });
+  drawUiText('Greenhouse', 32 + half / 2, rowY + 32, { font: '800 15px Fredoka, system-ui, sans-serif' });
   hit.nursery = { x: 32, y: rowY, w: half, h: 52 };
 
-  cx.fillStyle = '#c8a0ff';
-  rr(32 + half + 12, rowY, half, 52, 16); cx.fill();
-  cx.fillStyle = '#2a2418';
-  cx.fillText('How-to', 32 + half + 12 + half / 2, rowY + 32);
+  drawUiChrome(32 + half + 12, rowY, half, 52, 16, { fill: '#c8a0ff', alpha: 0.36 });
+  drawUiText('How-to', 32 + half + 12 + half / 2, rowY + 32, { font: '800 15px Fredoka, system-ui, sans-serif' });
   hit.howtoBtn = { x: 32 + half + 12, y: rowY, w: half, h: 52 };
 
   hit.navBack = hit.navPlaces = hit.navHome = null;
@@ -2926,8 +2908,7 @@ function drawMenu() {
 
 function drawHowTo() {
   drawMeadowBG('day');
-  cx.fillStyle = 'rgba(255,250,240,.96)';
-  rr(18, padT + 60, W - 36, contentBottom() - padT - 80, 20); cx.fill();
+  drawUiChrome(18, padT + 60, W - 36, contentBottom() - padT - 80, 20, { fill: '#f4ebe0', alpha: 0.32 });
   const steps = [
     { t: 'Tap a flower', d: 'Haven walks there, then picks it.' },
     { t: 'Pick ~20', d: 'Fill a mixed armful — about twenty flowers.' },
@@ -2937,14 +2918,11 @@ function drawHowTo() {
     { t: 'Growing…', d: 'Then pick more — flowers get bigger!' }
   ];
   const s = steps[howtoPage % steps.length];
-  cx.fillStyle = '#2a2418';
-  cx.font = '800 24px Fredoka, system-ui, sans-serif';
-  cx.textAlign = 'center';
-  cx.fillText(s.t, W / 2, padT + 110);
-  cx.font = '700 16px system-ui';
-  cx.fillStyle = '#6a6258';
-  cx.fillText(s.d, W / 2, padT + 145);
-  cx.fillText((howtoPage % steps.length) + 1 + ' / ' + steps.length, W / 2, contentBottom() - 110);
+  drawUiText(s.t, W / 2, padT + 110, { font: '800 24px Fredoka, system-ui, sans-serif' });
+  drawUiText(s.d, W / 2, padT + 145, { font: '700 16px system-ui', color: '#3a342c', halo: 3.5 });
+  drawUiText((howtoPage % steps.length) + 1 + ' / ' + steps.length, W / 2, contentBottom() - 110, {
+    font: '700 16px system-ui', color: '#3a342c', halo: 3.5
+  });
 
   // mini illustration
   if (howtoPage === 0) {
@@ -2956,9 +2934,7 @@ function drawHowTo() {
     bouquet = new Array(12).fill('daisy');
     drawGirl(W * 0.5, H * 0.55, false);
     bouquet = prev;
-    cx.fillStyle = '#2a2418';
-    cx.font = '800 18px Fredoka, system-ui, sans-serif';
-    cx.fillText('12 / 20', W / 2, H * 0.62);
+    drawUiText('12 / 20', W / 2, H * 0.62, { font: '800 18px Fredoka, system-ui, sans-serif' });
   } else if (howtoPage === 2) {
     const img = Assets.greenhouse(0, true, 'day');
     if (img) {
@@ -2982,16 +2958,15 @@ function drawHowTo() {
     drawFlowerSprite(SPECIES[0], W * 0.3, H * 0.56, BED_SCALE_GROWN[0]);
     drawFlowerSprite(SPECIES[1], W * 0.5, H * 0.56, BED_SCALE_GROWN[1]);
     drawFlowerSprite(SPECIES[2], W * 0.7, H * 0.56, BED_SCALE_GROWN[3]);
-    cx.fillStyle = '#6a6258';
-    cx.font = '700 13px system-ui';
-    cx.fillText('Bigger after Growing…!', W / 2, H * 0.64);
+    drawUiText('Bigger after Growing…!', W / 2, H * 0.64, {
+      font: '700 13px system-ui', color: '#3a342c', halo: 3.5
+    });
   }
 
-  cx.fillStyle = '#5ecf7a';
-  rr(W / 2 - 80, contentBottom() - 88, 160, 56, 16); cx.fill();
-  cx.fillStyle = '#fff';
-  cx.font = '800 17px Fredoka, system-ui, sans-serif';
-  cx.fillText(howtoPage >= steps.length - 1 ? 'Play!' : 'Next', W / 2, contentBottom() - 52);
+  drawUiChrome(W / 2 - 80, contentBottom() - 88, 160, 56, 16, { fill: '#5ecf7a', alpha: 0.38 });
+  drawUiText(howtoPage >= steps.length - 1 ? 'Play!' : 'Next', W / 2, contentBottom() - 52, {
+    font: '800 17px Fredoka, system-ui, sans-serif'
+  });
   hit.howto = { x: W / 2 - 80, y: contentBottom() - 88, w: 160, h: 56 };
 }
 
@@ -3002,18 +2977,14 @@ function drawBoot() {
     cx.fillStyle = '#96cdf0'; cx.fillRect(0, 0, W, H);
     cx.fillStyle = '#78c35f'; cx.fillRect(0, H * 0.55, W, H * 0.45);
   }
-  cx.fillStyle = 'rgba(255,250,240,.92)';
-  rr(W * 0.12, H * 0.38, W * 0.76, H * 0.18, 20); cx.fill();
-  cx.fillStyle = '#2a2418';
-  cx.font = '800 26px Fredoka, system-ui, sans-serif';
-  cx.textAlign = 'center';
-  cx.fillText("Haven's Garden", W / 2, H * 0.44);
-  cx.font = '700 14px system-ui';
-  cx.fillStyle = '#6a6258';
-  cx.fillText('Getting ready…', W / 2, H * 0.485);
-  cx.fillStyle = 'rgba(255,250,240,.9)';
-  rr(W * 0.2, H * 0.51, W * 0.6, 16, 9); cx.fill();
-  cx.fillStyle = '#5ecf7a';
+  drawUiChrome(W * 0.12, H * 0.38, W * 0.76, H * 0.18, 20, { fill: '#f4ebe0', alpha: 0.34 });
+  drawUiText("Haven's Garden", W / 2, H * 0.44, { font: '800 26px Fredoka, system-ui, sans-serif' });
+  drawUiText('Getting ready…', W / 2, H * 0.485, {
+    font: '700 14px system-ui', color: '#3a342c', halo: 3.5
+  });
+  drawUiChrome(W * 0.2, H * 0.51, W * 0.6, 16, 9, { fill: '#f4ebe0', alpha: 0.3, line: 1.5 });
+  // Progress fill stays solid-tint for readability of loading
+  cx.fillStyle = uiRgba('#5ecf7a', 0.55);
   rr(W * 0.2, H * 0.51, W * 0.6 * loadProgress, 16, 9); cx.fill();
 }
 
@@ -3765,7 +3736,7 @@ async function boot() {
 
   try {
     if (navigator.serviceWorker && typeof navigator.serviceWorker.register === 'function') {
-      navigator.serviceWorker.register('./sw.js?v=0.9-birthday-haven-move').catch(() => {});
+      navigator.serviceWorker.register('./sw.js?v=0.9-birthday-ui-frost').catch(() => {});
     }
   } catch (eSw) {}
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));

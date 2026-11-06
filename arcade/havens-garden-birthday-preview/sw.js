@@ -1,5 +1,5 @@
-/* Haven's Garden v0.9-birthday-haven-move — natural Haven locomotion layer */
-const CACHE = 'havens-garden-birthday-preview-v0.9-birthday-haven-move';
+/* Haven's Garden v0.9-birthday-ui-frost — translucent UI chrome over art */
+const CACHE = 'havens-garden-birthday-preview-v0.9-birthday-ui-frost';
 const PRECACHE = [
   './',
   './index.html',
