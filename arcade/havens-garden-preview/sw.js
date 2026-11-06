@@ -1,5 +1,5 @@
-/* Haven's Garden v0.9-ted-play — network-first HTML; Franz batch-1 assets */
-const CACHE = 'havens-garden-preview-v2-ted-play';
+/* Haven's Garden v0.9-batch2 — network-first HTML; Franz batch-2 assets */
+const CACHE = 'havens-garden-preview-v3-batch2';
 const PRECACHE = [
   './',
   './index.html',
@@ -12,7 +12,8 @@ const PRECACHE = [
   './assets/icon/app-icon-192.png',
   './assets/icon/app-icon-512.png',
   './assets/character/haven-front.png',
-  './assets/meadow/meadow-day.webp'
+  './assets/meadow/meadow-day.webp',
+  './assets/bouquet/bouquet-full.png'
 ];
 
 const OWN = (k) => k.indexOf('havens-garden-') === 0;

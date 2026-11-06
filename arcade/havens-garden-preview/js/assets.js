@@ -1,10 +1,10 @@
-/* Haven's Garden — Franz batch-1 locked asset paths
-   Backgrounds: .webp | Sprites/icon: .png
+/* Haven's Garden — Franz batch-2 locked asset paths
+   Backgrounds: 585×1266 .webp | Sprites/icon: .png
    Drop-in: replace files under assets/ with the same names.
 */
 'use strict';
 
-const ASSET_VER = 'batch1-franz';
+const ASSET_VER = 'batch2';
 
 /** Locked Franz paths (exact). */
 const AssetPaths = {
@@ -18,12 +18,13 @@ const AssetPaths = {
   havenPick: 'assets/character/haven-pick.png',
   havenPlant: 'assets/character/haven-plant.png',
   havenWater: 'assets/character/haven-water.png',
-  // bouquet
+  // bouquet (0–3 stages + optional full armful at ~20)
   bouquet0: 'assets/bouquet/bouquet-0.png',
   bouquet1: 'assets/bouquet/bouquet-1.png',
   bouquet2: 'assets/bouquet/bouquet-2.png',
   bouquet3: 'assets/bouquet/bouquet-3.png',
-  // meadow (webp)
+  bouquetFull: 'assets/bouquet/bouquet-full.png',
+  // meadow (webp 585×1266)
   meadowDay: 'assets/meadow/meadow-day.webp',
   meadowSunset: 'assets/meadow/meadow-sunset.webp',
   meadowNight: 'assets/meadow/meadow-night.webp',
@@ -34,13 +35,13 @@ const AssetPaths = {
   flowerSunflower: 'assets/flowers/flower-sunflower.png',
   flowerBluebell: 'assets/flowers/flower-bluebell.png',
   flowerPop: 'assets/flowers/flower-pop.png',
-  // props
+  // props (compact watering can for finger-follow)
   wateringCan: 'assets/props/watering-can.png',
   bee01: 'assets/props/bee-01.png',
   bee02: 'assets/props/bee-02.png',
   butterfly01: 'assets/props/butterfly-01.png',
   butterfly02: 'assets/props/butterfly-02.png',
-  // icon
+  // icon (512×512 source)
   appIcon: 'assets/icon/app-icon.png'
 };
 
@@ -133,8 +134,16 @@ const Assets = {
   },
 
   bouquet(n) {
+    // n: 0–3 stage, or 'full' / >=20 for armful
+    if (n === 'full' || (typeof n === 'number' && n >= 20)) {
+      return this.get('bouquetFull') || this.get('bouquet3');
+    }
     const k = 'bouquet' + Math.max(0, Math.min(3, n | 0));
     return this.get(k);
+  },
+
+  bouquetFull() {
+    return this.get('bouquetFull') || this.get('bouquet3');
   },
 
   /** size: 'S'|'M'|'L'|0|1|2, open:bool, time:'day'|'sunset'|'night'|'sunrise' */

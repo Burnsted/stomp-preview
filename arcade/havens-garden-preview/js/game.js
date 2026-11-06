@@ -1,13 +1,13 @@
 'use strict';
 /* ============================================================
-   Haven's Garden v0.9-ted-play
+   Haven's Garden v0.9-batch2
    Standalone birthday garden — NOT part of STOMP.
-   Ted playtest: long pick (~20), Growing… (no night story),
-   collect-while-growing + return time-lapse, bed-anchored
-   flowers, cursor watering, Home/Back/Places menu.
+   Franz batch-2 art (585×1266 backgrounds) + ted-play gameplay:
+   pick ~20, Growing…, collect-while-growing, time-lapse,
+   cursor watering, Home/Back/Places nav, soil-anchored beds.
    ============================================================ */
 
-const VER = 'v0.9-ted-play';
+const VER = 'v0.9-batch2';
 const PK = 'havensGarden.v1';
 const MUTE_K = 'havensGarden.mute';
 const QUIET_K = 'havensGarden.quiet';
@@ -25,20 +25,22 @@ const DPR_CAP = 2.5;
 const DT_CAP = 1 / 20;
 const SAFE_UI = 110;
 const OUTDOOR_SLOTS = 6;
-const DW = 780;
-const DH = 1688;
+/* Batch-2 backgrounds are 585×1266 (1.5× a 390×844 viewport) — not 780×1688. */
+const DW = 585;
+const DH = 1266;
 const WALK_FPS = 8;
-const CROSSFADE_SEC = 1.05; // ASSET-QA: ≥1s so painted TOD variants don't pop
+const CROSSFADE_SEC = 1.05; // dissolve open↔closed / TOD (panes are NOT matched)
 const FLOWER_POP_SEC = 0.4;
 const POLLINATOR_FLAP_MS = 120;
 const WALK_BOB_PX = 6; // ±6 on walk 02/04
 const GROWING_SEC = 1.45;
+const WATER_CAN_CSS = 52; // ~44–60 CSS px finger-follow can
 
-/* Bed counts match painted interiors (ASSET-QA: large ≈10–11, not 12). */
+/* Bed counts match painted interiors (batch-2 large ≈9 visible, not 12). */
 const GH_SIZES = [
   { id: 'S', key: 'small', beds: 4 },
   { id: 'M', key: 'medium', beds: 8 },
-  { id: 'L', key: 'large', beds: 10 }
+  { id: 'L', key: 'large', beds: 9 }
 ];
 
 /* Franz flowers + aliases so old album/save ids still resolve. */
@@ -110,7 +112,7 @@ function migrateSave(raw) {
   // Keep bouquet as-is (threshold migrated 3 → 20; partial progress stays)
   s.v = Math.max(6, s.v | 0);
   s.ver = VER;
-  // Trim / pad beds to painted capacity (L is 10, not legacy 12)
+  // Trim / pad beds to painted capacity (batch-2 L ≈9 visible, not 12)
   const need = GH_SIZES[Math.min(2, s.ghSize | 0)].beds;
   if (s.beds.length > need) s.beds = s.beds.slice(0, need);
   while (s.beds.length < need) s.beds.push(null);
@@ -194,7 +196,9 @@ let spawnTypeIdx = 0;
 let spawnT = 0;
 let cue = '';
 let party = { t: 0, kind: '' };
-let door = 0, doorDir = 0;
+let doorOpen = 0; // 0 closed / 1 open — dissolve via plate crossfade (panes differ)
+let ghEnterT = -1; // enter dissolve timer; -1 = idle
+let ghExitT = -1;
 let dayNight = SAVE.dayPhase || 0;
 let dayNightT = SAVE.dayPhase || 0;
 let growAnim = 0, growT = 0;
@@ -231,12 +235,13 @@ let navStack = [];
 let pointerId = null, lastPtr = null, dragging = 0;
 let loadProgress = 0;
 
-/** Map held count 0..20 → bouquet-0..3 art stages (fills up visually). */
+/** Map held count 0..20 → bouquet art: 0–3 stages, or 'full' armful at goal. */
 function bouquetArtStage(n) {
   n = n == null ? bouquet.length : n;
   if (n <= 0) return 0;
-  if (n >= BOUQUET_GOAL) return 3;
-  if (n >= Math.ceil(BOUQUET_GOAL * 2 / 3)) return 2;
+  if (n >= BOUQUET_GOAL) return 'full';
+  if (n >= Math.ceil(BOUQUET_GOAL * 2 / 3)) return 3;
+  if (n >= Math.ceil(BOUQUET_GOAL / 3)) return 2;
   return 1;
 }
 
@@ -376,12 +381,11 @@ const BED_LAYOUTS = {
     [0.26, 0.76], [0.74, 0.76],
     [0.28, 0.84], [0.72, 0.84]
   ],
-  // large: 10 beds (ASSET-QA ≈10–11)
+  // large: ~9 clearly visible beds (3×3) — batch-2 ASSET-QA, not 12
   L: [
     [0.22, 0.54], [0.50, 0.54], [0.78, 0.54],
-    [0.22, 0.64], [0.50, 0.64], [0.78, 0.64],
-    [0.22, 0.74], [0.50, 0.74], [0.78, 0.74],
-    [0.50, 0.84]
+    [0.22, 0.66], [0.50, 0.66], [0.78, 0.66],
+    [0.22, 0.78], [0.50, 0.78], [0.78, 0.78]
   ]
 };
 
@@ -567,8 +571,19 @@ function startMeadow(resetBouquet) {
   snapshotRuntime();
 }
 
-function openDoor() { door = 0; doorDir = 1; }
-function closeDoor() { doorDir = -1; }
+/** Open/closed greenhouse plates differ (esp. medium windows) — dissolve, don't tween panes. */
+function beginGhEnter() {
+  doorOpen = 0;
+  ghEnterT = 0;
+  ghExitT = -1;
+  nurseryView = 'enter';
+}
+function beginGhExit() {
+  doorOpen = 1;
+  ghExitT = 0;
+  ghEnterT = -1;
+  nurseryView = 'exit';
+}
 
 function resolveNurseryMode() {
   if (SAVE.step === 'water') return 'water';
@@ -611,11 +626,10 @@ function enterGreenhouse(mode) {
   if (SAVE.awaitingReturnGrowth && SAVE.leftForOuting) applyReturnTimeLapse();
 
   nurseryMode = mode || resolveNurseryMode();
-  nurseryView = 'enter';
-  openDoor();
   plantAnim = 0; plantAnimT = 0; plantSpot = -1; plantIsOutdoor = 0;
   growAnim = 0; growT = 0;
   dayNight = 0; dayNightT = 0;
+  beginGhEnter(); // dissolve closed → open (do not animate mismatched panes)
 
   if (nurseryMode === 'plant') {
     cue = 'Plant!';
@@ -742,7 +756,8 @@ function beginGrowing() {
   growT = 0;
   cue = 'Growing…';
   nurseryView = 'inside';
-  door = 1; doorDir = 0;
+  doorOpen = 1;
+  ghEnterT = -1;
   wateringHeld = 0;
   AudioFX.grow();
   startParty('grow');
@@ -777,17 +792,17 @@ function doUpgrade() {
   upgradeAnim = 1;
   upgradeT = 0;
   cue = 'Wow!';
-  nurseryView = 'enter';
-  door = 1; doorDir = 0;
+  beginGhEnter();
   startParty('upgrade');
   growFlash = 1;
   snapshotRuntime();
   setTimeout(() => {
-  SAVE.step = 'ready';
-  nurseryMode = 'ready';
-  cue = 'Pick more!';
-  upgradeAnim = 0;
-  snapshotRuntime();
+    SAVE.step = 'ready';
+    nurseryMode = 'ready';
+    cue = 'Pick more!';
+    upgradeAnim = 0;
+    nurseryView = 'inside';
+    snapshotRuntime();
   }, 2600);
 }
 
@@ -855,14 +870,8 @@ function resumeOuting() {
     AudioFX.rustle();
     return;
   }
-  nurseryView = 'exit';
-  closeDoor();
-  setTimeout(() => {
-    startMeadow(false);
-    door = 0; doorDir = 0;
-    nurseryView = 'inside';
-    cue = bouquet.length >= BOUQUET_GOAL ? 'Go plant!' : (bouquet.length ? bouquet.length + ' / ' + BOUQUET_GOAL : 'Pick!');
-  }, 320);
+  beginGhExit();
+  // Meadow swap happens after closed dissolve completes (see update)
 }
 
 /* ---------- Kid navigation: Home / Back / Places ---------- */
@@ -905,7 +914,7 @@ function goBackNav() {
     }
     if (prev === 'greenhouse') {
       enterGreenhouse(resolveNurseryMode());
-      door = 1; doorDir = 0; nurseryView = 'inside';
+      doorOpen = 1; ghEnterT = -1; nurseryView = 'inside';
       return;
     }
     if (prev === 'home' || prev === 'menu') {
@@ -944,7 +953,6 @@ function choosePlace(id) {
   }
   if (id === 'greenhouse') {
     goPlantHome();
-    door = 1; doorDir = 0; nurseryView = 'inside';
     return;
   }
   if (id === 'play') {
@@ -1063,11 +1071,11 @@ function drawGirl(x, y, walking) {
     cx.fillRect(x - h * 0.08, y - h * 0.55, h * 0.16, h * 0.35);
   }
 
-  // Bouquet art stages 0–3 while holding; count goal is ~20
-  if (holdStage > 0 && pose !== 'plant') {
+  // Bouquet art: stages 0–3 fill up; at ~20 use bouquet-full armful
+  if (holdStage && holdStage !== 0 && pose !== 'plant') {
     const bq = Assets.bouquet(holdStage);
     if (bq) {
-      const bh = h * 0.38;
+      const bh = holdStage === 'full' ? h * 0.48 : h * 0.38;
       const bx = x + girl.face * X(8);
       const by = y - h * 0.42;
       drawAnchored(bq, bx, by, bh, girl.face, 0);
@@ -1113,11 +1121,11 @@ function drawBouquetPips() {
   if (full) { cx.strokeStyle = '#ff9a2a'; cx.lineWidth = 3; rr(bx, y - 30, bw, 60, 18); cx.stroke(); }
 
   const stage = bouquetArtStage();
-  const bq = Assets.bouquet(Math.max(1, stage));
-  if (bq && stage > 0) {
-    const bh = 48;
+  const bq = stage ? Assets.bouquet(stage) : null;
+  if (bq) {
+    const bh = stage === 'full' ? 52 : 48;
     const bw2 = bh * (bq.width / bq.height);
-    cx.drawImage(bq, bx + 14, y - 24, bw2, bh);
+    cx.drawImage(bq, bx + 14, y - 24, Math.min(bw2, 72), bh);
   } else {
     cx.fillStyle = 'rgba(160,150,140,.3)';
     cx.beginPath(); cx.arc(bx + 36, y, 16, 0, 7); cx.fill();
@@ -1315,14 +1323,15 @@ function drawBedFlowers(s, b) {
 function drawPollinators() {
   const now = performance.now();
   const flap = ((now / POLLINATOR_FLAP_MS) | 0) % 2;
+  // Fixed CSS box + center anchor so slightly different 01/02 silhouettes don't jump
+  const box = X(44);
   pollinators.forEach((p) => {
     const bob = Math.sin(p.phase) * 10;
     let img = null;
     if (p.kind === 'bee') img = Assets.get(flap ? 'bee02' : 'bee01');
     else img = Assets.get(flap ? 'butterfly02' : 'butterfly01');
-    const size = X(48);
     if (img) {
-      cx.drawImage(img, p.x - size / 2, p.y + bob - size / 2, size, size);
+      cx.drawImage(img, p.x - box / 2, p.y + bob - box / 2, box, box);
     } else {
       cx.fillStyle = p.kind === 'bee' ? '#ffd23c' : '#f078be';
       cx.beginPath(); cx.ellipse(p.x, p.y + bob, 14, 10, 0, 0, 7); cx.fill();
@@ -1373,13 +1382,18 @@ function drawInterior() {
     const wx = waterPtr ? waterPtr.x : W * 0.5;
     const wy = waterPtr ? waterPtr.y : H * 0.55;
     const can = Assets.get('wateringCan');
-    const size = X(88);
+    // Batch-2 compact can: ~44–60 CSS px following the finger
+    const size = WATER_CAN_CSS;
     cx.save();
     cx.globalAlpha = 0.98;
-    if (can) cx.drawImage(can, wx - size * 0.45, wy - size * 0.55, size, size);
-    else {
+    if (can) {
+      const aspect = can.width / Math.max(1, can.height);
+      const cw = size;
+      const ch = size / aspect;
+      cx.drawImage(can, wx - cw * 0.5, wy - ch * 0.55, cw, ch);
+    } else {
       cx.fillStyle = '#5ecf7a';
-      cx.beginPath(); cx.arc(wx, wy, 28, 0, 7); cx.fill();
+      cx.beginPath(); cx.arc(wx, wy, 22, 0, 7); cx.fill();
     }
     cx.restore();
     hit.waterCan = null;
@@ -1473,10 +1487,9 @@ function drawMeadow() {
 }
 
 function drawGreenhouse() {
-  const mode = skyMode();
   if (nurseryView === 'enter' || nurseryView === 'exit' || upgradeAnim) {
-    drawHouseFull(door > 0.3, 'day');
-    if (door > 0.85 && nurseryView === 'enter' && !upgradeAnim) nurseryView = 'inside';
+    // Dissolve open↔closed plates (window layouts differ — never tween as matching doors)
+    drawHouseFull(!!doorOpen, 'day');
   } else {
     drawInterior();
   }
@@ -1642,10 +1655,25 @@ function drawBoot() {
 
 /* ---------- Update ---------- */
 function update(dt) {
-  if (doorDir) {
-    door = Math.max(0, Math.min(1, door + doorDir * dt * 2.2));
-    if (doorDir > 0 && door >= 1) { door = 1; doorDir = 0; if (nurseryView === 'enter') nurseryView = 'inside'; }
-    if (doorDir < 0 && door <= 0) { door = 0; doorDir = 0; }
+  // Greenhouse enter: closed → dissolve open → inside
+  if (ghEnterT >= 0 && nurseryView === 'enter') {
+    ghEnterT += dt;
+    if (ghEnterT >= 0.08 && !doorOpen) doorOpen = 1; // triggers plate crossfade
+    if (ghEnterT >= CROSSFADE_SEC + 0.2 && !upgradeAnim) {
+      nurseryView = 'inside';
+      ghEnterT = -1;
+    }
+  }
+  // Greenhouse exit: open → dissolve closed → meadow
+  if (ghExitT >= 0 && nurseryView === 'exit') {
+    ghExitT += dt;
+    if (ghExitT >= 0.08 && doorOpen) doorOpen = 0;
+    if (ghExitT >= CROSSFADE_SEC + 0.15) {
+      ghExitT = -1;
+      startMeadow(false);
+      nurseryView = 'inside';
+      cue = bouquet.length >= BOUQUET_GOAL ? 'Go plant!' : (bouquet.length ? bouquet.length + ' / ' + BOUQUET_GOAL : 'Pick!');
+    }
   }
   // Slower TOD blend so painted variants can crossfade ≥1s
   dayNight += (dayNightT - dayNight) * Math.min(1, dt * 0.55);
@@ -1815,7 +1843,7 @@ function onDown(e) {
     if (inRect(p, hit.nursery)) {
       bouquet = Array.isArray(SAVE.bouquet) ? SAVE.bouquet.slice() : [];
       enterGreenhouse(resolveNurseryMode());
-      door = 1; doorDir = 0; nurseryView = 'inside';
+      doorOpen = 1; ghEnterT = -1; nurseryView = 'inside';
       return;
     }
     if (inRect(p, hit.howtoBtn)) { state = ST.HOWTO; howtoPage = 0; AudioFX.ui(); return; }
@@ -1938,13 +1966,13 @@ function tryResumeFromSave() {
       nurseryView = 'inside';
       beginGrowing();
     } else if (SAVE.step === 'water') {
-      nurseryMode = 'water'; nurseryView = 'inside'; cue = 'Water!'; door = 1;
+      nurseryMode = 'water'; nurseryView = 'inside'; cue = 'Water!'; doorOpen = 1; ghEnterT = -1;
       waterPtr = { x: W * 0.5, y: H * 0.58 };
     } else if (SAVE.step === 'plant') {
-      nurseryMode = 'plant'; nurseryView = 'inside'; cue = 'Plant!'; door = 1;
+      nurseryMode = 'plant'; nurseryView = 'inside'; cue = 'Plant!'; doorOpen = 1; ghEnterT = -1;
     } else {
       nurseryMode = resolveNurseryMode();
-      nurseryView = 'inside'; door = 1;
+      nurseryView = 'inside'; doorOpen = 1; ghEnterT = -1;
       cue = SAVE.awaitingReturnGrowth ? 'Pick more!' : cue;
     }
     girl.x = W * (SAVE.girlNX || 0.2);
@@ -2028,7 +2056,7 @@ function applyShot(name) {
       bouquet = new Array(BOUQUET_GOAL).fill(0).map((_, i) => SPECIES[i % SPECIES.length].id);
       SAVE.step = 'plant';
       enterGreenhouse('plant');
-      door = 1; doorDir = 0; nurseryView = 'enter';
+      beginGhEnter();
       setTimeout(() => { nurseryView = 'inside'; }, 100);
       break;
     case 'plant':
@@ -2037,7 +2065,7 @@ function applyShot(name) {
       while (SAVE.beds.length < n) SAVE.beds.push(null);
       SAVE.step = 'plant';
       enterGreenhouse('plant');
-      door = 1; nurseryView = 'inside';
+      doorOpen = 1; ghEnterT = -1; nurseryView = 'inside';
       break;
     case 'plant1':
       bouquet = ['daisy', 'sunflower'];
@@ -2045,7 +2073,7 @@ function applyShot(name) {
       while (SAVE.beds.length < n) SAVE.beds.push(null);
       SAVE.step = 'plant';
       enterGreenhouse('plant');
-      door = 1; nurseryView = 'inside';
+      doorOpen = 1; ghEnterT = -1; nurseryView = 'inside';
       break;
     case 'plant2':
       bouquet = ['sunflower'];
@@ -2053,7 +2081,7 @@ function applyShot(name) {
       while (SAVE.beds.length < n) SAVE.beds.push(null);
       SAVE.step = 'plant';
       enterGreenhouse('plant');
-      door = 1; nurseryView = 'inside';
+      doorOpen = 1; ghEnterT = -1; nurseryView = 'inside';
       break;
     case 'plant3':
       bouquet = [];
@@ -2065,7 +2093,7 @@ function applyShot(name) {
       while (SAVE.beds.length < n) SAVE.beds.push(null);
       SAVE.step = 'water';
       enterGreenhouse('water');
-      door = 1; nurseryView = 'inside';
+      doorOpen = 1; ghEnterT = -1; nurseryView = 'inside';
       cue = 'Water!';
       break;
     case 'water':
@@ -2078,7 +2106,7 @@ function applyShot(name) {
       ];
       SAVE.step = 'water';
       enterGreenhouse('water');
-      door = 1; nurseryView = 'inside';
+      doorOpen = 1; ghEnterT = -1; nurseryView = 'inside';
       break;
     case 'sunset':
     case 'night':
@@ -2094,7 +2122,7 @@ function applyShot(name) {
       state = ST.GREENHOUSE;
       nurseryMode = 'growing';
       nurseryView = 'inside';
-      door = 1;
+      doorOpen = 1; ghEnterT = -1;
       beginGrowing();
       break;
     case 'sunrise':
@@ -2108,7 +2136,7 @@ function applyShot(name) {
       ];
       SAVE.step = 'ready';
       enterGreenhouse('look');
-      door = 1; nurseryView = 'inside';
+      doorOpen = 1; ghEnterT = -1; nurseryView = 'inside';
       dayNight = 0; dayNightT = 0;
       cue = 'Bigger!';
       growFlash = 0.8;
@@ -2122,7 +2150,7 @@ function applyShot(name) {
       }
       SAVE.step = 'ready';
       enterGreenhouse('look');
-      door = 1; nurseryView = 'inside';
+      doorOpen = 1; ghEnterT = -1; nurseryView = 'inside';
       nurseryMode = 'ready';
       cue = 'Bigger!';
       spawnPollinators();
@@ -2131,21 +2159,21 @@ function applyShot(name) {
       SAVE.ghSize = 0;
       state = ST.GREENHOUSE;
       nurseryView = 'enter';
-      door = 1; nurseryMode = 'look';
+      doorOpen = 1; ghEnterT = -1; nurseryMode = 'look'; nurseryView = 'enter';
       cue = '';
       break;
     case 'gh-medium':
       SAVE.ghSize = 1;
       state = ST.GREENHOUSE;
       nurseryView = 'enter';
-      door = 1; nurseryMode = 'look';
+      doorOpen = 1; ghEnterT = -1; nurseryMode = 'look'; nurseryView = 'enter';
       cue = 'Wow!';
       break;
     case 'gh-large':
       SAVE.ghSize = 2;
       state = ST.GREENHOUSE;
       nurseryView = 'enter';
-      door = 1; nurseryMode = 'look';
+      doorOpen = 1; ghEnterT = -1; nurseryMode = 'look'; nurseryView = 'enter';
       cue = 'Wow!';
       break;
     case 'resume':
@@ -2155,7 +2183,7 @@ function applyShot(name) {
       SAVE.scene = 'greenhouse';
       SAVE.beds = [{ mix: ['sunflower'], watered: 0, grown: 0 }, null, null, null];
       enterGreenhouse('plant');
-      door = 1; nurseryView = 'inside';
+      doorOpen = 1; ghEnterT = -1; nurseryView = 'inside';
       cue = 'Plant!';
       snapshotRuntime();
       break;
@@ -2190,7 +2218,7 @@ async function boot() {
   }
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js?v=0.9-ted-play').catch(() => {});
+    navigator.serviceWorker.register('./sw.js?v=0.9-batch2').catch(() => {});
   }
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));
 }
