@@ -8,7 +8,7 @@
 |---|---|
 | Branch | `cursor/t1232u-locker-boards-customization-2547` |
 | Starting ref | `2d831cefc12ba0a1dead1fed189c669bd75ee6cf` (draft PR **#73** tip — Form #7 S menu + resort text branding; CI green run `42220897290`) |
-| Tip SHA | `e54ed914ca1ea722883d7d03c1289b388fbc524d` (live green CI head) |
+| Tip SHA | `78e9db0b96accbe3007fc9d36b0c61aae403154b` (live green CI head) |
 | Isolated | **NEW** draft PR — does **not** push onto PR #73 or PR #70. Do not merge. |
 | Draft PR | https://github.com/Burnsted/stomp-preview/pull/75 — *DRAFT t1232u — Locker/Boards customization (NO MERGE)* |
 
@@ -20,14 +20,14 @@ Preserve S menu + resort-name switching as they exist on this tip. FAB clearance
 
 ### CI (both checks)
 
-**GREEN** on tip `e54ed914ca1ea722883d7d03c1289b388fbc524d` — [run 42223776534](https://github.com/Burnsted/stomp-preview/actions/runs/42223776534)
+**GREEN** on tip `78e9db0b96accbe3007fc9d36b0c61aae403154b` — [run 42224204732](https://github.com/Burnsted/stomp-preview/actions/runs/42224204732)
 
 | Check | Result | Duration | Job |
 |---|---|---|---|
-| batch1 typecheck + test | **PASS** | 37s | [127911985188](https://github.com/Burnsted/stomp-preview/actions/runs/42223776534/job/127911985188) |
-| gb-phone typecheck + woz tests + build | **PASS** | 1m54s | [127911984756](https://github.com/Burnsted/stomp-preview/actions/runs/42223776534/job/127911984756) |
+| batch1 typecheck + test | **PASS** | 23s | [127913455884](https://github.com/Burnsted/stomp-preview/actions/runs/42224204732/job/127913455884) |
+| gb-phone typecheck + woz tests + build | **PASS** | 1m24s | [127913456023](https://github.com/Burnsted/stomp-preview/actions/runs/42224204732/job/127913456023) |
 
-Prior green on docs tip: [42223740249](https://github.com/Burnsted/stomp-preview/actions/runs/42223740249).
+Prior green (feature tip): [42223776534](https://github.com/Burnsted/stomp-preview/actions/runs/42223776534) on `e54ed91`.
 
 ## 2. S menu verification (Batch 1)
 
