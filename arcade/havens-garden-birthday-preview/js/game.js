@@ -6,7 +6,7 @@
    bugs+net, bees→hive→jars, color rows, CBN, shop.
    ============================================================ */
 
-const VER = 'v0.9-birthday-preview';
+const VER = 'v0.9-birthday-haven-move';
 const PK = 'havensGarden.birthday.v2';
 const PK_LEGACY = 'havensGarden.v1';
 const MUTE_K = 'havensGarden.mute';
@@ -20,7 +20,7 @@ const ARRIVE_RADIUS = 52;
 const TARGET_SPACING = 110;
 const SPAWN_INTERVAL = 850;
 const SPAWN_HOLD = 32000;
-const GIRL_SPEED = 175;
+const GIRL_SPEED = 230; // peak; HavenAnim eases in/out toward this
 const MAX_FIELD = 14;
 const MAX_PARTICLES = 100;
 const DPR_CAP = 2.5;
@@ -296,14 +296,16 @@ let howtoPage = 0;
 let showDemo = !SAVE.taughtHow;
 let teach = 0;
 let pendingPick = null;
-let girlPose = 'idle'; // idle | walk | pick | plant | water
+let girlPose = 'idle'; // idle | walk | pick | plant | water | jump | chase
 let girlPoseT = 0;
+let girlGait = 'idle'; // idle | walk | run
 let girl = {
   x: W * (SAVE.girlNX || 0.5),
   y: H * (SAVE.girlNY || 0.55),
   tx: 0, ty: 0, phase: 0, squash: 1, face: 1, walking: 0, walkFrame: 0
 };
 girl.tx = girl.x; girl.ty = girl.y;
+if (window.HavenAnim) HavenAnim.reset();
 
 /* Background crossfade (≥1s) between Franz TOD plates */
 let bgFrom = null, bgTo = null, bgBlend = 1, bgKey = 'day';
@@ -650,6 +652,12 @@ function startParty(kind) {
   const map = { full: 'bouquetFull', door: 'door', plant: 'plant', water: 'water', grow: 'grow', upgrade: 'upgrade', bigger: 'grow' };
   (AudioFX[map[kind]] || AudioFX.ui)();
   announce(kind);
+  // Celebrate jump on big moments
+  if (kind === 'full' || kind === 'grow' || kind === 'upgrade' || kind === 'bigger') {
+    girlPose = 'jump';
+    girlPoseT = Math.min(1.1, dur);
+    girl.squash = 0.9;
+  }
 }
 
 function pushNav(place) {
@@ -2158,40 +2166,46 @@ function drawGirl(x, y, walking) {
   // Production sprites: 1024 canvas, ~768 standing visible → scale so visible ≈ 25% frame
   const prod = !!Assets.get('havenRun');
   const visFrac = prod ? (1024 / 768) : 1;
-  const h = H * GIRL_FRAME_FRAC * visFrac * girl.squash;
-  let img = null;
-  let bob = 0;
+  const h = H * GIRL_FRAME_FRAC * visFrac;
   let pose = girlPoseT > 0 ? girlPose : (walking ? 'walk' : 'idle');
   if (netSwing > 0.2) pose = 'chase';
+  if (pose === 'jump' && girlPoseT > 0) pose = 'celebrate';
 
-  if (pose === 'pick') img = Assets.pose('pick');
-  else if (pose === 'plant' || pose === 'water') img = Assets.pose('plant');
-  else if (pose === 'chase') img = Assets.pose('chase');
-  else if (pose === 'jump') img = Assets.pose('jump');
-  else if (pose === 'walk' || walking) {
-    const fi = girl.walkFrame | 0;
-    img = Assets.walkFrame(fi);
-    if (fi === 1 || fi === 3) bob = -WALK_BOB_PX * Math.min(SX, SY) * 2;
+  const gait = girlGait || (walking ? 'walk' : 'idle');
+  let basketAttach = null;
+  if (window.HavenAnim) {
+    basketAttach = HavenAnim.draw(cx, Assets, x, y, h, girl, {
+      pose, walking, gait, netSwing, poseT: girlPoseT
+    });
   } else {
-    img = Assets.pose('idle');
+    // Fallback: legacy anchored sprite
+    let img = Assets.pose(pose === 'walk' ? 'run' : (pose === 'celebrate' ? 'jump' : pose));
+    if (pose === 'walk' || walking) img = Assets.walkFrame(girl.walkFrame | 0);
+    cx.save();
+    if (!drawAnchored(img, x, y, h * girl.squash, girl.face, 0)) {
+      cx.fillStyle = '#fad2b4';
+      cx.beginPath(); cx.arc(x, y - h * 0.72, h * 0.12, 0, 7); cx.fill();
+    }
+    cx.restore();
   }
 
-  cx.save();
-  cx.translate(0, (1 - girl.squash) * 10);
-  if (!drawAnchored(img, x, y, h, girl.face, bob)) {
-    cx.fillStyle = '#fad2b4';
-    cx.beginPath(); cx.arc(x, y - h * 0.72, h * 0.12, 0, 7); cx.fill();
-    cx.fillStyle = '#f06e82';
-    cx.fillRect(x - h * 0.08, y - h * 0.55, h * 0.16, h * 0.35);
-  }
-
-  // Basket at her hip — production prop sprite (sparkle basket when upgrade active)
+  // Basket at her hip — swings with arm phase from HavenAnim
   if (bouquet.length > 0 || (plantFly && plantFly.id) || sparkleActive()) {
-    const ba = basketPos(x, y, h);
-    drawWickerBasket(ba.x, ba.y, 1);
-    drawBasketFlowers(ba.x, ba.y, bouquet, plantFly ? plantFly.id : null);
+    const ba = basketAttach
+      ? { x: basketAttach.x, y: basketAttach.y }
+      : basketPos(x, y, h);
+    cx.save();
+    if (basketAttach) {
+      cx.translate(ba.x, ba.y);
+      cx.rotate((basketAttach.swing || 0) * 0.03);
+      drawWickerBasket(0, 0, 1);
+      drawBasketFlowers(0, 0, bouquet, plantFly ? plantFly.id : null);
+    } else {
+      drawWickerBasket(ba.x, ba.y, 1);
+      drawBasketFlowers(ba.x, ba.y, bouquet, plantFly ? plantFly.id : null);
+    }
+    cx.restore();
   }
-  cx.restore();
 }
 
 /** Short cues in reserved chrome — never over Haven or the beds. */
@@ -2770,10 +2784,12 @@ function drawMeadow() {
   });
   particles.forEach((p) => {
     const s = worldToScreen(p.x, p.y);
-    cx.globalAlpha = Math.max(0, 1 - p.t / p.life);
+    const u = Math.max(0, 1 - p.t / p.life);
+    cx.globalAlpha = p.puff ? u * 0.85 : u;
     cx.fillStyle = p.col;
     cx.beginPath();
-    if (p.spark) cx.arc(s.x, s.y, p.r, 0, 7);
+    if (p.puff) cx.ellipse(s.x, s.y, p.r * (1 + (1 - u) * 1.8), p.r * 0.55 * (1 + (1 - u)), p.t * 2, 0, 7);
+    else if (p.spark) cx.arc(s.x, s.y, p.r, 0, 7);
     else cx.ellipse(s.x, s.y, p.r, p.r * 0.6, p.t * 4, 0, 7);
     cx.fill();
     cx.globalAlpha = 1;
@@ -3052,16 +3068,30 @@ function update(dt) {
   flowerPops = flowerPops.filter((p) => p.t < p.life);
 
   if (state === ST.MEADOW) {
-    const dx = girl.tx - girl.x, dy = girl.ty - girl.y, d = Math.hypot(dx, dy);
-    girl.walking = d > 4 || dragging ? 1 : 0;
-    girl.phase += dt * (girl.walking ? WALK_FPS : 3);
-    if (girl.walking) girl.walkFrame = (girl.phase | 0) % 4;
-    girl.squash += (1 - girl.squash) * Math.min(1, dt * 8);
-    if (d > 3) {
-      const step = Math.min(d, GIRL_SPEED * dt);
-      girl.x += dx / d * step;
-      girl.y += dy / d * step;
-      girl.face = dx >= 0 ? 1 : -1;
+    if (window.HavenAnim) {
+      const loc = HavenAnim.stepLocomotion(girl, dt, { dragging });
+      girl.x = loc.x; girl.y = loc.y; girl.face = loc.face;
+      girl.walking = loc.walking; girl.walkFrame = loc.walkFrame;
+      girl.phase = HavenAnim.STATE.footPhase;
+      girlGait = loc.gait;
+      if (loc.footstep) {
+        HavenAnim.addFootPuff(particles, girl.x, girl.y, quiet, MAX_PARTICLES);
+      }
+      const busy = girlPoseT > 0 && (girlPose === 'pick' || girlPose === 'plant' || girlPose === 'water' || girlPose === 'jump' || girlPose === 'chase');
+      HavenAnim.update(dt, girl, { pose: girlPose, poseT: girlPoseT, busyPose: busy });
+    } else {
+      const dx = girl.tx - girl.x, dy = girl.ty - girl.y, d = Math.hypot(dx, dy);
+      girl.walking = d > 4 || dragging ? 1 : 0;
+      girl.phase += dt * (girl.walking ? WALK_FPS : 3);
+      if (girl.walking) girl.walkFrame = (girl.phase | 0) % 4;
+      girl.squash += (1 - girl.squash) * Math.min(1, dt * 8);
+      if (d > 3) {
+        const step = Math.min(d, GIRL_SPEED * dt);
+        girl.x += dx / d * step;
+        girl.y += dy / d * step;
+        girl.face = dx >= 0 ? 1 : -1;
+      }
+      girlGait = girl.walking ? 'walk' : 'idle';
     }
     const clamped = clampField(girl.x, girl.y);
     girl.x = clamped.x; girl.y = clamped.y;
@@ -3109,6 +3139,13 @@ function update(dt) {
   }
 
   if (state === ST.GREENHOUSE) {
+    // Idle breath / look / hop while standing in the nursery aisle
+    if (window.HavenAnim) {
+      girl.walking = 0;
+      girlGait = 'idle';
+      const busy = girlPoseT > 0;
+      HavenAnim.update(dt, girl, { pose: girlPose, poseT: girlPoseT, busyPose: busy });
+    }
     if (plantAnim) {
       plantAnimT += dt;
       if (plantFly) {
@@ -3728,7 +3765,7 @@ async function boot() {
 
   try {
     if (navigator.serviceWorker && typeof navigator.serviceWorker.register === 'function') {
-      navigator.serviceWorker.register('./sw.js?v=0.9-birthday-preview').catch(() => {});
+      navigator.serviceWorker.register('./sw.js?v=0.9-birthday-haven-move').catch(() => {});
     }
   } catch (eSw) {}
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));
