@@ -1,5 +1,5 @@
-/* Haven's Garden v0.9-birthday-ui-frost — translucent UI chrome over art */
-const CACHE = 'havens-garden-birthday-preview-v0.9-birthday-ui-frost';
+/* Haven's Garden v0.9-birthday-harden — hardening + evidence (save/shop/harvest/load) */
+const CACHE = 'havens-garden-birthday-preview-v0.9-birthday-harden';
 const PRECACHE = [
   './',
   './index.html',
@@ -16,11 +16,12 @@ const PRECACHE = [
   './assets/greenhouse-v2/maps/large.json',
   './assets/greenhouse-v2/maps/outdoor.json',
   './assets/greenhouse-v2/maps/growth.json',
+  './assets/greenhouse-v2/plates/small-empty.webp',
   './assets/greenhouse-v2/plates/medium-empty.webp',
-  './assets/greenhouse-v2/growth/seedling.webp',
-  './assets/greenhouse-v2/growth/leaves.webp',
-  './assets/greenhouse-v2/growth/bud.webp',
-  './assets/greenhouse-v2/growth/bloom.webp',
+  './assets/greenhouse-v2/plates/large-empty.webp',
+  './assets/greenhouse-v2/plates/outdoor-empty.webp',
+  './assets/greenhouse-v2/growth/daisy-0-seedling.webp',
+  './assets/greenhouse-v2/growth/daisy-3-bloom.webp',
   './assets/icon/app-icon.png',
   './assets/icon/app-icon-192.png',
   './assets/icon/app-icon-512.png',

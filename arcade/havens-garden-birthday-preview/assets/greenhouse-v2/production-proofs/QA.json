@@ -1,0 +1,41 @@
+{
+  "small": {
+    "count": 12,
+    "strictRootInsideSoilPolygon": true,
+    "hitNative": [
+      66,
+      66
+    ],
+    "hit390": [
+      44,
+      44
+    ],
+    "overlapPairs": 10
+  },
+  "outdoor": {
+    "count": 12,
+    "strictRootInsideSoilPolygon": true,
+    "hitNative": [
+      66,
+      66
+    ],
+    "hit390": [
+      44,
+      44
+    ],
+    "overlapPairs": 10
+  },
+  "large": {
+    "count": 30,
+    "strictRootInsideSoilPolygon": true,
+    "hitNative": [
+      66,
+      66
+    ],
+    "hit390": [
+      44,
+      44
+    ],
+    "overlapPairs": 27
+  }
+}
