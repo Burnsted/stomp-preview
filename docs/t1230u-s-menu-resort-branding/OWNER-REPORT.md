@@ -8,7 +8,7 @@
 
 ## Tip / PR
 
-- **Tip SHA:** _(filled after push)_
+- **Tip SHA:** `3861423e8b137bc830005c11608c6649843d88fa`
 - **Draft PR:** _(filled after open)_ — *DRAFT t1230u — Form #7 S menu + resort branding (NO MERGE)*
 
 ## What shipped
