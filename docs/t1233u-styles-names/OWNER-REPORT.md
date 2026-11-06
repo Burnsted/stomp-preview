@@ -8,8 +8,8 @@
 |---|---|
 | Branch | `cursor/t1233u-styles-names-387b` |
 | Starting ref | `f1f05f500aa4ac985079d7c9a66548bf7fd9b724` (draft PR **#75** tip — t1232u Woman 3 Locker/Boards; green CI on `e54ed91`, then docs-pin commits to this tip) |
-| Tip SHA | `289f48671c23f68057768f54e771f4057ee3d5ad` (live green CI head) |
-| Feature tip | `d42e42273b72a5340ec0ce7e316227dfa5379ee1` (styles + names; green run 42226840710) |
+| Tip SHA | `76e09a351d2e03fbc7ba36050687bbbdec24a7c3` (live green CI head) |
+| Feature tip | `d42e42273b72a5340ec0ce7e316227dfa5379ee1` (styles + names) |
 | Isolated | **NEW** draft PR — does **not** push onto PR #75, #73, or #70. Do not merge. |
 | Draft PR | https://github.com/Burnsted/stomp-preview/pull/77 — *DRAFT t1233u — Riding styles + Stomper N names (NO MERGE)* |
 
@@ -19,14 +19,14 @@ This starting_ref **does not** include **t1228u FAB clearance** (PR **#70** tip 
 
 ### CI (both checks)
 
-**GREEN** on tip `289f48671c23f68057768f54e771f4057ee3d5ad` — [run 42227161350](https://github.com/Burnsted/stomp-preview/actions/runs/42227161350)
+**GREEN** on tip `76e09a351d2e03fbc7ba36050687bbbdec24a7c3` — [run 42227378440](https://github.com/Burnsted/stomp-preview/actions/runs/42227378440)
 
 | Check | Result | Duration | Job |
 |---|---|---|---|
-| batch1 typecheck + test | **PASS** | 37s | [127923448386](https://github.com/Burnsted/stomp-preview/actions/runs/42227161350/job/127923448386) |
-| gb-phone typecheck + woz tests + build | **PASS** | 1m12s | [127923448100](https://github.com/Burnsted/stomp-preview/actions/runs/42227161350/job/127923448100) |
+| batch1 typecheck + test | **PASS** | 30s | [127924189792](https://github.com/Burnsted/stomp-preview/actions/runs/42227378440/job/127924189792) |
+| gb-phone typecheck + woz tests + build | **PASS** | 1m27s | [127924189416](https://github.com/Burnsted/stomp-preview/actions/runs/42227378440/job/127924189416) |
 
-Prior green (feature tip): [42226840710](https://github.com/Burnsted/stomp-preview/actions/runs/42226840710) on `d42e422`.
+Prior greens: [42227161350](https://github.com/Burnsted/stomp-preview/actions/runs/42227161350) on `289f486`; [42226840710](https://github.com/Burnsted/stomp-preview/actions/runs/42226840710) on feature tip `d42e422`.
 
 ## 2. Riding styles after change
 
