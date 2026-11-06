@@ -1,12 +1,17 @@
 import { describeTrick } from "@/lib/stomp/library";
 import { matchSourceCommand, type MusicSourceId } from "@/lib/stomp/music-sources";
 import type { Screen } from "@/lib/stomp/store";
+import { parseSpotVoice, replyForIntent } from "@woz/spot-stash/voice.js";
 
 /** Hip short-spoken male ~25. Not a coach. Batch 14. */
 export const SESSION_NAME = "Session";
 
-/** Off until false wake-ups are tested. Do not enable by default. */
+/**
+ * t1238u: Spot/Stash voice intents are ON via existing Sesh FAB (guarded hold-to-talk).
+ * Legacy SESH_ON remains false for older Session coach phrases — Spot intents bypass that gate.
+ */
 export const SESH_ON = false;
+export const SESH_SPOT_VOICE_ON = true;
 
 /** Short hip confirms — never long sentences. */
 export const SESSION_CONFIRM = {
@@ -30,6 +35,8 @@ export type SessionAct = {
   /** Rider Hub social intents (demo only — client). */
   social?: "catchup" | "share" | "confirm" | "cancel" | "sessions" | "message";
   message?: string;
+  /** t1238u Spot/Stash voice — handled by client store when set. */
+  spotVoice?: true;
 };
 
 const WAKE = /^(?:hey|yo)\s+session\b[,.]?\s*/i;
@@ -42,6 +49,20 @@ export function routeSession(
   const mode = context.mode ?? "command";
   const original = raw.trim().replace(/\s+/g, " ");
   if (/\bhey shred\b/i.test(original)) return { say: "It's Session." };
+
+  // t1238u — Spot/Stash intents via existing Sesh FAB (before legacy SESH_ON gate).
+  if (SESH_SPOT_VOICE_ON) {
+    const spotParsed = parseSpotVoice(original);
+    if (spotParsed.intent.kind !== "unknown") {
+      const reply = replyForIntent(spotParsed, { speechAvailable: true });
+      return {
+        say: reply.say,
+        screen: reply.openScreen === "stash" ? "stash" : "map",
+        spotVoice: true,
+      };
+    }
+  }
+
   if (SESH.test(original) && !SESH_ON) return { say: "Sesh stays off." };
 
   let command = original.replace(WAKE, "").trim();

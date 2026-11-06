@@ -7,6 +7,7 @@ import { useEffect, useRef, useState, type FormEvent, type PointerEvent } from "
 import { holdListen, readAudioRoute, type AudioRoute } from "@/lib/stomp/audio-route";
 import { useMusicSources } from "@/lib/stomp/music-sources";
 import { routeSession, speakSession, type SessionAct, type SessionMode } from "@/lib/stomp/session-voice";
+import { useSpotStash } from "@/lib/stomp/spot-stash/client-store";
 import { slotLabelForMember } from "@/lib/stomp/playtest/character-labels";
 import { useSocial } from "@/lib/stomp/social-store";
 import { useStomp } from "@/lib/stomp/store";
@@ -23,6 +24,11 @@ export function useSessionRouter() {
   function apply(raw: string, mode: SessionMode = "command", speak = true): SessionAct {
     const act = routeSession(raw, { meetup, tomorrow, mode });
     let say = act.say;
+    // t1238u: drive Spot/Stash client when voice intent matched
+    if (act.spotVoice) {
+      const reply = useSpotStash.getState().handleVoice(raw);
+      say = reply.say;
+    }
     if (act.social === "catchup") {
       const last = useSocial.getState().notes.at(-1);
       say = last ? `${slotLabelForMember(last.from)} said ${last.text}` : "No messages.";

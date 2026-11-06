@@ -40,3 +40,5 @@ export * as daysesh from "./daysesh/index.js";
 export * as campfireCf2 from "./campfire/cf2-index.js";
 // --- Integration rehearsal adapters A1–A7 (t1152u; A7 SPEC-only) ---
 export * as shared from "./shared/index.js";
+// --- t1238u STOMP Spot / Stash / Keeper (issue #87; #88 superseded) ---
+export * as spotStash from "./spot-stash/index.js";

@@ -40,6 +40,7 @@ import { applyTheme, useTheme } from "@/lib/stomp/avatar/theme";
 import { publicLabelForStarter } from "@/lib/stomp/avatar/identity";
 import { configFromStarter, starterById } from "@/lib/stomp/avatar/starters";
 import { resolvePlaytestEntry } from "@/lib/stomp/playtest/entry";
+import { useSpotStash } from "@/lib/stomp/spot-stash/client-store";
 import { useStomp } from "@/lib/stomp/store";
 import { startGbInviteMirror } from "@/lib/stomp/woz-bridge/invite-mirror-gb";
 
@@ -84,10 +85,12 @@ export function StompApp() {
       const w = window as unknown as {
         __stompAvatar?: typeof useAvatar;
         __stompLine?: typeof useStomp;
+        __stompSpotStash?: typeof useSpotStash;
         __stompSeedHomeStomper?: (starterId?: string, displayName?: string) => boolean;
       };
       w.__stompAvatar = useAvatar;
       w.__stompLine = useStomp;
+      w.__stompSpotStash = useSpotStash;
       w.__stompSeedHomeStomper = (
         starterId = "m-kai",
         displayName = publicLabelForStarter("m-kai"),

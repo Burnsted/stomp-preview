@@ -5,12 +5,15 @@
  * t1224u: Home mountain label; Hey Session = bottom-right snowboarder FAB (not header chip).
  * t1228u/t1236u: Extra bottom pad so official-map CTA clears the corner FAB + player + tabs.
  * t1230u: official resort branding (authorized logo or text fallback) beside name.
+ * t1238u: STOMP Spots / Stashes / Spot Keeper (issue #87) — community pins below official map link.
+ * Official resort maps stay link-only; no continuous GPS / no duplicate full trail maps.
  */
 import { AlpineTopBar } from "@/components/stomp/alpine-chrome";
 import { HomeMountainLabel } from "@/components/stomp/home-mountain-label";
 import { ResortBrandMark } from "@/components/stomp/resort-brand-mark";
 import { MapResortConditionsStrip } from "@/components/stomp/resort-conditions-panel";
 import { SessionVoicePrompt } from "@/components/stomp/session-mic";
+import { SpotsPanel } from "@/components/stomp/spot-stash/spots-panel";
 import { TrailMapViewer } from "@/components/stomp/trail-map-viewer";
 import { useHomeMountain, resortById } from "@/lib/stomp/home-mountain";
 import { useEffect } from "react";
@@ -63,6 +66,7 @@ export function TrailMapScreen() {
       <div className="mt-4">
         <TrailMapViewer showResortSwitch />
       </div>
+      <SpotsPanel />
     </div>
   );
 }
