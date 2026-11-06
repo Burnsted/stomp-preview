@@ -94,7 +94,11 @@ export function GlassCard({
   );
 }
 
-/** Compact Hey SESSION on every non-home page (batch 3). */
+/**
+ * Legacy header chip — no longer the primary Hey Session control (t1224u).
+ * Primary = little-snowboarder FAB bottom-right (`HeySessionFab`).
+ * Kept exported only so older call sites can be cleared without a hard break.
+ */
 export function HeySessionCompact({ onActivate }: { onActivate?: () => void }) {
   const setScreen = useStomp((s) => s.setScreen);
   return (
@@ -146,10 +150,8 @@ export function AlpineTopBar({
       ) : (
         <span className="flex-1" />
       )}
-      <div className="ml-auto flex items-center gap-2">
-        {right}
-        <HeySessionCompact />
-      </div>
+      {/* t1224u: no header HEY SESSION chip — snowboarder FAB is the primary control */}
+      <div className="ml-auto flex items-center gap-2">{right}</div>
     </header>
   );
 }

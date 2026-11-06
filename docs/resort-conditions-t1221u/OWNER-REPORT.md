@@ -86,6 +86,29 @@ Under `gb-phone/screenshots/t1221u/` — Home-hero conditions shots are **obsole
 | Screenshots | `gb-phone/screenshots/t1223u/` + `/opt/cursor/artifacts/t1223u/` |
 | Tests | `tests/woz/home-stomper-stage-t1223u.test.tsx` |
 
+## Addendum — t1224u (Ted — Hey Session snowboarder FAB + Home mountain)
+
+**Ask (2026-11-05 ~7:06 PM ET):** Voice activation prompted everywhere. Hey Session = little snowboarder bottom-right on every page (not a mid-page pill / not a header HEY SESSION chip). Label **Home mountain** above the selected resort (e.g. Vail) — selected STOMP mountain, not residential.
+
+| Change | Status |
+| --- | --- |
+| Kill mid-page full-width “Hey Session” pill on Home | Done — `SessionVoicePrompt` (voice-first + secondary “Type instead”) |
+| Remove header HEY SESSION chip as primary | Done — `AlpineTopBar` / Bag / BackBar no longer inject `HeySessionCompact` |
+| Little-snowboarder FAB bottom-right every chrome page | Done — `HeySessionFab` (Form #7 steel SVG mark; hold-to-talk → existing `useSessionRouter`) |
+| Voice-activation prompt on key surfaces | Done — Home, Trails, Trip Hub |
+| “HOME MOUNTAIN” above resort name | Done — `HomeMountainLabel` on Home + Trails (+ Trip Hub) |
+| t1222u: no Home weather; Trails fiction conditions | Preserved |
+| Crew tools cleared off bottom-right | Done — moved bottom-left on Home |
+| Screenshots | `gb-phone/screenshots/t1224u/` + `/opt/cursor/artifacts/t1224u/` |
+| Tests | `tests/woz/hey-session-fab-t1224u.test.tsx` |
+| NO MERGE / NO Pages / NO live keys | Kept |
+
+## Tip / PR (t1224u)
+
+- **Tip SHA:** _(filled on commit)_
+- **Draft PR:** [#60](https://github.com/Burnsted/stomp-preview/pull/60) — same draft; title/body include t1224u
+- **Branch:** `cursor/resort-conditions-t1221u-94bf` only (no separate PR)
+
 ## Recommended next owner gate
 
 Approve Stage 1 only: NWS weather adapter + lat/lon table, still no OpenSnow spend, still link-only maps. Separate authorization for paid snow/ops keys or any deploy.

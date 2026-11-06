@@ -8,10 +8,11 @@ import { HomeMapCard } from "@/components/stomp/home-map-card";
 import { HomePlaylistBlock } from "@/components/stomp/home-playlist-block";
 import { HomeStomperStage } from "@/components/stomp/avatar/home-stomper-stage";
 import { HomeTripStatus } from "@/components/stomp/home-trip-status";
-import { SessionMic } from "@/components/stomp/session-mic";
+import { HomeMountainLabel } from "@/components/stomp/home-mountain-label";
+import { SessionVoicePrompt } from "@/components/stomp/session-mic";
 import { useAvatar } from "@/lib/stomp/avatar/store";
 import { PROGRESS_STATS, useBag } from "@/lib/stomp/bag";
-import { locationLineFor, useHomeMountain } from "@/lib/stomp/home-mountain";
+import { useHomeMountain } from "@/lib/stomp/home-mountain";
 import { SESSIONS } from "@/lib/stomp/sessions";
 import { PHOTOS, crewPayload, parseCrew, useStomp } from "@/lib/stomp/store";
 
@@ -74,19 +75,24 @@ export function Greet() {
               <p data-testid="home-personal-welcome" className="font-display text-4xl tracking-wide text-ink">
                 Welcome, {welcomeName}
               </p>
-              <p data-testid="home-selected-resort" className="mt-2 text-sm text-ink/85">
-                {locationLineFor(resortId)}
-              </p>
+              <HomeMountainLabel
+                resortId={resortId}
+                className="mt-2"
+                nameTestId="home-selected-resort"
+              />
             </div>
           )}
           {stomperReady ? (
-            <p data-testid="home-selected-resort" className="relative px-5 pb-4 text-sm text-ink/85">
-              {locationLineFor(resortId)}
-            </p>
+            <HomeMountainLabel
+              resortId={resortId}
+              className="relative px-5 pb-4"
+              nameTestId="home-selected-resort"
+            />
           ) : null}
         </div>
         <div className="px-5 pt-2">
-          <SessionMic />
+          {/* t1224u: no mid-page Hey Session pill — FAB + quiet voice prompt */}
+          <SessionVoicePrompt />
         </div>
       </section>
 

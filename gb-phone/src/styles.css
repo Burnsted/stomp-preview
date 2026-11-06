@@ -129,6 +129,22 @@
   border: 1px solid rgba(154, 166, 184, 0.45);
 }
 
+/* t1224u — little-snowboarder Hey Session FAB (Form #7 steel, not a mid-page pill) */
+.hey-session-fab {
+  background: radial-gradient(circle at 35% 30%, #2a3548 0%, #121820 55%, #0a0e14 100%);
+  box-shadow:
+    0 0 0 1px rgba(154, 166, 184, 0.45),
+    0 10px 24px rgba(0, 0, 0, 0.4);
+  touch-action: none;
+  user-select: none;
+}
+.hey-session-fab--listening {
+  background: radial-gradient(circle at 35% 30%, #3a4558 0%, #1a2230 55%, #0e141c 100%);
+  box-shadow:
+    0 0 0 2px rgba(154, 166, 184, 0.75),
+    0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
 .alpine-bottom-nav {
   pointer-events: none;
 }
@@ -283,6 +299,13 @@ html[data-theme="light"] .alpine-glass {
 html[data-theme="light"] .hey-session-pill {
   background: rgba(11, 18, 32, 0.92);
   border: 1px solid rgba(92, 107, 126, 0.4);
+}
+
+html[data-theme="light"] .hey-session-fab {
+  background: radial-gradient(circle at 35% 30%, #2a3140 0%, #12161f 55%, #0a0a0a 100%);
+  box-shadow:
+    0 0 0 1px rgba(92, 107, 126, 0.4),
+    0 10px 24px rgba(11, 18, 32, 0.22);
 }
 
 html[data-theme="light"] .playlist-fab-core {

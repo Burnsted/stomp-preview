@@ -6,6 +6,8 @@
 import { AlpineTopBar } from "@/components/stomp/alpine-chrome";
 import { AvatarBadge, AvatarRenderer } from "@/components/stomp/avatar/avatar-renderer";
 import { ThemeToggle } from "@/components/stomp/avatar/theme-toggle";
+import { HomeMountainLabel } from "@/components/stomp/home-mountain-label";
+import { SessionVoicePrompt } from "@/components/stomp/session-mic";
 import { isAvatarFlagOn } from "@/lib/stomp/avatar/flags";
 import { useAvatar } from "@/lib/stomp/avatar/store";
 import { useTripHub, type TripPhotoStyle } from "@/lib/stomp/avatar/trip-hub";
@@ -72,13 +74,22 @@ export function TripHubScreen() {
           Placeholder trips · lodging stays private · AI photos are stubs only.
         </p>
 
+        <HomeMountainLabel
+          resortId={homeResortId}
+          className="mt-3"
+          nameClassName="text-sm text-ink/85"
+          nameTestId="trip-hub-home-mountain"
+        />
         <p
           data-testid="trip-hub-shared-resort"
-          className="mt-3 text-xs font-semibold tracking-wide text-accent"
+          className="mt-2 text-xs font-semibold tracking-wide text-accent"
         >
           Shared mountain · {locationLineFor(sharedResortId)}
           <span className="sr-only"> · id {sharedResortId}</span>
         </p>
+        <div className="mt-3">
+          <SessionVoicePrompt secondaryType={false} />
+        </div>
 
         <section className="mt-4 rounded-2xl bg-snow/5 p-4 ring-1 ring-line" data-testid="trip-drop-visual-states">
           <p className="text-xs font-bold tracking-widest text-muted">TRIP DROP · VISUAL STATES</p>
