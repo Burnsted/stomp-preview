@@ -1,5 +1,5 @@
-/* Haven's Garden v0.9-prod — network-first HTML; concept comps + systems */
-const CACHE = 'havens-garden-preview-v0.9-prod';
+/* Haven's Garden v0.9-cbn2 — network-first HTML; concept comps + systems */
+const CACHE = 'havens-garden-preview-v0.9-cbn2';
 const PRECACHE = [
   './',
   './index.html',
@@ -19,13 +19,12 @@ const PRECACHE = [
   './assets/concept/03b-bug-chase-wider.jpg',
   './assets/concept/11-hive-and-jars.jpg',
   './assets/concept/13-shop-upgrades.jpg',
-  './assets/cbn/07-color-easy-meadow.jpg',
   './assets/plates/meadow-day.webp',
   './assets/character/haven-run.png',
   './assets/props/basket.png',
   './assets/bugs/bee.png',
-  './assets/cbn/ladder-contact.jpg',
-  './assets/cbn/page-01-easy-meadow.webp'
+  './assets/cbn/contact-12-subjects.jpg',
+  './assets/cbn/page-01-bee-close-easy.webp'
 ];
 
 const OWN = (k) => k.indexOf('havens-garden-') === 0;
@@ -68,7 +67,7 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Network-first for JS so v0.9-prod ships promptly; fall back to cache
+  // Network-first for JS so v0.9-cbn2 ships promptly; fall back to cache
   if (u.pathname.endsWith('.js')) {
     e.respondWith(
       fetch(e.request)

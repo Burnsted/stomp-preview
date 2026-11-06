@@ -1,26 +1,36 @@
-/* Haven's Garden — Franz production art v1 (+ Franz batch-2 greenhouse/flowers fallback)
+/* Haven's Garden — Franz production art v1 + CBN v2 (24 pages)
    Plates: 585×1266 .webp | Character/props: RGBA PNG
+   CBN masks: RGB-packed 16-bit target IDs (R=hi, G=lo)
 */
 'use strict';
 
-const ASSET_VER = 'prod-v1';
+const ASSET_VER = 'cbn-v2';
 
 const CBN_PAGE_STEMS = [
-  'page-01-easy-meadow',
-  'page-02-easy-meadow-path',
-  'page-03-easy-flower-bug',
-  'page-04-easy-hill-flower',
-  'page-05-easy-bees-flowers',
-  'page-06-mid-greenhouse',
-  'page-07-mid-flower-rows',
-  'page-08-mid-hive',
-  'page-09-mid-greenhouse-water',
-  'page-10-mid-color-rows',
-  'page-11-hard-hive-hex',
-  'page-12-hard-flower-rows',
-  'page-13-hard-greenhouse',
-  'page-14-hard-garden-beds',
-  'page-15-hard-butterfly-field'
+  'page-01-bee-close-easy',
+  'page-01-bee-close-hard',
+  'page-02-bees-and-flowers-easy',
+  'page-02-bees-and-flowers-hard',
+  'page-03-ladybug-daisy-easy',
+  'page-03-ladybug-daisy-hard',
+  'page-04-butterfly-sunflower-easy',
+  'page-04-butterfly-sunflower-hard',
+  'page-05-grasshopper-grass-easy',
+  'page-05-grasshopper-grass-hard',
+  'page-06-hive-close-easy',
+  'page-06-hive-close-hard',
+  'page-07-honey-jars-easy',
+  'page-07-honey-jars-hard',
+  'page-08-flower-basket-easy',
+  'page-08-flower-basket-hard',
+  'page-09-watering-can-tulips-easy',
+  'page-09-watering-can-tulips-hard',
+  'page-10-greenhouse-rows-easy',
+  'page-10-greenhouse-rows-hard',
+  'page-11-meadow-path-easy',
+  'page-11-meadow-path-hard',
+  'page-12-bug-net-flowers-easy',
+  'page-12-bug-net-flowers-hard'
 ];
 
 function cbnAssetKey(stem, kind) {
@@ -38,7 +48,7 @@ function buildCbnPaths() {
     out[cbnAssetKey(stem, 'ink')] = 'assets/cbn-source/' + stem + '-ink.png';
     out[cbnAssetKey(stem, 'mask')] = 'assets/cbn-source/' + stem + '-regions.png';
   });
-  out.cbnLadder = 'assets/cbn/ladder-contact.jpg';
+  out.cbnLadder = 'assets/cbn/contact-12-subjects.jpg';
   return out;
 }
 
