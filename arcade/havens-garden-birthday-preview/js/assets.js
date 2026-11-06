@@ -4,7 +4,7 @@
 */
 'use strict';
 
-const ASSET_VER = 'birthday-haven-move';
+const ASSET_VER = 'birthday-ui-frost';
 
 const CBN_PAGE_STEMS = [
   'page-13-one-daisy',
