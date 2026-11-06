@@ -1,5 +1,7 @@
 # Greenhouse layers v1 (Franz) — ingested
 
+**HOLD:** Ted may reject these visuals. Swap by replacing `assets/greenhouse-layers-v1/` (same map field names + `plateNoLip`/soil/lip/growth paths). Runtime is pack-driven via `js/nursery.js` — no hard-coded bed art. Do **not** publish `arcade/havens-garden-birthday-preview/` until Ted clears layers.
+
 Pack: `assets/greenhouse-layers-v1/` (SHA-256 of zip `b4655cb48e351e63d406c72f8b547ca606ca7d365682fc8d9e3e9fb986b32377`).
 
 ## Capacities
