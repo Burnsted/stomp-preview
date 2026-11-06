@@ -8,8 +8,8 @@
 
 ## Tip / PR
 
-- **Tip SHA:** `f27643de554f16b22fb26eafaaace184ff0d1a46`
-- **Draft PR:** _(fill after open)_
+- **Tip SHA:** `3bbe7d835216da1804ce8324b465788e505b2c7a`
+- **Draft PR:** [#82](https://github.com/Burnsted/stomp-preview/pull/82) — *DRAFT t1236u — Social-first Home correction (NO MERGE)*
 
 ## Before → After (Home)
 
