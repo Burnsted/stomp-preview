@@ -1,0 +1,436 @@
+{
+  "id": "outdoor",
+  "kind": "outdoor",
+  "plateSize": [
+    585,
+    1266
+  ],
+  "phoneReferenceRender": [
+    390,
+    844
+  ],
+  "phoneScale": 0.6666666666666666,
+  "plate": "plates/outdoor-garden-beds.webp",
+  "plateNoLip": "plates/outdoor-garden-beds-nolip.webp",
+  "layers": {
+    "soilDry": "layers/outdoor/soil_dry.webp",
+    "soilWet": "layers/outdoor/soil_wet.webp",
+    "frontLip": "layers/outdoor/front_lip.webp",
+    "registration": "plateNoLip \u2192 soil \u2192 plants \u2192 frontLip"
+  },
+  "bedCount": 2,
+  "slotsPerBed": 6,
+  "gridPerBed": [
+    2,
+    3
+  ],
+  "totalSlotPositions": 12,
+  "activeIndoorOrOutdoorSlots": 12,
+  "inactiveSlotPositions": 0,
+  "capacityTarget": 12,
+  "beds": [
+    {
+      "id": "outdoor_bed0",
+      "index": 0,
+      "soilBounds": {
+        "x": 35,
+        "y": 780,
+        "w": 240,
+        "h": 375
+      },
+      "soilPolygon": [
+        [
+          35,
+          780
+        ],
+        [
+          275,
+          780
+        ],
+        [
+          275,
+          1155
+        ],
+        [
+          35,
+          1155
+        ]
+      ],
+      "soilPixelCount": 90000,
+      "slotCount": 6,
+      "activeSlotCount": 6,
+      "layers": {
+        "soilDryFullPage": "layers/outdoor/soil_dry.webp",
+        "soilWetFullPage": "layers/outdoor/soil_wet.webp",
+        "frontLipFullPage": "layers/outdoor/front_lip.webp",
+        "soilDryCropped": "layers/_cropped/outdoor/outdoor_bed0_soil_dry.png",
+        "soilWetCropped": "layers/_cropped/outdoor/outdoor_bed0_soil_wet.png",
+        "frontLipCropped": "layers/_cropped/outdoor/outdoor_bed0_front_lip.png",
+        "dryOffset": {
+          "offsetX": 33,
+          "offsetY": 778,
+          "width": 244,
+          "height": 379
+        },
+        "wetOffset": {
+          "offsetX": 33,
+          "offsetY": 778,
+          "width": 244,
+          "height": 379
+        },
+        "lipOffset": {
+          "offsetX": 18,
+          "offsetY": 1153,
+          "width": 275,
+          "height": 36
+        },
+        "plateNoLip": "plates/outdoor-garden-beds-nolip.webp"
+      }
+    },
+    {
+      "id": "outdoor_bed1",
+      "index": 1,
+      "soilBounds": {
+        "x": 310,
+        "y": 780,
+        "w": 240,
+        "h": 375
+      },
+      "soilPolygon": [
+        [
+          310,
+          780
+        ],
+        [
+          550,
+          780
+        ],
+        [
+          550,
+          1155
+        ],
+        [
+          310,
+          1155
+        ]
+      ],
+      "soilPixelCount": 90000,
+      "slotCount": 6,
+      "activeSlotCount": 6,
+      "layers": {
+        "soilDryFullPage": "layers/outdoor/soil_dry.webp",
+        "soilWetFullPage": "layers/outdoor/soil_wet.webp",
+        "frontLipFullPage": "layers/outdoor/front_lip.webp",
+        "soilDryCropped": "layers/_cropped/outdoor/outdoor_bed1_soil_dry.png",
+        "soilWetCropped": "layers/_cropped/outdoor/outdoor_bed1_soil_wet.png",
+        "frontLipCropped": "layers/_cropped/outdoor/outdoor_bed1_front_lip.png",
+        "dryOffset": {
+          "offsetX": 308,
+          "offsetY": 778,
+          "width": 244,
+          "height": 379
+        },
+        "wetOffset": {
+          "offsetX": 308,
+          "offsetY": 778,
+          "width": 244,
+          "height": 379
+        },
+        "lipOffset": {
+          "offsetX": 293,
+          "offsetY": 1153,
+          "width": 275,
+          "height": 36
+        },
+        "plateNoLip": "plates/outdoor-garden-beds-nolip.webp"
+      }
+    }
+  ],
+  "slots": [
+    {
+      "id": "outdoor_bed0_s0",
+      "index": 0,
+      "bedId": "outdoor_bed0",
+      "grid": {
+        "col": 0,
+        "row": 0
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 120,
+        "y": 907
+      },
+      "hitBounds": {
+        "x": 87,
+        "y": 864,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 0,
+      "recommendedPlantScale": 0.28
+    },
+    {
+      "id": "outdoor_bed0_s1",
+      "index": 1,
+      "bedId": "outdoor_bed0",
+      "grid": {
+        "col": 1,
+        "row": 0
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 190,
+        "y": 907
+      },
+      "hitBounds": {
+        "x": 157,
+        "y": 864,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 1,
+      "recommendedPlantScale": 0.28
+    },
+    {
+      "id": "outdoor_bed0_s2",
+      "index": 2,
+      "bedId": "outdoor_bed0",
+      "grid": {
+        "col": 0,
+        "row": 1
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 120,
+        "y": 977
+      },
+      "hitBounds": {
+        "x": 87,
+        "y": 934,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 10,
+      "recommendedPlantScale": 0.28
+    },
+    {
+      "id": "outdoor_bed0_s3",
+      "index": 3,
+      "bedId": "outdoor_bed0",
+      "grid": {
+        "col": 1,
+        "row": 1
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 190,
+        "y": 977
+      },
+      "hitBounds": {
+        "x": 157,
+        "y": 934,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 11,
+      "recommendedPlantScale": 0.28
+    },
+    {
+      "id": "outdoor_bed0_s4",
+      "index": 4,
+      "bedId": "outdoor_bed0",
+      "grid": {
+        "col": 0,
+        "row": 2
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 120,
+        "y": 1048
+      },
+      "hitBounds": {
+        "x": 87,
+        "y": 1005,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 20,
+      "recommendedPlantScale": 0.28
+    },
+    {
+      "id": "outdoor_bed0_s5",
+      "index": 5,
+      "bedId": "outdoor_bed0",
+      "grid": {
+        "col": 1,
+        "row": 2
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 190,
+        "y": 1048
+      },
+      "hitBounds": {
+        "x": 157,
+        "y": 1005,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 21,
+      "recommendedPlantScale": 0.28
+    },
+    {
+      "id": "outdoor_bed1_s0",
+      "index": 6,
+      "bedId": "outdoor_bed1",
+      "grid": {
+        "col": 0,
+        "row": 0
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 395,
+        "y": 907
+      },
+      "hitBounds": {
+        "x": 362,
+        "y": 864,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 100,
+      "recommendedPlantScale": 0.28
+    },
+    {
+      "id": "outdoor_bed1_s1",
+      "index": 7,
+      "bedId": "outdoor_bed1",
+      "grid": {
+        "col": 1,
+        "row": 0
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 465,
+        "y": 907
+      },
+      "hitBounds": {
+        "x": 432,
+        "y": 864,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 101,
+      "recommendedPlantScale": 0.28
+    },
+    {
+      "id": "outdoor_bed1_s2",
+      "index": 8,
+      "bedId": "outdoor_bed1",
+      "grid": {
+        "col": 0,
+        "row": 1
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 395,
+        "y": 977
+      },
+      "hitBounds": {
+        "x": 362,
+        "y": 934,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 110,
+      "recommendedPlantScale": 0.28
+    },
+    {
+      "id": "outdoor_bed1_s3",
+      "index": 9,
+      "bedId": "outdoor_bed1",
+      "grid": {
+        "col": 1,
+        "row": 1
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 465,
+        "y": 977
+      },
+      "hitBounds": {
+        "x": 432,
+        "y": 934,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 111,
+      "recommendedPlantScale": 0.28
+    },
+    {
+      "id": "outdoor_bed1_s4",
+      "index": 10,
+      "bedId": "outdoor_bed1",
+      "grid": {
+        "col": 0,
+        "row": 2
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 395,
+        "y": 1048
+      },
+      "hitBounds": {
+        "x": 362,
+        "y": 1005,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 120,
+      "recommendedPlantScale": 0.28
+    },
+    {
+      "id": "outdoor_bed1_s5",
+      "index": 11,
+      "bedId": "outdoor_bed1",
+      "grid": {
+        "col": 1,
+        "row": 2
+      },
+      "active": true,
+      "unavailable": false,
+      "rootAnchor": {
+        "x": 465,
+        "y": 1048
+      },
+      "hitBounds": {
+        "x": 432,
+        "y": 1005,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 121,
+      "recommendedPlantScale": 0.28
+    }
+  ],
+  "minHitNativeWxH": [
+    66,
+    66
+  ],
+  "minProjectedHitWxHOn390x844": [
+    44.0,
+    44.0
+  ],
+  "note": "Soil h>=210 for non-overlapping 66x66 in 2x3; 132px soil cannot meet that gate."
+}

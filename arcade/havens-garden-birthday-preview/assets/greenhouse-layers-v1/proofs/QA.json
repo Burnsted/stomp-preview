@@ -1,0 +1,123 @@
+{
+  "capacities": {
+    "small": {
+      "active": 12,
+      "inactive": 0,
+      "minHitNativeWxH": [
+        66,
+        66
+      ],
+      "minProjectedHitWxHOn390x844": [
+        44.0,
+        44.0
+      ],
+      "soilSizes": [
+        [
+          240,
+          370
+        ],
+        [
+          240,
+          370
+        ]
+      ]
+    },
+    "medium": {
+      "active": 20,
+      "inactive": 4,
+      "minHitNativeWxH": [
+        66,
+        66
+      ],
+      "minProjectedHitWxHOn390x844": [
+        44.0,
+        44.0
+      ],
+      "soilSizes": [
+        [
+          240,
+          230
+        ],
+        [
+          240,
+          230
+        ],
+        [
+          250,
+          280
+        ],
+        [
+          250,
+          280
+        ]
+      ]
+    },
+    "large": {
+      "active": 30,
+      "inactive": 0,
+      "minHitNativeWxH": [
+        66,
+        66
+      ],
+      "minProjectedHitWxHOn390x844": [
+        44.0,
+        44.0
+      ],
+      "soilSizes": [
+        [
+          230,
+          210
+        ],
+        [
+          230,
+          210
+        ],
+        [
+          233,
+          210
+        ],
+        [
+          233,
+          210
+        ],
+        [
+          345,
+          210
+        ]
+      ]
+    },
+    "outdoor": {
+      "active": 12,
+      "inactive": 0,
+      "minHitNativeWxH": [
+        66,
+        66
+      ],
+      "minProjectedHitWxHOn390x844": [
+        44.0,
+        44.0
+      ],
+      "soilSizes": [
+        [
+          240,
+          375
+        ],
+        [
+          240,
+          375
+        ]
+      ]
+    }
+  },
+  "report": {
+    "ok": true,
+    "checks": [
+      "small: active=12 minHitNative=66x66 proj=[44.0, 44.0] roots-strict-inside=PASS",
+      "medium: active=20 minHitNative=66x66 proj=[44.0, 44.0] roots-strict-inside=PASS",
+      "large: active=30 minHitNative=66x66 proj=[44.0, 44.0] roots-strict-inside=PASS",
+      "outdoor: active=12 minHitNative=66x66 proj=[44.0, 44.0] roots-strict-inside=PASS"
+    ],
+    "failures": []
+  },
+  "growthSpecies": "daisy"
+}
