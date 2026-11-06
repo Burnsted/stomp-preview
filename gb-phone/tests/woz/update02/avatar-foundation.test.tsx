@@ -116,9 +116,17 @@ describe("Update02 — starters & data model", () => {
     expect(GROM_STARTERS.every((s) => s.ageBand === "grom")).toBe(true);
   });
 
-  it("only two style paths", () => {
+  it("starter styleHints remain park/mountain; UI exposes five StylePath chips", async () => {
+    const { STYLE_PATHS } = await import("@/lib/stomp/avatar/types");
     const paths = new Set(ADULT_STARTERS.map((s) => s.styleHint));
     expect([...paths].sort()).toEqual(["mountain-freeride", "park-street"]);
+    expect([...STYLE_PATHS]).toEqual([
+      "park-street",
+      "mountain-freeride",
+      "backcountry",
+      "groomers",
+      "beginner",
+    ]);
   });
 
   it("builds AvatarConfig from starter with layers", () => {
@@ -207,7 +215,7 @@ describe("Update02 — adult onboarding Screens 1–5", () => {
     // First-ship Create lock: omit SOURCE MISSING + OPEN (Woman 2 / Man 1).
     expect(within(screen.getByTestId("starter-grid-female")).getAllByTestId(/^starter-f-/)).toHaveLength(2);
     expect(within(screen.getByTestId("starter-grid-male")).getAllByTestId(/^starter-m-/)).toHaveLength(2);
-    expect(screen.getByTestId("starter-look-label-f-nova").textContent).toBe("Woman 1");
+    expect(screen.getByTestId("starter-look-label-f-nova").textContent).toBe("Stomper Woman One");
     expect(screen.getByTestId("starter-f-nova").getAttribute("data-create-ship-status")).toBe(
       "partial-not-create-cleared",
     );

@@ -28,8 +28,14 @@ import {
   lookPlateSlotByStarterId,
 } from "@/lib/stomp/avatar/plate-registry";
 import { useBoardsCollection } from "@/lib/stomp/avatar/boards-collection";
+import { resolvePublicDisplayName } from "@/lib/stomp/avatar/identity";
 import { useAvatar } from "@/lib/stomp/avatar/store";
-import { STAGE_LABELS, STYLE_LABELS, type AvatarSlot, type StylePath } from "@/lib/stomp/avatar/types";
+import {
+  STAGE_LABELS,
+  STYLE_LABELS,
+  STYLE_PATHS,
+  type AvatarSlot,
+} from "@/lib/stomp/avatar/types";
 import { useStomp } from "@/lib/stomp/store";
 
 const SLOTS: AvatarSlot[] = [
@@ -97,14 +103,15 @@ export function AvatarLocker() {
       ? evaluateLook2MintGate({ config })
       : null;
   const acceptanceEligible = look2Gate?.acceptanceEligible === true;
+  const publicName = resolvePublicDisplayName(config.starterId, config.displayName);
   const gateCopy = look2Gate?.acceptanceEligible
-    ? "Woman 2 plates ready — Android acceptance eligible"
+    ? "Stomper Woman Two plates ready — Android acceptance eligible"
     : look2Gate?.prototypeOnly
-      ? "Woman 2 registered visual prototype (8 of 11) — not Android-accepted"
+      ? "Stomper Woman Two registered visual prototype (8 of 11) — not Android-accepted"
       : modularRider
         ? `${modularRider.slotLabel} registered visual prototype (8 of 11) — REGISTERED_VISUAL_PROTOTYPE_ONLY; Android NOT RUN`
         : plateSlot?.androidAcceptanceGate
-          ? `Woman 2 mint plates missing (${look2Gate?.dataMissingPlates ?? 0}) — not acceptance-eligible`
+          ? `Stomper Woman Two mint plates missing (${look2Gate?.dataMissingPlates ?? 0}) — not acceptance-eligible`
           : "Modular plates pending for this look";
 
   function equipModular(slot: AvatarSlot, opt: LockerOptionAvailability) {
@@ -141,7 +148,9 @@ export function AvatarLocker() {
       <AlpineTopBar title="Locker" showBack onBack={() => setScreen("greet")} right={<ThemeToggle />} />
       <div className="flex flex-col items-center px-5 pt-2">
         <AvatarRenderer config={config} size={168} interactive showBackground testId="locker-avatar" />
-        <p className="mt-2 font-display text-3xl tracking-wide">{config.displayName}</p>
+        <p className="mt-2 font-display text-3xl tracking-wide" data-testid="locker-display-name">
+          {publicName}
+        </p>
         <p className="text-sm text-muted">
           {STYLE_LABELS[config.stylePath]} · {STAGE_LABELS[config.stage]}
         </p>
@@ -157,8 +166,8 @@ export function AvatarLocker() {
           {gateCopy}
         </p>
 
-        <div className="mt-4 grid w-full grid-cols-2 gap-2">
-          {(["park-street", "mountain-freeride"] as StylePath[]).map((style) => (
+        <div className="mt-4 grid w-full grid-cols-2 gap-2" data-testid="locker-style-chips">
+          {STYLE_PATHS.map((style) => (
             <button
               key={style}
               type="button"

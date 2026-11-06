@@ -5,7 +5,7 @@
  * (Look 4) coexist as independent modular riders. Status remains
  * REGISTERED_VISUAL_PROTOTYPE_ONLY — never Android PASS / acceptanceEligible.
  *
- * Slot labels only in user-facing language: Man 1, Woman 2, Woman 3, Man 2.
+ * Slot labels only in user-facing language: Stomper Man/Woman N.
  * Technical starterIds (m-samir / f-hana / f-priya / m-devon) stay in paths.
  */
 import {
@@ -34,7 +34,11 @@ import {
 import { configFromStarter, starterById } from "@/lib/stomp/avatar/starters";
 import type { AvatarConfig, AvatarLayers } from "@/lib/stomp/avatar/types";
 
-export type ModularSlotLabel = "Man 1" | "Woman 2" | "Woman 3" | "Man 2";
+export type ModularSlotLabel =
+  | "Stomper Man One"
+  | "Stomper Woman Two"
+  | "Stomper Woman Three"
+  | "Stomper Man Two";
 export type ModularAbcVariant = "A" | "B" | "C";
 
 export type ModularRiderDef = {
@@ -81,7 +85,7 @@ export const MODULAR_RIDERS: readonly ModularRiderDef[] = [
     starterId: "m-samir",
     lookKey: "adult-look-1",
     lookIndex1Based: 1,
-    slotLabel: "Man 1",
+    slotLabel: "Stomper Man One",
     status: "REGISTERED_VISUAL_PROTOTYPE_ONLY",
     ownerVisualReview: "OWNER_REVIEW_REQUIRED",
     androidQa: "NOT_RUN",
@@ -108,7 +112,7 @@ export const MODULAR_RIDERS: readonly ModularRiderDef[] = [
     starterId: LOOK2_STARTER_ID,
     lookKey: "adult-look-2",
     lookIndex1Based: 2,
-    slotLabel: "Woman 2",
+    slotLabel: "Stomper Woman Two",
     status: "REGISTERED_VISUAL_PROTOTYPE_ONLY",
     ownerVisualReview: "LOOK2_PRESERVED",
     androidQa: "NOT_RUN",
@@ -134,7 +138,7 @@ export const MODULAR_RIDERS: readonly ModularRiderDef[] = [
     starterId: "f-priya",
     lookKey: "adult-look-3",
     lookIndex1Based: 3,
-    slotLabel: "Woman 3",
+    slotLabel: "Stomper Woman Three",
     status: "REGISTERED_VISUAL_PROTOTYPE_ONLY",
     ownerVisualReview: "OWNER_REVIEW_REQUIRED",
     androidQa: "NOT_RUN",
@@ -161,7 +165,7 @@ export const MODULAR_RIDERS: readonly ModularRiderDef[] = [
     starterId: "m-devon",
     lookKey: "adult-look-4",
     lookIndex1Based: 4,
-    slotLabel: "Man 2",
+    slotLabel: "Stomper Man Two",
     status: "REGISTERED_VISUAL_PROTOTYPE_ONLY",
     ownerVisualReview: "NOT_OWNER_REVIEWED",
     androidQa: "NOT_RUN",
@@ -268,7 +272,7 @@ export function modularPrototypeConfig(
   if (!starter || !layers) return null;
   const cfg = configFromStarter(starter, {
     stomperId: opts.stomperId ?? `modular-${starterId}-${variant}`,
-    // Never seed personal displayNames from technical ids / slot labels.
+    // Never seed personal displayNames from technical ids. UI resolves via resolvePublicDisplayName.
     displayName: opts.displayName ?? "",
   });
   return { ...cfg, layers };

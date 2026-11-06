@@ -1,12 +1,12 @@
 import type { AvatarConfig, AvatarLayers, StarterDef, StylePath } from "@/lib/stomp/avatar/types";
-import { EMPTY_PERSONALIZE } from "@/lib/stomp/avatar/types";
+import { backgroundForStylePath, EMPTY_PERSONALIZE } from "@/lib/stomp/avatar/types";
 
 /** 12 distinct adult starters — 6F + 6M presenting. Placeholders, meaningful differences. */
 export const ADULT_STARTERS: StarterDef[] = [
   // Female-presenting
   {
     id: "f-nova",
-    label: "Woman 1",
+    label: "Stomper Woman One",
     presenting: "female",
     ageBand: "adult",
     styleHint: "park-street",
@@ -21,7 +21,7 @@ export const ADULT_STARTERS: StarterDef[] = [
   },
   {
     id: "f-mira",
-    label: "Mira",
+    label: "Stomper Woman Four",
     presenting: "female",
     ageBand: "adult",
     styleHint: "mountain-freeride",
@@ -36,7 +36,7 @@ export const ADULT_STARTERS: StarterDef[] = [
   },
   {
     id: "f-jade",
-    label: "Jade",
+    label: "Stomper Woman Five",
     presenting: "female",
     ageBand: "adult",
     styleHint: "park-street",
@@ -51,7 +51,7 @@ export const ADULT_STARTERS: StarterDef[] = [
   },
   {
     id: "f-elena",
-    label: "Elena",
+    label: "Stomper Woman Six",
     presenting: "female",
     ageBand: "adult",
     styleHint: "mountain-freeride",
@@ -66,7 +66,7 @@ export const ADULT_STARTERS: StarterDef[] = [
   },
   {
     id: "f-priya",
-    label: "Woman 3",
+    label: "Stomper Woman Three",
     presenting: "female",
     ageBand: "adult",
     styleHint: "park-street",
@@ -81,7 +81,7 @@ export const ADULT_STARTERS: StarterDef[] = [
   },
   {
     id: "f-hana",
-    label: "Woman 2",
+    label: "Stomper Woman Two",
     presenting: "female",
     ageBand: "adult",
     styleHint: "mountain-freeride",
@@ -97,7 +97,7 @@ export const ADULT_STARTERS: StarterDef[] = [
   // Male-presenting
   {
     id: "m-kai",
-    label: "Kai",
+    label: "Stomper Man Four",
     presenting: "male",
     ageBand: "adult",
     styleHint: "park-street",
@@ -112,7 +112,7 @@ export const ADULT_STARTERS: StarterDef[] = [
   },
   {
     id: "m-owen",
-    label: "Owen",
+    label: "Stomper Man Five",
     presenting: "male",
     ageBand: "adult",
     styleHint: "mountain-freeride",
@@ -127,7 +127,7 @@ export const ADULT_STARTERS: StarterDef[] = [
   },
   {
     id: "m-devon",
-    label: "Man 2",
+    label: "Stomper Man Two",
     presenting: "male",
     ageBand: "adult",
     styleHint: "park-street",
@@ -142,7 +142,7 @@ export const ADULT_STARTERS: StarterDef[] = [
   },
   {
     id: "m-samir",
-    label: "Man 1",
+    label: "Stomper Man One",
     presenting: "male",
     ageBand: "adult",
     styleHint: "mountain-freeride",
@@ -157,7 +157,7 @@ export const ADULT_STARTERS: StarterDef[] = [
   },
   {
     id: "m-leo",
-    label: "Man 3",
+    label: "Stomper Man Three",
     presenting: "male",
     ageBand: "adult",
     styleHint: "park-street",
@@ -172,7 +172,7 @@ export const ADULT_STARTERS: StarterDef[] = [
   },
   {
     id: "m-jonas",
-    label: "Jonas",
+    label: "Stomper Man Six",
     presenting: "male",
     ageBand: "adult",
     styleHint: "mountain-freeride",
@@ -191,7 +191,7 @@ export const ADULT_STARTERS: StarterDef[] = [
 export const GROM_STARTERS: StarterDef[] = [
   {
     id: "g-aria",
-    label: "Grom 2",
+    label: "Stomper Grom Two",
     presenting: "female",
     ageBand: "grom",
     styleHint: "park-street",
@@ -206,7 +206,7 @@ export const GROM_STARTERS: StarterDef[] = [
   },
   {
     id: "g-zoe",
-    label: "Zoe",
+    label: "Stomper Grom Three",
     presenting: "female",
     ageBand: "grom",
     styleHint: "mountain-freeride",
@@ -221,7 +221,7 @@ export const GROM_STARTERS: StarterDef[] = [
   },
   {
     id: "g-nina",
-    label: "Nina",
+    label: "Stomper Grom Four",
     presenting: "female",
     ageBand: "grom",
     styleHint: "park-street",
@@ -236,7 +236,7 @@ export const GROM_STARTERS: StarterDef[] = [
   },
   {
     id: "g-milo",
-    label: "Grom 1",
+    label: "Stomper Grom One",
     presenting: "male",
     ageBand: "grom",
     styleHint: "park-street",
@@ -251,7 +251,7 @@ export const GROM_STARTERS: StarterDef[] = [
   },
   {
     id: "g-reed",
-    label: "Reed",
+    label: "Stomper Grom Five",
     presenting: "male",
     ageBand: "grom",
     styleHint: "mountain-freeride",
@@ -266,7 +266,7 @@ export const GROM_STARTERS: StarterDef[] = [
   },
   {
     id: "g-theo",
-    label: "Theo",
+    label: "Stomper Grom Six",
     presenting: "male",
     ageBand: "grom",
     styleHint: "park-street",
@@ -384,7 +384,7 @@ export function configFromStarter(
     stylePath: opts.stylePath ?? s.styleHint,
     layers: layersFromStarter(s),
     poseId: "idle",
-    backgroundId: s.styleHint === "park-street" ? "bg-park" : "bg-powder",
+    backgroundId: backgroundForStylePath(opts.stylePath ?? s.styleHint),
     stage: 1,
     personalize: { ...EMPTY_PERSONALIZE },
     createdAtIso: now,

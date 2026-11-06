@@ -223,16 +223,16 @@ describe("t1208u D5 — Founder eligibility unset/disabled", () => {
 describe("t1208u D6 — Crew portrait consent-safe; slot labels only", () => {
   it("allowed slot labels are Woman/Man/Grom N only", () => {
     expect(CHARACTER_SLOT_LABELS).toEqual([
-      "Woman 1",
-      "Woman 2",
-      "Woman 3",
-      "Man 1",
-      "Man 2",
-      "Man 3",
-      "Grom 1",
-      "Grom 2",
+      "Stomper Woman One",
+      "Stomper Woman Two",
+      "Stomper Woman Three",
+      "Stomper Man One",
+      "Stomper Man Two",
+      "Stomper Man Three",
+      "Stomper Grom One",
+      "Stomper Grom Two",
     ]);
-    expect(isAllowedSlotLabel("Woman 2")).toBe(true);
+    expect(isAllowedSlotLabel("Stomper Woman Two")).toBe(true);
     expect(isAllowedSlotLabel("Hana")).toBe(false);
     expect(isAllowedSlotLabel("Samir")).toBe(false);
   });
@@ -241,7 +241,7 @@ describe("t1208u D6 — Crew portrait consent-safe; slot labels only", () => {
     const participants = [
       {
         id: "p1",
-        slotLabel: "Woman 2" as const,
+        slotLabel: "Stomper Woman Two" as const,
         firstName: "Alex",
         ageBand: "adult" as const,
         portraitConsent: true,
@@ -250,7 +250,7 @@ describe("t1208u D6 — Crew portrait consent-safe; slot labels only", () => {
       },
       {
         id: "p2",
-        slotLabel: "Man 1" as const,
+        slotLabel: "Stomper Man One" as const,
         firstName: "Blake",
         ageBand: "adult" as const,
         portraitConsent: false,
@@ -259,7 +259,7 @@ describe("t1208u D6 — Crew portrait consent-safe; slot labels only", () => {
       },
       {
         id: "p3",
-        slotLabel: "Grom 1" as const,
+        slotLabel: "Stomper Grom One" as const,
         firstName: "Kid",
         ageBand: "grom" as const,
         portraitConsent: true,

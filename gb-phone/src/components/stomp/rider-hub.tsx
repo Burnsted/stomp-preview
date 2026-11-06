@@ -49,7 +49,7 @@ const FICTION_PORTRAIT: {
 }[] = [
   {
     id: "slot-w2",
-    slotLabel: "Woman 2",
+    slotLabel: "Stomper Woman Two",
     firstName: null,
     ageBand: "adult",
     portraitConsent: true,
@@ -58,7 +58,7 @@ const FICTION_PORTRAIT: {
   },
   {
     id: "slot-m1",
-    slotLabel: "Man 1",
+    slotLabel: "Stomper Man One",
     firstName: null,
     ageBand: "adult",
     portraitConsent: true,
@@ -67,7 +67,7 @@ const FICTION_PORTRAIT: {
   },
   {
     id: "slot-w3",
-    slotLabel: "Woman 3",
+    slotLabel: "Stomper Woman Three",
     firstName: null,
     ageBand: "adult",
     portraitConsent: true,
@@ -76,7 +76,7 @@ const FICTION_PORTRAIT: {
   },
   {
     id: "slot-g1",
-    slotLabel: "Grom 1",
+    slotLabel: "Stomper Grom One",
     firstName: null,
     ageBand: "grom",
     portraitConsent: false,
@@ -332,16 +332,23 @@ export function RiderHub({ initial = "Profile" }: { initial?: Panel }) {
           }}
         >
           <label className="block text-sm text-white/60">
-            Character label (Woman / Man / Grom N)
+            Character label (Stomper Woman / Man / Grom N)
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="Woman 2"
+              placeholder="Stomper Woman Two"
               className="mt-1 h-11 w-full rounded-xl bg-black/40 px-3 text-white ring-1 ring-white/15 outline-none"
             />
           </label>
           <div className="mt-2 flex flex-wrap gap-2 text-xs">
-            {(["Woman 2", "Man 1", "Woman 3", "Man 2"] as const).map((slot) => (
+            {(
+              [
+                "Stomper Woman Two",
+                "Stomper Man One",
+                "Stomper Woman Three",
+                "Stomper Man Two",
+              ] as const
+            ).map((slot) => (
               <button
                 key={slot}
                 type="button"
@@ -393,7 +400,7 @@ export function RiderHub({ initial = "Profile" }: { initial?: Panel }) {
             <button type="button" onClick={() => social.declineTrip()}>Decline</button>
             <button type="button" onClick={() => social.hostTrip()}>Host</button>
             <button type="button" onClick={() => social.addCohost("man-1")}>
-              Add Man 1 as co-host
+              Add Stomper Man One as co-host
             </button>
             <button type="button" onClick={() => social.setAttendance("you", "in")}>I'm in</button>
             <button type="button" onClick={() => social.setAttendance("you", "out")}>I'm out</button>
@@ -424,7 +431,7 @@ export function RiderHub({ initial = "Profile" }: { initial?: Panel }) {
           <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
             <button type="button" onClick={() => social.startDay(dayName, "Beaver Creek")}>Plan</button>
             <button type="button" onClick={() => social.inviteDay("woman-2")}>
-              Invite Woman 2
+              Invite Stomper Woman Two
             </button>
             <button type="button" onClick={() => social.rideDay()}>Ride</button>
             <button type="button" onClick={() => social.finishDay()}>Finish</button>

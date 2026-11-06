@@ -3,7 +3,23 @@
  * One AvatarConfig drives Home, STOMPER ID, Crew list, Trip Hub.
  */
 
-export type StylePath = "park-street" | "mountain-freeride";
+/** Riding-style preference / filter label — not a plate lockout. */
+export type StylePath =
+  | "park-street"
+  | "mountain-freeride"
+  | "backcountry"
+  | "groomers"
+  | "beginner";
+
+/** Stable chip order for Locker / Create / Profile. */
+export const STYLE_PATHS: readonly StylePath[] = [
+  "park-street",
+  "mountain-freeride",
+  "backcountry",
+  "groomers",
+  "beginner",
+] as const;
+
 export type Presenting = "female" | "male";
 export type AgeBand = "adult" | "grom";
 export type ProgressionStage = 1 | 2 | 3 | 4;
@@ -176,4 +192,24 @@ export const STAGE_LABELS: Record<ProgressionStage, string> = {
 export const STYLE_LABELS: Record<StylePath, string> = {
   "park-street": "Park & Street",
   "mountain-freeride": "Mountain & Freeride",
+  backcountry: "Backcountry",
+  groomers: "Groomers",
+  beginner: "Beginner",
 };
+
+/** Short supporting copy for Create vibe chips. Park covers park/terrain — no duplicate Terrain. */
+export const STYLE_BLURBS: Record<StylePath, string> = {
+  "park-street": "Parks, rails, jumps, freestyle — street-inspired & bold.",
+  "mountain-freeride": "All-mountain, powder, trees — technical & alpine-inspired.",
+  backcountry: "Untracked lines, touring vibe — earn your turns.",
+  groomers: "Corduroy cruisers — smooth laps and confidence building.",
+  beginner: "Learning the hill — green runs, soft landings, no rush.",
+};
+
+/** Default ID background hint per style (preference only). */
+export function backgroundForStylePath(stylePath: StylePath): string {
+  if (stylePath === "park-street" || stylePath === "groomers" || stylePath === "beginner") {
+    return "bg-park";
+  }
+  return "bg-powder";
+}

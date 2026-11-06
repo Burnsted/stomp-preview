@@ -296,7 +296,7 @@ export function modularCharacterPlateMatrix(): Array<{
 }> {
   const rows = [
     {
-      slotLabel: "Woman 1",
+      slotLabel: "Stomper Woman One",
       starterId: "f-nova",
       createStatus: "PARTIAL · SOURCE_APPEARANCE_PREVIEW_ONLY · on Create",
       baseBody: "FLATTENED preview only",
@@ -309,7 +309,7 @@ export function modularCharacterPlateMatrix(): Array<{
       notes: "SOURCE_APPEARANCE_PREVIEW_ONLY — no modular swaps",
     },
     {
-      slotLabel: "Woman 2",
+      slotLabel: "Stomper Woman Two",
       starterId: "f-hana",
       createStatus: "OPEN prototype · QA only · omitted from Create",
       baseBody: "PRESENT body-athletic@512.webp (provisional underbody ART)",
@@ -322,7 +322,7 @@ export function modularCharacterPlateMatrix(): Array<{
       notes: "OPEN — ingested for QA; do not use as Create demo working STOMPER",
     },
     {
-      slotLabel: "Woman 3",
+      slotLabel: "Stomper Woman Three",
       starterId: "f-priya",
       createStatus: "PARTIAL · REGISTERED_VISUAL_PROTOTYPE_ONLY · on Create",
       baseBody: "PRESENT body-look3-solid@512.webp (provisional underbody ART)",
@@ -335,7 +335,7 @@ export function modularCharacterPlateMatrix(): Array<{
       notes: "Best Create-visible modular adult for t1232u demo",
     },
     {
-      slotLabel: "Man 1 / Rider 1",
+      slotLabel: "Stomper Man One",
       starterId: "m-samir",
       createStatus: "OPEN prototype · QA only · omitted from Create",
       baseBody: "PRESENT body-look1-male@512.webp (provisional underbody ART)",
@@ -348,7 +348,7 @@ export function modularCharacterPlateMatrix(): Array<{
       notes: "OPEN — Rider 1 exists as QA ingest; not Create",
     },
     {
-      slotLabel: "Man 2 / Look 4",
+      slotLabel: "Stomper Man Two",
       starterId: "m-devon",
       createStatus: "PARTIAL · on Create · NOT owner visual PASS",
       baseBody: "PRESENT body-look4-lean@512.webp (provisional underbody ART)",
@@ -361,7 +361,7 @@ export function modularCharacterPlateMatrix(): Array<{
       notes: "Modular but NOT owner visual PASS — prefer Woman 3 for demo",
     },
     {
-      slotLabel: "Man 3",
+      slotLabel: "Stomper Man Three",
       starterId: "m-leo",
       createStatus: "PARTIAL · SOURCE_APPEARANCE_PREVIEW_ONLY · on Create",
       baseBody: "FLATTENED preview only",
@@ -374,7 +374,7 @@ export function modularCharacterPlateMatrix(): Array<{
       notes: "SOURCE_APPEARANCE_PREVIEW_ONLY",
     },
     {
-      slotLabel: "Grom 1",
+      slotLabel: "Stomper Grom One",
       starterId: "g-milo",
       createStatus: "PARTIAL · SOURCE_APPEARANCE_PREVIEW_ONLY · on Create · fictional",
       baseBody: "FLATTENED preview only",
@@ -387,7 +387,7 @@ export function modularCharacterPlateMatrix(): Array<{
       notes: "SOURCE_APPEARANCE_PREVIEW_ONLY",
     },
     {
-      slotLabel: "Grom 2",
+      slotLabel: "Stomper Grom Two",
       starterId: "g-aria",
       createStatus: "PARTIAL · SOURCE_APPEARANCE_PREVIEW_ONLY · on Create · fictional",
       baseBody: "FLATTENED preview only",

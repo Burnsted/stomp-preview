@@ -18,7 +18,9 @@ import { ADULT_STARTERS, configFromStarter, starterById } from "@/lib/stomp/avat
 import { useAvatar } from "@/lib/stomp/avatar/store";
 import {
   PERSONALIZE_QUESTIONS,
+  STYLE_BLURBS,
   STYLE_LABELS,
+  STYLE_PATHS,
   type AvatarSlot,
   type StylePath,
 } from "@/lib/stomp/avatar/types";
@@ -71,7 +73,7 @@ export function AvatarOnboard() {
 
 function Screen1Starter({ onSkip }: { onSkip: () => void }) {
   const selectStarter = useAvatar((s) => s.selectStarter);
-  /** First-ship lock: omit SOURCE MISSING + OPEN prototypes (Woman 2 / Man 1). */
+  /** First-ship lock: omit SOURCE MISSING + OPEN prototypes (Stomper Woman Two / Man One). */
   const slots = createScreenRosterSlots();
   const byLabel = (a: RosterArtworkSlot, b: RosterArtworkSlot) =>
     a.slotLabel.localeCompare(b.slotLabel, undefined, { numeric: true });
@@ -103,7 +105,7 @@ function Screen1Starter({ onSkip }: { onSkip: () => void }) {
         <p className="font-display text-4xl leading-none tracking-wide text-ink">Create Your STOMPER</p>
         <p className="mt-2 text-sm text-muted">
           Partial looks for review only — none Create-cleared this pass. Missing art and
-          OPEN prototypes (Woman 2 / Man 1) are omitted. No invented art.
+          OPEN prototypes (Stomper Woman Two / Stomper Man One) are omitted. No invented art.
         </p>
         <p className="mt-4 text-xs font-bold tracking-widest text-accent">
           WOMAN · PARTIAL · NOT CREATE-CLEARED
@@ -387,12 +389,15 @@ function Screen3Vibe() {
       <AlpineTopBar title="Vibe" showBack onBack={() => goStep(2)} right={<ThemeToggle />} />
       <div className="px-5 pt-2">
         <p className="font-display text-4xl leading-none tracking-wide">Choose Your Vibe</p>
-        <p className="mt-2 text-sm text-muted">Two paths only. Mix equipment anytime — style is preference, not skill.</p>
+        <p className="mt-2 text-sm text-muted">
+          Pick a riding style. Mix equipment anytime — style is preference, not skill. Park &
+          Street covers park/terrain.
+        </p>
         <div className="mt-4 flex justify-center">
           <AvatarRenderer config={cfg} size={160} interactive showBackground />
         </div>
-        <div className="mt-4 grid grid-cols-1 gap-3">
-          {(["park-street", "mountain-freeride"] as StylePath[]).map((style) => (
+        <div className="mt-4 grid grid-cols-1 gap-3" data-testid="onboard-style-chips">
+          {STYLE_PATHS.map((style) => (
             <button
               key={style}
               type="button"
@@ -404,11 +409,7 @@ function Screen3Vibe() {
               }
             >
               <p className="font-display text-2xl tracking-wide">{STYLE_LABELS[style]}</p>
-              <p className="mt-1 text-sm text-muted">
-                {style === "park-street"
-                  ? "Parks, rails, jumps, freestyle — street-inspired & bold."
-                  : "All-mountain, powder, trees — technical & alpine-inspired."}
-              </p>
+              <p className="mt-1 text-sm text-muted">{STYLE_BLURBS[style]}</p>
             </button>
           ))}
         </div>

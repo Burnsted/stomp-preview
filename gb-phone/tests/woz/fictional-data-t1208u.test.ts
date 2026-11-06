@@ -201,13 +201,14 @@ describe("t1208u Profile / Squad Quick Share / Crew portrait / Founder", () => {
   });
 
   it("crew portrait slot labels only; no invented names; grom fail-closed", () => {
-    expect(isAllowedSlotLabel("Woman 2")).toBe(true);
+    expect(isAllowedSlotLabel("Stomper Woman Two")).toBe(true);
+    expect(isAllowedSlotLabel("Woman 2")).toBe(true); // legacy short alias
     expect(isAllowedSlotLabel("Hana")).toBe(false);
     const composite = buildCrewPortraitComposite({
       participants: [
         {
           id: "1",
-          slotLabel: "Woman 2",
+          slotLabel: "Stomper Woman Two",
           firstName: "Alex",
           ageBand: "adult",
           portraitConsent: true,
@@ -216,7 +217,7 @@ describe("t1208u Profile / Squad Quick Share / Crew portrait / Founder", () => {
         },
         {
           id: "2",
-          slotLabel: "Grom 1",
+          slotLabel: "Stomper Grom One",
           firstName: "Kid",
           ageBand: "grom",
           portraitConsent: true,

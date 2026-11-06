@@ -8,6 +8,7 @@ import { AlpineTopBar } from "@/components/stomp/alpine-chrome";
 import { AvatarRenderer } from "@/components/stomp/avatar/avatar-renderer";
 import { ThemeToggle } from "@/components/stomp/avatar/theme-toggle";
 import { isAvatarFlagOn } from "@/lib/stomp/avatar/flags";
+import { resolvePublicDisplayName } from "@/lib/stomp/avatar/identity";
 import { useAvatar } from "@/lib/stomp/avatar/store";
 import { STAGE_LABELS, STYLE_LABELS } from "@/lib/stomp/avatar/types";
 import { createWalletPassStub, CREW_WALLET_CARD_REJECTED } from "@/lib/stomp/avatar/wallet-stub";
@@ -43,6 +44,7 @@ export function StomperIdScreen() {
     );
   }
 
+  const publicName = resolvePublicDisplayName(config.starterId, config.displayName);
   const qrValue = idRevoked
     ? "STOMP-REVOKED"
     : `stomp:id:${idToken}:${riderCode || config.stomperId}`;
@@ -72,7 +74,12 @@ export function StomperIdScreen() {
               showBackground
               testId="id-card-avatar"
             />
-            <h2 className="mt-3 font-display text-4xl tracking-wide text-accent">{config.displayName}</h2>
+            <h2
+              className="mt-3 font-display text-4xl tracking-wide text-accent"
+              data-testid="id-display-name"
+            >
+              {publicName}
+            </h2>
             <p className="mt-1 text-sm text-muted">Snowboarding · {STYLE_LABELS[config.stylePath]}</p>
             <p className="mt-1 text-xs font-bold tracking-widest text-accent">
               {STAGE_LABELS[config.stage].toUpperCase()}
@@ -197,7 +204,7 @@ export function StomperIdScreen() {
           </button>
         </div>
         {/* Keep crewPayload path available for Invite parity */}
-        <p className="sr-only">{crewPayload(riderCode || "ME", config.displayName)}</p>
+        <p className="sr-only">{crewPayload(riderCode || "ME", publicName)}</p>
       </div>
     </div>
   );

@@ -296,12 +296,12 @@ describe("t1182u — plate ingest + Look-2 mint gate", () => {
     expect(priya.getAttribute("data-create-ship-status")).toBe("partial-not-create-cleared");
     expect(priya.getAttribute("data-create-cleared")).toBe("false");
     expect(priya.getAttribute("data-acceptance-eligible")).toBe("false");
-    expect(priya.getAttribute("data-slot-label")).toBe("Woman 3");
+    expect(priya.getAttribute("data-slot-label")).toBe("Stomper Woman Three");
 
     const devon = screen.getByTestId("starter-m-devon");
     expect(devon.getAttribute("data-create-ship-status")).toBe("partial-not-create-cleared");
     expect(devon.getAttribute("data-create-cleared")).toBe("false");
-    expect(devon.getAttribute("data-slot-label")).toBe("Man 2");
+    expect(devon.getAttribute("data-slot-label")).toBe("Stomper Man Two");
 
     // Gate metadata for Look 2 remains available off Create (registry).
     expect(lookPlateSlotByStarterId(LOOK2_STARTER_ID)?.androidAcceptanceGate).toBe(true);

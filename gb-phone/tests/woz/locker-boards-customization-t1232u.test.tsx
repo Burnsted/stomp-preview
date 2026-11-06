@@ -60,7 +60,7 @@ beforeEach(() => {
 function seedWoman3(variant: "A" | "B" | "C" = "B") {
   const cfg = modularPrototypeConfig("f-priya", variant, {
     stomperId: "ME-W3-T1232",
-    displayName: "PriyaDemo",
+    displayName: "Stomper Woman Three",
   })!;
   act(() => {
     useAvatar.setState({
@@ -78,14 +78,14 @@ describe("t1232u — modular character plate matrix (disk honesty)", () => {
     const rows = modularCharacterPlateMatrix();
     expect(rows).toHaveLength(8);
     expect(rows.map((r) => r.slotLabel)).toEqual([
-      "Woman 1",
-      "Woman 2",
-      "Woman 3",
-      "Man 1 / Rider 1",
-      "Man 2 / Look 4",
-      "Man 3",
-      "Grom 1",
-      "Grom 2",
+      "Stomper Woman One",
+      "Stomper Woman Two",
+      "Stomper Woman Three",
+      "Stomper Man One",
+      "Stomper Man Two",
+      "Stomper Man Three",
+      "Stomper Grom One",
+      "Stomper Grom Two",
     ]);
     for (const row of rows) {
       expect(row.snowboardBindings).toMatch(/ABSENT/);
@@ -133,7 +133,7 @@ describe("t1232u — Woman 3 Locker jacket/pants/board", () => {
     seedWoman3("B");
     render(<AvatarLocker />);
     expect(screen.getByTestId("avatar-locker").getAttribute("data-slot-label")).toBe(
-      "Woman 3",
+      "Stomper Woman Three",
     );
     expect(screen.getByTestId("avatar-locker").getAttribute("data-modular-scoped")).toBe(
       "true",

@@ -57,10 +57,10 @@ function sha256File(rel: string): string {
 describe("t1205u — multi-rider modular prototypes", () => {
   it("registry: slot labels only; status honesty; Man 2 not owner-reviewed", () => {
     expect(MODULAR_RIDERS.map((r) => r.slotLabel)).toEqual([
-      "Man 1",
-      "Woman 2",
-      "Woman 3",
-      "Man 2",
+      "Stomper Man One",
+      "Stomper Woman Two",
+      "Stomper Woman Three",
+      "Stomper Man Two",
     ]);
     for (const r of MODULAR_RIDERS) {
       expect(r.status).toBe("REGISTERED_VISUAL_PROTOTYPE_ONLY");
@@ -138,10 +138,10 @@ describe("t1205u — multi-rider modular prototypes", () => {
   });
 
   it.each([
-    ["m-samir", "Man 1"] as const,
-    [LOOK2_STARTER_ID, "Woman 2"] as const,
-    ["f-priya", "Woman 3"] as const,
-    ["m-devon", "Man 2"] as const,
+    ["m-samir", "Stomper Man One"] as const,
+    [LOOK2_STARTER_ID, "Stomper Woman Two"] as const,
+    ["f-priya", "Stomper Woman Three"] as const,
+    ["m-devon", "Stomper Man Two"] as const,
   ])("%s (%s) A/B/C AvatarRenderer plates; acceptanceEligible=false", (starterId, slotLabel) => {
     for (const variant of ["A", "B", "C"] as const) {
       const cfg = modularPrototypeConfig(starterId, variant, {
@@ -286,7 +286,7 @@ describe("t1205u — multi-rider modular prototypes", () => {
     const locker = screen.getByTestId("avatar-locker");
     expect(locker.getAttribute("data-acceptance-eligible")).toBe("false");
     expect(locker.getAttribute("data-prototype-only")).toBe("true");
-    expect(locker.getAttribute("data-slot-label")).toBe("Man 1");
+    expect(locker.getAttribute("data-slot-label")).toBe("Stomper Man One");
     expect(screen.getByText("LockerMan1")).toBeTruthy();
   });
 

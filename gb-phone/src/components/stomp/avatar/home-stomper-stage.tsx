@@ -12,6 +12,7 @@ import {
   HOME_POSE_INTERVAL_MS,
   nextHomePose,
 } from "@/lib/stomp/avatar/home-pose-cycle";
+import { resolvePublicDisplayName } from "@/lib/stomp/avatar/identity";
 import { useAvatar } from "@/lib/stomp/avatar/store";
 import type { AvatarConfig } from "@/lib/stomp/avatar/types";
 import { useStomp } from "@/lib/stomp/store";
@@ -21,7 +22,7 @@ export function HomeStomperStage({ config }: { config: AvatarConfig }) {
   const setPose = useAvatar((s) => s.setPose);
   const reducedMotion = useAvatar((s) => s.reducedMotion);
   const setScreen = useStomp((s) => s.setScreen);
-  const name = (config.displayName || "STOMPER").trim();
+  const name = resolvePublicDisplayName(config.starterId, config.displayName);
 
   useEffect(() => {
     // Start cycle on a known home pose.

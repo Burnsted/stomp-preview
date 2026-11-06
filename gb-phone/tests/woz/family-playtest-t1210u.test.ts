@@ -67,16 +67,17 @@ describe("t1210u family demo seed", () => {
   it("join trip still requires avatar; slot label avatar works", () => {
     const family = seedFamilyPlaytestSocial();
     expect(joinTrip(family).ok).toBe(false);
-    const named = saveAvatar(family, "Woman 2", "steel");
+    const named = saveAvatar(family, "Stomper Woman Two", "steel");
     expect(named.ok).toBe(true);
     expect(joinTrip(named.state).ok).toBe(true);
   });
 
   it("UI member labels never invent given names", () => {
-    expect(slotLabelForMember("woman-2")).toBe("Woman 2");
-    expect(slotLabelForMember("man-1")).toBe("Man 1");
-    expect(slotLabelForMember("mira")).toBe("Woman 2"); // legacy map
-    expect(isSlotLabel("Woman 2")).toBe(true);
+    expect(slotLabelForMember("woman-2")).toBe("Stomper Woman Two");
+    expect(slotLabelForMember("man-1")).toBe("Stomper Man One");
+    expect(slotLabelForMember("mira")).toBe("Stomper Woman Two"); // legacy map
+    expect(isSlotLabel("Stomper Woman Two")).toBe(true);
+    expect(isSlotLabel("Woman 2")).toBe(false);
     expect(isSlotLabel("Alex")).toBe(false);
   });
 });

@@ -35,6 +35,7 @@ import { starterUnlocks } from "@/lib/stomp/avatar/locker";
 import { isModularPrototypeStarter } from "@/lib/stomp/avatar/modular-riders";
 import { useAvatar } from "@/lib/stomp/avatar/store";
 import { applyTheme, useTheme } from "@/lib/stomp/avatar/theme";
+import { publicLabelForStarter } from "@/lib/stomp/avatar/identity";
 import { configFromStarter, starterById } from "@/lib/stomp/avatar/starters";
 import { resolvePlaytestEntry } from "@/lib/stomp/playtest/entry";
 import { useStomp } from "@/lib/stomp/store";
@@ -85,12 +86,15 @@ export function StompApp() {
       };
       w.__stompAvatar = useAvatar;
       w.__stompLine = useStomp;
-      w.__stompSeedHomeStomper = (starterId = "m-kai", displayName = "Kai") => {
+      w.__stompSeedHomeStomper = (
+        starterId = "m-kai",
+        displayName = publicLabelForStarter("m-kai"),
+      ) => {
         const starter = starterById(starterId);
         if (!starter) return false;
         const cfg = configFromStarter(starter, {
           stomperId: "ME-SHOT",
-          displayName,
+          displayName: displayName || publicLabelForStarter(starterId),
         });
         useAvatar.setState({
           config: cfg,

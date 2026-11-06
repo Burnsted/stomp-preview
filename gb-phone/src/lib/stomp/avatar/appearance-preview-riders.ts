@@ -6,9 +6,14 @@
  * Grom 1 / Grom 2 remain fictional appearance previews — no youth social activation.
  */
 import { buildStarterPreviewUrl } from "@/lib/stomp/avatar/artwork";
+import { publicLabelForStarter } from "@/lib/stomp/avatar/identity";
 import type { AgeBand } from "@/lib/stomp/avatar/types";
 
-export type AppearancePreviewSlotLabel = "Woman 1" | "Man 3" | "Grom 1" | "Grom 2";
+export type AppearancePreviewSlotLabel =
+  | "Stomper Woman One"
+  | "Stomper Man Three"
+  | "Stomper Grom One"
+  | "Stomper Grom Two";
 
 export type AppearancePreviewRiderDef = {
   starterId: string;
@@ -38,7 +43,7 @@ export const APPEARANCE_PREVIEW_RIDERS: readonly AppearancePreviewRiderDef[] = [
   {
     starterId: "f-nova",
     lookKey: "adult-look-5",
-    slotLabel: "Woman 1",
+    slotLabel: publicLabelForStarter("f-nova") as AppearancePreviewSlotLabel,
     ageBand: "adult",
     status: "SOURCE_APPEARANCE_PREVIEW_ONLY",
     modular: false,
@@ -53,7 +58,7 @@ export const APPEARANCE_PREVIEW_RIDERS: readonly AppearancePreviewRiderDef[] = [
   {
     starterId: "m-leo",
     lookKey: "adult-look-6",
-    slotLabel: "Man 3",
+    slotLabel: publicLabelForStarter("m-leo") as AppearancePreviewSlotLabel,
     ageBand: "adult",
     status: "SOURCE_APPEARANCE_PREVIEW_ONLY",
     modular: false,
@@ -68,7 +73,7 @@ export const APPEARANCE_PREVIEW_RIDERS: readonly AppearancePreviewRiderDef[] = [
   {
     starterId: "g-milo",
     lookKey: "grom-boy",
-    slotLabel: "Grom 1",
+    slotLabel: publicLabelForStarter("g-milo") as AppearancePreviewSlotLabel,
     ageBand: "grom",
     status: "SOURCE_APPEARANCE_PREVIEW_ONLY",
     modular: false,
@@ -83,7 +88,7 @@ export const APPEARANCE_PREVIEW_RIDERS: readonly AppearancePreviewRiderDef[] = [
   {
     starterId: "g-aria",
     lookKey: "grom-girl",
-    slotLabel: "Grom 2",
+    slotLabel: publicLabelForStarter("g-aria") as AppearancePreviewSlotLabel,
     ageBand: "grom",
     status: "SOURCE_APPEARANCE_PREVIEW_ONLY",
     modular: false,

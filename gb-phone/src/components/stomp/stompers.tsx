@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AvatarBadge } from "@/components/stomp/avatar/avatar-renderer";
 import { WozEntry } from "@/components/stomp/woz-entry";
 import { HomeButton } from "@/components/stomp/chrome";
+import { resolvePublicDisplayName } from "@/lib/stomp/avatar/identity";
 import { useAvatar } from "@/lib/stomp/avatar/store";
 import { useStomp } from "@/lib/stomp/store";
 
@@ -40,7 +41,9 @@ export function Stompers() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("Crew");
   const [vibe, setVibe] = useState(0);
   const [hidden, setHidden] = useState<string[]>([]);
-  const displayName = avatarConfig?.displayName || riderName;
+  const displayName = avatarConfig
+    ? resolvePublicDisplayName(avatarConfig.starterId, avatarConfig.displayName)
+    : riderName;
 
   return (
     <div className="px-1 pb-28">

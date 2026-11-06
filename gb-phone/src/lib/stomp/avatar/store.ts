@@ -14,7 +14,10 @@ import {
   starterUnlocks,
   unlockForActivity,
 } from "@/lib/stomp/avatar/locker";
-import { isValidStomperDisplayName } from "@/lib/stomp/avatar/identity";
+import {
+  isValidStomperDisplayName,
+  resolvePublicDisplayName,
+} from "@/lib/stomp/avatar/identity";
 import { applyJacketSet } from "@/lib/stomp/avatar/jacket-sets";
 import {
   isAppearancePreviewGrom,
@@ -36,7 +39,12 @@ import type {
   StylePath,
   UnlockRecord,
 } from "@/lib/stomp/avatar/types";
-import { EMPTY_PERSONALIZE } from "@/lib/stomp/avatar/types";
+import { backgroundForStylePath, EMPTY_PERSONALIZE } from "@/lib/stomp/avatar/types";
+
+function scrubConfigDisplayName(config: AvatarConfig): AvatarConfig {
+  const next = resolvePublicDisplayName(config.starterId, config.displayName);
+  return next === config.displayName ? config : { ...config, displayName: next };
+}
 
 type RiderPersistedSlice = {
   config: AvatarConfig;
@@ -270,7 +278,7 @@ export const useAvatar = create<AvatarState>()(
           draft: {
             ...st.draft,
             stylePath,
-            backgroundId: stylePath === "park-street" ? "bg-park" : "bg-powder",
+            backgroundId: backgroundForStylePath(stylePath),
           },
           config: st.config
             ? { ...st.config, stylePath, updatedAtIso: new Date().toISOString() }
@@ -343,7 +351,7 @@ export const useAvatar = create<AvatarState>()(
           version: 1,
           stomperId,
           starterId: draft.starterId,
-          displayName: draft.displayName.trim(),
+          displayName: resolvePublicDisplayName(draft.starterId, draft.displayName),
           presenting: s.presenting,
           ageBand: s.ageBand,
           stylePath: draft.stylePath,
@@ -480,6 +488,30 @@ export const useAvatar = create<AvatarState>()(
         reducedMotion: s.reducedMotion,
         draft: s.draft,
       }),
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<AvatarState>;
+        const config = p.config ? scrubConfigDisplayName(p.config) : current.config;
+        const riderConfigs: Record<string, AvatarConfig> = {};
+        for (const [id, cfg] of Object.entries(p.riderConfigs ?? current.riderConfigs)) {
+          riderConfigs[id] = scrubConfigDisplayName(cfg);
+        }
+        const draft = p.draft
+          ? {
+              ...current.draft,
+              ...p.draft,
+              displayName: p.draft.starterId
+                ? resolvePublicDisplayName(p.draft.starterId, p.draft.displayName)
+                : p.draft.displayName,
+            }
+          : current.draft;
+        return {
+          ...current,
+          ...p,
+          config,
+          riderConfigs,
+          draft,
+        };
+      },
     },
   ),
 );

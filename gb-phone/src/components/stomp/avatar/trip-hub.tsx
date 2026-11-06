@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/stomp/avatar/theme-toggle";
 import { HomeMountainLabel } from "@/components/stomp/home-mountain-label";
 import { SessionVoicePrompt } from "@/components/stomp/session-mic";
 import { isAvatarFlagOn } from "@/lib/stomp/avatar/flags";
+import { resolvePublicDisplayName } from "@/lib/stomp/avatar/identity";
 import { useAvatar } from "@/lib/stomp/avatar/store";
 import { useTripHub, type TripPhotoStyle } from "@/lib/stomp/avatar/trip-hub";
 import { locationLineFor, useHomeMountain } from "@/lib/stomp/home-mountain";
@@ -107,7 +108,9 @@ export function TripHubScreen() {
           <div className="mt-4 flex items-center gap-3 rounded-3xl bg-snow/10 p-3 ring-1 ring-line">
             <AvatarRenderer config={config} size={64} interactive={false} showBackground testId="trip-hub-self-avatar" />
             <div>
-              <p className="font-semibold">{config.displayName}</p>
+              <p className="font-semibold">
+                {resolvePublicDisplayName(config.starterId, config.displayName)}
+              </p>
               <p className="text-xs text-muted">Canonical avatar · same as Home & ID</p>
             </div>
           </div>

@@ -19,6 +19,7 @@ import {
   GROM_STARTERS,
   starterById,
 } from "@/lib/stomp/avatar/starters";
+import { publicLabelForStarter, STARTER_PUBLIC_LABELS } from "@/lib/stomp/avatar/identity";
 import type { AgeBand, Presenting } from "@/lib/stomp/avatar/types";
 
 export type ArtworkAvailability =
@@ -28,7 +29,7 @@ export type ArtworkAvailability =
 
 export type RosterArtworkSlot = {
   starterId: string;
-  /** Woman/Man/Grom N when mapped; otherwise "Unavailable". */
+  /** Public Stomper Woman/Man/Grom N label when mapped; otherwise "Unavailable". */
   slotLabel: string;
   ageBand: AgeBand;
   presenting: Presenting;
@@ -42,15 +43,16 @@ export type RosterArtworkSlot = {
   createScreenVisible: boolean;
 };
 
+/** Ingested Franz deliveries only — public labels from identity map. */
 const SLOT_LABEL_BY_STARTER: Readonly<Record<string, string>> = {
-  "f-nova": "Woman 1",
-  "f-hana": "Woman 2",
-  "f-priya": "Woman 3",
-  "m-samir": "Man 1",
-  "m-devon": "Man 2",
-  "m-leo": "Man 3",
-  "g-milo": "Grom 1",
-  "g-aria": "Grom 2",
+  "f-nova": STARTER_PUBLIC_LABELS["f-nova"]!,
+  "f-hana": STARTER_PUBLIC_LABELS["f-hana"]!,
+  "f-priya": STARTER_PUBLIC_LABELS["f-priya"]!,
+  "m-samir": STARTER_PUBLIC_LABELS["m-samir"]!,
+  "m-devon": STARTER_PUBLIC_LABELS["m-devon"]!,
+  "m-leo": STARTER_PUBLIC_LABELS["m-leo"]!,
+  "g-milo": STARTER_PUBLIC_LABELS["g-milo"]!,
+  "g-aria": STARTER_PUBLIC_LABELS["g-aria"]!,
 };
 
 const INGESTED_STARTER_IDS = new Set(Object.keys(SLOT_LABEL_BY_STARTER));
@@ -104,7 +106,7 @@ export function rosterArtworkSlot(starterId: string): RosterArtworkSlot | undefi
   const st = statusFor(starterId);
   return {
     starterId,
-    slotLabel: SLOT_LABEL_BY_STARTER[starterId] ?? "Unavailable",
+    slotLabel: SLOT_LABEL_BY_STARTER[starterId] ?? publicLabelForStarter(starterId),
     ageBand: s.ageBand,
     presenting: s.presenting,
     ...st,
@@ -177,5 +179,5 @@ export function assertEighteenSlotRoster(): {
 }
 
 export function slotLabelForStarter(starterId: string): string {
-  return SLOT_LABEL_BY_STARTER[starterId] ?? "Unavailable";
+  return SLOT_LABEL_BY_STARTER[starterId] ?? publicLabelForStarter(starterId);
 }

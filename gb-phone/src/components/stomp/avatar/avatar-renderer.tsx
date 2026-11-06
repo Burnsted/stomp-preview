@@ -30,6 +30,7 @@ import {
   modularRiderByStarterId,
 } from "@/lib/stomp/avatar/modular-riders";
 import { evaluateLook2MintGate } from "@/lib/stomp/avatar/plate-registry";
+import { resolvePublicDisplayName } from "@/lib/stomp/avatar/identity";
 import { slotLabelForStarter } from "@/lib/stomp/avatar/roster-artwork-status";
 import { starterById } from "@/lib/stomp/avatar/starters";
 import { useAvatar } from "@/lib/stomp/avatar/store";
@@ -279,9 +280,7 @@ export function AvatarRenderer({
     "data-goggles": config.layers.goggles.itemId,
     "data-jacket": config.layers.jacket.itemId,
     "data-pants": config.layers.pants.itemId,
-    "aria-label": config.displayName
-      ? `${config.displayName} avatar`
-      : `Look preview ${config.starterId}`,
+    "aria-label": `${resolvePublicDisplayName(config.starterId, config.displayName)} avatar`,
     className: shellClass,
     style: shellStyle,
   } as const;
@@ -422,7 +421,8 @@ export function AvatarRenderer({
     <>
       {useAppearancePreview ? appearanceStack : usePlates ? plateStack : svgFallback}
       <span className="sr-only">
-        {config.displayName || config.starterId}, {config.stylePath}, {silKey}
+        {resolvePublicDisplayName(config.starterId, config.displayName)}, {config.stylePath},{" "}
+        {silKey}
         {useAppearancePreview
           ? ", appearance preview only"
           : assembly.reason !== "complete"

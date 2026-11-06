@@ -67,7 +67,7 @@ describe("t1225u Franz ingest + 18-slot roster", () => {
     expect(man2.ownerVisualReview).toBe("NOT_OWNER_REVIEWED");
     expect(man2.altJacketItemId).toBe("jacket-look4-white");
     expect(man2.acceptanceEligible).toBe(false);
-    expect(rosterArtworkSlot("m-leo")!.slotLabel).toBe("Man 3");
+    expect(rosterArtworkSlot("m-leo")!.slotLabel).toBe("Stomper Man Three");
     expect(isAppearancePreviewStarter("m-leo")).toBe(true);
   });
 
@@ -139,10 +139,10 @@ describe("t1225u Franz ingest + 18-slot roster", () => {
   });
 
   it("uses Woman/Man/Grom N labels — never Woz", () => {
-    expect(rosterArtworkSlot("f-nova")!.slotLabel).toBe("Woman 1");
-    expect(rosterArtworkSlot("m-samir")!.slotLabel).toBe("Man 1");
-    expect(rosterArtworkSlot("g-milo")!.slotLabel).toBe("Grom 1");
-    expect(rosterArtworkSlot("g-aria")!.slotLabel).toBe("Grom 2");
+    expect(rosterArtworkSlot("f-nova")!.slotLabel).toBe("Stomper Woman One");
+    expect(rosterArtworkSlot("m-samir")!.slotLabel).toBe("Stomper Man One");
+    expect(rosterArtworkSlot("g-milo")!.slotLabel).toBe("Stomper Grom One");
+    expect(rosterArtworkSlot("g-aria")!.slotLabel).toBe("Stomper Grom Two");
     expect(
       [...ADULT_STARTERS, ...GROM_STARTERS].some((s) => /woz/i.test(s.label)),
     ).toBe(false);
