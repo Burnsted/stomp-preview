@@ -10,15 +10,18 @@
 
 ## Tip / PR
 
-- **Tip SHA:** `bab1f76a190fa8917f82e28c4ed02f83c261e2d3` (docs pin atop feature `6dae3165f4559903da1b748f5b51e1e989cdf3a7`)
+- **Tip SHA (live green CI head):** `8e7871e6ddf3ad78194c75976725b0e8abd09504`
+- **Feature tip:** `6dae3165f4559903da1b748f5b51e1e989cdf3a7`
 - **Draft PR:** [#90](https://github.com/Burnsted/stomp-preview/pull/90) — *DRAFT t1238u — Spot / Stash / Keeper (NO MERGE)*
 
-## CI (both checks required)
+## CI (both checks)
 
-| Check | Local result |
-| --- | --- |
-| `batch1 typecheck + test` | **pass** — 624 passed / 8 skipped |
-| `gb-phone typecheck + woz tests + build` | **pass** — typecheck clean; **1145** woz tests; build clean |
+Green on tip `8e7871e6ddf3ad78194c75976725b0e8abd09504` — [run 42305361131](https://github.com/Burnsted/stomp-preview/actions/runs/42305361131)
+
+| Check | Result | Job |
+| --- | --- | --- |
+| `batch1 typecheck + test` | **pass** — 624 passed / 8 skipped | [job](https://github.com/Burnsted/stomp-preview/actions/runs/42305361131/job/128193218712) |
+| `gb-phone typecheck + woz tests + build` | **pass** — 1145 woz + build | [job](https://github.com/Burnsted/stomp-preview/actions/runs/42305361131/job/128193218888) |
 
 ## What is functional (fictional preview)
 
