@@ -8,7 +8,7 @@
 |---|---|
 | Branch | `cursor/stomper-ingest-t1225u-bfa0` |
 | Base / starting_ref | `9339cc6b30df13beb445c90682d17536d8471db0` (draft PR #60 tip) |
-| Tip SHA | `d3ce631c63ff3215b191e24ae8e151c8b0ce77da` |
+| Tip SHA | `e4282fdcdbfa6f821561069cc5cac49e74cd3d97` |
 | Stack | New isolated draft PR #70 from #60 tip — **does not push onto #60** |
 | Draft PR | https://github.com/Burnsted/stomp-preview/pull/70 |
 
