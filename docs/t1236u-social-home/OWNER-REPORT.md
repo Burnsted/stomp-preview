@@ -8,7 +8,7 @@
 
 ## Tip / PR
 
-- **Tip SHA:** `3bbe7d835216da1804ce8324b465788e505b2c7a`
+- **Tip SHA:** `6d57b5624e1a2f833441ebb9aede780a3704b568` (feature) · branch head `c3aacf0`
 - **Draft PR:** [#82](https://github.com/Burnsted/stomp-preview/pull/82) — *DRAFT t1236u — Social-first Home correction (NO MERGE)*
 
 ## Before → After (Home)
