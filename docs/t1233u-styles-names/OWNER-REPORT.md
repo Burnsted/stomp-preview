@@ -8,9 +8,9 @@
 |---|---|
 | Branch | `cursor/t1233u-styles-names-387b` |
 | Starting ref | `f1f05f500aa4ac985079d7c9a66548bf7fd9b724` (draft PR **#75** tip — t1232u Woman 3 Locker/Boards; green CI on `e54ed91`, then docs-pin commits to this tip) |
-| Tip SHA | *(filled after push)* |
+| Tip SHA | `d42e42273b72a5340ec0ce7e316227dfa5379ee1` |
 | Isolated | **NEW** draft PR — does **not** push onto PR #75, #73, or #70. Do not merge. |
-| Draft PR | *(filled after open)* |
+| Draft PR | https://github.com/Burnsted/stomp-preview/pull/77 — *DRAFT t1233u — Riding styles + Stomper N names (NO MERGE)* |
 
 ### SHA split (documented)
 
@@ -18,7 +18,12 @@ This starting_ref **does not** include **t1228u FAB clearance** (PR **#70** tip 
 
 ### CI (both checks)
 
-*(filled after Actions complete)*
+**GREEN** on tip `d42e42273b72a5340ec0ce7e316227dfa5379ee1` — [run 42226840710](https://github.com/Burnsted/stomp-preview/actions/runs/42226840710)
+
+| Check | Result | Duration | Job |
+|---|---|---|---|
+| batch1 typecheck + test | **PASS** | 34s | [127922357235](https://github.com/Burnsted/stomp-preview/actions/runs/42226840710/job/127922357235) |
+| gb-phone typecheck + woz tests + build | **PASS** | 2m5s | [127922357507](https://github.com/Burnsted/stomp-preview/actions/runs/42226840710/job/127922357507) |
 
 ## 2. Riding styles after change
 
