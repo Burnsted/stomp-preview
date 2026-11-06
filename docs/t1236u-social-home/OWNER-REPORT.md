@@ -8,7 +8,7 @@
 
 ## Tip / PR
 
-- **Tip SHA:** `6d57b5624e1a2f833441ebb9aede780a3704b568`
+- **Tip SHA:** `3f2bf55d0d2882218142ea34afb4372411f85cbe`
 - **Draft PR:** _(fill after open)_
 
 ## Before → After (Home)
