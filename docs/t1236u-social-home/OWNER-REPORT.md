@@ -8,8 +8,17 @@
 
 ## Tip / PR
 
-- **Tip SHA:** `6d57b5624e1a2f833441ebb9aede780a3704b568` (feature) · branch head `c3aacf0`
+- **Tip SHA:** `e6940084c71f4c433dbf2b1c341760c215b3996c` (live green CI head)
 - **Draft PR:** [#82](https://github.com/Burnsted/stomp-preview/pull/82) — *DRAFT t1236u — Social-first Home correction (NO MERGE)*
+
+## CI (both checks)
+
+Green on tip `e6940084c71f4c433dbf2b1c341760c215b3996c` — [run 42262358104](https://github.com/Burnsted/stomp-preview/actions/runs/42262358104)
+
+| Check | Result | Job |
+| --- | --- | --- |
+| `batch1 typecheck + test` | **pass** | [job](https://github.com/Burnsted/stomp-preview/actions/runs/42262358104/job/128045298638) |
+| `gb-phone typecheck + woz tests + build` | **pass** | [job](https://github.com/Burnsted/stomp-preview/actions/runs/42262358104/job/128045298893) |
 
 ## Before → After (Home)
 
