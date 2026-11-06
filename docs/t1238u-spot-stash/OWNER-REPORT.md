@@ -10,7 +10,7 @@
 
 ## Tip / PR
 
-- **Tip SHA:** `4dd9a0d823c2c3ba6d55ce4ecf5fc1cb8d6b68a0` (docs pin atop feature `6dae3165f4559903da1b748f5b51e1e989cdf3a7`)
+- **Tip SHA:** `bab1f76a190fa8917f82e28c4ed02f83c261e2d3` (docs pin atop feature `6dae3165f4559903da1b748f5b51e1e989cdf3a7`)
 - **Draft PR:** [#90](https://github.com/Burnsted/stomp-preview/pull/90) — *DRAFT t1238u — Spot / Stash / Keeper (NO MERGE)*
 
 ## CI (both checks required)
