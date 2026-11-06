@@ -113,9 +113,9 @@ describe("t1194u/t1197u — Look 2 fixed registration (honest visual gate)", () 
       p.url.includes("face-f-hana-locked-composite"),
     )!;
     expect(face.sha256).toBe(
-      "c2ffcbd901648b718d71d468f31090b959459b97b7fd9a7d25ca6044580bd434",
+      "888f40f14d7795dd23385bc6a5b3012ea7545a83e64ae7a44b39c40b302bc1b5",
     );
-    expect(face.bytes).toBe(10090);
+    expect(face.bytes).toBe(9812);
     expect(LOOK2_GATE_STATUS.crotchClip).toBe("DONE");
     expect(LOOK2_GATE_STATUS.headCleanup).toBe("SUPERSEDED_BY_FINISHING");
     expect(LOOK2_GATE_STATUS.finishing).toBe("STAGED");
@@ -123,16 +123,16 @@ describe("t1194u/t1197u — Look 2 fixed registration (honest visual gate)", () 
       "85ecf3646890a4e4a730f7045a34b8284fbea8aa5dbeb4b0d26614873d26d37a",
     );
     expect(LOOK2_GATE_STATUS.faceLockedSha256).toBe(
-      "c2ffcbd901648b718d71d468f31090b959459b97b7fd9a7d25ca6044580bd434",
+      "888f40f14d7795dd23385bc6a5b3012ea7545a83e64ae7a44b39c40b302bc1b5",
     );
     expect(inkJ.sha256).toBe(
-      "1611f0fb5d4f868c0439624dbce2092f6a2f26e884c766bf6dc98c4c10056462",
+      "84652bd35647c9d89118a73d4217e339e4b227550529e6b7b7d7014a41b9e626",
     );
     expect(inkP.sha256).toBe(
-      "904c32b7df3bd7b2c3c7415cd1282230338b5ff2dc7e37bc60404881ad22227d",
+      "b45741b9f73dbe24b88385da849557a008791444728ea0903eb073a1d86510eb",
     );
     expect(LOOK2_PLATE_MANIFEST.sourceZipSha256).toBe(
-      "2118bdc84855f2aae526fdaf6111d014e5d990dd0705a1354113988b67bdbd84",
+      "c006bcc25b8370defab935a8702b10b5579991d1ba99c1bbf8d509dd6081d5dd",
     );
     expect(LOOK2_PLATE_MANIFEST.preferredPack).toBe("franz-finishing");
     expect(LOOK2_PLATE_MANIFEST.crotchClip?.status).toBe("DONE");

@@ -27,6 +27,10 @@ import {
   shippedPlatePathExists,
 } from "@/lib/stomp/avatar/look2-plate-manifest";
 import {
+  appearancePreviewUrl,
+  isAppearancePreviewStarter,
+} from "@/lib/stomp/avatar/appearance-preview-riders";
+import {
   isModularPrototypeStarter,
   modularPrototypePlateUrls,
   modularRiderByStarterId,
@@ -39,6 +43,7 @@ import {
   ROSTER_V24,
   type RosterV24Entry,
 } from "@/lib/stomp/avatar/roster-v24";
+import { rosterArtworkSlot } from "@/lib/stomp/avatar/roster-artwork-status";
 import { configFromStarter, starterById } from "@/lib/stomp/avatar/starters";
 import type { AgeBand, AvatarConfig, AvatarSlot } from "@/lib/stomp/avatar/types";
 
@@ -60,7 +65,9 @@ export const LOOK2_MINT_REQUIRED_PATHS: readonly string[] = [
 export type PlateSlotStatus =
   | "missing-plates"
   | "ingest-ready"
-  | "prototype-ingest-ready";
+  | "prototype-ingest-ready"
+  | "appearance-preview"
+  | "source-missing";
 
 export type LookPlateSlot = {
   lookKey: RosterV24Entry["lookKey"];
@@ -124,6 +131,29 @@ export function eightLookPlateMatrix(
 ): LookPlateSlot[] {
   return ROSTER_V24.map((entry) => {
     const modular = modularRiderByStarterId(entry.starterId);
+    const appearance = isAppearancePreviewStarter(entry.starterId);
+    const art = rosterArtworkSlot(entry.starterId);
+    if (appearance) {
+      const preview = appearancePreviewUrl(entry.starterId);
+      const requiredPaths = preview ? [preview] : [];
+      const missingPaths = requiredPaths.filter((p) => !pathExists(p));
+      return {
+        lookKey: entry.lookKey,
+        starterId: entry.starterId,
+        ageBand: entry.ageBand,
+        lookIndex1Based: entry.lookIndex1Based,
+        lookTotal: entry.lookTotal,
+        androidAcceptanceGate: false,
+        previewOnly: entry.previewOnly,
+        requiredPaths,
+        status: (missingPaths.length === 0
+          ? "appearance-preview"
+          : "missing-plates") as PlateSlotStatus,
+        missingPaths,
+        prototypeOnly: true,
+        ownerVisualReview: "APPEARANCE_PREVIEW_ONLY",
+      };
+    }
     const requiredPaths =
       entry.starterId === LOOK2_STARTER_ID
         ? LOOK2_MINT_REQUIRED_PATHS
@@ -135,6 +165,9 @@ export function eightLookPlateMatrix(
       missingPaths.length === 0 ? "ingest-ready" : "missing-plates";
     if (modular && entry.starterId !== LOOK2_STARTER_ID && missingPaths.length === 0) {
       status = "prototype-ingest-ready";
+    }
+    if (art?.availability === "source-missing") {
+      status = "source-missing";
     }
     return {
       lookKey: entry.lookKey,

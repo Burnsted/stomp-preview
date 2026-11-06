@@ -6,7 +6,7 @@ export const ADULT_STARTERS: StarterDef[] = [
   // Female-presenting
   {
     id: "f-nova",
-    label: "Nova",
+    label: "Woman 1",
     presenting: "female",
     ageBand: "adult",
     styleHint: "park-street",
@@ -157,7 +157,7 @@ export const ADULT_STARTERS: StarterDef[] = [
   },
   {
     id: "m-leo",
-    label: "Leo",
+    label: "Man 3",
     presenting: "male",
     ageBand: "adult",
     styleHint: "park-street",
@@ -191,7 +191,7 @@ export const ADULT_STARTERS: StarterDef[] = [
 export const GROM_STARTERS: StarterDef[] = [
   {
     id: "g-aria",
-    label: "Aria",
+    label: "Grom 2",
     presenting: "female",
     ageBand: "grom",
     styleHint: "park-street",
@@ -236,7 +236,7 @@ export const GROM_STARTERS: StarterDef[] = [
   },
   {
     id: "g-milo",
-    label: "Milo",
+    label: "Grom 1",
     presenting: "male",
     ageBand: "grom",
     styleHint: "park-street",

@@ -170,10 +170,10 @@ describe("t1182u — plate ingest + Look-2 mint gate", () => {
     expect(matrix.find((s) => s.starterId === "m-devon")!.status).toBe(
       "prototype-ingest-ready",
     );
-    const remaining = others.filter(
-      (s) => !["m-samir", "f-priya", "m-devon"].includes(s.starterId),
-    );
-    expect(remaining.every((s) => s.status === "missing-plates")).toBe(true);
+    expect(matrix.find((s) => s.starterId === "f-nova")!.status).toBe("appearance-preview");
+    expect(matrix.find((s) => s.starterId === "m-leo")!.status).toBe("appearance-preview");
+    expect(matrix.find((s) => s.starterId === "g-milo")!.status).toBe("appearance-preview");
+    expect(matrix.find((s) => s.starterId === "g-aria")!.status).toBe("appearance-preview");
     expect(others.filter((s) => s.previewOnly).map((s) => s.starterId).sort()).toEqual([
       "g-aria",
       "g-milo",
@@ -294,13 +294,15 @@ describe("t1182u — plate ingest + Look-2 mint gate", () => {
     expect(hana.getAttribute("data-prototype-only")).toBe("true");
     expect(hana.getAttribute("data-missing-plates")).toBe("0");
     expect(hana.getAttribute("data-plate-slot-status")).toBe("ingest-ready");
-    expect(hana.getAttribute("data-look-of-m")).toMatch(/^Look \d+ of \d+$/);
+    expect(hana.getAttribute("data-look-of-m")).toBe("Woman 2");
+    expect(hana.getAttribute("data-slot-label")).toBe("Woman 2");
 
     const samir = screen.getByTestId("starter-m-samir");
     expect(samir.getAttribute("data-android-acceptance-gate")).toBe("false");
     expect(samir.getAttribute("data-acceptance-eligible")).toBe("false");
     expect(samir.getAttribute("data-plate-slot-status")).toBe("prototype-ingest-ready");
     expect(samir.getAttribute("data-prototype-only")).toBe("true");
+    expect(samir.getAttribute("data-slot-label")).toBe("Man 1");
   });
 
   it("Home / five-tab / gromFlow / identity locks stay green", () => {

@@ -1,0 +1,92 @@
+{
+  "adult-f-01": {
+    "technical_starter_id": "f-nova",
+    "slot_label": "Woman 1",
+    "local_package": "Woman-1"
+  },
+  "adult-f-02": {
+    "technical_starter_id": "f-hana",
+    "slot_label": "Woman 2",
+    "local_package": "Woman-2"
+  },
+  "adult-f-03": {
+    "technical_starter_id": "f-priya",
+    "slot_label": "Woman 3",
+    "local_package": "Woman-3"
+  },
+  "adult-m-01": {
+    "technical_starter_id": "m-samir",
+    "slot_label": "Man 1 / Rider 1",
+    "local_package": "Man-1-Rider-1"
+  },
+  "adult-m-02": {
+    "technical_starter_id": "m-devon",
+    "slot_label": "Man 2 / Look 4",
+    "local_package": "Man-2-Look-4"
+  },
+  "adult-m-03": {
+    "technical_starter_id": "m-leo",
+    "slot_label": "Man 3",
+    "local_package": "Man-3"
+  },
+  "grom-m-01": {
+    "technical_starter_id": "g-milo",
+    "slot_label": "Grom 1",
+    "local_package": "Grom-1"
+  },
+  "grom-f-01": {
+    "technical_starter_id": "g-aria",
+    "slot_label": "Grom 2",
+    "local_package": "Grom-2"
+  },
+  "adult-f-04": {
+    "technical_starter_id": "f-mira",
+    "slot_label": "unassigned adult slot",
+    "approved_artwork": "missing"
+  },
+  "adult-f-05": {
+    "technical_starter_id": "f-jade",
+    "slot_label": "unassigned adult slot",
+    "approved_artwork": "missing"
+  },
+  "adult-f-06": {
+    "technical_starter_id": "f-elena",
+    "slot_label": "unassigned adult slot",
+    "approved_artwork": "missing"
+  },
+  "adult-m-04": {
+    "technical_starter_id": "m-kai",
+    "slot_label": "unassigned adult slot",
+    "approved_artwork": "missing"
+  },
+  "adult-m-05": {
+    "technical_starter_id": "m-owen",
+    "slot_label": "unassigned adult slot",
+    "approved_artwork": "missing"
+  },
+  "adult-m-06": {
+    "technical_starter_id": "m-jonas",
+    "slot_label": "unassigned adult slot",
+    "approved_artwork": "missing"
+  },
+  "grom-f-02": {
+    "technical_starter_id": "g-zoe",
+    "slot_label": "unassigned Grom slot",
+    "approved_artwork": "missing"
+  },
+  "grom-f-03": {
+    "technical_starter_id": "g-nina",
+    "slot_label": "unassigned Grom slot",
+    "approved_artwork": "missing"
+  },
+  "grom-m-02": {
+    "technical_starter_id": "g-reed",
+    "slot_label": "unassigned Grom slot",
+    "approved_artwork": "missing"
+  },
+  "grom-m-03": {
+    "technical_starter_id": "g-theo",
+    "slot_label": "unassigned Grom slot",
+    "approved_artwork": "missing"
+  }
+}

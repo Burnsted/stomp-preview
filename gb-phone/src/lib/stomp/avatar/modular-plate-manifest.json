@@ -1,12 +1,13 @@
 {
-  "task": "t1205u",
+  "task": "t1225u",
   "status": "REGISTERED_VISUAL_PROTOTYPE_ONLY",
   "androidAccepted": false,
   "androidQa": "NOT_RUN",
   "sourceZipSha256": {
-    "m-samir": "d51249b715a46872fbc54d122217aaa3351c1c538f334ea0b79f2b951b605365",
-    "f-priya": "c23e0ceb6f332b5f55ba253844b8926eb6ab3f80fd9c95e7312e551b6de2f758",
-    "m-devon": "d7d6484409c4da276ca095f21d765ff00c7d915d16befe2cccebd075d7fa7a02"
+    "m-samir": "5105bcea04ab2b27eb0708e3aaa207b5d17ba1b8c72e1300416db654b93d534e",
+    "f-priya": "b8d9fee95a9d12234bf178d43914cb86fcf6ef9716b51f4c21caf118d8330a6d",
+    "m-devon": "7f11f205db0b673f5918fbae7cd7d8161471d19b75b10fa74c0269dc7f6aaf04",
+    "f-hana": "c006bcc25b8370defab935a8702b10b5579991d1ba99c1bbf8d509dd6081d5dd"
   },
   "riders": [
     "m-samir",
@@ -27,8 +28,8 @@
     {
       "path": "gb-phone/public/stomper/adult/body/body-look1-male@512.webp",
       "url": "/stomper/adult/body/body-look1-male@512.webp",
-      "sha256": "e123ee03a16501eb3f366b168bf4a8a864fae7c385f51723332b9b05e8993278",
-      "bytes": 5954,
+      "sha256": "6aa97bdd18907861b03a8f3bbf6bf5ce2c6f1312c6430f4a7ab665db08463b49",
+      "bytes": 10638,
       "size": [
         512,
         512
@@ -51,8 +52,8 @@
     {
       "path": "gb-phone/public/stomper/adult/jacket/jacket-look1-tan@512.webp",
       "url": "/stomper/adult/jacket/jacket-look1-tan@512.webp",
-      "sha256": "54c8c35fadf9cc01d626d1f77d45dfa8f3926442766cae311b8261b0576ba067",
-      "bytes": 31420,
+      "sha256": "a43385e4cc7ecbe1723aed72d262cac11b5a25c2645875924e9352348e9b341f",
+      "bytes": 32178,
       "size": [
         512,
         512
@@ -63,8 +64,8 @@
     {
       "path": "gb-phone/public/stomper/adult/jacket/jacket-look1-orange@512.webp",
       "url": "/stomper/adult/jacket/jacket-look1-orange@512.webp",
-      "sha256": "c3f2d1810ca7da08de897ec76c96cd4b23488019717a67cfbb8ac24d9c65fc69",
-      "bytes": 31440,
+      "sha256": "b546c9dd5987db2e006bf26f0b36f6fddb80d3930092fb2ec61758e86f3f5a8a",
+      "bytes": 32020,
       "size": [
         512,
         512
@@ -75,8 +76,8 @@
     {
       "path": "gb-phone/public/stomper/adult/pants/pants-look1-black@512.webp",
       "url": "/stomper/adult/pants/pants-look1-black@512.webp",
-      "sha256": "a64b3640568ec376b98a26f8c6b0b09c99a25437ad36d43682ceb1bf4a36ff4e",
-      "bytes": 33838,
+      "sha256": "7efdbb5d3dcb4e924e0bbc336bff1f1a1834b8190fcbfe096771b7ed297dffbb",
+      "bytes": 34244,
       "size": [
         512,
         512
@@ -87,8 +88,8 @@
     {
       "path": "gb-phone/public/stomper/adult/pants/pants-look1-charcoal@512.webp",
       "url": "/stomper/adult/pants/pants-look1-charcoal@512.webp",
-      "sha256": "a64b3640568ec376b98a26f8c6b0b09c99a25437ad36d43682ceb1bf4a36ff4e",
-      "bytes": 33838,
+      "sha256": "3099400a67aba537bab16ee76fc1b757271b9d722db9b54d03e1454e4a720e82",
+      "bytes": 34232,
       "size": [
         512,
         512
@@ -99,8 +100,8 @@
     {
       "path": "gb-phone/public/stomper/adult/gloves/gloves-look1-photo@512.webp",
       "url": "/stomper/adult/gloves/gloves-look1-photo@512.webp",
-      "sha256": "ef2cee5f4026d626b0e2ab235b8e3f738c598835c2524aef77ec4083a7d87621",
-      "bytes": 5118,
+      "sha256": "1f0f9bac5bfcd247c8182ee2d527f3c9e7270b17138fc65e8a042b5636d617c7",
+      "bytes": 5076,
       "size": [
         512,
         512
@@ -111,8 +112,8 @@
     {
       "path": "gb-phone/public/stomper/adult/boots/boots-look1-photo@512.webp",
       "url": "/stomper/adult/boots/boots-look1-photo@512.webp",
-      "sha256": "9f72f77189cf9beded83364e8eb29e5f984cdf72818a9bcd401f4f9c779cc22b",
-      "bytes": 8324,
+      "sha256": "11401dc8c99047ea210081c508ae669f5cbaa5cac685850a3c01da873df12f99",
+      "bytes": 8276,
       "size": [
         512,
         512
@@ -123,8 +124,8 @@
     {
       "path": "gb-phone/public/stomper/adult/starter/m-samir/preview@512.webp",
       "url": "/stomper/adult/starter/m-samir/preview@512.webp",
-      "sha256": "154774b1504b8b1aba7e6a6eca73683355a971b30056b8227678c4373995325d",
-      "bytes": 15016,
+      "sha256": "fba3d85e90de04cf6e72aa171c461ccfdba34f572b3689c8ea98f1a59043db91",
+      "bytes": 82862,
       "size": [
         512,
         512
@@ -159,8 +160,8 @@
     {
       "path": "gb-phone/public/stomper/adult/jacket/jacket-look3-purple@512.webp",
       "url": "/stomper/adult/jacket/jacket-look3-purple@512.webp",
-      "sha256": "cb86173765e4a924b442c09354e5b88bb68392e3673d956158dce156ab4b8ecb",
-      "bytes": 42600,
+      "sha256": "83228249f33b687c7e6c889c57a3fecef8d541051817432e6b2cfcb138ad5fee",
+      "bytes": 39210,
       "size": [
         512,
         512
@@ -171,8 +172,8 @@
     {
       "path": "gb-phone/public/stomper/adult/jacket/jacket-look3-fuchsia@512.webp",
       "url": "/stomper/adult/jacket/jacket-look3-fuchsia@512.webp",
-      "sha256": "c99d2b38aa33942540a8add875dc4690c4a4f27a4519bcc9d16d3ab751a4cb12",
-      "bytes": 43238,
+      "sha256": "858efefbffae7d0f3adedbed41913b9fcd2feebdf6f6d96d802d4f1b8685597c",
+      "bytes": 38778,
       "size": [
         512,
         512
@@ -183,8 +184,8 @@
     {
       "path": "gb-phone/public/stomper/adult/pants/pants-look3-purple@512.webp",
       "url": "/stomper/adult/pants/pants-look3-purple@512.webp",
-      "sha256": "5f1580c2057f581bff98940a2f2c70650223132fbf0c81dacb0cfab845ca2788",
-      "bytes": 39226,
+      "sha256": "7d1de412e93658d409f604d290614f85a7668f6a6f4bd148a388ed4aa9a85a1d",
+      "bytes": 39104,
       "size": [
         512,
         512
@@ -195,8 +196,8 @@
     {
       "path": "gb-phone/public/stomper/adult/pants/pants-look3-charcoal@512.webp",
       "url": "/stomper/adult/pants/pants-look3-charcoal@512.webp",
-      "sha256": "9238d61d847a0b24120ba6b53857d10d26eb9a8d440bf9d6d242006800124028",
-      "bytes": 26174,
+      "sha256": "b271af7271637d3f8797dd196034c7e21ab0e1607fb847c8edc213ab9741be1f",
+      "bytes": 24974,
       "size": [
         512,
         512
@@ -207,8 +208,8 @@
     {
       "path": "gb-phone/public/stomper/adult/gloves/gloves-look3-photo@512.webp",
       "url": "/stomper/adult/gloves/gloves-look3-photo@512.webp",
-      "sha256": "747d4b66741bb4b9cf568c654d5f75e6e2b107da06cf585b337dc7bc5de01f50",
-      "bytes": 4818,
+      "sha256": "0c52319d4996db87e4f34c102245c72a6bce6bc42d3e0d265de456ebbd6bcce5",
+      "bytes": 4644,
       "size": [
         512,
         512
@@ -219,8 +220,8 @@
     {
       "path": "gb-phone/public/stomper/adult/boots/boots-look3-photo@512.webp",
       "url": "/stomper/adult/boots/boots-look3-photo@512.webp",
-      "sha256": "3e148c85e3a5b5d2906b4c72b1db8091c9b5e19b85345105bca4ac8b4507359b",
-      "bytes": 10030,
+      "sha256": "0e9b7fd21ee3c1cfa69908d58a063ecc30be61eda71e0bd2dd1eeb8946f16881",
+      "bytes": 8900,
       "size": [
         512,
         512
@@ -231,8 +232,8 @@
     {
       "path": "gb-phone/public/stomper/adult/starter/f-priya/preview@512.webp",
       "url": "/stomper/adult/starter/f-priya/preview@512.webp",
-      "sha256": "57428cb71a6082a080d815b3ad8c089ca6aa89063669c15193278719c570dbb3",
-      "bytes": 21302,
+      "sha256": "1f0fcea4d4127cdc73ff974adfadedf891f3698f677d2b893809e3f9448393c3",
+      "bytes": 95452,
       "size": [
         512,
         512
@@ -267,8 +268,8 @@
     {
       "path": "gb-phone/public/stomper/adult/jacket/jacket-look4-orange@512.webp",
       "url": "/stomper/adult/jacket/jacket-look4-orange@512.webp",
-      "sha256": "4ef8f8ce81825ca11ec6e8ba60888f8e1f98889f1a38644941f4480c9065c411",
-      "bytes": 44308,
+      "sha256": "738ae7769d848bc76310983de397e54c8445026c74f9f20dabd518be0cd4ada0",
+      "bytes": 45332,
       "size": [
         512,
         512
@@ -279,8 +280,8 @@
     {
       "path": "gb-phone/public/stomper/adult/jacket/jacket-look4-white@512.webp",
       "url": "/stomper/adult/jacket/jacket-look4-white@512.webp",
-      "sha256": "2d616e5a11c749d772a08b7cd479068c8f70930d62b56b34efdc8d8761b442c9",
-      "bytes": 31362,
+      "sha256": "5202690e715bba90851869d131ab7a3391063fc624cbcbdf526e50247e48ad0d",
+      "bytes": 31210,
       "size": [
         512,
         512
@@ -291,8 +292,8 @@
     {
       "path": "gb-phone/public/stomper/adult/pants/pants-look4-charcoal@512.webp",
       "url": "/stomper/adult/pants/pants-look4-charcoal@512.webp",
-      "sha256": "4a47b5e215280e565636a78b4827fe77a9b766c2557b8f7450fa5242c877ef02",
-      "bytes": 40954,
+      "sha256": "a02c6b0fa7667db19f96c8380e992753a3066e057de6b68b8514055adf44fb7f",
+      "bytes": 41158,
       "size": [
         512,
         512
@@ -303,8 +304,8 @@
     {
       "path": "gb-phone/public/stomper/adult/pants/pants-look4-charcoal-silver@512.webp",
       "url": "/stomper/adult/pants/pants-look4-charcoal-silver@512.webp",
-      "sha256": "e097355eeead6eca70054517aeaaaf924144e332ad21d26b3ee28fbe1cff5c25",
-      "bytes": 37368,
+      "sha256": "029b77c05aedd137102c98c814e5f8e0a3ba2247d1f24b4d10e27122e5f74d99",
+      "bytes": 37446,
       "size": [
         512,
         512
@@ -315,8 +316,8 @@
     {
       "path": "gb-phone/public/stomper/adult/gloves/gloves-look4-photo@512.webp",
       "url": "/stomper/adult/gloves/gloves-look4-photo@512.webp",
-      "sha256": "284fdf5a886414610575d16acdcedea4b51372b83d8e839d4ded98deb7f9f39e",
-      "bytes": 6522,
+      "sha256": "3de5c68632420712bcbca58f0f6ec093bcfca31481e0754096970c12e06e533f",
+      "bytes": 6482,
       "size": [
         512,
         512
@@ -327,8 +328,8 @@
     {
       "path": "gb-phone/public/stomper/adult/boots/boots-look4-photo@512.webp",
       "url": "/stomper/adult/boots/boots-look4-photo@512.webp",
-      "sha256": "c5eee71c92610252d9c43863b967e782bc22ed2ed8ad8476f0458832e05f94bc",
-      "bytes": 8996,
+      "sha256": "b1f440f1bb6bcb139c83b42b8c7ab06a74c90d1ed8ed09849645c30e12c86fe2",
+      "bytes": 8556,
       "size": [
         512,
         512
@@ -339,8 +340,8 @@
     {
       "path": "gb-phone/public/stomper/adult/starter/m-devon/preview@512.webp",
       "url": "/stomper/adult/starter/m-devon/preview@512.webp",
-      "sha256": "fadf3a2a1bb6b1a2a8224b15fcf1bf7e8645df3f1c7481f260602b6e09466a94",
-      "bytes": 17142,
+      "sha256": "ab3467d569e9fb94a324b48e631155cca06406df8615c38703df234116127cee",
+      "bytes": 99076,
       "size": [
         512,
         512
@@ -380,5 +381,8 @@
       "/stomper/adult/gloves/gloves-look4-photo@512.webp",
       "/stomper/adult/boots/boots-look4-photo@512.webp"
     ]
-  }
+  },
+  "franzIngest": "2026-11-05-alpha-v1",
+  "franzAlphaFillV2": "t228u-promoted-4",
+  "man1GloveFillQuarantined": true
 }

@@ -1,0 +1,99 @@
+[
+  {
+    "char": "Man-1-Rider-1",
+    "layer": "gloves@1024.png",
+    "pixels_filled": 348,
+    "components": [
+      348
+    ],
+    "file": "/workspace/for-ted/stomp-final-qa-2026-11-05/corrected/Man-1-Rider-1-gloves-ALPHA-FILL-v2@1024.png",
+    "touches": [
+      1,
+      3
+    ]
+  },
+  {
+    "char": "Woman-3",
+    "layer": "jacket_purple@1024.png",
+    "pixels_filled": 77,
+    "components": [
+      2,
+      2,
+      1,
+      1,
+      2,
+      23,
+      1,
+      2,
+      1,
+      2,
+      1,
+      5,
+      1,
+      1,
+      1,
+      6,
+      1,
+      2,
+      1,
+      1,
+      1,
+      1,
+      6,
+      1,
+      9,
+      1,
+      1
+    ],
+    "file": "/workspace/for-ted/stomp-final-qa-2026-11-05/corrected/Woman-3-jacket_purple-ALPHA-FILL-v2@1024.png"
+  },
+  {
+    "char": "Woman-3",
+    "layer": "pants_purple@1024.png",
+    "pixels_filled": 115,
+    "components": [
+      29,
+      1,
+      8,
+      1,
+      1,
+      3,
+      22,
+      1,
+      33,
+      11,
+      4,
+      1
+    ],
+    "file": "/workspace/for-ted/stomp-final-qa-2026-11-05/corrected/Woman-3-pants_purple-ALPHA-FILL-v2@1024.png"
+  },
+  {
+    "char": "Man-2-Look-4",
+    "layer": "jacket_orange@1024.png",
+    "pixels_filled": 41,
+    "components": [
+      28,
+      9,
+      3,
+      1
+    ],
+    "file": "/workspace/for-ted/stomp-final-qa-2026-11-05/corrected/Man-2-Look-4-jacket_orange-ALPHA-FILL-v2@1024.png"
+  },
+  {
+    "char": "Woman-2",
+    "layer": "pants_mint@1024.png",
+    "pixels_filled": 24,
+    "components": [
+      15,
+      1,
+      1,
+      1,
+      2,
+      1,
+      1,
+      1,
+      1
+    ],
+    "file": "/workspace/for-ted/stomp-final-qa-2026-11-05/corrected/Woman-2-pants_mint-ALPHA-FILL-v2@1024.png"
+  }
+]

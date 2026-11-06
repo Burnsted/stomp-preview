@@ -319,13 +319,13 @@ describe("t1205u — multi-rider modular prototypes", () => {
 
   it("source ZIP sha256 pins match Franz registered packs", () => {
     expect(modularRiderByStarterId("m-samir")!.sourceZipSha256).toBe(
-      "d51249b715a46872fbc54d122217aaa3351c1c538f334ea0b79f2b951b605365",
+      "5105bcea04ab2b27eb0708e3aaa207b5d17ba1b8c72e1300416db654b93d534e",
     );
     expect(modularRiderByStarterId("f-priya")!.sourceZipSha256).toBe(
-      "c23e0ceb6f332b5f55ba253844b8926eb6ab3f80fd9c95e7312e551b6de2f758",
+      "b8d9fee95a9d12234bf178d43914cb86fcf6ef9716b51f4c21caf118d8330a6d",
     );
     expect(modularRiderByStarterId("m-devon")!.sourceZipSha256).toBe(
-      "d7d6484409c4da276ca095f21d765ff00c7d915d16befe2cccebd075d7fa7a02",
+      "7f11f205db0b673f5918fbae7cd7d8161471d19b75b10fa74c0269dc7f6aaf04",
     );
   });
 });

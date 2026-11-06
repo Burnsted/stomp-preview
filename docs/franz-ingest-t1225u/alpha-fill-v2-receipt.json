@@ -1,0 +1,58 @@
+{
+  "task": "t1225u",
+  "franzQa": "t228u / 2026-11-05",
+  "promotedAlphaFillV2": [
+    {
+      "label": "Woman-2 pants_mint",
+      "starterId": "f-hana",
+      "slot": "pants",
+      "runtime": "stomper/adult/pants/pants-look2-mint@512.webp",
+      "sha256": "274c1368e1e21b5fe08bafc993b62473bdad5411c8601867625adaa58123bb72",
+      "bytes": 34226,
+      "changed": true,
+      "webp_src_sha256": "274c1368e1e21b5fe08bafc993b62473bdad5411c8601867625adaa58123bb72",
+      "png_src_sha256": "0175f7b2537f92bf142c922f8763e5d00401791641635f6bbc5bcf5ebf0fab90"
+    },
+    {
+      "label": "Woman-3 jacket_purple",
+      "starterId": "f-priya",
+      "slot": "jacket",
+      "runtime": "stomper/adult/jacket/jacket-look3-purple@512.webp",
+      "sha256": "83228249f33b687c7e6c889c57a3fecef8d541051817432e6b2cfcb138ad5fee",
+      "bytes": 39210,
+      "changed": true,
+      "webp_src_sha256": "83228249f33b687c7e6c889c57a3fecef8d541051817432e6b2cfcb138ad5fee",
+      "png_src_sha256": "127a0f8b8cacecfdecfdc6d34db2bdea1ab8d2c46f0a001725e3463d526e0ae3"
+    },
+    {
+      "label": "Woman-3 pants_purple",
+      "starterId": "f-priya",
+      "slot": "pants",
+      "runtime": "stomper/adult/pants/pants-look3-purple@512.webp",
+      "sha256": "7d1de412e93658d409f604d290614f85a7668f6a6f4bd148a388ed4aa9a85a1d",
+      "bytes": 39104,
+      "changed": true,
+      "webp_src_sha256": "7d1de412e93658d409f604d290614f85a7668f6a6f4bd148a388ed4aa9a85a1d",
+      "png_src_sha256": "12bb2c41629b4f9631d357ca7f82e5a341bb453497de070602c04d611bf71094"
+    },
+    {
+      "label": "Man-2 jacket_orange",
+      "starterId": "m-devon",
+      "slot": "jacket",
+      "runtime": "stomper/adult/jacket/jacket-look4-orange@512.webp",
+      "sha256": "738ae7769d848bc76310983de397e54c8445026c74f9f20dabd518be0cd4ada0",
+      "bytes": 45332,
+      "changed": true,
+      "webp_src_sha256": "738ae7769d848bc76310983de397e54c8445026c74f9f20dabd518be0cd4ada0",
+      "png_src_sha256": "4ba6a4789a409878808f8eb4f48253f859e4981d9ac9f9bb354312e045655ce8"
+    }
+  ],
+  "quarantinedNotIngested": [
+    {
+      "char": "Man-1-Rider-1",
+      "layer": "gloves",
+      "reason": "hole touches two opaque glove islands \u2014 not promoted",
+      "pixels_filled": 348
+    }
+  ]
+}

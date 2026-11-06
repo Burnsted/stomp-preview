@@ -74,11 +74,17 @@ describe("Update02 — feature flags & privacy", () => {
     expect(screen.queryByTestId("grom-onboard")).toBeNull();
   });
 
-  it("refuses selecting a Grom starter when flag is off", () => {
+  it("refuses missing-art Grom starters when flag is off; allows appearance-preview groms", () => {
+    act(() => {
+      useAvatar.getState().selectStarter("g-zoe");
+    });
+    expect(useAvatar.getState().draft.starterId).toBeNull();
     act(() => {
       useAvatar.getState().selectStarter("g-aria");
     });
-    expect(useAvatar.getState().draft.starterId).toBeNull();
+    // Grom 2 is SOURCE_APPEARANCE_PREVIEW_ONLY — fictional look, still no youth social.
+    expect(useAvatar.getState().draft.starterId).toBe("g-aria");
+    expect(isAvatarFlagOn("gromFlowEnabled")).toBe(false);
   });
 
   it("CI repair: all flags stay boolean false; isAvatarFlagOn never true", () => {
@@ -200,8 +206,11 @@ describe("Update02 — adult onboarding Screens 1–5", () => {
     expect(screen.getByTestId("avatar-onboard-1")).toBeTruthy();
     expect(within(screen.getByTestId("starter-grid-female")).getAllByTestId(/^starter-f-/)).toHaveLength(6);
     expect(within(screen.getByTestId("starter-grid-male")).getAllByTestId(/^starter-m-/)).toHaveLength(6);
-    expect(screen.getByTestId("starter-look-label-f-nova").textContent).toBe(lookOrdinalLabel(1, 12));
-    expect(screen.getByTestId("starter-look-label-m-kai").textContent).toBe(lookOrdinalLabel(7, 12));
+    expect(screen.getByTestId("starter-look-label-f-nova").textContent).toBe("Woman 1");
+    expect(screen.getByTestId("starter-unavailable-m-kai")).toBeTruthy();
+    expect(screen.getByTestId("starter-m-kai").getAttribute("data-availability")).toBe(
+      "source-missing",
+    );
     expect(screen.queryByText("Nova")).toBeNull();
     expect(screen.queryByText("Kai")).toBeNull();
 
@@ -256,30 +265,31 @@ describe("t1169u — avatar identity (starters are looks, not names)", () => {
       useAvatar.getState().startOnboarding("adult");
       useAvatar.getState().selectStarter("f-nova");
       useAvatar.getState().setDisplayName("PowderFox");
+      // m-kai is SOURCE MISSING — refuse; switch to ingested Man 1 instead.
       useAvatar.getState().selectStarter("m-kai");
+      expect(useAvatar.getState().draft.starterId).toBe("f-nova");
+      useAvatar.getState().selectStarter("m-samir");
     });
     const draft = useAvatar.getState().draft;
-    expect(draft.starterId).toBe("m-kai");
+    expect(draft.starterId).toBe("m-samir");
     expect(draft.displayName).toBe("PowderFox");
-    expect(draft.displayName).not.toBe(starterById("m-kai")!.label);
-    expect(draft.displayName).not.toBe("Kai");
-    expect(draft.displayName).not.toBe("Nova");
+    expect(draft.displayName).not.toBe(starterById("m-samir")!.label);
+    expect(draft.displayName).not.toBe("Man 1");
+    expect(draft.displayName).not.toBe("Woman 1");
   });
 
   it("saved identity persists after look / locker change", () => {
     act(() => {
       useAvatar.getState().startOnboarding("adult");
-      useAvatar.getState().selectStarter("f-mira");
+      useAvatar.getState().selectStarter("f-nova");
       useAvatar.getState().setDisplayName("RidgeRunner");
       const cfg = useAvatar.getState().commitOnboarding("ME0001");
       expect(cfg?.displayName).toBe("RidgeRunner");
-      useAvatar.getState().unlockItem("jacket-park-bold", "activity");
-      useAvatar.getState().equipItem("jacket", "jacket-park-bold", "#ff3b78");
+      // Appearance-preview refuses fake clothing swaps — identity still persists.
       useAvatar.getState().setStylePath("park-street");
     });
     expect(useAvatar.getState().config?.displayName).toBe("RidgeRunner");
-    expect(useAvatar.getState().config?.starterId).toBe("f-mira");
-    expect(useAvatar.getState().config?.layers.jacket.itemId).toBe("jacket-park-bold");
+    expect(useAvatar.getState().config?.starterId).toBe("f-nova");
     expect(useAvatar.getState().config?.stylePath).toBe("park-street");
   });
 

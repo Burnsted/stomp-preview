@@ -5,6 +5,7 @@
  */
 import manifestJson from "@/lib/stomp/avatar/look2-plate-manifest.json";
 import modularManifestJson from "@/lib/stomp/avatar/modular-plate-manifest.json";
+import { APPEARANCE_PREVIEW_RIDERS } from "@/lib/stomp/avatar/appearance-preview-riders";
 
 export type Look2PlateManifestEntry = {
   path: string;
@@ -105,16 +106,25 @@ export const LOOK2_SHIPPED_PLATE_URLS: ReadonlySet<string> = new Set(
   LOOK2_PLATE_MANIFEST.plates.map((p) => p.url),
 );
 
-/** Man 1 / Woman 3 / Man 2 registered prototype URLs (t1205u). */
+/** Man 1 / Woman 3 / Man 2 registered prototype URLs (t1205u → t1225u). */
 const MODULAR_SHIPPED_PLATE_URLS: ReadonlySet<string> = new Set(
   ((modularManifestJson as { plates?: { url: string }[] }).plates ?? []).map(
     (p) => p.url,
   ),
 );
 
-/** Sync existence for shipped Look 2 + multi-rider prototype URLs (fail-closed else). */
+/** Franz appearance-preview starter URLs (Woman 1 / Man 3 / Grom 1 / Grom 2). */
+const APPEARANCE_PREVIEW_URLS: ReadonlySet<string> = new Set(
+  APPEARANCE_PREVIEW_RIDERS.map((r) => r.previewUrl),
+);
+
+/** Sync existence for shipped Look 2 + multi-rider + appearance-preview URLs. */
 export function shippedPlatePathExists(url: string): boolean {
-  return LOOK2_SHIPPED_PLATE_URLS.has(url) || MODULAR_SHIPPED_PLATE_URLS.has(url);
+  return (
+    LOOK2_SHIPPED_PLATE_URLS.has(url) ||
+    MODULAR_SHIPPED_PLATE_URLS.has(url) ||
+    APPEARANCE_PREVIEW_URLS.has(url)
+  );
 }
 
 export function look2MintRequiredAllShipped(): boolean {

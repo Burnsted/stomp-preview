@@ -92,7 +92,7 @@ export function HeySessionFab() {
 
   return (
     <div
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-35 mx-auto flex w-full max-w-md justify-end px-3 pb-[max(8.75rem,calc(env(safe-area-inset-bottom)+7.75rem))]"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-35 mx-auto flex w-full max-w-md justify-end px-3 pb-[max(10.5rem,calc(env(safe-area-inset-bottom)+9.25rem))]"
       data-testid="hey-session-fab-root"
     >
       <div className="pointer-events-none flex flex-col items-end gap-1">

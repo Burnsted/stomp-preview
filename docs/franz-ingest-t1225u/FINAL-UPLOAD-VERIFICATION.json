@@ -1,0 +1,101 @@
+{
+  "all_character_packages_verified_in_canonical_folder": true,
+  "character_packages": [
+    {
+      "slot_label": "Woman 1",
+      "filename": "STOMP_Woman-1_2026-11-05_v1.zip",
+      "bytes": 4922144,
+      "sha256": "8c24cafa76b5491f648d4d423ad5df9837c1d61a95642e6580c2332f80a78b52",
+      "drive_id": "104LZSYNxBxL5xio1t1IPy6ByNrTX_jmT",
+      "url": "https://drive.google.com/file/d/104LZSYNxBxL5xio1t1IPy6ByNrTX_jmT/view"
+    },
+    {
+      "slot_label": "Woman 2",
+      "filename": "STOMP_Woman-2_2026-11-05_v1.zip",
+      "bytes": 9390300,
+      "sha256": "c006bcc25b8370defab935a8702b10b5579991d1ba99c1bbf8d509dd6081d5dd",
+      "drive_id": "1KDNdQPCtGoM21YKH8kOETZig9k-jB35e",
+      "url": "https://drive.google.com/file/d/1KDNdQPCtGoM21YKH8kOETZig9k-jB35e/view"
+    },
+    {
+      "slot_label": "Woman 3",
+      "filename": "STOMP_Woman-3_2026-11-05_v1.zip",
+      "bytes": 12129939,
+      "sha256": "b8d9fee95a9d12234bf178d43914cb86fcf6ef9716b51f4c21caf118d8330a6d",
+      "drive_id": "1ZJ7D-Hr4Bz2w7l0FDUBcQZCfsrR8Qd_F",
+      "url": "https://drive.google.com/file/d/1ZJ7D-Hr4Bz2w7l0FDUBcQZCfsrR8Qd_F/view"
+    },
+    {
+      "slot_label": "Man 1 / Rider 1",
+      "filename": "STOMP_Man-1-Rider-1_2026-11-05_v1.zip",
+      "bytes": 11683019,
+      "sha256": "5105bcea04ab2b27eb0708e3aaa207b5d17ba1b8c72e1300416db654b93d534e",
+      "drive_id": "1VJDNXJUm9E9vxysVjWKweC77pyq4gLiF",
+      "url": "https://drive.google.com/file/d/1VJDNXJUm9E9vxysVjWKweC77pyq4gLiF/view"
+    },
+    {
+      "slot_label": "Man 2 / Look 4",
+      "filename": "STOMP_Man-2-Look-4_2026-11-05_v1.zip",
+      "bytes": 12318395,
+      "sha256": "7f11f205db0b673f5918fbae7cd7d8161471d19b75b10fa74c0269dc7f6aaf04",
+      "drive_id": "10eeLVvxYQDleh3ffAMKbkF3vopn1LkzM",
+      "url": "https://drive.google.com/file/d/10eeLVvxYQDleh3ffAMKbkF3vopn1LkzM/view"
+    },
+    {
+      "slot_label": "Man 3",
+      "filename": "STOMP_Man-3_2026-11-05_v1.zip",
+      "bytes": 5560224,
+      "sha256": "2ba7e982c9fad9dd6926cf57ce34b5d6206fb65dec1278bbe58f66ec7ae576c3",
+      "drive_id": "1AKwkWLoVrcovi0xkiH1q0qmeuRmKv_fW",
+      "url": "https://drive.google.com/file/d/1AKwkWLoVrcovi0xkiH1q0qmeuRmKv_fW/view"
+    },
+    {
+      "slot_label": "Grom 1",
+      "filename": "STOMP_Grom-1_2026-11-05_v1.zip",
+      "bytes": 5098333,
+      "sha256": "563d711bb648e703c40591545a743e9ab53464502889ef58ca42942ec1ea1e5a",
+      "drive_id": "1Mr84yrqSSAOjg9AznKTxembXRJ3mxrGK",
+      "url": "https://drive.google.com/file/d/1Mr84yrqSSAOjg9AznKTxembXRJ3mxrGK/view"
+    },
+    {
+      "slot_label": "Grom 2",
+      "filename": "STOMP_Grom-2_2026-11-05_v1.zip",
+      "bytes": 5043062,
+      "sha256": "f65affe08999558ed07e885df860a8a52d081e1927cb9be0f4dc4f734161943a",
+      "drive_id": "1BsDJlrAB-MjaQf2T603opdcM1sHxmW0s",
+      "url": "https://drive.google.com/file/d/1BsDJlrAB-MjaQf2T603opdcM1sHxmW0s/view"
+    }
+  ],
+  "reports_and_proofs": [
+    {
+      "label": "Audit ZIP",
+      "drive_id": "14pnmhq17Hx22VYcTPRlMgsaKUJOEdgGH",
+      "url": "https://drive.google.com/file/d/14pnmhq17Hx22VYcTPRlMgsaKUJOEdgGH/view",
+      "sha256": "c9d12f2814738cf107367d899c3ce9a7881ea02b5124f2b7a20ad664f5b0104e"
+    },
+    {
+      "label": "Final matrix",
+      "drive_id": "1gOgX9AUayjg0Ikt9Jbo1-Q9duPjRU5ok",
+      "url": "https://drive.google.com/file/d/1gOgX9AUayjg0Ikt9Jbo1-Q9duPjRU5ok/view",
+      "sha256": "880b0f9521428dce40978a3bb7948041faa5f1dbda59e7a09d7f263d4ec6c473"
+    },
+    {
+      "label": "Known defects",
+      "drive_id": "14EAyVxh08x5rZ4daXxmGt4CKGE9vxMnX",
+      "url": "https://drive.google.com/file/d/14EAyVxh08x5rZ4daXxmGt4CKGE9vxMnX/view",
+      "sha256": "04dba4451b5c94bf054c9a5b4a7d791f3213ebb859acc09115e82eb4f14d5eb7"
+    },
+    {
+      "label": "Delivery report",
+      "drive_id": "1LdLG0Fhi-aLvkd5CeL6AzOx4uAK5xiYj",
+      "url": "https://drive.google.com/file/d/1LdLG0Fhi-aLvkd5CeL6AzOx4uAK5xiYj/view",
+      "sha256": "c10b9459e6294db3d602bd12df49cacfaa05b49f6ba11c7e5679e58704402334"
+    },
+    {
+      "label": "18-slot AUDIT comparison",
+      "drive_id": "1IGLnxmOKMh5grVgqWPc0ehdR7FuBF2Lp",
+      "url": "https://drive.google.com/file/d/1IGLnxmOKMh5grVgqWPc0ehdR7FuBF2Lp/view",
+      "sha256": "fea428ccd3a516e79688cc02cb2ee73d9d3ffd6f82e76ee5587c8513e83531a0"
+    }
+  ]
+}

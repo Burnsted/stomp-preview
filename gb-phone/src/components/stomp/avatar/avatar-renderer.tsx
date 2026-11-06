@@ -18,6 +18,11 @@ import {
   evaluatePlateAssembly,
   type PlateProbeStatus,
 } from "@/lib/stomp/avatar/plate-assembly";
+import {
+  appearancePreviewByStarterId,
+  appearancePreviewUrl,
+  isAppearancePreviewStarter,
+} from "@/lib/stomp/avatar/appearance-preview-riders";
 import { LOOK2_STARTER_ID } from "@/lib/stomp/avatar/look2-acceptance";
 import {
   isModularPrototypeStarter,
@@ -25,6 +30,7 @@ import {
   modularRiderByStarterId,
 } from "@/lib/stomp/avatar/modular-riders";
 import { evaluateLook2MintGate } from "@/lib/stomp/avatar/plate-registry";
+import { slotLabelForStarter } from "@/lib/stomp/avatar/roster-artwork-status";
 import { starterById } from "@/lib/stomp/avatar/starters";
 import { useAvatar } from "@/lib/stomp/avatar/store";
 import type { AvatarConfig } from "@/lib/stomp/avatar/types";
@@ -192,16 +198,24 @@ export function AvatarRenderer({
         })
       : null;
   const modularRider = modularRiderByStarterId(config.starterId);
+  const appearanceRider = appearancePreviewByStarterId(config.starterId);
+  const appearanceUrl = isAppearancePreviewStarter(config.starterId)
+    ? appearancePreviewUrl(config.starterId)
+    : null;
+  const useAppearancePreview = Boolean(appearanceUrl);
   const modularPrototype =
     isModularPrototypeStarter(config.starterId) &&
     modularIsPrototypeOutfit(configWithBackpack);
   const acceptanceEligible = look2Gate
     ? look2Gate.acceptanceEligible
-    : modularPrototype
+    : modularPrototype || useAppearancePreview
       ? false
       : assembly.acceptanceEligible;
   const prototypeOnly =
-    look2Gate?.prototypeOnly === true || modularPrototype || modularRider != null;
+    look2Gate?.prototypeOnly === true ||
+    modularPrototype ||
+    modularRider != null ||
+    useAppearancePreview;
 
   useEffect(() => {
     if (!flash || reducedMotion) return;
@@ -233,18 +247,33 @@ export function AvatarRenderer({
     "data-style": config.stylePath,
     "data-pose": pose,
     "data-reduced-motion": reducedMotion ? "true" : "false",
-    "data-render-mode": usePlates ? "plates" : "svg-fallback",
-    "data-plate-complete": assembly.complete ? "true" : "false",
-    "data-plate-reason": assembly.reason,
+    "data-render-mode": useAppearancePreview
+      ? "appearance-preview"
+      : usePlates
+        ? "plates"
+        : "svg-fallback",
+    "data-plate-complete": useAppearancePreview
+      ? "false"
+      : assembly.complete
+        ? "true"
+        : "false",
+    "data-plate-reason": useAppearancePreview
+      ? "appearance-preview-only"
+      : assembly.reason,
     "data-plates-pending": assembly.pending ? "true" : "false",
     "data-missing-plates": String(assembly.missingUrls.length),
     "data-present-plates": String(assembly.presentUrls.length),
     "data-required-plates": String(assembly.required.length),
     "data-acceptance-eligible": acceptanceEligible ? "true" : "false",
     "data-prototype-only": prototypeOnly ? "true" : "false",
-    "data-slot-label": modularRider?.slotLabel ?? "",
-    "data-owner-visual-review": modularRider?.ownerVisualReview ?? "",
-    "data-status": modularRider?.status ?? "",
+    "data-appearance-preview": useAppearancePreview ? "true" : "false",
+    "data-modular": appearanceRider ? "false" : modularRider ? "true" : "",
+    "data-slot-label":
+      modularRider?.slotLabel ?? appearanceRider?.slotLabel ?? slotLabelForStarter(config.starterId),
+    "data-owner-visual-review":
+      modularRider?.ownerVisualReview ??
+      (appearanceRider ? "APPEARANCE_PREVIEW_ONLY" : ""),
+    "data-status": modularRider?.status ?? appearanceRider?.status ?? "",
     "data-backpack": backpackOff ? "off" : backpackLayer.itemId,
     "data-board": config.layers.board.itemId,
     "data-goggles": config.layers.goggles.itemId,
@@ -256,6 +285,28 @@ export function AvatarRenderer({
     className: shellClass,
     style: shellStyle,
   } as const;
+
+  const appearanceStack = useAppearancePreview && appearanceUrl ? (
+    <svg viewBox="0 0 200 200" width={size} height={size} role="img" aria-hidden="true">
+      {showBackground ? (
+        <rect width="200" height="200" fill={bgFill(config.backgroundId)} rx="24" />
+      ) : (
+        <rect width="200" height="200" fill="transparent" />
+      )}
+      <g transform={transform} className={reducedMotion ? undefined : "avatar-pose-layer"}>
+        <image
+          href={appearanceUrl}
+          x="0"
+          y="0"
+          width="200"
+          height="200"
+          preserveAspectRatio="xMidYMid meet"
+          data-slot="appearance-preview"
+          data-item-id="appearance-preview-only"
+        />
+      </g>
+    </svg>
+  ) : null;
 
   const plateStack = usePlates ? (
     <svg viewBox="0 0 200 200" width={size} height={size} role="img" aria-hidden="true">
@@ -369,10 +420,14 @@ export function AvatarRenderer({
 
   const svg = (
     <>
-      {usePlates ? plateStack : svgFallback}
+      {useAppearancePreview ? appearanceStack : usePlates ? plateStack : svgFallback}
       <span className="sr-only">
         {config.displayName || config.starterId}, {config.stylePath}, {silKey}
-        {assembly.reason !== "complete" ? `, plates ${assembly.reason}` : ""}
+        {useAppearancePreview
+          ? ", appearance preview only"
+          : assembly.reason !== "complete"
+            ? `, plates ${assembly.reason}`
+            : ""}
       </span>
       <span
         className="hidden"

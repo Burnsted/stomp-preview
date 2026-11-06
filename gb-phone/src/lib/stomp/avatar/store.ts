@@ -17,10 +17,15 @@ import {
 import { isValidStomperDisplayName } from "@/lib/stomp/avatar/identity";
 import { applyJacketSet } from "@/lib/stomp/avatar/jacket-sets";
 import {
+  isAppearancePreviewGrom,
+  isAppearancePreviewStarter,
+} from "@/lib/stomp/avatar/appearance-preview-riders";
+import {
   isModularPrototypeStarter,
   riderLockerStorageKey,
 } from "@/lib/stomp/avatar/modular-riders";
 import { ADULT_STARTERS, GROM_STARTERS, configFromStarter, starterById } from "@/lib/stomp/avatar/starters";
+import { rosterArtworkSlot } from "@/lib/stomp/avatar/roster-artwork-status";
 import type { PoseId as Pose } from "@/lib/stomp/avatar/locker";
 import type {
   AvatarConfig,
@@ -186,7 +191,17 @@ export const useAvatar = create<AvatarState>()(
       selectStarter: (starterId) => {
         const s = starterById(starterId);
         if (!s) return;
-        if (s.ageBand === "grom" && !isAvatarFlagOn("gromFlowEnabled")) return;
+        const art = rosterArtworkSlot(starterId);
+        // Honest unavailable — never select missing-artwork reserve slots.
+        if (art && !art.selectable) return;
+        // Grom youth flow stays off; appearance-preview groms are fictional looks only.
+        if (
+          s.ageBand === "grom" &&
+          !isAvatarFlagOn("gromFlowEnabled") &&
+          !isAppearancePreviewGrom(starterId)
+        ) {
+          return;
+        }
         const st = get();
         // Restore order: riderConfigs → per-rider key → active config (same starter) → factory.
         // Never clobber a continuing white-and-orange (or any) saved look with starter defaults.
@@ -261,6 +276,9 @@ export const useAvatar = create<AvatarState>()(
             : st.config,
         })),
       patchLayer: (slot, itemId, color) => {
+        // Appearance-preview packages have no modular clothing plates — refuse fake swaps.
+        const activeId = get().draft.starterId ?? get().config?.starterId;
+        if (activeId && isAppearancePreviewStarter(activeId)) return;
         if (!isUnlocked(itemId, get().unlocks) && !isSafetyItem(itemId)) return;
         set((st) => {
           const layers = st.draft.layers ?? st.config?.layers;

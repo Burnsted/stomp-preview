@@ -6,9 +6,14 @@ import { useMemo } from "react";
 import { AlpineTopBar } from "@/components/stomp/alpine-chrome";
 import { AvatarRenderer } from "@/components/stomp/avatar/avatar-renderer";
 import { ThemeToggle } from "@/components/stomp/avatar/theme-toggle";
+import { isAppearancePreviewStarter } from "@/lib/stomp/avatar/appearance-preview-riders";
 import { BACKGROUNDS, unlockedForSlot } from "@/lib/stomp/avatar/locker";
 import { isValidStomperDisplayName, lookOrdinalLabel } from "@/lib/stomp/avatar/identity";
 import { evaluateLook2MintGate, lookPlateSlotByStarterId } from "@/lib/stomp/avatar/plate-registry";
+import {
+  allRosterArtworkSlots,
+  type RosterArtworkSlot,
+} from "@/lib/stomp/avatar/roster-artwork-status";
 import { ADULT_STARTERS, configFromStarter, starterById } from "@/lib/stomp/avatar/starters";
 import { useAvatar } from "@/lib/stomp/avatar/store";
 import {
@@ -66,9 +71,21 @@ export function AvatarOnboard() {
 
 function Screen1Starter({ onSkip }: { onSkip: () => void }) {
   const selectStarter = useAvatar((s) => s.selectStarter);
-  const available = useAvatar((s) => s.availableStarters("adult"));
-  const female = available.filter((s) => s.presenting === "female");
-  const male = available.filter((s) => s.presenting === "male");
+  const slots = allRosterArtworkSlots();
+  /** Ingested Woman/Man/Grom N first; SOURCE MISSING after — never invent fillers. */
+  const byAvailability = (a: RosterArtworkSlot, b: RosterArtworkSlot) => {
+    if (a.selectable !== b.selectable) return a.selectable ? -1 : 1;
+    return a.slotLabel.localeCompare(b.slotLabel, undefined, { numeric: true });
+  };
+  const adultFemale = slots
+    .filter((s) => s.ageBand === "adult" && s.presenting === "female")
+    .sort(byAvailability);
+  const adultMale = slots
+    .filter((s) => s.ageBand === "adult" && s.presenting === "male")
+    .sort(byAvailability);
+  const groms = slots.filter((s) => s.ageBand === "grom").sort(byAvailability);
+  const ingested = slots.filter((s) => s.selectable).length;
+  const missing = slots.filter((s) => !s.selectable).length;
 
   return (
     <div className="pb-28" data-testid="avatar-onboard-1">
@@ -80,33 +97,57 @@ function Screen1Starter({ onSkip }: { onSkip: () => void }) {
       />
       <div className="px-5 pt-2">
         <p className="font-display text-4xl leading-none tracking-wide text-ink">Create Your STOMPER</p>
-        <p className="mt-2 text-sm text-muted">Pick a starter look. You can customize everything next — and later in the Locker.</p>
-        <p className="mt-4 text-xs font-bold tracking-widest text-accent">FEMALE-PRESENTING · 6</p>
+        <p className="mt-2 text-sm text-muted">
+          Pick an available look. Missing slots stay unavailable — no invented art.
+        </p>
+        <p className="mt-4 text-xs font-bold tracking-widest text-accent">WOMAN · 6 ADULT SLOTS</p>
         <div className="mt-2 grid grid-cols-3 gap-2" data-testid="starter-grid-female">
-          {female.map((s, i) => (
+          {adultFemale.map((slot, i) => (
             <StarterCard
-              key={s.id}
-              starterId={s.id}
+              key={slot.starterId}
+              slot={slot}
               lookIndex={i + 1}
-              lookTotal={available.length}
-              onPick={() => selectStarter(s.id)}
+              lookTotal={12}
+              onPick={() => selectStarter(slot.starterId)}
             />
           ))}
         </div>
-        <p className="mt-5 text-xs font-bold tracking-widest text-sky">MALE-PRESENTING · 6</p>
+        <p className="mt-5 text-xs font-bold tracking-widest text-sky">MAN · 6 ADULT SLOTS</p>
         <div className="mt-2 grid grid-cols-3 gap-2" data-testid="starter-grid-male">
-          {male.map((s, i) => (
+          {adultMale.map((slot, i) => (
             <StarterCard
-              key={s.id}
-              starterId={s.id}
-              lookIndex={female.length + i + 1}
-              lookTotal={available.length}
-              onPick={() => selectStarter(s.id)}
+              key={slot.starterId}
+              slot={slot}
+              lookIndex={adultFemale.length + i + 1}
+              lookTotal={12}
+              onPick={() => selectStarter(slot.starterId)}
             />
           ))}
         </div>
-        <p className="mt-4 text-center text-xs text-muted">
-          {available.length} distinct looks · placeholders with real silhouette / hair / color differences
+        <p className="mt-5 text-xs font-bold tracking-widest text-muted">
+          GROM PREVIEWS · FICTIONAL ONLY · 6 SLOTS
+        </p>
+        <p className="mt-1 text-[11px] text-muted">
+          Appearance previews only. No youth social or live enrollment.
+        </p>
+        <div className="mt-2 grid grid-cols-3 gap-2" data-testid="starter-grid-grom">
+          {groms.map((slot, i) => (
+            <StarterCard
+              key={slot.starterId}
+              slot={slot}
+              lookIndex={i + 1}
+              lookTotal={6}
+              onPick={() => selectStarter(slot.starterId)}
+            />
+          ))}
+        </div>
+        <p
+          className="mt-4 text-center text-xs text-muted"
+          data-testid="roster-availability-summary"
+          data-ingested={String(ingested)}
+          data-missing={String(missing)}
+        >
+          {ingested} ingested · {missing} artwork unavailable · 18 slots
         </p>
       </div>
     </div>
@@ -114,25 +155,25 @@ function Screen1Starter({ onSkip }: { onSkip: () => void }) {
 }
 
 function StarterCard({
-  starterId,
+  slot,
   lookIndex,
   lookTotal,
   onPick,
 }: {
-  starterId: string;
+  slot: RosterArtworkSlot;
   lookIndex: number;
   lookTotal: number;
   onPick: () => void;
 }) {
+  const starterId = slot.starterId;
   const s = starterById(starterId)!;
-  const lookLabel = lookOrdinalLabel(lookIndex, lookTotal);
-  // Look N of M is the selector label only — never Nova/Mira/Kai starter tags.
+  const lookLabel = slot.selectable
+    ? slot.slotLabel
+    : lookOrdinalLabel(lookIndex, lookTotal);
   const cfg = useMemo(
     () => configFromStarter(s, { stomperId: "preview", displayName: lookLabel }),
     [s, lookLabel],
   );
-  // Plate matrix attrs — Look 2 files may be ingest-ready; Android gate stays
-  // fail-closed for Franz prototype 8-of-11 (locked head / board-off).
   const plateSlot = lookPlateSlotByStarterId(starterId);
   const missingCount = plateSlot?.missingPaths.length ?? 0;
   const look2Gate =
@@ -141,32 +182,75 @@ function StarterCard({
           config: configFromStarter(s, { stomperId: "gate", displayName: lookLabel }),
         })
       : null;
-  // Modular registered prototypes never claim acceptanceEligible.
-  const acceptanceEligible = look2Gate
-    ? look2Gate.acceptanceEligible
-    : false;
+  const acceptanceEligible = look2Gate ? look2Gate.acceptanceEligible : false;
   const prototypeOnly =
     look2Gate?.prototypeOnly === true ||
     plateSlot?.prototypeOnly === true ||
-    plateSlot?.status === "prototype-ingest-ready";
+    plateSlot?.status === "prototype-ingest-ready" ||
+    slot.availability === "appearance-preview" ||
+    slot.availability === "modular-prototype";
+  const unavailable = !slot.selectable;
+
+  if (unavailable) {
+    return (
+      <div
+        data-testid={`starter-${starterId}`}
+        data-availability="source-missing"
+        data-selectable="false"
+        data-acceptance-eligible="false"
+        data-missing-plates="all"
+        data-plate-slot-status="missing-plates"
+        data-look-of-m={lookLabel}
+        className="flex flex-col items-center rounded-2xl bg-snow/5 p-2 ring-1 ring-dashed ring-line opacity-70"
+        aria-disabled="true"
+      >
+        <div
+          className="flex size-[88px] items-center justify-center rounded-2xl bg-navy/40 text-center text-[10px] font-semibold leading-tight text-muted"
+          data-testid={`starter-unavailable-${starterId}`}
+        >
+          Artwork
+          <br />
+          unavailable
+        </div>
+        <span className="mt-1 text-xs font-semibold text-muted">Unavailable</span>
+        <span className="text-[10px] text-muted">No approved art</span>
+      </div>
+    );
+  }
+
   return (
     <button
       type="button"
       data-testid={`starter-${starterId}`}
+      data-availability={slot.availability}
+      data-selectable="true"
       data-acceptance-eligible={acceptanceEligible ? "true" : "false"}
       data-missing-plates={String(missingCount)}
-      data-plate-slot-status={plateSlot?.status ?? "missing-plates"}
+      data-plate-slot-status={
+        slot.availability === "appearance-preview"
+          ? "appearance-preview"
+          : (plateSlot?.status ?? "missing-plates")
+      }
       data-android-acceptance-gate={plateSlot?.androidAcceptanceGate ? "true" : "false"}
       data-prototype-only={prototypeOnly ? "true" : "false"}
       data-look-of-m={lookLabel}
+      data-slot-label={slot.slotLabel}
       onClick={onPick}
       className="flex flex-col items-center rounded-2xl bg-snow/10 p-2 ring-1 ring-line"
     >
-      <AvatarRenderer config={cfg} size={88} interactive={false} showBackground testId={`starter-preview-${starterId}`} />
+      <AvatarRenderer
+        config={cfg}
+        size={88}
+        interactive={false}
+        showBackground
+        testId={`starter-preview-${starterId}`}
+      />
       <span className="mt-1 text-xs font-semibold" data-testid={`starter-look-label-${starterId}`}>
-        {lookLabel}
+        {slot.slotLabel}
       </span>
-      <span className="text-[10px] text-muted">{s.silhouette}</span>
+      <span className="text-[10px] text-muted">
+        {slot.availability === "appearance-preview" ? "preview only" : s.silhouette}
+      </span>
     </button>
   );
 }
@@ -178,6 +262,9 @@ function Screen2Look() {
   const draft = useAvatar((s) => s.draft);
   const unlocks = useAvatar((s) => s.unlocks);
   const cfg = draftConfig();
+  const appearanceOnly = draft.starterId
+    ? isAppearancePreviewStarter(draft.starterId)
+    : false;
 
   return (
     <div className="pb-28" data-testid="avatar-onboard-2">
@@ -194,48 +281,92 @@ function Screen2Look() {
             placeholder="Your stomper name"
           />
         </label>
-        <p className="mt-4 self-start font-display text-3xl tracking-wide">Build Your Look</p>
-        <p className="self-start text-sm text-muted">Hair, gear, colors. Safety helmet & goggles stay unlocked.</p>
-        {LOOK_SLOTS.map(({ slot, label }) => {
-          const items = unlockedForSlot(slot, unlocks, 1);
-          return (
-            <div key={slot} className="mt-3 w-full" data-testid={`look-slot-${slot}`}>
-              <p className="text-xs font-bold tracking-widest text-muted">{label.toUpperCase()}</p>
-              <div className="mt-1 flex flex-wrap gap-2">
-                {items.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    data-testid={`equip-${item.id}`}
-                    onClick={() => patchLayer(slot, item.id, draft.layers?.[slot]?.color)}
-                    className={
-                      "rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ring-line " +
-                      (draft.layers?.[slot]?.itemId === item.id ? "bg-accent text-navy" : "bg-snow/10")
-                    }
+        {appearanceOnly ? (
+          <div
+            className="mt-4 w-full rounded-2xl bg-snow/10 p-4 ring-1 ring-line"
+            data-testid="appearance-preview-notice"
+          >
+            <p className="font-display text-3xl tracking-wide">Appearance preview</p>
+            <p className="mt-2 text-sm text-muted">
+              This look is a single recovered appearance — not a modular clothing set.
+              Jacket, pants, hair, helmet, goggles, board, and backpack swaps are unavailable
+              until approved separate plates exist. No invented layers.
+            </p>
+          </div>
+        ) : (
+          <>
+            <p className="mt-4 self-start font-display text-3xl tracking-wide">Build Your Look</p>
+            <p className="self-start text-sm text-muted">
+              Jacket, pants, gloves, and boots where plates exist. Missing independent
+              hair/helmet/goggles/board stay locked — no fake controls.
+            </p>
+            {LOOK_SLOTS.map(({ slot, label }) => {
+              const items = unlockedForSlot(slot, unlocks, 1);
+              // Honest: hide empty / non-swappable locked-included slots for modular prototypes.
+              const usable = items.filter(
+                (item) =>
+                  !item.id.includes("locked-included") &&
+                  item.id !== "board-none" &&
+                  item.id !== "backpack-none" &&
+                  item.id !== "jacket-none",
+              );
+              if (usable.length === 0) {
+                return (
+                  <div
+                    key={slot}
+                    className="mt-3 w-full"
+                    data-testid={`look-slot-${slot}`}
+                    data-unavailable="true"
                   >
-                    {item.label}
-                    {item.isSafety ? " · safety" : ""}
-                  </button>
-                ))}
-              </div>
-              <div className="mt-2 flex gap-1.5">
-                {COLOR_SWATCHES.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    data-testid={`color-${slot}-${c}`}
-                    aria-label={`${label} color ${c}`}
-                    onClick={() =>
-                      patchLayer(slot, draft.layers?.[slot]?.itemId ?? items[0]!.id, c)
-                    }
-                    className="size-7 rounded-full ring-1 ring-line"
-                    style={{ background: c }}
-                  />
-                ))}
-              </div>
-            </div>
-          );
-        })}
+                    <p className="text-xs font-bold tracking-widest text-muted">
+                      {label.toUpperCase()}
+                    </p>
+                    <p className="mt-1 text-xs text-muted">Unavailable — no approved separate plate</p>
+                  </div>
+                );
+              }
+              return (
+                <div key={slot} className="mt-3 w-full" data-testid={`look-slot-${slot}`}>
+                  <p className="text-xs font-bold tracking-widest text-muted">{label.toUpperCase()}</p>
+                  <div className="mt-1 flex flex-wrap gap-2">
+                    {usable.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        data-testid={`equip-${item.id}`}
+                        onClick={() => patchLayer(slot, item.id, draft.layers?.[slot]?.color)}
+                        className={
+                          "rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ring-line " +
+                          (draft.layers?.[slot]?.itemId === item.id
+                            ? "bg-accent text-navy"
+                            : "bg-snow/10")
+                        }
+                      >
+                        {item.label}
+                        {item.isSafety ? " · safety" : ""}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="mt-2 flex gap-1.5">
+                    {COLOR_SWATCHES.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        data-testid={`color-${slot}-${c}`}
+                        aria-label={`${label} color ${c}`}
+                        onClick={() =>
+                          patchLayer(slot, draft.layers?.[slot]?.itemId ?? usable[0]!.id, c)
+                        }
+                        className="size-7 rounded-full ring-1 ring-line"
+                        style={{ background: c }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </>
+        )}
         <button
           type="button"
           data-testid="onboard-to-vibe"

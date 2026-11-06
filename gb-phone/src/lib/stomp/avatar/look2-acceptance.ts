@@ -155,6 +155,8 @@ export const LOOK2_GATE_STATUS = {
   status: "REGISTERED_VISUAL_PROTOTYPE_ONLY" as const,
   preferredPack: "franz-finishing" as const,
   sourceZipSha256:
+    "c006bcc25b8370defab935a8702b10b5579991d1ba99c1bbf8d509dd6081d5dd" as const,
+  priorAlphaRepairZipSha256:
     "2118bdc84855f2aae526fdaf6111d014e5d990dd0705a1354113988b67bdbd84" as const,
   priorHeadCleanupZipSha256:
     "6be4a58b610493c18d8be4ae85e22259b59f0b96b1048ef562b5710e37d9bff6" as const,
@@ -167,15 +169,15 @@ export const LOOK2_GATE_STATUS = {
   bodySha256:
     "85ecf3646890a4e4a730f7045a34b8284fbea8aa5dbeb4b0d26614873d26d37a" as const,
   faceLockedSha256:
-    "c2ffcbd901648b718d71d468f31090b959459b97b7fd9a7d25ca6044580bd434" as const,
+    "888f40f14d7795dd23385bc6a5b3012ea7545a83e64ae7a44b39c40b302bc1b5" as const,
   jacketMintSha256:
-    "2c7e796345854bd27eddfbdeacaa32adcd1889735c8cb31379819a49d0f12c1e" as const,
+    "d783753010abbc36856a20374112da0e183fad7722b073bfa0f638c58e606965" as const,
   jacketInkSha256:
-    "1611f0fb5d4f868c0439624dbce2092f6a2f26e884c766bf6dc98c4c10056462" as const,
+    "84652bd35647c9d89118a73d4217e339e4b227550529e6b7b7d7014a41b9e626" as const,
   pantsMintSha256:
-    "1f21b5f90f7c659ba478011d23228c1a1ef9dd276845a92210754a05fc6ab1ce" as const,
+    "274c1368e1e21b5fe08bafc993b62473bdad5411c8601867625adaa58123bb72" as const,
   pantsInkSha256:
-    "904c32b7df3bd7b2c3c7415cd1282230338b5ff2dc7e37bc60404881ad22227d" as const,
+    "b45741b9f73dbe24b88385da849557a008791444728ea0903eb073a1d86510eb" as const,
   crotchClip: "DONE" as const,
   headCleanup: "SUPERSEDED_BY_FINISHING" as const,
   finishing: "STAGED" as const,

@@ -89,7 +89,7 @@ export const JACKET_SETS: readonly JacketSet[] = [
     jacketId: "jacket-look4-white",
     pantsId: "pants-look4-charcoal-silver",
     pantsColor: "#374151",
-    label: "Man 2 white/charcoal fit TEST",
+    label: "Man 2 white FIT TEST (not Man 3)",
   },
   {
     jacketId: "jacket-look5-pink",

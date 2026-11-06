@@ -236,6 +236,7 @@ describe("t1175u — identity / Woz ban / consistency", () => {
     expect(CONSISTENCY_SURFACES).toEqual(["selector", "build-your-look", "locker"]);
     expect(consistencyLayerOrder()).toEqual(ARTWORK_LAYER_ORDER);
     const modularPlates = new Set(["f-hana", "m-samir", "f-priya", "m-devon"]);
+    const appearancePreview = new Set(["f-nova", "m-leo", "g-milo", "g-aria"]);
     for (const entry of ROSTER_V24) {
       const cfg = configFromStarter(starterById(entry.starterId)!, {
         stomperId: "x",
@@ -246,6 +247,8 @@ describe("t1175u — identity / Woz ban / consistency", () => {
       const mode = screen.getByTestId(`consist-${entry.starterId}`).getAttribute("data-render-mode");
       if (modularPlates.has(entry.starterId)) {
         expect(mode).toBe("plates");
+      } else if (appearancePreview.has(entry.starterId)) {
+        expect(mode).toBe("appearance-preview");
       } else {
         expect(mode).toBe("svg-fallback");
       }

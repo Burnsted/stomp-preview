@@ -146,7 +146,7 @@ export const LOCKER_CATALOG: LockerItem[] = [
   { id: "boots-look3-photo", slot: "boots", label: "Woman 3 Photo Boots", stage: 1, isSafety: true, fill: "#334155", unlockRule: "starter" },
   { id: "body-look3-solid", slot: "body", label: "Woman 3 Underbody", stage: 1, isSafety: false, fill: "#1e293b", unlockRule: "starter" },
   { id: "jacket-look4-orange", slot: "jacket", label: "Man 2 Orange Shell Prototype", stage: 1, isSafety: false, fill: "#ea580c", unlockRule: "starter" },
-  { id: "jacket-look4-white", slot: "jacket", label: "Man 2 White Shell TEST", stage: 1, isSafety: false, fill: "#f8fafc", unlockRule: "starter" },
+  { id: "jacket-look4-white", slot: "jacket", label: "Man 2 White FIT TEST", stage: 1, isSafety: false, fill: "#f8fafc", unlockRule: "starter" },
   { id: "pants-look4-charcoal", slot: "pants", label: "Man 2 Charcoal Pants Prototype", stage: 1, isSafety: false, fill: "#1f2937", unlockRule: "starter" },
   { id: "pants-look4-charcoal-silver", slot: "pants", label: "Man 2 Charcoal Silver Pants TEST", stage: 1, isSafety: false, fill: "#374151", unlockRule: "starter" },
   { id: "gloves-look4-photo", slot: "gloves", label: "Man 2 Photo Gloves", stage: 1, isSafety: true, fill: "#1e293b", unlockRule: "starter" },
