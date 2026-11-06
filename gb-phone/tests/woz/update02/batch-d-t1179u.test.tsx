@@ -103,11 +103,13 @@ describe("t1179u Batch D — verify + harden", () => {
     expect(cfg.layers.goggles.itemId).toBe("goggles-locked-included");
     expect(cfg.layers.board.itemId).toBe("board-none");
 
+    // t1232u: locked-head modular riders reject separate eyewear plates
+    // (no invented hair/helmet/goggles swaps on Woman 2 / Woman 3 / Man*).
     act(() => {
       useAvatar.getState().equipItem("goggles", EYEWEAR_ITEM_IDS.glassesMetaOakley);
     });
     expect(useAvatar.getState().config!.layers.goggles.itemId).toBe(
-      EYEWEAR_ITEM_IDS.glassesMetaOakley,
+      "goggles-locked-included",
     );
 
     act(() => {
@@ -120,6 +122,11 @@ describe("t1179u Batch D — verify + harden", () => {
       useAvatar.getState().equipItem("backpack", BACKPACK_OFF_ITEM_ID);
     });
     expect(useAvatar.getState().config!.layers.backpack.itemId).toBe(BACKPACK_OFF_ITEM_ID);
+
+    act(() => {
+      useAvatar.getState().equipItem("board", "board-basic");
+    });
+    expect(useAvatar.getState().config!.layers.board.itemId).toBe("board-basic");
   });
 
   it("D5 name + outfit persistence across eight starter IDs", () => {

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSessionRouter } from "@/components/stomp/session-mic";
+import { AvatarRenderer } from "@/components/stomp/avatar/avatar-renderer";
 import { DemoSimBadge } from "@/components/stomp/playtest/demo-sim-badge";
 import { ResetDemoButton } from "@/components/stomp/playtest/playtest-chrome";
 import {
@@ -26,6 +27,11 @@ import { useSMenu } from "@/lib/stomp/s-menu";
 import { exportPack, type Jacket } from "@/lib/stomp/social";
 import { useSocial } from "@/lib/stomp/social-store";
 import { AVATAR_FLAGS } from "@/lib/stomp/avatar/flags";
+import {
+  describeBoardEntry,
+  useBoardsCollection,
+} from "@/lib/stomp/avatar/boards-collection";
+import { useAvatar } from "@/lib/stomp/avatar/store";
 import type { Trip } from "@woz/trips/types.js";
 
 const PANELS = ["Profile", "Avatar", "Trip", "Day", "Squad", "Pass", "History"] as const;
@@ -115,13 +121,24 @@ export function RiderHub({ initial = "Profile" }: { initial?: Panel }) {
   const [demoNowIso] = useState("2026-11-07T12:00:00Z");
   const [welcomeLastActive, setWelcomeLastActive] = useState<string | null>("2026-01-01T00:00:00Z");
 
+  const avatarConfig = useAvatar((s) => s.config);
+  const equipItem = useAvatar((s) => s.equipItem);
+  const ownedBoardIds = useBoardsCollection((s) => s.ownedIds);
+  const activeBoardId = useBoardsCollection((s) => s.activeBoardId);
+  const visuallyEquippedItemId = useBoardsCollection((s) => s.visuallyEquippedItemId);
+  const setActiveBoard = useBoardsCollection((s) => s.setActiveBoard);
+  const boardEntries = useMemo(
+    () => ownedBoardIds.map((id) => describeBoardEntry(id)),
+    [ownedBoardIds],
+  );
+
   const squad = social.squads.find((row) => row.joined) ?? social.squads[0];
   const notes = social.notes.filter((note) => note.squadId === squad?.id);
 
   const profile = useMemo(
     () =>
       buildClipsFirstProfile({
-        displayName: social.avatar?.name ?? null,
+        displayName: social.avatar?.name ?? avatarConfig?.displayName ?? null,
         bagTrickCount: social.history.length,
         clips: social.history.map((h) => ({ id: h.id, label: h.label, source: h.source })),
         joinedSquadNames: social.squads.filter((s) => s.joined).map((s) => s.name),
@@ -130,7 +147,7 @@ export function RiderHub({ initial = "Profile" }: { initial?: Panel }) {
         canAccessReportCard: social.passAccessState !== "deletion_lifecycle",
         founderChromeFiction: false,
       }),
-    [social],
+    [social, avatarConfig?.displayName],
   );
 
   const tripVisual = useMemo(() => {
@@ -231,17 +248,66 @@ export function RiderHub({ initial = "Profile" }: { initial?: Panel }) {
             <p className="text-xs tracking-widest text-white/40">2 · SQUAD</p>
             <p className="mt-1">{profile.squadNames.join(", ") || "No squad joined yet"}</p>
           </div>
-          <div className="mt-4">
+          <div className="mt-4" data-testid="profile-boards">
             <p className="text-xs tracking-widest text-white/40">3 · BOARDS</p>
-            <ul className="mt-1">
-              {profile.boards.map((b) => (
-                <li key={b.id}>
-                  {b.label}
-                  {b.goldFounderChrome ? <span className="text-white/45"> · gold fiction</span> : null}
-                </li>
-              ))}
+            {avatarConfig ? (
+              <div className="mt-2 flex flex-col items-start gap-2" data-testid="profile-stomper-preview">
+                <AvatarRenderer
+                  config={avatarConfig}
+                  size={96}
+                  interactive={false}
+                  showBackground
+                  testId="profile-stomper-avatar"
+                />
+                <p className="text-xs text-white/55">
+                  Active board: <span data-testid="profile-active-board">{activeBoardId}</span>
+                  {" · "}
+                  Visual: <span data-testid="profile-visual-board">{visuallyEquippedItemId}</span>
+                </p>
+              </div>
+            ) : null}
+            <ul className="mt-2 flex flex-col gap-1" data-testid="profile-boards-list">
+              {boardEntries.map((b) => {
+                const isActive = b.id === activeBoardId;
+                return (
+                  <li key={b.id}>
+                    <button
+                      type="button"
+                      data-testid={`profile-board-${b.id}`}
+                      data-has-visual-plate={b.hasVisualPlate ? "true" : "false"}
+                      data-missing-plate={b.missingPlatePath ?? ""}
+                      data-active={isActive ? "true" : "false"}
+                      onClick={() => {
+                        const result = setActiveBoard(b.id);
+                        if (avatarConfig) {
+                          equipItem("board", result.visuallyEquippedItemId);
+                        }
+                      }}
+                      className={
+                        "w-full rounded-xl px-3 py-2 text-left text-sm ring-1 ring-white/10 " +
+                        (isActive ? "bg-white/15" : "bg-white/5")
+                      }
+                    >
+                      <span className="font-semibold">{b.label}</span>
+                      {isActive ? <span className="text-white/55"> · active</span> : null}
+                      {b.hasVisualPlate ? (
+                        <span className="text-white/55"> · visual plate</span>
+                      ) : (
+                        <span className="text-white/45"> · collection only (no plate)</span>
+                      )}
+                      {b.goldFounderChrome ? <span className="text-white/45"> · gold fiction</span> : null}
+                      {!b.hasVisualPlate && b.missingPlatePath ? (
+                        <span className="mt-0.5 block text-[10px] text-white/35">{b.missingPlatePath}</span>
+                      ) : null}
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
-            <p className="mt-2 text-white/40 text-xs">
+            <p className="mt-2 text-white/40 text-xs" data-testid="profile-boards-honesty">
+              Collection-owned ≠ visually equipped. Only real plates update the snowboard.
+            </p>
+            <p className="mt-1 text-white/40 text-xs">
               Founder awards: {FOUNDER_ELIGIBILITY.awardsEnabled ? "on" : "disabled"} · cutoff{" "}
               {FOUNDER_ELIGIBILITY.ruleId}
             </p>

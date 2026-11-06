@@ -31,6 +31,8 @@ import { Stompers } from "@/components/stomp/stompers";
 import { Run } from "@/components/stomp/run";
 import { WozLab } from "@/components/stomp/woz-lab";
 import { GreetCrewToolsHint } from "@/components/stomp/woz-entry";
+import { starterUnlocks } from "@/lib/stomp/avatar/locker";
+import { isModularPrototypeStarter } from "@/lib/stomp/avatar/modular-riders";
 import { useAvatar } from "@/lib/stomp/avatar/store";
 import { applyTheme, useTheme } from "@/lib/stomp/avatar/theme";
 import { configFromStarter, starterById } from "@/lib/stomp/avatar/starters";
@@ -92,9 +94,13 @@ export function StompApp() {
         });
         useAvatar.setState({
           config: cfg,
+          unlocks: starterUnlocks(),
           onboardComplete: true,
           activePose: "idle",
           reducedMotion: false,
+          riderConfigs: isModularPrototypeStarter(starterId)
+            ? { [starterId]: cfg }
+            : {},
         });
         useStomp.getState().setScreen("greet");
         return true;

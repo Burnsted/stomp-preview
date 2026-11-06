@@ -24,6 +24,7 @@ import {
   isModularPrototypeStarter,
   riderLockerStorageKey,
 } from "@/lib/stomp/avatar/modular-riders";
+import { canVisuallyEquip } from "@/lib/stomp/avatar/locker-compat";
 import { ADULT_STARTERS, GROM_STARTERS, configFromStarter, starterById } from "@/lib/stomp/avatar/starters";
 import { rosterArtworkSlot } from "@/lib/stomp/avatar/roster-artwork-status";
 import type { PoseId as Pose } from "@/lib/stomp/avatar/locker";
@@ -387,6 +388,12 @@ export const useAvatar = create<AvatarState>()(
         set((st) => ({ unlocks: unlockForActivity(st.unlocks, itemId, source) })),
       equipItem: (slot, itemId, color) => {
         if (!isUnlocked(itemId, get().unlocks) && !isSafetyItem(itemId)) return;
+        const active = get().config;
+        // t1232u: modular / preview riders reject wrong-rider or missing plates.
+        if (active && isModularPrototypeStarter(active.starterId)) {
+          const gate = canVisuallyEquip(active.starterId, slot, itemId, active.ageBand);
+          if (!gate.ok) return;
+        }
         set((st) => {
           if (!st.config) return st;
           if (slot === "jacket") {
