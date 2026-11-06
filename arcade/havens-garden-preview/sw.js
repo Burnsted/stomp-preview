@@ -1,5 +1,5 @@
-/* Haven's Garden v0.9-birthday-layers — Franz greenhouse-layers-v1; cache-first art */
-const CACHE = 'havens-garden-preview-v0.9-birthday-layers';
+/* Haven's Garden v0.9-birthday-ghv2 — greenhouse-v2 empty plate + growth sprites */
+const CACHE = 'havens-garden-preview-v0.9-birthday-ghv2';
 const PRECACHE = [
   './',
   './index.html',
@@ -10,16 +10,16 @@ const PRECACHE = [
   './js/systems.js',
   './js/nursery.js',
   './js/game.js',
-  './assets/greenhouse-layers-v1/maps/small.json',
-  './assets/greenhouse-layers-v1/maps/medium.json',
-  './assets/greenhouse-layers-v1/maps/large.json',
-  './assets/greenhouse-layers-v1/maps/outdoor.json',
-  './assets/greenhouse-layers-v1/maps/growth.json',
-  './assets/greenhouse-layers-v1/plates/greenhouse-small-interior-nolip.webp',
-  './assets/greenhouse-layers-v1/layers/small/soil_dry.webp',
-  './assets/greenhouse-layers-v1/layers/small/front_lip.webp',
-  './assets/greenhouse-layers-v1/growth/seedling.webp',
-  './assets/greenhouse-layers-v1/growth/bloom.webp',
+  './assets/greenhouse-v2/maps/small.json',
+  './assets/greenhouse-v2/maps/medium.json',
+  './assets/greenhouse-v2/maps/large.json',
+  './assets/greenhouse-v2/maps/outdoor.json',
+  './assets/greenhouse-v2/maps/growth.json',
+  './assets/greenhouse-v2/plates/medium-empty.webp',
+  './assets/greenhouse-v2/growth/seedling.webp',
+  './assets/greenhouse-v2/growth/leaves.webp',
+  './assets/greenhouse-v2/growth/bud.webp',
+  './assets/greenhouse-v2/growth/bloom.webp',
   './assets/icon/app-icon.png',
   './assets/icon/app-icon-192.png',
   './assets/icon/app-icon-512.png',
