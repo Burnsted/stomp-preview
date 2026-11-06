@@ -8,7 +8,7 @@
 
 ## Tip / PR
 
-- **Tip SHA:** `2346d8242e5f6c88ef1e12239cc23f941f6e1358` _(updated on push)_
+- **Tip SHA:** `0b7599ebfcfc645453891e048124ab102bc1d01b` (live green CI head)
 - **Draft PR:** [#73](https://github.com/Burnsted/stomp-preview/pull/73) — *DRAFT t1230u — Form #7 S menu + resort branding (NO MERGE)*
 
 ## What shipped
@@ -75,7 +75,12 @@ Under `gb-phone/screenshots/t1230u/` and `/opt/cursor/artifacts/t1230u/`:
 
 ## CI (both checks)
 
-_(filled after PR + CI)_
+Green on tip `0b7599ebfcfc645453891e048124ab102bc1d01b` — [run 42220571936](https://github.com/Burnsted/stomp-preview/actions/runs/42220571936)
+
+| Check | Result | Duration | Job |
+| --- | --- | --- | --- |
+| `batch1 typecheck + test` | **pass** | 30s | [job](https://github.com/Burnsted/stomp-preview/actions/runs/42220571936/job/127901287314) |
+| `gb-phone typecheck + woz tests + build` | **pass** | 1m32s | [job](https://github.com/Burnsted/stomp-preview/actions/runs/42220571936/job/127901286947) |
 
 ## Blockers
 
