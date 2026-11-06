@@ -1,0 +1,58 @@
+{
+  "species": "daisy",
+  "stages": [
+    {
+      "id": "seedling",
+      "grown": 0,
+      "file": "growth/seedling.webp",
+      "size": [
+        44,
+        56
+      ],
+      "rootAnchor": {
+        "x": 22.0,
+        "y": 52.6
+      }
+    },
+    {
+      "id": "leaves",
+      "grown": 1,
+      "file": "growth/leaves.webp",
+      "size": [
+        76,
+        82
+      ],
+      "rootAnchor": {
+        "x": 38.0,
+        "y": 77.1
+      }
+    },
+    {
+      "id": "bud",
+      "grown": 2,
+      "file": "growth/bud.webp",
+      "size": [
+        49,
+        108
+      ],
+      "rootAnchor": {
+        "x": 24.5,
+        "y": 101.5
+      }
+    },
+    {
+      "id": "bloom",
+      "grown": 3,
+      "file": "growth/bloom.webp",
+      "size": [
+        71,
+        128
+      ],
+      "rootAnchor": {
+        "x": 35.5,
+        "y": 120.3
+      }
+    }
+  ],
+  "note": "Style-matched to growth-soil-concept; bud/bloom cropped from master, seedling/leaves synthesized to match."
+}

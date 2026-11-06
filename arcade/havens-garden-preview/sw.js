@@ -1,5 +1,5 @@
-/* Haven's Garden v0.9-cbn2e — network-first HTML; concept comps + systems */
-const CACHE = 'havens-garden-preview-v0.9-cbn2e';
+/* Haven's Garden v0.9-birthday-ghv2 — greenhouse-v2 empty plate + growth sprites */
+const CACHE = 'havens-garden-preview-v0.9-birthday-ghv2';
 const PRECACHE = [
   './',
   './index.html',
@@ -8,24 +8,27 @@ const PRECACHE = [
   './js/assets.js',
   './js/audio.js',
   './js/systems.js',
+  './js/nursery.js',
   './js/game.js',
+  './assets/greenhouse-v2/maps/small.json',
+  './assets/greenhouse-v2/maps/medium.json',
+  './assets/greenhouse-v2/maps/large.json',
+  './assets/greenhouse-v2/maps/outdoor.json',
+  './assets/greenhouse-v2/maps/growth.json',
+  './assets/greenhouse-v2/plates/medium-empty.webp',
+  './assets/greenhouse-v2/growth/seedling.webp',
+  './assets/greenhouse-v2/growth/leaves.webp',
+  './assets/greenhouse-v2/growth/bud.webp',
+  './assets/greenhouse-v2/growth/bloom.webp',
   './assets/icon/app-icon.png',
   './assets/icon/app-icon-192.png',
   './assets/icon/app-icon-512.png',
-  './assets/character/haven-front.png',
-  './assets/meadow/meadow-day.webp',
-  './assets/bouquet/bouquet-full.png',
-  './assets/concept/01b-meadow-wider.jpg',
-  './assets/concept/03b-bug-chase-wider.jpg',
-  './assets/concept/11-hive-and-jars.jpg',
-  './assets/concept/13-shop-upgrades.jpg',
   './assets/plates/meadow-day.webp',
   './assets/character/haven-run.png',
   './assets/props/basket.png',
+  './assets/props/watering-can.png',
   './assets/bugs/bee.png',
-  './assets/cbn/contact-12-subjects.jpg',
-  './assets/cbn/page-13-one-daisy.webp',
-  './assets/cbn/page-01-bee-close-easy.webp'
+  './assets/cbn/page-13-one-daisy.webp'
 ];
 
 const OWN = (k) => k.indexOf('havens-garden-') === 0;
@@ -52,30 +55,30 @@ self.addEventListener('fetch', (e) => {
     e.request.mode === 'navigate' ||
     (e.request.headers.get('accept') || '').includes('text/html') ||
     u.pathname.endsWith('.html') ||
-    u.pathname.endsWith('/') ||
-    u.pathname.endsWith('/sw.js');
+    u.pathname.endsWith('/');
+  const isSW = u.pathname.endsWith('/sw.js') || u.pathname.endsWith('sw.js');
+  const isJS = u.pathname.endsWith('.js');
 
-  if (isHTML) {
+  if (isHTML || isSW) {
     e.respondWith(
       fetch(e.request)
-        .then((r) => {
-          const clone = r.clone();
-          caches.open(CACHE).then((c) => c.put(e.request, clone));
-          return r;
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, copy));
+          return res;
         })
-        .catch(() => caches.match(e.request).then((m) => m || caches.match('./index.html')))
+        .catch(() => caches.match(e.request).then((c) => c || caches.match('./index.html')))
     );
     return;
   }
 
-  // Network-first for JS so v0.9-cbn2e ships promptly; fall back to cache
-  if (u.pathname.endsWith('.js')) {
+  if (isJS) {
     e.respondWith(
       fetch(e.request)
-        .then((r) => {
-          const clone = r.clone();
-          caches.open(CACHE).then((c) => c.put(e.request, clone));
-          return r;
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, copy));
+          return res;
         })
         .catch(() => caches.match(e.request))
     );
@@ -85,10 +88,10 @@ self.addEventListener('fetch', (e) => {
   e.respondWith(
     caches.match(e.request).then((cached) => {
       if (cached) return cached;
-      return fetch(e.request).then((r) => {
-        const clone = r.clone();
-        caches.open(CACHE).then((c) => c.put(e.request, clone));
-        return r;
+      return fetch(e.request).then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(e.request, copy));
+        return res;
       });
     })
   );
