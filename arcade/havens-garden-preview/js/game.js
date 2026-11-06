@@ -1439,7 +1439,7 @@ function buyUpgrade(id) {
   if (EX().owned[id]) { shopFlash = 'Have it!'; return; }
   if (id === 'greenhouse') {
     // Stage gate ~3: need enough cycles / points
-    if ((SAVE.cycles | 0) < 2 && flowerPoints() < 40) {
+    if ((SAVE.cycles | 0) < 3 && flowerPoints() < 50) {
       shopFlash = 'Play more first';
       return;
     }
