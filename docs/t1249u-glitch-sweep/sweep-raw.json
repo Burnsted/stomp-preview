@@ -1,0 +1,416 @@
+{
+  "findings": [
+    {
+      "id": "G01",
+      "screen": "greet",
+      "width": 360,
+      "kind": "text_overflow_or_horizontal_clip",
+      "repro": "Open screen \"greet\" at 360px",
+      "detail": {
+        "testid": "home-today-lineup",
+        "tag": "BUTTON",
+        "text": "Today Sesh",
+        "left": 353,
+        "right": 433,
+        "vw": 360
+      },
+      "before": "screen-greet-360.png"
+    },
+    {
+      "id": "G02",
+      "screen": "stompers",
+      "width": 360,
+      "kind": "text_overflow_or_horizontal_clip",
+      "repro": "Open screen \"stompers\" at 360px",
+      "detail": {
+        "testid": null,
+        "tag": "BUTTON",
+        "text": "Campfire",
+        "left": 281,
+        "right": 374,
+        "vw": 360
+      },
+      "before": "screen-stompers-360.png"
+    },
+    {
+      "id": "G03",
+      "screen": "bag",
+      "width": 360,
+      "kind": "text_overflow_or_horizontal_clip",
+      "repro": "Open screen \"bag\" at 360px",
+      "detail": {
+        "testid": null,
+        "tag": "BUTTON",
+        "text": "Box SlideIn Progress",
+        "left": 256,
+        "right": 368,
+        "vw": 360
+      },
+      "before": "screen-bag-360.png"
+    },
+    {
+      "id": "G04",
+      "screen": "bag",
+      "width": 360,
+      "kind": "text_overflow_or_horizontal_clip",
+      "repro": "Open screen \"bag\" at 360px",
+      "detail": {
+        "testid": null,
+        "tag": "BUTTON",
+        "text": "Tail GrabIn Progress",
+        "left": 376,
+        "right": 488,
+        "vw": 360
+      },
+      "before": "screen-bag-360.png"
+    },
+    {
+      "id": "G05",
+      "screen": "bag",
+      "width": 360,
+      "kind": "text_overflow_or_horizontal_clip",
+      "repro": "Open screen \"bag\" at 360px",
+      "detail": {
+        "testid": null,
+        "tag": "P",
+        "text": "Tail Grab",
+        "left": 384,
+        "right": 480,
+        "vw": 360
+      },
+      "before": "screen-bag-360.png"
+    },
+    {
+      "id": "G06",
+      "screen": "bag",
+      "width": 360,
+      "kind": "text_overflow_or_horizontal_clip",
+      "repro": "Open screen \"bag\" at 360px",
+      "detail": {
+        "testid": null,
+        "tag": "P",
+        "text": "In Progress",
+        "left": 384,
+        "right": 480,
+        "vw": 360
+      },
+      "before": "screen-bag-360.png"
+    },
+    {
+      "id": "G07",
+      "screen": "map/spot-info-sheet",
+      "width": 360,
+      "kind": "clipped_control",
+      "repro": "Open Spot → tap i → Transfer Keeper clipped below sheet",
+      "detail": {
+        "transferBox": {
+          "left": 128,
+          "top": 848.5,
+          "right": 273,
+          "bottom": 876.5,
+          "width": 145,
+          "height": 28,
+          "sel": "[data-testid=\"spot-keeper-transfer\"]"
+        },
+        "infoBox": {
+          "left": 24,
+          "top": 413.5,
+          "right": 336,
+          "bottom": 805.5,
+          "width": 312,
+          "height": 392,
+          "sel": "[data-testid=\"spot-info-sheet\"]"
+        }
+      },
+      "before": "spot-info-sheet-360.png"
+    },
+    {
+      "id": "G08",
+      "screen": "map/spot-detail",
+      "width": 360,
+      "kind": "tiny_hit_target",
+      "repro": "Spot detail Close control undersized",
+      "detail": {
+        "left": 28,
+        "top": 377.5,
+        "right": 57,
+        "bottom": 393.5,
+        "width": 29,
+        "height": 16,
+        "sel": "button:text-is(\"Close\")"
+      },
+      "before": "spot-detail-360.png"
+    },
+    {
+      "id": "G09",
+      "screen": "any",
+      "width": 360,
+      "kind": "console_error",
+      "repro": "Interact across screens at 360px",
+      "detail": {
+        "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. board-powder"
+      },
+      "before": "spots-list-360.png"
+    },
+    {
+      "id": "G10",
+      "screen": "greet",
+      "width": 390,
+      "kind": "text_overflow_or_horizontal_clip",
+      "repro": "Open screen \"greet\" at 390px",
+      "detail": {
+        "testid": "home-today-lineup",
+        "tag": "BUTTON",
+        "text": "Today Sesh",
+        "left": 353,
+        "right": 433,
+        "vw": 390
+      },
+      "before": "screen-greet-390.png"
+    },
+    {
+      "id": "G11",
+      "screen": "bag",
+      "width": 390,
+      "kind": "text_overflow_or_horizontal_clip",
+      "repro": "Open screen \"bag\" at 390px",
+      "detail": {
+        "testid": null,
+        "tag": "BUTTON",
+        "text": "Tail GrabIn Progress",
+        "left": 376,
+        "right": 488,
+        "vw": 390
+      },
+      "before": "screen-bag-390.png"
+    },
+    {
+      "id": "G12",
+      "screen": "bag",
+      "width": 390,
+      "kind": "text_overflow_or_horizontal_clip",
+      "repro": "Open screen \"bag\" at 390px",
+      "detail": {
+        "testid": null,
+        "tag": "P",
+        "text": "Tail Grab",
+        "left": 384,
+        "right": 480,
+        "vw": 390
+      },
+      "before": "screen-bag-390.png"
+    },
+    {
+      "id": "G13",
+      "screen": "bag",
+      "width": 390,
+      "kind": "text_overflow_or_horizontal_clip",
+      "repro": "Open screen \"bag\" at 390px",
+      "detail": {
+        "testid": null,
+        "tag": "P",
+        "text": "In Progress",
+        "left": 384,
+        "right": 480,
+        "vw": 390
+      },
+      "before": "screen-bag-390.png"
+    },
+    {
+      "id": "G14",
+      "screen": "map/spot-info-sheet",
+      "width": 390,
+      "kind": "clipped_control",
+      "repro": "Open Spot → tap i → Transfer Keeper clipped below sheet",
+      "detail": {
+        "transferBox": {
+          "left": 128,
+          "top": 848.5,
+          "right": 273,
+          "bottom": 876.5,
+          "width": 145,
+          "height": 28,
+          "sel": "[data-testid=\"spot-keeper-transfer\"]"
+        },
+        "infoBox": {
+          "left": 24,
+          "top": 413.5,
+          "right": 366,
+          "bottom": 805.5,
+          "width": 342,
+          "height": 392,
+          "sel": "[data-testid=\"spot-info-sheet\"]"
+        }
+      },
+      "before": "spot-info-sheet-390.png"
+    },
+    {
+      "id": "G15",
+      "screen": "map/spot-detail",
+      "width": 390,
+      "kind": "tiny_hit_target",
+      "repro": "Spot detail Close control undersized",
+      "detail": {
+        "left": 28,
+        "top": 377.5,
+        "right": 57,
+        "bottom": 393.5,
+        "width": 29,
+        "height": 16,
+        "sel": "button:text-is(\"Close\")"
+      },
+      "before": "spot-detail-390.png"
+    },
+    {
+      "id": "G16",
+      "screen": "any",
+      "width": 390,
+      "kind": "console_error",
+      "repro": "Interact across screens at 390px",
+      "detail": {
+        "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. board-powder"
+      },
+      "before": "spots-list-390.png"
+    },
+    {
+      "id": "G17",
+      "screen": "greet",
+      "width": 430,
+      "kind": "text_overflow_or_horizontal_clip",
+      "repro": "Open screen \"greet\" at 430px",
+      "detail": {
+        "testid": "home-today-lineup",
+        "tag": "BUTTON",
+        "text": "Today Sesh",
+        "left": 353,
+        "right": 433,
+        "vw": 430
+      },
+      "before": "screen-greet-430.png"
+    },
+    {
+      "id": "G18",
+      "screen": "bag",
+      "width": 430,
+      "kind": "text_overflow_or_horizontal_clip",
+      "repro": "Open screen \"bag\" at 430px",
+      "detail": {
+        "testid": null,
+        "tag": "BUTTON",
+        "text": "Tail GrabIn Progress",
+        "left": 376,
+        "right": 488,
+        "vw": 430
+      },
+      "before": "screen-bag-430.png"
+    },
+    {
+      "id": "G19",
+      "screen": "bag",
+      "width": 430,
+      "kind": "text_overflow_or_horizontal_clip",
+      "repro": "Open screen \"bag\" at 430px",
+      "detail": {
+        "testid": null,
+        "tag": "P",
+        "text": "Tail Grab",
+        "left": 384,
+        "right": 480,
+        "vw": 430
+      },
+      "before": "screen-bag-430.png"
+    },
+    {
+      "id": "G20",
+      "screen": "bag",
+      "width": 430,
+      "kind": "text_overflow_or_horizontal_clip",
+      "repro": "Open screen \"bag\" at 430px",
+      "detail": {
+        "testid": null,
+        "tag": "P",
+        "text": "In Progress",
+        "left": 384,
+        "right": 480,
+        "vw": 430
+      },
+      "before": "screen-bag-430.png"
+    },
+    {
+      "id": "G21",
+      "screen": "map/spot-info-sheet",
+      "width": 430,
+      "kind": "clipped_control",
+      "repro": "Open Spot → tap i → Transfer Keeper clipped below sheet",
+      "detail": {
+        "transferBox": {
+          "left": 128,
+          "top": 848.5,
+          "right": 273,
+          "bottom": 876.5,
+          "width": 145,
+          "height": 28,
+          "sel": "[data-testid=\"spot-keeper-transfer\"]"
+        },
+        "infoBox": {
+          "left": 24,
+          "top": 413.5,
+          "right": 406,
+          "bottom": 805.5,
+          "width": 382,
+          "height": 392,
+          "sel": "[data-testid=\"spot-info-sheet\"]"
+        }
+      },
+      "before": "spot-info-sheet-430.png"
+    },
+    {
+      "id": "G22",
+      "screen": "map/spot-detail",
+      "width": 430,
+      "kind": "tiny_hit_target",
+      "repro": "Spot detail Close control undersized",
+      "detail": {
+        "left": 28,
+        "top": 377.5,
+        "right": 57,
+        "bottom": 393.5,
+        "width": 29,
+        "height": 16,
+        "sel": "button:text-is(\"Close\")"
+      },
+      "before": "spot-detail-430.png"
+    },
+    {
+      "id": "G23",
+      "screen": "any",
+      "width": 430,
+      "kind": "console_error",
+      "repro": "Interact across screens at 430px",
+      "detail": {
+        "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. board-powder"
+      },
+      "before": "spots-list-430.png"
+    }
+  ],
+  "consoleByPage": [
+    {
+      "width": 360,
+      "errors": [
+        "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. board-powder"
+      ]
+    },
+    {
+      "width": 390,
+      "errors": [
+        "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. board-powder"
+      ]
+    },
+    {
+      "width": 430,
+      "errors": [
+        "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. board-powder"
+      ]
+    }
+  ]
+}
