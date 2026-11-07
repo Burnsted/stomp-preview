@@ -93,13 +93,13 @@ test.describe('play-structure runner', () => {
     await page.evaluate(() => {
       HGRunner.debugSetDusk(0.15);
       HGRunner.debugSetEntities([
-        { kind: 'flower', type: 'daisy', lane: 1, z: 1.05, high: 0, taken: 0 },
-        { kind: 'flower', type: 'tulip', lane: 0, z: 1.45, high: 0, taken: 0 },
-        { kind: 'flower', type: 'sunflower', lane: 2, z: 1.25, high: 0, taken: 0 },
-        { kind: 'flower', type: 'bluebell', lane: 1, z: 1.8, high: 0, taken: 0 },
-        { kind: 'ob', type: 'hay', mode: 'block', lane: 0, z: 2.15, hit: 0 },
-        { kind: 'ob', type: 'log', mode: 'jump', lane: 1, z: 2.0, hit: 0 },
-        { kind: 'ob', type: 'rock', mode: 'block', lane: 2, z: 2.35, hit: 0 }
+        { kind: 'flower', type: 'daisy', lane: 1, z: 0.95, high: 0, taken: 0 },
+        { kind: 'flower', type: 'tulip', lane: 0, z: 1.15, high: 0, taken: 0 },
+        { kind: 'flower', type: 'sunflower', lane: 2, z: 1.05, high: 0, taken: 0 },
+        { kind: 'flower', type: 'bluebell', lane: 1, z: 1.55, high: 0, taken: 0 },
+        { kind: 'ob', type: 'hay', mode: 'block', lane: 0, z: 1.45, hit: 0 },
+        { kind: 'ob', type: 'log', mode: 'jump', lane: 1, z: 1.75, hit: 0 },
+        { kind: 'ob', type: 'rock', mode: 'block', lane: 2, z: 1.65, hit: 0 }
       ]);
     });
     await page.waitForTimeout(80);
@@ -147,10 +147,11 @@ test.describe('play-structure runner', () => {
     await page.evaluate(() => {
       HGRunner.debugSetDusk(0.55);
       HGRunner.debugSetEntities([
-        { kind: 'flower', type: 'daisy', lane: 1, z: 1.1, high: 0, taken: 0 },
-        { kind: 'flower', type: 'sunflower', lane: 0, z: 1.4, high: 0, taken: 0 },
-        { kind: 'ob', type: 'wheelbarrow', mode: 'block', lane: 2, z: 1.7, hit: 0 },
-        { kind: 'ob', type: 'hay', mode: 'block', lane: 1, z: 2.2, hit: 0 }
+        { kind: 'flower', type: 'daisy', lane: 1, z: 1.0, high: 0, taken: 0 },
+        { kind: 'flower', type: 'sunflower', lane: 0, z: 1.25, high: 0, taken: 0 },
+        { kind: 'flower', type: 'tulip', lane: 2, z: 1.35, high: 0, taken: 0 },
+        { kind: 'ob', type: 'hay', mode: 'block', lane: 1, z: 1.55, hit: 0 },
+        { kind: 'ob', type: 'rock', mode: 'block', lane: 2, z: 1.8, hit: 0 }
       ]);
       for (let i = 0; i < 4; i++) HGRunner.update(0.04);
     });
@@ -418,7 +419,7 @@ test.describe('play-structure runner', () => {
       expect(m.state).toBe('RUNNER');
       expect(m.cssW).toBe(phone.w);
       expect(m.active).toBeTruthy();
-      expect(m.verBoot).toContain('v0.9-play-fix-franz-ridges');
+      expect(m.verBoot).toContain('v0.9-play-fix-franz-tedfix');
       await shot(page, 'device-' + phone.name + '-runner');
 
       await page.evaluate(() => {

@@ -21,8 +21,8 @@ const HGRunner = (() => {
   const OBS_CHANCE = 0.36;
   const SCROLL0 = 280;
   const SCROLL_MAX = 420;
-  /** Raised bank width as fraction of track — concept: clear ridges, dirt still wider. */
-  const HEDGE_FRAC = 0.17;
+  /** Raised bank width as fraction of track — Franz hedgerow ridges. */
+  const HEDGE_FRAC = 0.135;
 
   /** Haven body ≈ 230px on 1266px-tall Franz reference screen. */
   const HAVEN_H_RATIO = 230 / 1266;
@@ -92,20 +92,28 @@ const HGRunner = (() => {
   }
 
   function laneXs() {
-    // Centers of the three dirt lanes (between continuous hedgerow banks)
-    const foot = footY();
-    const lay = layoutAt(foot);
+    // Haven's lane centers at her feet (near field)
+    return laneCentersAt(havenFootY());
+  }
+
+  /** Dirt-lane centers at a given screen Y — use this for entities at that depth. */
+  function laneCentersAt(y) {
+    const lay = layoutAt(y);
     return lay.dirt.map((d) => (d[0] + d[1]) * 0.5);
   }
 
-  /** Franz map_lanes (585×1266) — outer track edges at depth y. */
+  /**
+   * Franz map_lanes_585x1266.json — 3 lanes fill ~81% at the field bottom
+   * (boundaries [55,200,385,530] / 585) with only a slim grass strip each side.
+   */
   function trackBoundsAt(y) {
     const horizon = horizonY();
     const foot = footY();
     const u = Math.max(0, Math.min(1, (y - horizon) / Math.max(1, foot - horizon)));
-    // Reference bottom: 55,200,385,530 → horizon: 255,280,305,330 on 585-wide
-    const bot = [0.094, 0.342, 0.658, 0.906];
-    const hor = [0.436, 0.479, 0.521, 0.564];
+    // Franz map ~81%; nudge outer edges slightly wider so the bottom reads ~84%
+    // with only a slim grass strip each side (Ted mid-run / dusk review).
+    const bot = [0.08, 0.335, 0.665, 0.92]; // ~84% span
+    const hor = [0.4359, 0.4786, 0.5214, 0.5641];
     const out = [];
     for (let i = 0; i < 4; i++) out.push(W * (hor[i] + (bot[i] - hor[i]) * u));
     return out;
@@ -144,11 +152,24 @@ const HGRunner = (() => {
   }
 
   function horizonY() {
-    return playTop + (playBot - playTop) * 0.26;
+    // Franz horizon_y 340/1266 ≈ 0.269 of full screen
+    return Math.max(playTop + 8, H * 0.268);
   }
+  /**
+   * Haven's feet — raised so whole body + a little ground show above the
+   * bottom chrome. Franz composite feet_y=1080/1266≈0.853; sit a touch
+   * higher so shoes clear the dock while lanes still read wide at her depth.
+   */
+  function havenFootY() {
+    return H * 0.83;
+  }
+  /**
+   * Track foot near the bottom of the screen (Franz bottom_y≈0.948) so the
+   * 3 lanes read ~75–85% wide at the bottom edge — not pinched above a
+   * full-width meadow apron.
+   */
   function footY() {
-    // Reach the canvas bottom — no leftover dock/sky-blue seam band
-    return H;
+    return Math.min(H - 2, Math.max(havenFootY() + 36, H * 0.96));
   }
 
   function reset(opts) {
@@ -184,13 +205,13 @@ const HGRunner = (() => {
 
   function seedScenery() {
     scenery = [];
-    // Sparse + tiny — must not read as collectibles
-    for (let i = 0; i < 3; i++) {
+    // Very sparse + far only — slim side grass, never near-camera
+    for (let i = 0; i < 2; i++) {
       scenery.push({
         type: SPECIES[(rng() * SPECIES.length) | 0],
         side: rng() < 0.5 ? -1 : 1,
-        z: 1.4 + rng() * 2.6,
-        jitter: (rng() - 0.5) * 0.35
+        z: 2.2 + rng() * 2.0,
+        jitter: (rng() - 0.5) * 0.25
       });
     }
   }
@@ -329,12 +350,12 @@ const HGRunner = (() => {
     entities.forEach((e) => { e.z -= speed * dt * 0.01; });
     scenery.forEach((s) => { s.z -= speed * dt * 0.01; });
     scenery = scenery.filter((s) => s.z > -0.8);
-    while (scenery.length < 3) {
+    while (scenery.length < 2) {
       scenery.push({
         type: SPECIES[(rng() * SPECIES.length) | 0],
         side: rng() < 0.5 ? -1 : 1,
-        z: 3.2 + rng() * 2.2,
-        jitter: (rng() - 0.5) * 0.35
+        z: 3.4 + rng() * 1.8,
+        jitter: (rng() - 0.5) * 0.25
       });
     }
 
@@ -493,6 +514,7 @@ const HGRunner = (() => {
     let sum = wts[0] + wts[1] + wts[2];
     if (sum <= 0.001) { wts[0] = 1; sum = 1; }
     const horizon = horizonY();
+    const hillTop = horizon - 18;
     keys.forEach((p, i) => {
       const a = wts[i] / sum;
       if (a < 0.01) return;
@@ -500,24 +522,58 @@ const HGRunner = (() => {
       if (!img || !img.width) return;
       cx.globalAlpha = a;
       if (kind === 'sky') {
-        // Skies are full-phone plates — only paint ABOVE the horizon so baked
-        // meadow in the plate never becomes the scrolling world.
-        const skyH = Math.max(8, horizon - playTop + 4);
-        cx.drawImage(img, 0, 0, img.width, img.height * 0.32, 0, playTop, W, skyH);
-      } else {
-        // Horizon plates bake meadow flowers — only sample the HILL band
-        // (upper ~38% of the plate) so off-lane collectible-looking blooms
-        // never stamp into the near/mid field.
-        const hh = (playBot - playTop) * 0.20;
-        const hy = horizon - hh * 0.85;
-        cx.drawImage(
-          img,
-          0, 0, img.width, Math.max(8, img.height * 0.38),
-          0, hy, W, hh
-        );
+        // Sky strictly ABOVE the hill crest. Sample only the upper sky plate
+        // (skip pale/white bottom) so no jagged white fringe appears.
+        const skyBot = hillTop;
+        const skyH = Math.max(8, skyBot - playTop);
+        cx.drawImage(img, 0, 0, img.width, img.height * 0.18, 0, playTop, W, skyH);
       }
+      // Horizon plates bake hay/rock/fence/flowers — never drawn as scenery.
+      // Hills are painted procedurally in drawCleanHills().
     });
     cx.globalAlpha = 1;
+  }
+
+  /** Soft rolling hills — no baked props, no white fringe under the sky. */
+  function drawCleanHills(cx, weights) {
+    const horizon = horizonY();
+    const dusk = (weights && weights.dusk) || 0;
+    const sunset = (weights && weights.sunset) || 0;
+    const hillTop = horizon - 18;
+    const hillBot = horizon + (playBot - playTop) * 0.14;
+    const base = dusk > 0.45 ? '#4a6e3a' : (sunset > 0.35 ? '#6a9a40' : '#6db84a');
+    const dark = dusk > 0.45 ? '#3a5a30' : (sunset > 0.35 ? '#4e7a32' : '#4f9a38');
+    // Cover any sky seam with hill green first (no pale/white join band)
+    cx.fillStyle = base;
+    cx.fillRect(0, hillTop - 2, W, hillBot - hillTop + 4);
+    cx.beginPath();
+    cx.moveTo(0, hillBot);
+    cx.lineTo(0, hillTop + 10);
+    const bumps = [
+      [0.08, 18], [0.18, 5], [0.30, 16], [0.42, 3],
+      [0.55, 14], [0.68, 7], [0.80, 20], [0.92, 9], [1.0, 12]
+    ];
+    bumps.forEach((b) => cx.lineTo(W * b[0], hillTop + b[1]));
+    cx.lineTo(W, hillBot);
+    cx.closePath();
+    cx.fill();
+    cx.fillStyle = dark;
+    cx.beginPath();
+    cx.moveTo(0, hillBot);
+    cx.lineTo(0, hillTop + 22);
+    [[0.12, 10], [0.28, 22], [0.45, 8], [0.62, 18], [0.78, 6], [1.0, 16]].forEach((b) => {
+      cx.lineTo(W * b[0], hillTop + b[1]);
+    });
+    cx.lineTo(W, hillBot);
+    cx.closePath();
+    cx.fill();
+    cx.fillStyle = dusk > 0.45 ? '#2f4a28' : '#3d7a32';
+    [[0.12, 16, 17], [0.22, 12, 13], [0.48, 18, 16],
+     [0.62, 11, 12], [0.78, 17, 15], [0.88, 10, 11]].forEach((t) => {
+      cx.beginPath();
+      cx.ellipse(W * t[0], hillTop + t[1], t[2], t[2] * 0.72, 0, 0, 7);
+      cx.fill();
+    });
   }
 
   /**
@@ -528,7 +584,7 @@ const HGRunner = (() => {
   function drawProjectedGround(cx, Assets) {
     const horizon = horizonY();
     const foot = footY();
-    const strips = 40;
+    const strips = 44;
     const scrollUv = (dist * 0.045) % 256;
     const dirtPat = ensurePattern(cx, Assets, 'dirt');
     const grassPat = ensurePattern(cx, Assets, 'grass');
@@ -545,7 +601,7 @@ const HGRunner = (() => {
       const L0 = layoutAt(y0);
       const L1 = layoutAt(y1);
 
-      // Outer meadow grass
+      // Outer meadow grass — slim side strips only (Franz ~9% each side)
       fillTrap(cx, grassPat || '#6db84a',
         0, y0, L0.track[0], y0, L1.track[0], y1, 0, y1, scrollUv, z0);
       fillTrap(cx, grassPat || '#6db84a',
@@ -559,110 +615,124 @@ const HGRunner = (() => {
       }
     }
 
-    // Continuous hedge banks as single perspective polygons (not segmented tiles)
-    drawContinuousHedgeBank(cx, hedge, 0, scrollUv);
-    drawContinuousHedgeBank(cx, hedge, 1, scrollUv);
+    // Raised matte hedgerows — Franz 512×96 strip, projected per depth strip
+    drawTexturedHedgeBank(cx, hedge, 0, scrollUv);
+    drawTexturedHedgeBank(cx, hedge, 1, scrollUv);
 
-    // Seal the near edge with meadow green so banks never end as tinted blocks
-    if (foot < H) {
+    // Tiny side-grass tip below foot only — never a full-width meadow apron
+    // that would hide the wide lane field or cut dark wedges into ridges.
+    if (foot < H - 1) {
+      const lay = layoutAt(foot);
       cx.fillStyle = '#5faa45';
-      cx.fillRect(0, foot, W, H - foot + 2);
+      cx.fillRect(0, foot, lay.track[0], H - foot + 1);
+      cx.fillRect(lay.track[3], foot, W - lay.track[3], H - foot + 1);
     }
   }
 
   /**
-   * One continuous raised hedgerow from horizon→feet.
-   * Single perspective polygon (no segment tiles). Franz 512×96 strip
-   * scrolls along the bank length inside the clip.
+   * Raised grass/hedgerow bank using Franz's 512×96 strip.
+   * Drawn as stacked matte textured traps (not one glossy stretched polygon).
+   * Leafy crop only — skips the tan dirt foot at the bottom of the strip.
    */
-  function drawContinuousHedgeBank(cx, hedge, side, scrollUv) {
+  function drawTexturedHedgeBank(cx, hedge, side, scrollUv) {
     const horizon = horizonY();
     const foot = footY();
-    const N = 48;
+    const N = 36;
+    const tw = hedge && hedge.width ? hedge.width : 0;
+    const th = hedge && hedge.height ? hedge.height : 0;
+    // Leafy body (~top 78%); skip tan soil foot of Franz 512×96 strip
+    const srcY = 0;
+    const srcH = th ? Math.floor(th * 0.78) : 0;
+
+    // Build continuous ridge polyline once (avoids glass-trench / segment look)
     const baseL = [], baseR = [], topL = [], topR = [];
     for (let i = 0; i <= N; i++) {
       const u = i / N;
       const z = u * u;
-      const y = Math.min(foot - 1, horizon + (foot - horizon) * z);
-      const lay = layoutAt(y);
-      const a = lay.hedges[side][0];
-      const b = lay.hedges[side][1];
-      const lift = 5 + z * 24;
-      const inset = (b - a) * 0.05;
-      baseL.push([a, y]);
-      baseR.push([b, y]);
-      topL.push([a + inset, y - lift]);
-      topR.push([b - inset, y - lift]);
+      const y = horizon + (foot - horizon) * z;
+      const h = layoutAt(y).hedges[side];
+      const lift = 7 + z * 28;
+      baseL.push([h[0], y]);
+      baseR.push([h[1], y]);
+      topL.push([h[0] - 0.5, y - lift]);
+      topR.push([h[1] + 0.5, y - lift]);
     }
+    if (baseL.length < 2) return;
 
-    // Shadow footprint — carves three dirt lanes apart
+    // Matte mound body
     cx.beginPath();
     cx.moveTo(baseL[0][0], baseL[0][1]);
     for (let i = 1; i < baseL.length; i++) cx.lineTo(baseL[i][0], baseL[i][1]);
     for (let i = baseR.length - 1; i >= 0; i--) cx.lineTo(baseR[i][0], baseR[i][1]);
     cx.closePath();
-    cx.fillStyle = '#245a20';
+    cx.fillStyle = '#3f7e30';
     cx.fill();
 
-    // Raised body (continuous)
-    cx.beginPath();
-    cx.moveTo(baseL[0][0], baseL[0][1]);
-    for (let i = 1; i < baseL.length; i++) cx.lineTo(baseL[i][0], baseL[i][1]);
-    for (let i = topR.length - 1; i >= 0; i--) cx.lineTo(topR[i][0], topR[i][1]);
-    for (let i = 0; i < topL.length; i++) cx.lineTo(topL[i][0], topL[i][1]);
-    cx.closePath();
-    cx.fillStyle = '#3d8f2e';
-    cx.fill();
-
-    // Bright crown ridge (continuous)
+    // Raised top face
     cx.beginPath();
     cx.moveTo(topL[0][0], topL[0][1]);
     for (let i = 1; i < topL.length; i++) cx.lineTo(topL[i][0], topL[i][1]);
     for (let i = topR.length - 1; i >= 0; i--) cx.lineTo(topR[i][0], topR[i][1]);
     cx.closePath();
-    cx.fillStyle = '#58b83c';
+    cx.fillStyle = '#4e8f38';
     cx.fill();
 
-    if (hedge && hedge.width) {
-      cx.save();
+    // No dark side-wall wedges at the foot — Franz concept ridges meet dirt cleanly.
+    // Far-field only: a soft matte sidewall so the bank still reads raised.
+    const sideStart = Math.floor(N * 0.15);
+    if (sideStart < N - 2) {
+      cx.fillStyle = '#458634';
       cx.beginPath();
-      cx.moveTo(topL[0][0], topL[0][1]);
-      for (let i = 1; i < topL.length; i++) cx.lineTo(topL[i][0], topL[i][1]);
-      for (let i = baseR.length - 1; i >= 0; i--) cx.lineTo(baseR[i][0], baseR[i][1]);
-      for (let i = 0; i < baseL.length; i++) cx.lineTo(baseL[i][0], baseL[i][1]);
+      cx.moveTo(topL[sideStart][0], topL[sideStart][1]);
+      for (let i = sideStart + 1; i < topL.length; i++) cx.lineTo(topL[i][0], topL[i][1]);
+      for (let i = baseL.length - 1; i >= sideStart; i--) cx.lineTo(baseL[i][0], baseL[i][1]);
       cx.closePath();
-      cx.clip();
-      // Scroll the strip ALONG the bank (depth), not as square stamps
-      const tw = hedge.width;
-      const th = hedge.height;
-      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-      topL.concat(topR, baseL, baseR).forEach((p) => {
-        if (p[0] < minX) minX = p[0];
-        if (p[0] > maxX) maxX = p[0];
-        if (p[1] < minY) minY = p[1];
-        if (p[1] > maxY) maxY = p[1];
-      });
-      const bandH = Math.max(12, maxY - minY);
-      const sx = ((scrollUv * 2.4 + side * 160) % tw + tw) % tw;
-      cx.globalAlpha = 0.9;
-      // One long horizontal draw of the ridge strip, tiled sideways for width
-      const tileW = Math.max(bandH * (tw / th), maxX - minX + 40);
-      cx.drawImage(hedge, 0, 0, tw, th, minX - sx * 0.2, minY - 2, tileW, bandH + 4);
-      cx.drawImage(hedge, 0, 0, tw, th, minX - sx * 0.2 + tileW * 0.92, minY - 2, tileW, bandH + 4);
-      cx.restore();
+      cx.fill();
+      cx.beginPath();
+      cx.moveTo(topR[sideStart][0], topR[sideStart][1]);
+      for (let i = sideStart + 1; i < topR.length; i++) cx.lineTo(topR[i][0], topR[i][1]);
+      for (let i = baseR.length - 1; i >= sideStart; i--) cx.lineTo(baseR[i][0], baseR[i][1]);
+      cx.closePath();
+      cx.fill();
     }
 
-    // Soft highlight along the crown so it reads raised in perspective
-    cx.strokeStyle = 'rgba(200,240,120,0.5)';
-    cx.lineWidth = 2;
-    cx.beginPath();
-    cx.moveTo(topL[0][0], topL[0][1]);
-    for (let i = 1; i < topL.length; i++) cx.lineTo(topL[i][0], topL[i][1]);
-    cx.stroke();
-    cx.beginPath();
-    cx.moveTo(topR[0][0], topR[0][1]);
-    for (let i = 1; i < topR.length; i++) cx.lineTo(topR[i][0], topR[i][1]);
-    cx.stroke();
+    if (!tw || !srcH) return;
+
+    // Stamp Franz hedgerow along the ridge in overlapping depth bands
+    for (let i = 0; i < N; i++) {
+      const p0 = i;
+      const p1 = Math.min(N, i + 2); // overlap neighbors to hide seams
+      const y0 = baseL[p0][1];
+      const y1 = baseL[p1][1];
+      if (y1 - y0 < 0.5) continue;
+      cx.save();
+      cx.beginPath();
+      cx.moveTo(topL[p0][0], topL[p0][1]);
+      cx.lineTo(topR[p0][0], topR[p0][1]);
+      cx.lineTo(topR[p1][0], topR[p1][1]);
+      cx.lineTo(baseR[p1][0], baseR[p1][1]);
+      cx.lineTo(baseL[p1][0], baseL[p1][1]);
+      cx.lineTo(topL[p1][0], topL[p1][1]);
+      cx.closePath();
+      cx.clip();
+
+      const top = Math.min(topL[p0][1], topL[p1][1], topR[p0][1], topR[p1][1]);
+      const bot = Math.max(baseL[p0][1], baseL[p1][1]);
+      const bandH = Math.max(6, bot - top);
+      const left = Math.min(baseL[p0][0], baseL[p1][0], topL[p0][0], topL[p1][0]);
+      const right = Math.max(baseR[p0][0], baseR[p1][0], topR[p0][0], topR[p1][0]);
+      const bandW = Math.max(12, right - left);
+      const tileW = Math.max(bandW * 1.1, 64);
+      const uv = ((scrollUv * 2.0 + side * 110 + i * 5) % tw + tw) % tw;
+      let x = left - (uv % 40);
+      cx.globalAlpha = 0.92; // matte — never full-bright gloss
+      while (x < right + 8) {
+        cx.drawImage(hedge, 0, srcY, tw, srcH, x, top, tileW, bandH);
+        x += tileW * 0.88;
+      }
+      cx.globalAlpha = 1;
+      cx.restore();
+    }
   }
 
   function fillTrap(cx, fill, x0, y0, x1, y1a, x2, y2, x3, y3, scrollUv, z) {
@@ -696,15 +766,15 @@ const HGRunner = (() => {
     cx.fillRect(0, playTop, W, Math.max(0, H - playTop));
     drawCrossfadeLayer(cx, Assets, 'sky', wts);
     if (!imgFor(Assets, ART.sky('day'))) {
-      const grd = cx.createLinearGradient(0, playTop, 0, playBot);
+      const grd = cx.createLinearGradient(0, playTop, 0, horizonY());
       grd.addColorStop(0, '#8ec8f0');
-      grd.addColorStop(0.35, '#7eb85a');
-      grd.addColorStop(1, '#5a9a3a');
+      grd.addColorStop(1, '#c8e8f8');
       cx.fillStyle = grd;
-      cx.fillRect(0, playTop, W, playBot - playTop);
+      cx.fillRect(0, playTop, W, Math.max(8, horizonY() - playTop));
     }
+    // Hills first (clean crest under sky), then projected lanes on top of meadow
+    drawCleanHills(cx, wts);
     drawProjectedGround(cx, Assets);
-    drawCrossfadeLayer(cx, Assets, 'horizon', wts);
   }
 
   function draw(cx, Assets) {
@@ -713,32 +783,44 @@ const HGRunner = (() => {
 
     drawWorld(cx, Assets);
 
-    // Sparse tiny scenery flowers in OUTER grass only (never look collectible)
+    // Sparse tiny scenery ONLY far out on slim side grass (never near / never collectible-sized)
     scenery.forEach((s) => {
+      if (s.z < 1.8) return;
       const y = zToY(s.z);
       const lay = layoutAt(y);
-      const margin = 36 + Math.abs(s.jitter) * 70;
+      const margin = 14 + Math.abs(s.jitter) * 22;
       const x = s.side < 0
         ? lay.track[0] - margin
         : lay.track[3] + margin;
       if (x < -20 || x > W + 20) return;
       const img = imgFor(Assets, ART.flower(s.type));
-      // Cap size — near-camera scenery must stay clearly smaller than collectibles
-      const fh = Math.min(18, 8 + 10 * zScale(s.z) * 0.35);
-      cx.globalAlpha = 0.55;
+      const fh = Math.min(12, 6 + 5 * zScale(s.z) * 0.3);
+      cx.globalAlpha = 0.45;
       drawSprite(cx, img, x, y, fh);
       cx.globalAlpha = 1;
     });
 
     const sorted = entities.slice().sort((a, b) => b.z - a.z);
     sorted.forEach((e) => {
-      // Always centered in a dirt lane
-      const x = xs[e.lane];
-      const y = zToY(e.z) - (e.high ? 36 * zScale(e.z) : 0);
+      // Depth-correct dirt-lane CENTER — every obstacle/collectible sits in-lane
+      const yGround = zToY(e.z);
+      const lay = layoutAt(yGround);
+      const d = lay.dirt[e.lane];
+      const mid = (d[0] + d[1]) * 0.5;
+      // Tiny inward bias on outer lanes so wide sprites don't read as edge-hugging
+      const nudge = (d[1] - d[0]) * 0.06;
+      const x = e.lane === 0 ? mid + nudge : (e.lane === 2 ? mid - nudge : mid);
+      const y = yGround - (e.high ? 36 * zScale(e.z) : 0);
       const sc = zScale(e.z);
+      // Cap sprite width so props stay inside their dirt lane (no grass overhang)
+      const laneW = Math.max(8, d[1] - d[0]);
       if (e.kind === 'flower' && !e.taken) {
         const img = imgFor(Assets, ART.flower(e.type));
-        const fh = 56 * sc; // big readable collectible in-lane
+        let fh = 48 * sc;
+        if (img && img.width) {
+          const fw = fh * (img.width / img.height);
+          if (fw > laneW * 0.62) fh *= (laneW * 0.62) / fw;
+        }
         if (!drawSprite(cx, img, x, y, fh)) {
           cx.fillStyle = '#ffd23c';
           cx.beginPath(); cx.arc(x, y - fh * 0.55, fh * 0.28, 0, 7); cx.fill();
@@ -746,16 +828,20 @@ const HGRunner = (() => {
       } else if (e.kind === 'ob' && !e.hit) {
         if (e.type === 'sprinkler') {
           const water = imgFor(Assets, ART.water);
-          const wh = 48 * sc;
+          const wh = Math.min(40 * sc, laneW * 0.5);
           drawSprite(cx, water, x, y - 8 * sc, wh);
         }
         const img = imgFor(Assets, ART.obs(e.type));
-        const oh = (e.type === 'puddle' ? 36 : 58) * sc;
+        let oh = (e.type === 'puddle' ? 30 : 48) * sc;
+        if (img && img.width) {
+          const fw = oh * (img.width / img.height);
+          if (fw > laneW * 0.64) oh *= (laneW * 0.64) / fw;
+        }
         if (!drawSprite(cx, img, x, y, oh)) drawObstacleFallback(cx, e, x, y, sc);
       }
     });
 
-    // Haven — rear view only, ~230px on 1266 reference
+    // Haven — rear view only, ~230px on 1266 reference; feet raised above bottom edge
     const havenH = H * HAVEN_H_RATIO;
     let bob = 0;
     if (jumpT > 0) {
@@ -765,7 +851,7 @@ const HGRunner = (() => {
       bob = -Math.abs(Math.sin(runPhase * Math.PI / 3)) * RUN_BOB_PX;
     }
     const gx = laneX;
-    const gy = footY() - 4 + bob + (stumbleT > 0 ? Math.sin(stumbleT * 40) * 3 : 0);
+    const gy = havenFootY() + bob + (stumbleT > 0 ? Math.sin(stumbleT * 40) * 3 : 0);
 
     let poseKey = ART.run(runPhase | 0);
     if (jumpT > 0) poseKey = ART.jump;
@@ -947,6 +1033,7 @@ const HGRunner = (() => {
   /** Test helper — replace near-field entities for screenshot evidence. */
   function debugSetEntities(list) {
     entities = (list || []).map((e) => Object.assign({}, e));
+    scenery = []; // evidence shots: no off-lane deco flowers
   }
   function debugSetCollected(byColor) {
     collected = Object.assign({ daisy: 0, tulip: 0, sunflower: 0, bluebell: 0 }, byColor || {});
