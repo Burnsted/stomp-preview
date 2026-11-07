@@ -8,7 +8,7 @@
     "dpr": 2.625
   },
   "metrics": {
-    "ver": "v0.9-play-fix-franz-tedfix",
+    "ver": "v0.9-play-fix-franz-props",
     "w": 412,
     "h": 915,
     "hitsSmallExclusiveMin": 44,

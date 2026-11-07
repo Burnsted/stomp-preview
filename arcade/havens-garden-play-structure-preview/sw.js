@@ -1,5 +1,5 @@
-/* Haven's Garden v0.9-play-fix-franz-tedfix — Franz lanes+HUD polish */
-const CACHE = 'havens-garden-play-fix-preview-v0.9-play-fix-franz-tedfix';
+/* Haven's Garden v0.9-play-fix-franz-props — Franz lanes+HUD polish */
+const CACHE = 'havens-garden-play-fix-preview-v0.9-play-fix-franz-props';
 const PRECACHE = [
   './',
   './index.html',

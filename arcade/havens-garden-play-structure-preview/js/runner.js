@@ -22,7 +22,7 @@ const HGRunner = (() => {
   const SCROLL0 = 280;
   const SCROLL_MAX = 420;
   /** Raised bank width as fraction of track — Franz hedgerow ridges. */
-  const HEDGE_FRAC = 0.135;
+  const HEDGE_FRAC = 0.11;
 
   /** Haven body ≈ 230px on 1266px-tall Franz reference screen. */
   const HAVEN_H_RATIO = 230 / 1266;
@@ -83,8 +83,12 @@ const HGRunner = (() => {
   let playTop = 80, playBot = 760;
   let continueHit = null;
   let patterns = { dirt: null, grass: null, dirtKey: null, grassKey: null };
-  /** Decorative off-lane flowers (not collectible). */
+  /** Decorative off-lane fence / flower clumps (not collectible). */
   let scenery = [];
+  /** Min |Δz| between any two props in the same lane (blocks flower-on-rock). */
+  const LANE_Z_SEP = 0.72;
+  /** Collectible / obstacle height scale vs prior tiny props (~2× reads as ~1.5× vs Haven). */
+  const PROP_SCALE = 2.0;
 
   function rng() {
     seed = (seed * 1664525 + 1013904223) >>> 0;
@@ -205,13 +209,25 @@ const HGRunner = (() => {
 
   function seedScenery() {
     scenery = [];
-    // Very sparse + far only — slim side grass, never near-camera
-    for (let i = 0; i < 2; i++) {
+    // Sparse flower clumps on the side grass only (never on the track)
+    for (let i = 0; i < 7; i++) {
       scenery.push({
+        kind: 'clump',
         type: SPECIES[(rng() * SPECIES.length) | 0],
-        side: rng() < 0.5 ? -1 : 1,
-        z: 2.2 + rng() * 2.0,
-        jitter: (rng() - 0.5) * 0.25
+        side: i % 2 === 0 ? -1 : 1,
+        z: 1.15 + rng() * 3.4,
+        jitter: (rng() - 0.5) * 0.55,
+        scale: 0.7 + rng() * 0.55
+      });
+    }
+    // Fence posts / short fence segments along the outer meadow edge
+    for (let i = 0; i < 5; i++) {
+      scenery.push({
+        kind: 'fence',
+        side: i % 2 === 0 ? -1 : 1,
+        z: 1.4 + i * 0.7 + rng() * 0.35,
+        jitter: (rng() - 0.5) * 0.2,
+        scale: 1
       });
     }
   }
@@ -222,9 +238,36 @@ const HGRunner = (() => {
     if (!laneX) laneX = laneXs()[lane];
   }
 
+  /** True if another live prop already sits in this lane near z. */
+  function laneBlocked(L, z, sep) {
+    const s = sep == null ? LANE_Z_SEP : sep;
+    for (let i = 0; i < entities.length; i++) {
+      const e = entities[i];
+      if (e.taken || e.hit) continue;
+      if (e.lane !== L) continue;
+      if (Math.abs(e.z - z) < s) return true;
+    }
+    return false;
+  }
+
+  /** Pick a lane that is clear at z; falls back to null if none. */
+  function pickClearLane(z) {
+    const order = [0, 1, 2];
+    // shuffle
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = (rng() * (i + 1)) | 0;
+      const tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+    }
+    for (let i = 0; i < order.length; i++) {
+      if (!laneBlocked(order[i], z)) return order[i];
+    }
+    return null;
+  }
+
   function spawnOne(z) {
     const roll = rng();
-    const L = (rng() * LANES) | 0;
+    const L = pickClearLane(z);
+    if (L == null) return; // all lanes busy at this depth — skip
     // Collectibles + obstacles ALWAYS spawn in a dirt lane center
     if (roll < FLOWER_CHANCE) {
       const sp = SPECIES[(rng() * SPECIES.length) | 0];
@@ -252,12 +295,15 @@ const HGRunner = (() => {
     if (stumbleT > 0.2 || jumpT > 0 || duckT > 0.1) return;
     jumpT = JUMP_DUR;
     duckT = 0;
+    // Lock horizontal position to the active lane center for the hop
+    laneX = laneXs()[lane];
   }
 
   function tryDuck() {
     if (stumbleT > 0.2 || duckT > 0 || jumpT > 0.12) return;
     duckT = DUCK_DUR;
     jumpT = 0;
+    laneX = laneXs()[lane];
   }
 
   function onPointerDown(x, y) {
@@ -343,19 +389,34 @@ const HGRunner = (() => {
     }
 
     const xs = laneXs();
-    const target = xs[lane];
+    // Match draw(): outer lanes bias inward so Haven's wide plate stays in dirt
+    const _hd = layoutAt(havenFootY()).dirt[lane];
+    const _hm = (_hd[0] + _hd[1]) * 0.5;
+    const _hi = (_hd[1] - _hd[0]) * 0.16;
+    const target = lane === 0 ? _hm + _hi : (lane === 2 ? _hm - _hi : _hm);
     laneX += (target - laneX) * Math.min(1, LANE_LERP * dt);
 
     const speed = scroll;
     entities.forEach((e) => { e.z -= speed * dt * 0.01; });
     scenery.forEach((s) => { s.z -= speed * dt * 0.01; });
     scenery = scenery.filter((s) => s.z > -0.8);
-    while (scenery.length < 2) {
+    while (scenery.filter((s) => s.kind === 'clump').length < 6) {
       scenery.push({
+        kind: 'clump',
         type: SPECIES[(rng() * SPECIES.length) | 0],
         side: rng() < 0.5 ? -1 : 1,
-        z: 3.4 + rng() * 1.8,
-        jitter: (rng() - 0.5) * 0.25
+        z: 3.2 + rng() * 2.2,
+        jitter: (rng() - 0.5) * 0.55,
+        scale: 0.7 + rng() * 0.55
+      });
+    }
+    while (scenery.filter((s) => s.kind === 'fence').length < 4) {
+      scenery.push({
+        kind: 'fence',
+        side: rng() < 0.5 ? -1 : 1,
+        z: 3.0 + rng() * 2.4,
+        jitter: (rng() - 0.5) * 0.2,
+        scale: 1
       });
     }
 
@@ -783,43 +844,65 @@ const HGRunner = (() => {
 
     drawWorld(cx, Assets);
 
-    // Sparse tiny scenery ONLY far out on slim side grass (never near / never collectible-sized)
+    // Sparse field decor on side grass only — fence + flower clumps (never on track)
     scenery.forEach((s) => {
-      if (s.z < 1.8) return;
+      if (s.z < 0.6) return;
       const y = zToY(s.z);
       const lay = layoutAt(y);
-      const margin = 14 + Math.abs(s.jitter) * 22;
+      const sideW = s.side < 0 ? lay.track[0] : (W - lay.track[3]);
+      if (sideW < 10) return;
+      // Keep decor at the outer meadow edge — clear of dirt + hedges
+      const edgePad = Math.max(22, sideW * (0.52 + Math.abs(s.jitter || 0) * 0.2));
       const x = s.side < 0
-        ? lay.track[0] - margin
-        : lay.track[3] + margin;
-      if (x < -20 || x > W + 20) return;
-      const img = imgFor(Assets, ART.flower(s.type));
-      const fh = Math.min(12, 6 + 5 * zScale(s.z) * 0.3);
-      cx.globalAlpha = 0.45;
-      drawSprite(cx, img, x, y, fh);
-      cx.globalAlpha = 1;
+        ? Math.max(6, lay.track[0] - edgePad)
+        : Math.min(W - 6, lay.track[3] + edgePad);
+      if (x < -30 || x > W + 30) return;
+      const sc = zScale(s.z) * (s.scale || 1);
+      if (s.kind === 'fence') {
+        const img = imgFor(Assets, ART.obs('fence'));
+        const fh = Math.min(38 * sc, sideW * 0.85);
+        cx.globalAlpha = 0.78;
+        if (!drawSprite(cx, img, x, y, fh)) {
+          cx.fillStyle = '#8a6238';
+          cx.fillRect(x - 3, y - fh, 6, fh);
+          cx.fillRect(x - 14, y - fh * 0.72, 28, 5);
+          cx.fillRect(x - 14, y - fh * 0.42, 28, 5);
+        }
+        cx.globalAlpha = 1;
+      } else {
+        const img = imgFor(Assets, ART.flower(s.type || 'daisy'));
+        const fh = Math.min(28 * sc, sideW * 0.7);
+        cx.globalAlpha = 0.72;
+        drawSprite(cx, img, x, y, fh);
+        // small companion bloom for "clump" read
+        if (s.scale > 0.9) {
+          const x2 = x + (s.side < 0 ? -10 : 10) * sc;
+          drawSprite(cx, img, x2, y + 2, fh * 0.72);
+        }
+        cx.globalAlpha = 1;
+      }
     });
 
     const sorted = entities.slice().sort((a, b) => b.z - a.z);
     sorted.forEach((e) => {
-      // Depth-correct dirt-lane CENTER — every obstacle/collectible sits in-lane
+      // Depth-correct dirt-lane CENTER — never hedge / never outer grass
       const yGround = zToY(e.z);
       const lay = layoutAt(yGround);
       const d = lay.dirt[e.lane];
       const mid = (d[0] + d[1]) * 0.5;
-      // Tiny inward bias on outer lanes so wide sprites don't read as edge-hugging
-      const nudge = (d[1] - d[0]) * 0.06;
-      const x = e.lane === 0 ? mid + nudge : (e.lane === 2 ? mid - nudge : mid);
+      // Inward bias on outer lanes so large props don't read as edge-hugging
+      const inward = (d[1] - d[0]) * 0.14;
+      const x = e.lane === 0 ? mid + inward : (e.lane === 2 ? mid - inward : mid);
       const y = yGround - (e.high ? 36 * zScale(e.z) : 0);
       const sc = zScale(e.z);
-      // Cap sprite width so props stay inside their dirt lane (no grass overhang)
+      // Cap sprite width so props stay inside dirt (no hedge / grass overhang)
       const laneW = Math.max(8, d[1] - d[0]);
       if (e.kind === 'flower' && !e.taken) {
         const img = imgFor(Assets, ART.flower(e.type));
-        let fh = 48 * sc;
+        let fh = 52 * PROP_SCALE * sc;
         if (img && img.width) {
           const fw = fh * (img.width / img.height);
-          if (fw > laneW * 0.62) fh *= (laneW * 0.62) / fw;
+          if (fw > laneW * 0.88) fh *= (laneW * 0.88) / fw;
         }
         if (!drawSprite(cx, img, x, y, fh)) {
           cx.fillStyle = '#ffd23c';
@@ -828,16 +911,16 @@ const HGRunner = (() => {
       } else if (e.kind === 'ob' && !e.hit) {
         if (e.type === 'sprinkler') {
           const water = imgFor(Assets, ART.water);
-          const wh = Math.min(40 * sc, laneW * 0.5);
+          const wh = Math.min(44 * PROP_SCALE * sc, laneW * 0.8);
           drawSprite(cx, water, x, y - 8 * sc, wh);
         }
         const img = imgFor(Assets, ART.obs(e.type));
-        let oh = (e.type === 'puddle' ? 30 : 48) * sc;
+        let oh = (e.type === 'puddle' ? 34 : 52) * PROP_SCALE * sc;
         if (img && img.width) {
           const fw = oh * (img.width / img.height);
-          if (fw > laneW * 0.64) oh *= (laneW * 0.64) / fw;
+          if (fw > laneW * 0.9) oh *= (laneW * 0.9) / fw;
         }
-        if (!drawSprite(cx, img, x, y, oh)) drawObstacleFallback(cx, e, x, y, sc);
+        if (!drawSprite(cx, img, x, y, oh)) drawObstacleFallback(cx, e, x, y, sc * PROP_SCALE);
       }
     });
 
@@ -850,7 +933,18 @@ const HGRunner = (() => {
     } else if (duckT <= 0 && stumbleT <= 0) {
       bob = -Math.abs(Math.sin(runPhase * Math.PI / 3)) * RUN_BOB_PX;
     }
-    const gx = laneX;
+    // Horizontally centered on the active dirt lane (hard-lock while jumping/ducking)
+    const havenLay = layoutAt(havenFootY());
+    const havenDirt = havenLay.dirt[lane];
+    const laneMid = (havenDirt[0] + havenDirt[1]) * 0.5;
+    // Outer lanes: sit slightly inward so the wide Haven plate doesn't spill onto grass
+    const havenIn = (havenDirt[1] - havenDirt[0]) * 0.16;
+    const laneFocus = lane === 0 ? laneMid + havenIn : (lane === 2 ? laneMid - havenIn : laneMid);
+    let gx = (jumpT > 0 || duckT > 0) ? laneFocus : laneX;
+    // Clamp visual mass inside dirt
+    const inset = (havenDirt[1] - havenDirt[0]) * 0.22;
+    gx = Math.max(havenDirt[0] + inset, Math.min(havenDirt[1] - inset, gx));
+    if (jumpT > 0 || duckT > 0) laneX = laneFocus;
     const gy = havenFootY() + bob + (stumbleT > 0 ? Math.sin(stumbleT * 40) * 3 : 0);
 
     let poseKey = ART.run(runPhase | 0);
@@ -1015,25 +1109,35 @@ const HGRunner = (() => {
     const sec = (u >= 0 && u <= 1) ? u * RUN_SEC : u;
     duskT = Math.max(0, Math.min(RUN_SEC, sec));
   }
+  function laneFocusX(L) {
+    const d = layoutAt(havenFootY()).dirt[L];
+    const mid = (d[0] + d[1]) * 0.5;
+    const inn = (d[1] - d[0]) * 0.16;
+    return L === 0 ? mid + inn : (L === 2 ? mid - inn : mid);
+  }
   function debugForceJump() {
     jumpT = JUMP_DUR;
     duckT = 0;
     stumbleT = 0;
+    laneX = laneFocusX(lane);
   }
   function debugForceDuck() {
     duckT = DUCK_DUR;
     jumpT = 0;
     stumbleT = 0;
+    laneX = laneFocusX(lane);
   }
-  /** Test helper — lane change ignores stumble lock. */
+  /** Test helper — lane change ignores stumble lock; snaps X to lane focus. */
   function debugForceLane(dir) {
     lane = Math.max(0, Math.min(LANES - 1, lane + dir));
     laneAnim = dir < 0 ? -1 : 1;
+    laneX = laneFocusX(lane);
   }
   /** Test helper — replace near-field entities for screenshot evidence. */
   function debugSetEntities(list) {
     entities = (list || []).map((e) => Object.assign({}, e));
-    scenery = []; // evidence shots: no off-lane deco flowers
+    // Keep sparse side decor for evidence (track stays clear)
+    if (!scenery.length) seedScenery();
   }
   function debugSetCollected(byColor) {
     collected = Object.assign({ daisy: 0, tulip: 0, sunflower: 0, bluebell: 0 }, byColor || {});
