@@ -33,11 +33,18 @@ Raw detector dump: `sweep-raw.json` (G01–G23 include width repeats of the abov
 
 ---
 
-## Fix plan (small commits)
+## Fixes (small commits) — all 4 confirmed fixed
 
-1. Spot detail Close — larger hit target + clearer contrast (`data-testid="spot-detail-close"`).
-2. Spot info sheet — scroll body + sticky keeper/archive footer with FAB-safe padding.
-3. Home squad rows — right padding so meta clears Hey Sesh FAB/caption.
-4. Dedupe `board-powder` in boards collection owned list (+ hub list uses unique ids).
+| ID | Commit | After shot |
+| --- | --- | --- |
+| G-A + G-B | `fix(t1249u): Spot Close hit target + sticky info keeper actions` | `after/01-spot-detail-close-after-390.png`, `after/02-spot-info-actions-after-390.png` |
+| G-C | `fix(t1249u): clear Home squad meta from Hey Sesh FAB caption` | `after/03-home-squad-fab-clearance-after-390.png` |
+| G-D | `fix(t1249u): dedupe board-powder owned ids` | (console clean on Hub) |
 
-Regression tests: `gb-phone/tests/woz/spot-stash-t1249u.test.tsx` (+ boards key assert).
+Regression: `gb-phone/tests/woz/spot-stash-t1249u.test.tsx`
+
+### Counts
+
+- **Found (real):** 4  
+- **Fixed:** 4  
+- **Left open:** intentional carousels / sr-only hooks only (see above)  
