@@ -994,11 +994,12 @@ const HGRunner = (() => {
     let cryShake = 0;
     if (jumpT > 0) poseKey = ART.jump;
     else if (scraping) {
-      // STOP: sit/crouch on the path (duck base + stumble tilt), hold knee — scroll frozen
-      poseKey = ART.stumble;
-      drawH = havenH * 0.68; // clearly seated vs run height
-      gy = havenFootY() + havenH * 0.22; // drop onto the dirt
-      cryShake = Math.sin(performance.now() / 90) * 1.2; // tiny cry shake only
+      // STOP: duck crouch on the path (reads clearly from rear) + hold-knee overlay
+      // Stumble sprite alone looks like a lean/run from behind — duck is the sit.
+      poseKey = ART.duck;
+      drawH = havenH * 0.72;
+      gy = havenFootY() + havenH * 0.18;
+      cryShake = Math.sin(performance.now() / 90) * 1.2;
     } else if (duckT > 0) poseKey = ART.duck;
     else if (stumbleT > 0) poseKey = ART.stumble;
     else if (pickFlash > 0) poseKey = ART.pick;
