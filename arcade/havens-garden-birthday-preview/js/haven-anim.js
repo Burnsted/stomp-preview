@@ -174,19 +174,18 @@ const HavenAnim = (() => {
     STATE.armSwing += (armTarget - STATE.armSwing) * Math.min(1, dt * 10);
     STATE.skirt += ((moving ? spdN * 0.04 : 0) - STATE.skirt) * Math.min(1, dt * 6);
 
-    // Idle look-around / hop when standing
-    if (!moving && !meta.busyPose) {
+    // Idle look-around when standing — soft bob only (no jump-pose hop = no float)
+    if (!moving && !meta.busyPose && !meta.noHop) {
       STATE.idleT -= dt;
       if (STATE.idleKind === 0 && STATE.idleT <= 0) {
-        STATE.idleKind = Math.random() < 0.55 ? 1 : 2;
+        STATE.idleKind = 1; // look only — hop used jump art and read as floating
         STATE.idleAge = 0;
         STATE.lookFace = Math.random() < 0.5 ? -girl.face : girl.face;
         STATE.hopT = 0;
       }
       if (STATE.idleKind) {
         STATE.idleAge += dt;
-        if (STATE.idleKind === 2) STATE.hopT = Math.min(1, STATE.idleAge / 0.35);
-        if (STATE.idleAge > (STATE.idleKind === 1 ? 0.9 : 0.45)) {
+        if (STATE.idleAge > 0.9) {
           STATE.idleKind = 0;
           STATE.idleT = 2.2 + Math.random() * 3.5;
           STATE.hopT = 0;
@@ -196,6 +195,13 @@ const HavenAnim = (() => {
       STATE.idleKind = 0;
       STATE.idleT = 1.2 + Math.random();
       STATE.hopT = 0;
+    }
+    // Plant squat: lock feet, settle bob — no flicker / pop
+    if (meta.pose === 'plant' || meta.busyPose && meta.pose === 'plant') {
+      STATE.idleKind = 0;
+      STATE.hopT = 0;
+      STATE.bob = lerp(STATE.bob, 6, Math.min(1, dt * 10));
+      STATE.bodySquash = lerp(STATE.bodySquash != null ? STATE.bodySquash : 1, 0.96, Math.min(1, dt * 8));
     }
 
     // Action pose blend
@@ -224,8 +230,7 @@ const HavenAnim = (() => {
       if (w) return w;
       return Assets.walkFrame(walkFrame);
     }
-    // Idle: skip/front; occasional hop uses jump
-    if (STATE.idleKind === 2) return Assets.pose('jump') || Assets.pose('idle');
+    // Idle: standing skip/front — never jump (jump read as mid-air float)
     return Assets.pose('idle') || Assets.get('havenSkip') || Assets.get('havenFront');
   }
 
@@ -249,7 +254,11 @@ const HavenAnim = (() => {
     cx.scale(face, 1);
     cx.rotate(lean);
     cx.scale(stretchX, squash);
-    cx.translate(0, bob);
+    // Plant/pick/water: feet stay planted — slight squat bob only, no lift
+    const drawBob = (pose === 'plant' || pose === 'pick' || pose === 'water')
+      ? Math.min(8, Math.max(0, bob))
+      : bob;
+    cx.translate(0, drawBob);
 
     if (img) {
       const iw = img.width, ih = img.height;
@@ -257,34 +266,39 @@ const HavenAnim = (() => {
       const dx = -dw / 2;
       const dy = -h;
 
-      // Body (lower ~62%) — planted
-      cx.save();
-      cx.beginPath();
-      cx.rect(dx - 2, dy + h * 0.38, dw + 4, h * 0.65);
-      cx.clip();
-      cx.drawImage(img, dx, dy, dw, h);
-      cx.restore();
+      // Action poses: single-pass draw (split body/head caused plant squat flicker)
+      if (pose === 'plant' || pose === 'pick' || pose === 'water' || pose === 'chase') {
+        cx.drawImage(img, dx, dy, dw, h);
+      } else {
+        // Body (lower ~62%) — planted
+        cx.save();
+        cx.beginPath();
+        cx.rect(dx - 2, dy + h * 0.38, dw + 4, h * 0.65);
+        cx.clip();
+        cx.drawImage(img, dx, dy, dw, h);
+        cx.restore();
 
-      // Head / pigtails (upper ~42%) with lag
-      cx.save();
-      cx.beginPath();
-      cx.rect(dx - 4, dy - 4, dw + 8, h * 0.46);
-      cx.clip();
-      cx.translate(STATE.hairLagX * 0.35 * face, STATE.hairLagY * 0.5);
-      cx.rotate(-lean * 0.25 + STATE.hairLagX * 0.008);
-      cx.drawImage(img, dx, dy, dw, h);
-      cx.restore();
+        // Head / pigtails (upper ~42%) with lag
+        cx.save();
+        cx.beginPath();
+        cx.rect(dx - 4, dy - 4, dw + 8, h * 0.46);
+        cx.clip();
+        cx.translate(STATE.hairLagX * 0.35 * face, STATE.hairLagY * 0.5);
+        cx.rotate(-lean * 0.25 + STATE.hairLagX * 0.008);
+        cx.drawImage(img, dx, dy, dw, h);
+        cx.restore();
 
-      // Soft ribbon accent bounce (reads lag without fighting painted ribbons)
-      const tipY = dy + h * 0.16;
-      const tipSpread = dw * 0.22;
-      cx.globalAlpha = 0.35;
-      cx.fillStyle = '#f078a0';
-      cx.beginPath();
-      cx.ellipse(-tipSpread + STATE.hairLagX * 0.2, tipY + STATE.hairLagY * 0.3, 3.2, 2.4, 0, 0, 7);
-      cx.ellipse(tipSpread + STATE.hairLagX * 0.2, tipY + STATE.hairLagY * 0.3, 3.2, 2.4, 0, 0, 7);
-      cx.fill();
-      cx.globalAlpha = 1;
+        // Soft ribbon accent bounce
+        const tipY = dy + h * 0.16;
+        const tipSpread = dw * 0.22;
+        cx.globalAlpha = 0.35;
+        cx.fillStyle = '#f078a0';
+        cx.beginPath();
+        cx.ellipse(-tipSpread + STATE.hairLagX * 0.2, tipY + STATE.hairLagY * 0.3, 3.2, 2.4, 0, 0, 7);
+        cx.ellipse(tipSpread + STATE.hairLagX * 0.2, tipY + STATE.hairLagY * 0.3, 3.2, 2.4, 0, 0, 7);
+        cx.fill();
+        cx.globalAlpha = 1;
+      }
     } else {
       cx.fillStyle = '#fad2b4';
       cx.beginPath(); cx.arc(0, -h * 0.72, h * 0.12, 0, 7); cx.fill();

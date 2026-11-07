@@ -2,7 +2,7 @@ const { test, expect } = require('@playwright/test');
 const { bootGame, VER } = require('./helpers');
 
 test.describe('offline SW + resume mid-Growing', () => {
-  test('service worker registers unique save-fix-touch cache', async ({ page }) => {
+  test('service worker registers unique play-fix-preview cache', async ({ page }) => {
     // Allow real SW for this test
     await page.goto('./?t=' + Date.now(), { waitUntil: 'networkidle' });
     await page.waitForFunction((ver) => window.HavensGarden && HavensGarden.VER === ver, VER, { timeout: 120000 });
@@ -13,7 +13,7 @@ test.describe('offline SW + resume mid-Growing', () => {
       return {
         ok: true,
         hasReg: !!reg,
-        keys: keys.filter((k) => k.indexOf('havens-garden-birthday') >= 0)
+        keys: keys.filter((k) => k.indexOf('havens-garden') >= 0)
       };
     });
     // SW may take a moment; also verify source strings
@@ -21,8 +21,8 @@ test.describe('offline SW + resume mid-Growing', () => {
       const swText = await (await fetch('./sw.js')).text();
       const gameText = await (await fetch('./js/game.js')).text();
       return {
-        cache: /havens-garden-birthday-preview-v0\.9-birthday-save-fix-touch/.test(swText),
-        register: /sw\.js\?v=0\.9-birthday-save-fix-touch/.test(gameText),
+        cache: /havens-garden-play-fix-preview-v0\.9-play-fix-preview/.test(swText),
+        register: /sw\.js\?v=0\.9-play-fix-preview/.test(gameText),
         ghv2: /greenhouse-v2/.test(swText) || /greenhouse-v2/.test(gameText)
       };
     });

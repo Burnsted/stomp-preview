@@ -1,5 +1,5 @@
-/* Haven's Garden v0.9-birthday-save-fix-touch — save fix + touch-v3 planting camera */
-const CACHE = 'havens-garden-birthday-preview-v0.9-birthday-save-fix-touch';
+/* Haven's Garden v0.9-play-fix-preview — play-structure fix */
+const CACHE = 'havens-garden-play-fix-preview-v0.9-play-fix-preview';
 const PRECACHE = [
   './',
   './index.html',
