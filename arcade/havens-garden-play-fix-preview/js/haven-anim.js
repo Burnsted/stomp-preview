@@ -230,8 +230,8 @@ const HavenAnim = (() => {
       if (w) return w;
       return Assets.walkFrame(walkFrame);
     }
-    // Idle: standing skip/front — never jump (jump read as mid-air float)
-    return Assets.pose('idle') || Assets.get('havenSkip') || Assets.get('havenFront');
+    // Idle: planted front stance — never skip/jump (those read as mid-air float)
+    return Assets.get('havenFront') || Assets.pose('idle') || Assets.get('havenSkip');
   }
 
   /**

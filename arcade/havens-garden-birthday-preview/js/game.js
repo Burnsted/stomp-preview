@@ -595,12 +595,16 @@ function playfieldBot() { return contentBottom(); }
 function fieldTop() { return playfieldTop() + (playfieldBot() - playfieldTop()) * 0.35; }
 function fieldBot() { return playfieldBot() - 8; }
 
+/** Screen Y band for Haven’s feet — lower third so she stands on the meadow path, not sky. */
+function fieldFootScreenY() {
+  return playfieldTop() + (playfieldBot() - playfieldTop()) * 0.72;
+}
 function worldToScreen(wx, wy) {
-  const midY = (playfieldTop() + playfieldBot()) * 0.5;
+  const midY = fieldFootScreenY();
   return { x: wx - cam.x + W * 0.5, y: wy - cam.y + midY };
 }
 function screenToWorld(sx, sy) {
-  const midY = (playfieldTop() + playfieldBot()) * 0.5;
+  const midY = fieldFootScreenY();
   return { x: sx + cam.x - W * 0.5, y: sy + cam.y - midY };
 }
 function clampField(x, y) {
@@ -3407,6 +3411,13 @@ function drawMeadow() {
   });
 
   const gs = worldToScreen(girl.x, girl.y);
+  // Soft contact shadow so feet read as on the ground plane
+  cx.save();
+  cx.fillStyle = 'rgba(40, 50, 20, 0.22)';
+  cx.beginPath();
+  cx.ellipse(gs.x, gs.y + 2, X(28), Y(8), 0, 0, 7);
+  cx.fill();
+  cx.restore();
   drawGirl(gs.x, gs.y, girl.walking || dragging);
 
   if (showDemo && bouquet.length < BOUQUET_GOAL) {
@@ -3439,6 +3450,12 @@ function drawButterflyScene() {
   drawLivingField(skyMode(), {});
   drawFieldBugs();
   const gs = worldToScreen(girl.x, girl.y);
+  cx.save();
+  cx.fillStyle = 'rgba(40, 50, 20, 0.22)';
+  cx.beginPath();
+  cx.ellipse(gs.x, gs.y + 2, X(28), Y(8), 0, 0, 7);
+  cx.fill();
+  cx.restore();
   drawGirl(gs.x, gs.y, girl.walking || dragging);
   drawBugNet(gs.x, gs.y);
   if (netSwing > 0) {

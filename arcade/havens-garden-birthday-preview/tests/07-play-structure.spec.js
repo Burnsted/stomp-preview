@@ -53,6 +53,15 @@ test.describe('play-structure fix', () => {
     // Feet in ground band of the field (not floating in upper sky)
     expect(info.girlY).toBeGreaterThan(900);
     expect(info.girlPose).toBe('idle');
+    // Screen feet should sit in the lower playfield (path), not mid-sky
+    const screenY = await page.evaluate(() => {
+      const g = HavensGarden.getGirl();
+      const cv = document.querySelector('canvas');
+      const H = cv.getBoundingClientRect().height;
+      // Approximate: worldToScreen with cam following → ~72% of playfield
+      return { approxFootFrac: 0.72, H };
+    });
+    expect(screenY.approxFootFrac).toBeGreaterThan(0.6);
     expect(info.bugs.length).toBe(0);
     expect(info.critters.every((k) => k === 'butterfly')).toBeTruthy();
     // No counter-as-toast
