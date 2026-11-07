@@ -8,8 +8,9 @@
 | Authoritative product | [#87](https://github.com/Burnsted/stomp-preview/issues/87) |
 | Start tip | PR [#99](https://github.com/Burnsted/stomp-preview/pull/99) `f7864b78e6508dbd79511f7b0b639cf9db89b698` |
 | Branch | `cursor/t1253u-release-readiness-423f` |
-| Green tip SHA | _(filled after CI)_ |
-| CI run | _(filled after CI)_ |
+| Draft PR | [#101](https://github.com/Burnsted/stomp-preview/pull/101) |
+| Green tip SHA | `a1735fccf1bab835252551f497cb6baaab2b7059` |
+| CI run | [42344042727](https://github.com/Burnsted/stomp-preview/actions/runs/42344042727) — both checks SUCCESS |
 
 ---
 
