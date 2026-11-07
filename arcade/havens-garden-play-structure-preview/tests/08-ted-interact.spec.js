@@ -14,7 +14,7 @@ async function shot(page, name) {
   await page.screenshot({ path: path.join(OUT, name + '.png'), fullPage: false });
 }
 
-test.describe('ted-ev1 activities', () => {
+test.describe('ted-ev2 activities', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
   test('bug net: catch each type, meter fills, finish releases', async ({ page }) => {
@@ -169,7 +169,7 @@ test.describe('ted-ev1 activities', () => {
     expect(map.diffs.ee).toBe(8);
     expect(map.diffs.easy).toBe(12);
     expect(map.diffs.hard).toBe(12);
-    expect(map.ver).toContain('ted-ev1');
+    expect(map.ver).toContain('ted-ev2');
     await shot(page, 'color-picker-map');
 
     // Open first extra-easy page and fill every region

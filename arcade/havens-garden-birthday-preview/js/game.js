@@ -6,7 +6,7 @@
    bugs+net, bees→hive→jars, color rows, CBN, shop.
    ============================================================ */
 
-const VER = 'v0.9-play-fix-ted-ev1';
+const VER = 'v0.9-play-fix-ted-ev2';
 const PK = 'havensGarden.birthday.v2';
 const PK_LEGACY = 'havensGarden.v1';
 /** Prior preview / prototype keys that may still hold progress. */
@@ -57,11 +57,15 @@ const WATER_CAN_CSS = 52; // ~44–60 CSS px finger-follow can
 const GIRL_FRAME_FRAC = 0.135; // Small vs field (Ted: too big at 25%; review still large at 16%)
 /** Nursery / greenhouse — larger so Haven reads against the beds (not microscopic). */
 const NURSERY_GIRL_FRAC = 0.22;
+/** Bug catch — Ted: scale Haven ~1.4× so the net can sit in her hand. */
+const BUGS_GIRL_FRAC = GIRL_FRAME_FRAC * 1.4;
 const SPARKLE_MS = 30000;
 const PLANT_FAST_SEC = 0.32; // shovel upgrade
 
 function girlFrameFrac() {
-  return (state === ST.GREENHOUSE) ? NURSERY_GIRL_FRAC : GIRL_FRAME_FRAC;
+  if (state === ST.GREENHOUSE) return NURSERY_GIRL_FRAC;
+  if (state === ST.BUTTERFLY) return BUGS_GIRL_FRAC;
+  return GIRL_FRAME_FRAC;
 }
 
 /* Drawn size (drawFlowerSprite s). Hit targets stay generous (PICK_RADIUS). */
@@ -2342,45 +2346,57 @@ function drawFieldBugs() {
   });
 }
 
-function netTipScreen(sx, sy) {
+/** Haven's net hand + tip — attached at her hand, length ≈ 0.8× her height, swings with her. */
+function girlNetPose(sx, sy) {
+  const prod = !!Assets.get('havenRun');
+  const h = H * girlFrameFrac() * (prod ? 1.12 : 1) * (girl.squash || 1);
   const face = girl.face || 1;
-  return { x: sx + face * X(58), y: sy - H * 0.22, face };
+  const arm = (window.HavenAnim && HavenAnim.STATE && HavenAnim.STATE.armSwing) || 0;
+  const swingT = Math.max(0, netSwing || 0);
+  // Carry beside her (not over the face); catch flourish swings tip outward/up
+  const ang = face * (-0.25 + swingT * 0.55 + arm * 0.02);
+  const handX = sx + face * (h * 0.34) + face * swingT * h * 0.06;
+  const handY = sy - h * 0.48 + Math.abs(arm) * 0.05 - swingT * h * 0.05;
+  const len = h * 0.72;
+  const tipX = handX + Math.sin(ang) * len;
+  const tipY = handY - Math.cos(ang) * len * 0.92;
+  return { handX, handY, tipX, tipY, ang, face, h, len };
+}
+
+function netTipScreen(sx, sy) {
+  const p = girlNetPose(sx, sy);
+  return { x: p.tipX, y: p.tipY, face: p.face, r: p.h * 0.18 };
 }
 
 function drawBugNet(sx, sy) {
-  const tip = netTipScreen(sx, sy);
-  const tipX = tip.x, tipY = tip.y, face = tip.face;
+  const p = girlNetPose(sx, sy);
   const net = Assets.get('bugNet');
-  let meshR = X(22);
-  if (net) {
-    const nh = H * 0.16;
-    const nw = nh * (net.width / net.height);
-    meshR = Math.max(X(18), nw * 0.28);
-    cx.save();
-    if (face < 0) {
-      cx.translate(tipX, tipY);
-      cx.scale(-1, 1);
-      cx.drawImage(net, -nw * 0.35, -nh * 0.15, nw, nh);
-    } else {
-      cx.drawImage(net, tipX - nw * 0.35, tipY - nh * 0.15, nw, nh);
-    }
-    cx.restore();
+  let meshR = p.h * 0.16;
+  cx.save();
+  cx.translate(p.handX, p.handY);
+  cx.rotate(p.ang);
+  if (net && net.width) {
+    const nh = p.len;
+    const nw = nh * (net.width / Math.max(1, net.height));
+    meshR = Math.max(p.h * 0.12, nw * 0.30);
+    cx.drawImage(net, -nw * 0.35, -nh * 0.92, nw, nh);
   } else {
     cx.strokeStyle = '#8a5524';
-    cx.lineWidth = 4;
-    cx.beginPath(); cx.moveTo(sx + face * X(18), sy - H * 0.08); cx.lineTo(tipX, tipY); cx.stroke();
+    cx.lineWidth = Math.max(3, p.h * 0.025);
+    cx.beginPath(); cx.moveTo(0, 0); cx.lineTo(0, -p.len * 0.78); cx.stroke();
     cx.strokeStyle = '#5ecf7a';
     cx.lineWidth = 3;
-    cx.beginPath(); cx.ellipse(tipX + face * 8, tipY, X(22), Y(16), 0, 0, 7); cx.stroke();
+    cx.beginPath(); cx.ellipse(0, -p.len * 0.88, meshR, meshR * 0.75, 0, 0, 7); cx.stroke();
   }
-  // Caught bugs visibly sit inside the mesh
+  cx.restore();
+
   const show = netCaught.slice(-5);
   show.forEach((c, i) => {
-    const ang = -0.6 + i * 0.35;
-    const bx = tipX + face * 6 + Math.cos(ang) * meshR * 0.45;
-    const by = tipY + 4 + Math.sin(ang) * meshR * 0.35 + (i % 2) * 3;
+    const ang = -0.55 + i * 0.38;
+    const bx = p.tipX + Math.cos(ang) * meshR * 0.42;
+    const by = p.tipY + Math.sin(ang) * meshR * 0.32 + (i % 2) * 3;
     const img = Assets.get(bugArtKey(c.kind));
-    const sz = X(14 + (c.kind === 'grasshopper' ? 4 : 0));
+    const sz = Math.max(10, p.h * 0.11 + (c.kind === 'grasshopper' ? 3 : 0));
     if (img) cx.drawImage(img, bx - sz / 2, by - sz / 2, sz, sz);
     else {
       cx.fillStyle = c.kind === 'ladybug' ? '#e23a3a' : (c.kind === 'grasshopper' ? '#6ecf4a' : '#f078be');
@@ -2391,7 +2407,7 @@ function drawBugNet(sx, sy) {
     cx.strokeStyle = 'rgba(255,230,120,0.7)';
     cx.lineWidth = 3;
     cx.beginPath();
-    cx.arc(tipX, tipY, X(30) * netSwing, 0, Math.PI * 1.2);
+    cx.arc(p.tipX, p.tipY, meshR * 1.35 * netSwing, 0, Math.PI * 1.2);
     cx.stroke();
   }
 }
@@ -2454,7 +2470,7 @@ function finishBugNetRelease() {
 function tryCatchBugAt(wx, wy) {
   if (state !== ST.BUTTERFLY || bugNetDoneT > 0) return false;
   if (netCaught.length >= NET_GOAL) return false;
-  let best = null, bd = 78;
+  let best = null, bd = 96;
   fieldBugs.forEach((b) => {
     if (b.caught || b.kind === 'bee') return;
     const d = Math.hypot(b.x - wx, b.y - wy);
@@ -2493,19 +2509,21 @@ function hiveFlowerSpots() {
   ];
 }
 function hiveHomePos() {
-  // Entrance of the illustrated hive on the plate (left stool) — no overlay hive
-  return { x: W * 0.26, y: H * 0.56 };
+  // Entrance of the hive prop on the clean plate (path / left-center)
+  return { x: W * 0.42, y: H * 0.55 };
 }
 function hivePourZone() {
-  return { x: W * 0.18, y: contentBottom() - 210, w: W * 0.36, h: 150 };
+  // Keep pour jar in lower chrome — clear of the shelf play area
+  return { x: W * 0.08, y: contentBottom() - 168, w: W * 0.34, h: 130 };
 }
 function hiveShelfPos() {
+  // Live jars sit on the clean empty shelf (right) — one per plank, state only
   const n = HIVE_SHELF_MAX;
-  const jw = 42, gap = 10;
-  const total = n * jw + (n - 1) * gap;
-  const x0 = (W - total) / 2;
-  const y = contentBottom() - 70;
-  return { x0, y, jw, gap, n };
+  const jw = 44, gap = 0;
+  const x0 = W * 0.70;
+  // Bottom plank of the 4-tier shelf on the clean plate
+  const y = H * 0.60;
+  return { x0, y, jw, gap, n, tierH: H * 0.075, shelfX: W * 0.70, shelfW: W * 0.24 };
 }
 
 function spawnHiveBees(n) {
@@ -2546,7 +2564,7 @@ function enterHive() {
   hiveShelf = [];
   for (let i = 0; i < (EX().jarsFull | 0) && i < HIVE_SHELF_MAX; i++) hiveShelf.push(1);
   if ((EX().jarsEmpty | 0) < 1) EX().jarsEmpty = HIVE_SHELF_MAX;
-  spawnHiveBees(5);
+  spawnHiveBees(3);
   setCue('Guide a bee to a flower');
   showToast('Beehive!');
   announce('Hive');
@@ -2864,34 +2882,42 @@ function drawHiveScene() {
       }
     }
   }
-  drawUiText(
-    hiveJarReady ? 'Drag jar to shelf' : (hivePouring ? 'Pouring…' : 'Hold to pour'),
-    zone.x + zone.w / 2, zone.y + 18,
-    { font: '800 13px Fredoka, system-ui, sans-serif', color: '#3a342c', halo: 3 }
-  );
+  if (hiveCelebrateT <= 0) {
+    let pourHint = '';
+    if (hiveJarReady) pourHint = 'Drag jar to shelf';
+    else if (hivePouring) pourHint = 'Pouring…';
+    else if (hiveNectar >= HIVE_JAR_NEED && hiveShelf.length < HIVE_SHELF_MAX) pourHint = 'Hold to pour';
+    if (pourHint) {
+      drawUiText(pourHint, zone.x + zone.w / 2, zone.y + 14, {
+        font: '800 13px Fredoka, system-ui, sans-serif', color: '#3a342c', halo: 3
+      });
+    }
+  }
   if (hiveJarReady && !hiveJarDrag) {
     hit.hiveJar = { x: jx - jw / 2, y: jy - jh, w: jw, h: jh };
   }
 
-  // Shelf drop target
+  // Shelf drop target — jars drawn from hiveShelf state only (plate is empty)
   const shelf = hiveShelfPos();
   hit.hiveShelf = {
-    x: shelf.x0 - 8, y: shelf.y - 56,
-    w: shelf.n * (shelf.jw + shelf.gap) + 16, h: 64
+    x: shelf.shelfX - 8, y: H * 0.30,
+    w: shelf.shelfW + 16, h: H * 0.36
   };
   for (let i = 0; i < shelf.n; i++) {
-    const sx = shelf.x0 + i * (shelf.jw + shelf.gap) + shelf.jw / 2;
+    // One jar per shelf tier, bottom-up as jars are placed
+    const tier = shelf.n - 1 - i; // fill from bottom plank up
+    const sx = shelf.shelfX + shelf.shelfW * 0.5;
+    const sy = H * 0.36 + tier * (shelf.tierH || H * 0.075) + (shelf.tierH || H * 0.075);
     const full = i < hiveShelf.length;
-    const img = full ? (jarFullImg || jarImg) : jarImg;
-    const sh = 48;
+    if (!full) continue; // empty plate planks — no ghost jars
+    const img = jarFullImg || jarImg;
+    const sh = Math.min(56, (shelf.tierH || 50) * 0.85);
     if (img && img.width) {
       const sw = sh * (img.width / img.height);
-      cx.globalAlpha = full ? 1 : 0.35;
-      cx.drawImage(img, sx - sw / 2, shelf.y - sh, sw, sh);
-      cx.globalAlpha = 1;
+      cx.drawImage(img, sx - sw / 2, sy - sh, sw, sh);
     } else {
-      cx.fillStyle = full ? '#f0b428' : 'rgba(255,250,240,0.45)';
-      cx.fillRect(sx - 14, shelf.y - 40, 28, 36);
+      cx.fillStyle = '#f0b428';
+      cx.fillRect(sx - 14, sy - 40, 28, 36);
     }
   }
   // Dragging filled jar
@@ -3598,10 +3624,32 @@ function drawGirl(x, y, walking) {
   }
 }
 
-/** Short cues in reserved chrome — one lane only; never overlap a second pill. */
+/** Short cues in reserved chrome — hide once the step is done; never cover the playfield. */
+function cueStepDone(msg) {
+  if (!msg) return true;
+  if (state === ST.BUTTERFLY) {
+    // After first catch the meter owns progress; hide start hint / mid counts
+    if (bugNetDoneT > 0) return true;
+    if (netCaught.length > 0 && (msg === 'Catch bugs!' || msg.indexOf('/') >= 0)) return true;
+  }
+  if (state === ST.HIVE) {
+    if (hiveCelebrateT > 0) return true;
+    // Step progression: guide → pour → drag → done
+    if (msg === 'Guide a bee to a flower' && (hiveNectar > 0 || hiveJarReady || hivePouring)) return true;
+    if ((msg === 'Hold jar to pour' || msg === 'Hold to pour') && (hiveJarReady || hivePouring || hiveNectar < HIVE_JAR_NEED)) return true;
+    if (msg === 'Drag jar to shelf' && !hiveJarReady) return true;
+    if (msg.indexOf('jars') >= 0) return true; // meter owns jar count
+  }
+  if (state === ST.GREENHOUSE && nurseryMode === 'water') {
+    if (msg === 'Water!' && SAVE.beds && SAVE.beds.every(function (b) { return !b.mix || !b.mix.length || b.watered; })) return true;
+  }
+  return false;
+}
+
 function drawCue(text) {
   const msg = text || activeToastText();
   if (!msg || isCounterCue(msg)) return;
+  if (cueStepDone(msg)) return;
   const gateUp = state === ST.GREENHOUSE && hit && hit.gate;
   // One CTA only — gate owns "Run for flowers!"; seedling tray owns plant hint
   if (gateUp && !toastCurrent && (
@@ -3611,11 +3659,16 @@ function drawCue(text) {
   if (state === ST.GREENHOUSE && nurseryMode === 'plant' && bouquet.length && !toastCurrent && (
     msg === 'Drag a pot to a bed' || msg === 'Tap a bed' || msg === 'Now tap a bed'
   )) return;
-  // Sit above the leave gate / dock so we never stack pills
-  const gateBump = gateUp ? 56 : 0;
-  const y = (state === ST.MEADOW || state === ST.PAUSED || state === ST.BUTTERFLY)
-    ? contentBottom() - 56
-    : contentBottom() - 20 - gateBump;
+  // Hive / bugs: park the pill under the top meter chrome — never over the playfield
+  let y;
+  if (state === ST.HIVE || state === ST.BUTTERFLY) {
+    y = padT + 128;
+  } else if (state === ST.MEADOW || state === ST.PAUSED) {
+    y = contentBottom() - 20;
+  } else {
+    const gateBump = gateUp ? 56 : 0;
+    y = contentBottom() - 20 - gateBump;
+  }
   const tw = Math.min(W - 40, Math.max(160, msg.length * 11 + 36));
   drawUiChrome((W - tw) / 2, y - 16, tw, 32, 14, { fill: '#f4ebe0', alpha: 0.34 });
   drawUiText(msg, W / 2, y + 5, { font: '800 15px Fredoka, system-ui, sans-serif' });
@@ -4555,13 +4608,15 @@ function drawButterflyScene() {
   drawGirl(gs.x, gs.y, girl.walking || dragging);
   drawBugNet(gs.x, gs.y);
   if (netSwing > 0) {
+    const tip = netTipScreen(gs.x, gs.y);
     cx.fillStyle = 'rgba(255,230,120,0.25)';
     cx.beginPath();
-    cx.arc(gs.x + (girl.face || 1) * X(70), gs.y - H * 0.18, X(36) * netSwing, 0, 7);
+    cx.arc(tip.x, tip.y, (tip.r || X(28)) * netSwing, 0, 7);
     cx.fill();
   }
   drawBugNetMeter();
-  drawCue();
+  // Start hint only — hide once catching begins (meter owns progress)
+  if (netCaught.length === 0 && bugNetDoneT <= 0) drawCue('Catch bugs!');
 }
 
 function drawGreenhouse() {
@@ -5766,7 +5821,7 @@ async function boot() {
 
   try {
     if (navigator.serviceWorker && typeof navigator.serviceWorker.register === 'function') {
-      navigator.serviceWorker.register('./sw.js?v=0.9-play-fix-ted-ev1').catch(() => {});
+      navigator.serviceWorker.register('./sw.js?v=0.9-play-fix-ted-ev2').catch(() => {});
     }
   } catch (eSw) {}
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));

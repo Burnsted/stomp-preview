@@ -4,7 +4,7 @@
 */
 'use strict';
 
-const ASSET_VER = 'play-fix-ted-ev1';
+const ASSET_VER = 'play-fix-ted-ev2';
 
 /** Franz HAVENS-GARDEN-RUNNER-V1 finals under assets/runner/.
  *  Placeholders/ remain as load fallback only. Phone reference plates are NOT listed. */
@@ -99,7 +99,9 @@ const AssetPaths = Object.assign({
   // production plates (empty — no Haven, no 2/20 UI)
   plateMeadow: 'assets/plates/meadow-day.webp',
   plateGreenhouse: 'assets/plates/greenhouse-color-rows.webp',
-  plateHive: 'assets/plates/hive-yard.webp',
+  // Clean plate: meadow + hive prop + empty shelf — no baked jars or bees
+  plateHive: 'assets/plates/hive-yard-clean.webp',
+  plateHiveLegacy: 'assets/plates/hive-yard.webp',
   plateShop: 'assets/plates/shop-stand.webp',
   // production character key poses
   havenRun: 'assets/character/haven-run.png',
