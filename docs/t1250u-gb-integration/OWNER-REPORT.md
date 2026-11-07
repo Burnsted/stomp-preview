@@ -6,7 +6,10 @@
 
 **Branch:** `cursor/t1250u-gb-spot-stash-0f74`  
 **Base:** `40bf081` (draft PR #90 tip)  
-**Isolated:** new draft PR — does not push to #90 / #82
+**Isolated:** new draft PR — does not push to #90 / #82  
+**Draft PR:** [#99](https://github.com/Burnsted/stomp-preview/pull/99)  
+**Green tip SHA:** `75a6ac58946227e0902e097c78d4ea36696e1b67`  
+**CI:** [run 42332652833](https://github.com/Burnsted/stomp-preview/actions/runs/42332652833) — both `pr-verify` checks **SUCCESS**
 
 ## Integration verdict
 
