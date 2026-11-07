@@ -179,26 +179,32 @@ test.describe('play-structure fix', () => {
         const cv = document.querySelector('canvas');
         const r = cv.getBoundingClientRect();
         const g = HavensGarden.getGirl();
-        // Sample right-edge pixels via a temp read of canvas css fill — structural check:
-        // canvas CSS width must match viewport (no letterbox strip beside game)
         return {
           cssW: Math.round(r.width),
           cssH: Math.round(r.height),
           girlY: g.y,
           bugs: HavensGarden.getBugs().length,
-          state: HavensGarden.getState()
+          state: HavensGarden.getState(),
+          verBoot: document.querySelector('#boot small')
+            ? document.querySelector('#boot small').textContent
+            : '',
+          idlePose: g.pose
         };
       });
       expect(m.state).toBe('MEADOW');
       expect(m.cssW).toBe(phone.w);
       expect(m.bugs).toBe(0);
       expect(m.girlY).toBeGreaterThan(900);
+      expect(m.verBoot).toContain('v0.9-play-fix-preview');
       await shot(page, 'device-' + phone.name + '-field');
 
       await page.evaluate(() => {
         HavensGarden.setBouquet(new Array(20).fill('daisy'));
         HavensGarden.enterGreenhouse('plant');
         HavensGarden.forceNurseryInside();
+        const spots = HGNursery.activeSlotIndices(0);
+        const i = spots[0] != null ? spots[0] : 0;
+        HavensGarden.doPlantAt(i, 0);
       });
       await shot(page, 'device-' + phone.name + '-nursery');
 

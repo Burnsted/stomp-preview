@@ -230,8 +230,8 @@ const HavenAnim = (() => {
       if (w) return w;
       return Assets.walkFrame(walkFrame);
     }
-    // Idle: planted front stance — never skip/jump (those read as mid-air float)
-    return Assets.get('havenFront') || Assets.pose('idle') || Assets.get('havenSkip');
+    // Idle: same cartoon sprite set as walk/run (havenSkip). Never painterly havenFront.
+    return Assets.pose('idle') || Assets.get('havenSkip') || Assets.get('havenRun');
   }
 
   /**
@@ -251,8 +251,8 @@ const HavenAnim = (() => {
     let bob = STATE.bob + (meta.extraBob || 0);
     if (pose === 'idle' && !meta.walking) bob = Math.min(bob, 1.5);
     if (pose === 'plant' || pose === 'pick' || pose === 'water') bob = Math.min(8, Math.max(0, bob));
-    // Franz sheets pad below the shoes — nudge idle front down onto the path
-    if (pose === 'idle' && !meta.walking) bob += h * 0.06;
+    // Slight plant on idle so the skip sheet still reads as standing, not leaping
+    if (pose === 'idle' && !meta.walking) bob += h * 0.02;
 
     cx.save();
     cx.translate(x, y);

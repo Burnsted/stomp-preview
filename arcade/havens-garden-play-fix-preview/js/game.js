@@ -53,7 +53,7 @@ const POLLINATOR_FLAP_MS = 120;
 const WALK_BOB_PX = 6; // ±6 on walk 02/04
 const GROWING_SEC = 1.45;
 const WATER_CAN_CSS = 52; // ~44–60 CSS px finger-follow can
-const GIRL_FRAME_FRAC = 0.25; // Haven ~25% of frame height (wide camera)
+const GIRL_FRAME_FRAC = 0.135; // Small vs field (Ted: too big at 25%; review still large at 16%)
 const SPARKLE_MS = 30000;
 const PLANT_FAST_SEC = 0.32; // shovel upgrade
 
@@ -1064,16 +1064,22 @@ function spawnFlower(opts) {
 
 function seedGrassTufts() {
   grassTufts = [];
-  for (let i = 0; i < 90; i++) {
+  // Near-ground only — never near distant hills / sky
+  for (let i = 0; i < 28; i++) {
     grassTufts.push({
       x: FIELD_PAD + Math.random() * (FIELD_W - FIELD_PAD * 2),
-      y: FIELD_H * 0.32 + Math.random() * (FIELD_H * 0.55),
-      w: 18 + Math.random() * 36,
-      h: 8 + Math.random() * 14,
+      y: FIELD_H * 0.68 + Math.random() * (FIELD_H * 0.18),
+      w: 12 + Math.random() * 18,
+      h: 5 + Math.random() * 8,
       hue: 95 + Math.random() * 40,
       phase: Math.random() * 6.28
     });
   }
+}
+
+/** Tuft clip line — keep green patches on the near field only (never on hills/sky). */
+function meadowHorizonY() {
+  return playfieldTop() + (playfieldBot() - playfieldTop()) * 0.48;
 }
 
 /** Flower field: a few far, decorative butterflies only — never bees, never tappable. */
@@ -2637,8 +2643,18 @@ function drawLivingField(mode, opts) {
     drawPlateCoverFull(plate, rawOx, rawOy, 1);
   }
 
+  // Repaint clean sky down to just above the hill crests — kills floating green ovals
+  const skyTop = 0;
+  const skyClip = playfieldTop() + (playfieldBot() - playfieldTop()) * 0.34;
+  cx.fillStyle = sky;
+  cx.fillRect(0, skyTop, W, Math.max(0, skyClip));
+  cx.fillStyle = 'rgba(255,255,255,0.7)';
+  cx.beginPath(); cx.ellipse(W * 0.18, playfieldTop() + 28, 40, 15, 0, 0, 7); cx.fill();
+  cx.beginPath(); cx.ellipse(W * 0.68, playfieldTop() + 40, 52, 17, 0, 0, 7); cx.fill();
+  cx.beginPath(); cx.ellipse(W * 0.44, playfieldTop() + 22, 30, 11, 0, 0, 7); cx.fill();
+
   // Ground wash so world scrolls under her feet
-  const g0 = playfieldTop() + (playfieldBot() - playfieldTop()) * 0.28;
+  const g0 = playfieldTop() + (playfieldBot() - playfieldTop()) * 0.42;
   const grd = cx.createLinearGradient(0, g0, 0, playfieldBot());
   grd.addColorStop(0, 'rgba(110, 170, 70, 0.08)');
   grd.addColorStop(0.45, 'rgba(90, 150, 55, 0.35)');
@@ -2646,29 +2662,18 @@ function drawLivingField(mode, opts) {
   cx.fillStyle = grd;
   cx.fillRect(0, g0, W, playfieldBot() - g0 + 4);
 
-  // Distant greenhouse landmark
-  const ghImg = Assets.get('plateGreenhouse') || Assets.greenhouse(SAVE.ghSize | 0, false, 'day');
-  if (ghImg) {
-    const lx = FIELD_W * 0.78, ly = FIELD_H * 0.40;
-    const sx = (lx - cam.x) * 0.45 + W * 0.5;
-    const sy = (ly - cam.y) * 0.35 + (playfieldTop() + playfieldBot()) * 0.42;
-    const h = Y(200);
-    const w = h * (ghImg.width / ghImg.height);
-    if (sx > -w && sx < W + w) {
-      cx.save();
-      cx.globalAlpha = 0.85;
-      cx.drawImage(ghImg, sx - w / 2, sy - h, w, h);
-      cx.restore();
-    }
-  }
+  // No distant greenhouse landmark plate — its soft green blobs read as sky ovals on phones
 
+  const horizon = meadowHorizonY();
   grassTufts.forEach((t) => {
     const s = worldToScreen(t.x, t.y);
-    if (s.x < -40 || s.x > W + 40 || s.y < playfieldTop() || s.y > playfieldBot() + 20) return;
+    // Hard clip: nothing above the near-field line / in the sky
+    if (s.x < -40 || s.x > W + 40 || s.y < horizon || s.y > playfieldBot() + 20) return;
     const bob = Math.sin(performance.now() / 420 + t.phase) * 2;
-    cx.fillStyle = `hsla(${t.hue}, 50%, 36%, 0.55)`;
+    if (s.y + bob < horizon) return;
+    cx.fillStyle = `hsla(${t.hue}, 50%, 36%, 0.40)`;
     cx.beginPath();
-    cx.ellipse(s.x, s.y + bob, t.w * 0.5, t.h * 0.5, 0, 0, 7);
+    cx.ellipse(s.x, s.y + bob, t.w * 0.45, t.h * 0.45, 0, 0, 7);
     cx.fill();
   });
 }
@@ -2760,9 +2765,9 @@ function drawBasketFlowers(bx, by, ids, flyingId) {
 }
 
 function drawGirl(x, y, walking) {
-  // Production sprites: 1024 canvas, ~768 standing visible → scale so visible ≈ 25% frame
+  // Cartoon production sprites — mild pad compensate; keep Haven small vs the field
   const prod = !!Assets.get('havenRun');
-  const visFrac = prod ? (1024 / 768) : 1;
+  const visFrac = prod ? 1.12 : 1;
   const h = H * GIRL_FRAME_FRAC * visFrac;
   let pose = girlPoseT > 0 ? girlPose : (walking ? 'walk' : 'idle');
   if (netSwing > 0.2) pose = 'chase';
@@ -2839,15 +2844,15 @@ function drawFlowerCounter() {
   if (state !== ST.MEADOW && state !== ST.PAUSED && state !== ST.GREENHOUSE) return;
   const full = bouquet.length >= BOUQUET_GOAL;
   const label = bouquet.length + '/' + BOUQUET_GOAL;
-  const bw = 108;
-  const bh = 40;
+  const bw = 92;
+  const bh = 34;
   const bx = W - bw - 14;
-  const by = padT + 56;
+  // Clear of header VER chip under mute
+  const by = padT + 64;
   drawUiChrome(bx, by, bw, bh, 14, { fill: full ? '#ffd24a' : '#f7f0e4', alpha: 0.36, line: 2.5 });
-  // Mini daisy icon
-  drawFlowerSprite(SPECIES[0], bx + 22, by + 30, 0.28);
-  drawUiText(label, bx + 40, by + 27, {
-    font: '800 18px Fredoka, system-ui, sans-serif',
+  drawFlowerSprite(SPECIES[0], bx + 20, by + 26, 0.24);
+  drawUiText(label, bx + 36, by + 24, {
+    font: '800 16px Fredoka, system-ui, sans-serif',
     align: 'left',
     color: full ? '#6a3010' : '#1e1814'
   });
@@ -2874,35 +2879,56 @@ function drawGoPlantBtn() {
 }
 
 function drawChrome() {
-  // Slim header — title + mute. Flower count lives top-right (drawFlowerCounter), not here.
+  // Header: [pause?][title …… points ✿][mute] — VER on its own line under mute (no collisions)
+  const hasPause = state === ST.MEADOW || state === ST.PAUSED || state === ST.BUTTERFLY;
   drawUiChrome(10, padT, W - 20, 48, 16, { fill: '#f4ebe0', alpha: 0.32 });
-  const titleX = (state === ST.MEADOW || state === ST.PAUSED || state === ST.BUTTERFLY) ? 52 : 24;
-  drawUiText("Haven's Garden", titleX, padT + 30, {
-    font: '800 16px Fredoka, system-ui, sans-serif', align: 'left'
-  });
 
-  // Flower points (shop currency) — small, left of mute
-  const mx = W - 58, my = padT + 8;
-  drawUiText(flowerPoints() + ' ✿  ' + VER, mx - 10, padT + 30, {
+  const mx = W - 58, my = padT + 4;
+  const pauseX = 14;
+  const pauseW = 40;
+  const titleX = hasPause ? pauseX + pauseW + 18 : 22;
+  const pointsLeft = mx - 52; // room for "99 ✿" before mute
+
+  // Pause — never overlaps title
+  if (hasPause) {
+    hit.pause = { x: pauseX, y: padT + 4, w: pauseW, h: pauseW };
+    drawUiChrome(pauseX, padT + 4, pauseW, pauseW, 12, { fill: '#ffe566', alpha: 0.38 });
+    cx.fillStyle = '#1e1814';
+    if (state === ST.PAUSED) {
+      cx.beginPath();
+      cx.moveTo(pauseX + 12, padT + 14);
+      cx.lineTo(pauseX + 28, padT + 24);
+      cx.lineTo(pauseX + 12, padT + 34);
+      cx.fill();
+    } else {
+      rr(pauseX + 12, padT + 14, 5, 20, 1); cx.fill();
+      rr(pauseX + 22, padT + 14, 5, 20, 1); cx.fill();
+    }
+  } else hit.pause = null;
+
+  // Title clipped before the points column — no touch with pause or ✿
+  cx.save();
+  cx.beginPath();
+  cx.rect(titleX, padT + 2, Math.max(24, pointsLeft - titleX - 8), 28);
+  cx.clip();
+  drawUiText("Haven's Garden", titleX, padT + 24, {
+    font: '800 14px Fredoka, system-ui, sans-serif', align: 'left'
+  });
+  cx.restore();
+
+  // Flower points only (short) — left of mute
+  drawUiText(flowerPoints() + ' ✿', mx - 8, padT + 20, {
     font: '700 12px Fredoka, system-ui, sans-serif', align: 'right', color: '#3a342c', halo: 3.5
   });
-  // Invisible parent long-press target over version label (adult gate only)
-  hit.verChip = { x: mx - 168, y: padT + 6, w: 150, h: 36 };
+  // Tiny VER under mute row — parent long-press; clear of 0/20 counter
+  drawUiText(VER, mx + 20, padT + 52, {
+    font: '600 8px Fredoka, system-ui, sans-serif', align: 'right', color: '#5a5248', halo: 2
+  });
+  hit.verChip = { x: mx - 120, y: padT + 44, w: 160, h: 18 };
+
   drawUiChrome(mx, my, 40, 40, 12, { fill: muted ? '#ff8ab0' : '#5ecf7a', alpha: 0.38 });
   drawUiText(muted ? '×' : '♪', mx + 20, my + 27, { font: '800 18px system-ui', halo: 3 });
   hit.mute = { x: mx, y: my, w: 40, h: 40 };
-
-  if (state === ST.MEADOW || state === ST.PAUSED || state === ST.BUTTERFLY) {
-    hit.pause = { x: 14, y: padT + 8, w: 40, h: 40 };
-    drawUiChrome(14, padT + 8, 40, 40, 12, { fill: '#ffe566', alpha: 0.38 });
-    cx.fillStyle = '#1e1814';
-    if (state === ST.PAUSED) {
-      cx.beginPath(); cx.moveTo(26, padT + 18); cx.lineTo(42, padT + 28); cx.lineTo(26, padT + 38); cx.fill();
-    } else {
-      rr(24, padT + 18, 5, 20, 1); cx.fill();
-      rr(34, padT + 18, 5, 20, 1); cx.fill();
-    }
-  } else hit.pause = null;
 
   drawNavDock();
   if (placesOpen) drawPlacesMenu();

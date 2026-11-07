@@ -334,13 +334,13 @@ const Assets = {
 
   pose(name) {
     const map = {
-      // Idle must be planted feet (havenFront) — havenSkip reads as a mid-air leap
-      idle: 'havenFront', run: 'havenRun', jump: 'havenJump', pick: 'havenPick',
+      // Same cartoon set as walk/run — never painterly havenFront (wrong style + scale)
+      idle: 'havenSkip', run: 'havenRun', jump: 'havenJump', pick: 'havenPick',
       chase: 'havenChase', skip: 'havenSkip', plant: 'havenPlant', water: 'havenPlant',
-      front: 'havenFront', walk: 'havenRun'
+      front: 'havenSkip', walk: 'havenRun'
     };
-    const k = map[name] || 'havenFront';
-    return this.get(k) || this.get('havenSkip') || this.get('havenFront');
+    const k = map[name] || 'havenSkip';
+    return this.get(k) || this.get('havenRun');
   },
 
   cbnPage(stem) { return this.get(cbnAssetKey(stem, 'page')); },
