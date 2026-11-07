@@ -6,7 +6,7 @@
    bugs+net, bees→hive→jars, color rows, CBN, shop.
    ============================================================ */
 
-const VER = 'v0.9-play-fix-franz-scale2';
+const VER = 'v0.9-play-fix-ted-lives';
 const PK = 'havensGarden.birthday.v2';
 const PK_LEGACY = 'havensGarden.v1';
 /** Prior preview / prototype keys that may still hold progress. */
@@ -36,8 +36,9 @@ const MAX_FIELD = 14;
 const MAX_PARTICLES = 100;
 const DPR_CAP = 2.5;
 const DT_CAP = 1 / 20;
-const DOCK_H = 76;          // solid nav bar height (buttons live inside)
-const SAFE_UI = 118;        // playfield clears the dock
+const DOCK_H = 0;           // bottom dock removed — nav lives in top chrome
+const SAFE_UI = 28;         // slim bottom inset (home indicator / safe area only)
+const TOP_NAV = 44;         // finger-sized top icon buttons
 const OUTDOOR_SLOTS = 12;
 /* Giant walkable field (world units) — camera scrolls; not a rail runner. */
 const FIELD_W = 3600;
@@ -405,7 +406,7 @@ function resize() {
   dpr = Math.min(devicePixelRatio || 1, DPR_CAP);
   const vv = viewSize();
   W = vv.w; H = vv.h; SX = W / DW; SY = H / DH;
-  padB = Math.max(SAFE_UI, DOCK_H + 12 + safeInsetBottom());
+  padB = Math.max(SAFE_UI, safeInsetBottom() + 8);
   padT = 12;
   cv.style.left = vv.ox + 'px';
   cv.style.top = vv.oy + 'px';
@@ -507,8 +508,17 @@ let toastCurrent = '';
 let toastT = 0;
 const TOAST_SEC = 1.65;
 let party = { t: 0, kind: '' };
-/** Hive-scene catchable bees (bee activity — not the flower field). */
+/** Hive-scene foraging bees (bee → flower → hive loop). */
 let hiveBees = [];
+/** Hive mini-game: nectar pool, pour progress, shelf jars, celebrate. */
+let hiveNectar = 0;
+let hivePouring = 0;
+let hiveJarFill = 0;
+let hiveShelf = []; // filled jars on shelf (0..HIVE_SHELF_MAX)
+let hiveCelebrateT = 0;
+let hivePourPtr = null;
+const HIVE_SHELF_MAX = 4;
+const HIVE_JAR_NEED = 1; // nectar units to fill one jar
 let doorOpen = 0; // 0 closed / 1 open — dissolve via plate crossfade (panes differ)
 let ghEnterT = -1; // enter dissolve timer; -1 = idle
 let ghExitT = -1;
@@ -2246,34 +2256,51 @@ function tryCatchBugAt(wx, wy) {
   return true;
 }
 
+function hiveFlowerSpots() {
+  return [
+    { x: W * 0.72, y: padT + 210 },
+    { x: W * 0.84, y: padT + 280 },
+    { x: W * 0.68, y: padT + 340 },
+    { x: W * 0.88, y: padT + 390 }
+  ];
+}
+function hiveHomePos() {
+  return { x: W * 0.28, y: padT + 260 };
+}
+function hivePourZone() {
+  return { x: W * 0.18, y: contentBottom() - 210, w: W * 0.36, h: 150 };
+}
+function hiveShelfPos() {
+  const n = HIVE_SHELF_MAX;
+  const jw = 42, gap = 10;
+  const total = n * jw + (n - 1) * gap;
+  const x0 = (W - total) / 2;
+  const y = contentBottom() - 70;
+  return { x0, y, jw, gap, n };
+}
+
 function spawnHiveBees(n) {
   hiveBees = [];
+  const home = hiveHomePos();
+  const flowers = hiveFlowerSpots();
   for (let i = 0; i < n; i++) {
+    const f = flowers[i % flowers.length];
     hiveBees.push({
-      x: 48 + Math.random() * (W - 96),
-      y: padT + 280 + Math.random() * Math.max(80, contentBottom() - padT - 360),
+      x: home.x + (Math.random() - 0.5) * 30,
+      y: home.y + (Math.random() - 0.5) * 20,
       phase: Math.random() * 6,
+      mode: 'toFlower', // toFlower | atFlower | toHive | atHive
+      target: { x: f.x, y: f.y },
+      flower: i % flowers.length,
+      wait: 0.2 + Math.random() * 0.4,
       caught: 0
     });
   }
 }
 
 function tryCatchHiveBeeAt(sx, sy) {
-  let best = null, bd = 48;
-  hiveBees.forEach((b) => {
-    if (b.caught) return;
-    const d = Math.hypot(b.x - sx, b.y - sy);
-    if (d < bd) { bd = d; best = b; }
-  });
-  if (!best) return false;
-  best.caught = 1;
-  EX().bees = (EX().bees | 0) + 1;
-  showToast('Bee!');
-  setCue('Bees → honey → jars');
-  addFlowerPoints(2);
-  AudioFX.bee();
-  snapshotRuntime();
-  return true;
+  // Bees are no longer catchable — pour interaction instead
+  return false;
 }
 
 function enterHive() {
@@ -2283,9 +2310,17 @@ function enterHive() {
   try { Assets.ensureScene('hive'); } catch (e) {}
   state = ST.HIVE;
   pushNav('hive');
-  setCue('Catch bees → honey');
-  showToast('Hive!');
-  if (hiveBees.filter((b) => !b.caught).length < 4) spawnHiveBees(6);
+  hiveNectar = Math.max(hiveNectar, EX().honey | 0);
+  hiveJarFill = 0;
+  hivePouring = 0;
+  hivePourPtr = null;
+  hiveCelebrateT = 0;
+  hiveShelf = [];
+  for (let i = 0; i < (EX().jarsFull | 0) && i < HIVE_SHELF_MAX; i++) hiveShelf.push(1);
+  if ((EX().jarsEmpty | 0) < 1) EX().jarsEmpty = HIVE_SHELF_MAX;
+  if (hiveBees.length < 5) spawnHiveBees(6);
+  setCue('Bees bring honey — pour!');
+  showToast('Beehive!');
   announce('Hive');
   AudioFX.ui();
   snapshotRuntime();
@@ -2371,26 +2406,106 @@ function buyUpgrade(id) {
 }
 
 function hiveHarvest() {
-  if ((EX().bees | 0) <= 0) { cue = 'Catch bees first'; return; }
-  const n = Math.min(EX().bees, 3);
-  EX().bees -= n;
-  EX().honey = (EX().honey | 0) + n;
-  cue = 'Honey!';
-  addFlowerPoints(n);
-  AudioFX.grow();
-  snapshotRuntime();
+  // Legacy — nectar now builds from bee trips
+  if (hiveNectar < 1 && (EX().bees | 0) > 0) {
+    const n = Math.min(EX().bees, 3);
+    EX().bees -= n;
+    hiveNectar += n;
+    EX().honey = hiveNectar;
+  }
 }
 
 function hivePourJar() {
-  if ((EX().honey | 0) <= 0) { cue = 'Need honey'; return; }
-  if ((EX().jarsEmpty | 0) <= 0) { cue = 'Need empty jars'; return; }
-  EX().honey -= 1;
-  EX().jarsEmpty -= 1;
-  EX().jarsFull = (EX().jarsFull | 0) + 1;
-  cue = 'Jar filled!';
-  addFlowerPoints(2);
+  // Legacy button path — prefer in-scene pour
+  if (hiveNectar < HIVE_JAR_NEED) return;
+  if (hiveShelf.length >= HIVE_SHELF_MAX) return;
+  hiveNectar -= HIVE_JAR_NEED;
+  EX().honey = hiveNectar;
+  hiveJarFill = 1;
+  finishHiveJar();
+}
+
+function finishHiveJar() {
+  hiveJarFill = 0;
+  hivePouring = 0;
+  hiveShelf.push(1);
+  EX().jarsFull = hiveShelf.length;
+  EX().jarsEmpty = Math.max(0, HIVE_SHELF_MAX - hiveShelf.length);
+  EX().honey = hiveNectar;
+  addFlowerPoints(3);
   AudioFX.plant();
+  showToast('Jar!');
+  setCue(hiveShelf.length + '/' + HIVE_SHELF_MAX + ' jars');
+  if (hiveShelf.length >= HIVE_SHELF_MAX) {
+    hiveCelebrateT = 2.4;
+    startParty('full');
+    addFlowerPoints(8);
+    setCue('Honey done!');
+    showToast('Yay — honey!');
+  }
   snapshotRuntime();
+}
+
+function updateHive(dt) {
+  if (hiveCelebrateT > 0) {
+    hiveCelebrateT -= dt;
+    if (hiveCelebrateT <= 0) {
+      hiveCelebrateT = 0;
+      placesOpen = 1;
+      AudioFX.ui();
+      snapshotRuntime('hive-done');
+    }
+  }
+
+  const home = hiveHomePos();
+  const flowers = hiveFlowerSpots();
+  hiveBees.forEach((b) => {
+    b.phase += dt * 3;
+    if (b.mode === 'toFlower' || b.mode === 'toHive') {
+      const tx = b.target.x, ty = b.target.y;
+      const dx = tx - b.x, dy = ty - b.y;
+      const d = Math.hypot(dx, dy) || 1;
+      const spd = 90;
+      b.x += (dx / d) * spd * dt;
+      b.y += (dy / d) * spd * dt;
+      if (d < 10) {
+        if (b.mode === 'toFlower') { b.mode = 'atFlower'; b.wait = 0.55 + Math.random() * 0.35; }
+        else { b.mode = 'atHive'; b.wait = 0.35; }
+      }
+    } else if (b.mode === 'atFlower') {
+      b.wait -= dt;
+      b.x += Math.sin(b.phase) * 10 * dt;
+      b.y += Math.cos(b.phase * 1.2) * 6 * dt;
+      if (b.wait <= 0) {
+        b.mode = 'toHive';
+        b.target = { x: home.x, y: home.y };
+      }
+    } else if (b.mode === 'atHive') {
+      b.wait -= dt;
+      if (b.wait <= 0) {
+        // Drop nectar into the pool
+        hiveNectar = Math.min(12, hiveNectar + 0.35);
+        EX().honey = Math.floor(hiveNectar);
+        EX().bees = (EX().bees | 0) + 1;
+        b.flower = (b.flower + 1) % flowers.length;
+        const f = flowers[b.flower];
+        b.mode = 'toFlower';
+        b.target = { x: f.x + (Math.random() - 0.5) * 18, y: f.y + (Math.random() - 0.5) * 12 };
+      }
+    }
+  });
+
+  // Pour while finger held on jar zone
+  if (hivePouring && hiveCelebrateT <= 0 && hiveShelf.length < HIVE_SHELF_MAX) {
+    if (hiveNectar > 0.05) {
+      const rate = 0.55; // jar fills in ~1.8s
+      const take = Math.min(hiveNectar, rate * dt);
+      hiveNectar -= take;
+      hiveJarFill = Math.min(1, hiveJarFill + take / HIVE_JAR_NEED);
+      EX().honey = Math.floor(hiveNectar);
+      if (hiveJarFill >= 1) finishHiveJar();
+    }
+  }
 }
 
 function drawHiveScene() {
@@ -2400,13 +2515,34 @@ function drawHiveScene() {
     cx.fillStyle = '#96cdf0'; cx.fillRect(0, 0, W, H);
     cx.fillStyle = '#78c35f'; cx.fillRect(0, H * 0.55, W, H * 0.45);
   }
-  // Catchable hive bees (bee activity — separate from flower field)
+
+  // Flower markers bees visit
+  const flowers = hiveFlowerSpots();
+  flowers.forEach((f, i) => {
+    const cols = ['#ffd24a', '#ff8ab0', '#7ec8ff', '#ffe566'];
+    cx.fillStyle = cols[i % cols.length];
+    cx.beginPath(); cx.arc(f.x, f.y, 14, 0, 7); cx.fill();
+    cx.fillStyle = '#6aa84f';
+    cx.fillRect(f.x - 2, f.y + 10, 4, 16);
+  });
+
+  // Hive mound
+  const home = hiveHomePos();
+  cx.fillStyle = '#e8b84a';
+  for (let i = 0; i < 4; i++) {
+    cx.beginPath();
+    cx.ellipse(home.x, home.y + 28 - i * 16, 46 - i * 6, 14, 0, 0, 7);
+    cx.fill();
+  }
+  cx.fillStyle = '#5a4030';
+  cx.beginPath(); cx.arc(home.x, home.y + 10, 8, 0, 7); cx.fill();
+
+  // Flying bees
   const now = performance.now();
   const flap = ((now / POLLINATOR_FLAP_MS) | 0) % 2;
-  const box = X(44);
+  const box = X(40);
   hiveBees.forEach((b) => {
-    if (b.caught) return;
-    const bob = Math.sin(b.phase) * 6;
+    const bob = Math.sin(b.phase) * 4;
     const img = Assets.get(flap ? 'bee02' : 'bee01') || Assets.get('bugBee');
     if (img) cx.drawImage(img, b.x - box / 2, b.y + bob - box / 2, box, box);
     else {
@@ -2414,34 +2550,78 @@ function drawHiveScene() {
       cx.beginPath(); cx.ellipse(b.x, b.y + bob, 12, 9, 0, 0, 7); cx.fill();
     }
   });
-  drawUiChrome(18, padT + 60, W - 36, 210, 18, { fill: '#f4ebe0', alpha: 0.32 });
-  drawUiText('Hive & jars', W / 2, padT + 92, { font: '800 22px Fredoka, system-ui, sans-serif' });
+
+  // Small counter chip (no big text panel buttons)
+  const chipW = Math.min(W - 40, 280);
+  drawUiChrome((W - chipW) / 2, padT + 56, chipW, 36, 14, { fill: '#f4ebe0', alpha: 0.34 });
   drawUiText(
-    'Bees ' + (EX().bees | 0) + ' · Honey ' + (EX().honey | 0) + ' · Jars ' + (EX().jarsFull | 0) + '/' + ((EX().jarsFull | 0) + (EX().jarsEmpty | 0)),
-    W / 2, padT + 118,
-    { font: '700 14px system-ui', color: '#3a342c', halo: 3.5 }
+    '✿ ' + Math.floor(hiveNectar) + '  ·  jars ' + hiveShelf.length + '/' + HIVE_SHELF_MAX,
+    W / 2, padT + 80,
+    { font: '800 15px Fredoka, system-ui, sans-serif', color: '#3a342c', halo: 3 }
   );
 
-  drawUiChrome(40, padT + 140, W - 80, 48, 14, { fill: '#ffd24a', alpha: 0.36 });
-  drawUiText('Harvest honey', W / 2, padT + 170, { font: '800 16px Fredoka, system-ui, sans-serif' });
-  hit.hiveHarvest = { x: 40, y: padT + 140, w: W - 80, h: 48 };
+  // Pour jar — tap/hold to fill
+  const zone = hivePourZone();
+  hit.hivePour = zone;
+  hit.hiveHarvest = null;
+  const jarImg = Assets.get('jarEmpty');
+  const jarFullImg = Assets.get('jarFull');
+  const jh = 110;
+  const jw = jarImg && jarImg.width ? jh * (jarImg.width / jarImg.height) : 70;
+  const jx = zone.x + zone.w / 2;
+  const jy = zone.y + zone.h - 8;
+  // Highlight when pouring
+  if (hivePouring) {
+    drawUiChrome(zone.x, zone.y, zone.w, zone.h, 18, { fill: '#ffd24a', alpha: 0.22 });
+  }
+  if (jarImg) {
+    cx.drawImage(jarImg, jx - jw / 2, jy - jh, jw, jh);
+  } else {
+    cx.fillStyle = 'rgba(255,250,240,0.7)';
+    cx.fillRect(jx - 28, jy - 100, 56, 90);
+  }
+  // Honey fill level inside jar
+  if (hiveJarFill > 0) {
+    const fillH = 70 * hiveJarFill;
+    cx.fillStyle = 'rgba(240,180,40,0.75)';
+    cx.fillRect(jx - 22, jy - 18 - fillH, 44, fillH);
+    if (jarFullImg && hiveJarFill > 0.85) {
+      cx.globalAlpha = Math.min(1, (hiveJarFill - 0.85) / 0.15);
+      cx.drawImage(jarFullImg, jx - jw / 2, jy - jh, jw, jh);
+      cx.globalAlpha = 1;
+    }
+  }
+  drawUiText(hivePouring ? 'Pouring…' : 'Hold to pour', jx, zone.y + 18, {
+    font: '800 13px Fredoka, system-ui, sans-serif', color: '#3a342c', halo: 3
+  });
 
-  drawUiChrome(40, padT + 200, W - 80, 48, 14, { fill: '#7ec8ff', alpha: 0.36 });
-  drawUiText('Pour a jar', W / 2, padT + 230, { font: '800 16px Fredoka, system-ui, sans-serif' });
-  hit.hivePour = { x: 40, y: padT + 200, w: W - 80, h: 48 };
-  drawCue();
+  // Shelf of finished jars
+  const shelf = hiveShelfPos();
+  for (let i = 0; i < shelf.n; i++) {
+    const sx = shelf.x0 + i * (shelf.jw + shelf.gap) + shelf.jw / 2;
+    const full = i < hiveShelf.length;
+    const img = full ? (jarFullImg || jarImg) : jarImg;
+    const sh = 48;
+    if (img && img.width) {
+      const sw = sh * (img.width / img.height);
+      cx.globalAlpha = full ? 1 : 0.35;
+      cx.drawImage(img, sx - sw / 2, shelf.y - sh, sw, sh);
+      cx.globalAlpha = 1;
+    } else {
+      cx.fillStyle = full ? '#f0b428' : 'rgba(255,250,240,0.45)';
+      cx.fillRect(sx - 14, shelf.y - 40, 28, 36);
+    }
+  }
 
-  // Player jar stock (plate already shows scenic hive/shelf — don't duplicate hive sprite)
-  const full = Assets.get('jarFull');
-  const empty = Assets.get('jarEmpty');
-  const jars = EX().jarsFull | 0;
-  const empties = EX().jarsEmpty | 0;
-  for (let i = 0; i < Math.min(8, jars + empties); i++) {
-    const img = i < jars ? full : empty;
-    if (!img) break;
-    const jh = Y(42);
-    const jw = jh * (img.width / img.height);
-    cx.drawImage(img, W - 30 - (i % 4) * (jw + 6) - jw, contentBottom() - 50 - ((i / 4) | 0) * (jh + 6) - jh, jw, jh);
+  if (hiveCelebrateT > 0) {
+    cx.fillStyle = 'rgba(255,240,180,' + (0.18 + 0.12 * Math.sin(performance.now() / 120)) + ')';
+    cx.fillRect(0, 0, W, H);
+    drawUiText('Honey done!', W / 2, H * 0.42, {
+      font: '800 28px Fredoka, system-ui, sans-serif', color: '#a05010', halo: 5
+    });
+    drawUiText('★★★', W / 2, H * 0.48, {
+      font: '800 32px Fredoka, system-ui, sans-serif', color: '#ffd24a', halo: 4
+    });
   }
   if (cue) drawCue(cue);
 }
@@ -3200,35 +3380,50 @@ function drawGoPlantBtn() {
 }
 
 function drawChrome() {
-  // Header: [pause?][title …… points ✿][mute] — VER on its own line under mute (no collisions)
+  // Header: [pause?][back][places][home] …… points ✿ [mute]
   const hasPause = state === ST.MEADOW || state === ST.PAUSED || state === ST.BUTTERFLY
     || state === ST.RUNNER;
+  const showTopNav = state !== ST.BOOT && state !== ST.MENU && !isRunnerChrome();
   drawUiChrome(10, padT, W - 20, 48, 16, { fill: '#f4ebe0', alpha: 0.32 });
 
   const mx = W - 58, my = padT + 4;
-  const pauseX = 14;
-  const pauseW = 40;
-  const titleX = hasPause ? pauseX + pauseW + 18 : 22;
-  const pointsLeft = mx - 52; // room for "99 ✿" before mute
+  const sz = TOP_NAV;
+  let x = 14;
 
-  // Pause — never overlaps title
+  // Pause — meadow / butterfly / runner only
   if (hasPause) {
-    hit.pause = { x: pauseX, y: padT + 4, w: pauseW, h: pauseW };
-    drawUiChrome(pauseX, padT + 4, pauseW, pauseW, 12, { fill: '#ffe566', alpha: 0.38 });
+    hit.pause = { x, y: padT + 4, w: sz, h: sz };
+    drawUiChrome(x, padT + 4, sz, sz, 12, { fill: '#ffe566', alpha: 0.38 });
     cx.fillStyle = '#1e1814';
     if (state === ST.PAUSED) {
       cx.beginPath();
-      cx.moveTo(pauseX + 12, padT + 14);
-      cx.lineTo(pauseX + 28, padT + 24);
-      cx.lineTo(pauseX + 12, padT + 34);
+      cx.moveTo(x + 14, padT + 14);
+      cx.lineTo(x + 30, padT + 24);
+      cx.lineTo(x + 14, padT + 34);
       cx.fill();
     } else {
-      rr(pauseX + 12, padT + 14, 5, 20, 1); cx.fill();
-      rr(pauseX + 22, padT + 14, 5, 20, 1); cx.fill();
+      rr(x + 12, padT + 14, 5, 20, 1); cx.fill();
+      rr(x + 22, padT + 14, 5, 20, 1); cx.fill();
     }
+    x += sz + 8;
   } else hit.pause = null;
 
-  // Title clipped before the points column — no touch with pause or ✿
+  // Top nav icons (not on title / not during flower run)
+  if (showTopNav) {
+    drawTopNavIcon('navBack', x, '#7ec8ff', 'back');
+    x += sz + 8;
+    drawTopNavIcon('navPlaces', x, '#c8a0ff', 'places');
+    x += sz + 8;
+    drawTopNavIcon('navHome', x, '#5ecf7a', 'home');
+    x += sz + 8;
+  } else {
+    hit.navBack = hit.navPlaces = hit.navHome = null;
+  }
+
+  const titleX = x + 4;
+  const pointsLeft = mx - 52; // room for "99 ✿" before mute
+
+  // Title clipped before the points column
   cx.save();
   cx.beginPath();
   cx.rect(titleX, padT + 2, Math.max(24, pointsLeft - titleX - 8), 28);
@@ -3242,7 +3437,7 @@ function drawChrome() {
   drawUiText(flowerPoints() + ' ✿', mx - 8, padT + 20, {
     font: '700 12px Fredoka, system-ui, sans-serif', align: 'right', color: '#3a342c', halo: 3.5
   });
-  // Tiny VER under mute row — parent long-press; clear of 0/20 counter
+  // Tiny VER under mute row — parent long-press
   drawUiText(VER, mx + 20, padT + 52, {
     font: '600 8px Fredoka, system-ui, sans-serif', align: 'right', color: '#5a5248', halo: 2
   });
@@ -3252,84 +3447,151 @@ function drawChrome() {
   drawUiText(muted ? '×' : '♪', mx + 20, my + 27, { font: '800 18px system-ui', halo: 3 });
   hit.mute = { x: mx, y: my, w: 40, h: 40 };
 
-  drawNavDock();
   if (placesOpen) drawPlacesMenu();
 }
 
-/** Thumb-reach nav dock BELOW the playfield — frosted, art peeks through. */
-function drawNavDock() {
-  // Title menu owns its own buttons — no dock stacking on top of them
-  if (state === ST.BOOT || state === ST.MENU) {
-    hit.navBack = hit.navPlaces = hit.navHome = null;
-    return;
+function drawTopNavIcon(id, x, fill, kind) {
+  const sz = TOP_NAV;
+  const y = padT + 4;
+  drawUiChrome(x, y, sz, sz, 12, { fill, alpha: 0.4, line: 2 });
+  const cx0 = x + sz / 2, cy0 = y + sz / 2;
+  cx.fillStyle = '#1e1814';
+  if (kind === 'back') {
+    cx.beginPath();
+    cx.moveTo(cx0 + 6, cy0 - 10);
+    cx.lineTo(cx0 - 10, cy0);
+    cx.lineTo(cx0 + 6, cy0 + 10);
+    cx.closePath();
+    cx.fill();
+  } else if (kind === 'places') {
+    cx.beginPath();
+    cx.moveTo(cx0 - 10, cy0 + 8);
+    cx.lineTo(cx0 - 4, cy0 - 10);
+    cx.lineTo(cx0 + 4, cy0 - 2);
+    cx.lineTo(cx0 + 10, cy0 - 10);
+    cx.lineTo(cx0 + 10, cy0 + 10);
+    cx.lineTo(cx0 - 10, cy0 + 10);
+    cx.closePath();
+    cx.fill();
+    cx.fillStyle = '#ffe566';
+    cx.beginPath(); cx.arc(cx0 + 2, cy0 - 1, 3, 0, 7); cx.fill();
+  } else {
+    cx.beginPath();
+    cx.moveTo(cx0, cy0 - 12);
+    cx.lineTo(cx0 + 12, cy0 - 2);
+    cx.lineTo(cx0 + 12, cy0 + 11);
+    cx.lineTo(cx0 - 12, cy0 + 11);
+    cx.lineTo(cx0 - 12, cy0 - 2);
+    cx.closePath();
+    cx.fill();
+    cx.fillStyle = '#ffe8a0';
+    cx.fillRect(cx0 - 3.5, cy0 + 2, 7, 9);
   }
-  // Flower run: hide Back/Places/Home — pause only (dock steals lane space)
-  if (isRunnerChrome()) {
-    hit.navBack = hit.navPlaces = hit.navHome = null;
-    return;
-  }
-  const barTop = contentBottom();
-  cx.fillStyle = uiRgba('#f4ebe0', 0.28);
-  cx.fillRect(0, barTop, W, H - barTop);
-  cx.strokeStyle = uiRgba('#5a4838', 0.45);
-  cx.lineWidth = 2;
-  cx.beginPath(); cx.moveTo(0, barTop + 1); cx.lineTo(W, barTop + 1); cx.stroke();
-
-  const btnH = 56;
-  const gap = 10;
-  const dockW = Math.min(W - 24, 360);
-  const x0 = (W - dockW) / 2;
-  const y = barTop + Math.max(8, (padB - btnH) * 0.35);
-  const bw = (dockW - gap * 2) / 3;
-
-  const buttons = [
-    { id: 'navBack', label: 'Back', fill: '#7ec8ff' },
-    { id: 'navPlaces', label: 'Places', fill: '#c8a0ff' },
-    { id: 'navHome', label: 'Home', fill: '#5ecf7a' }
-  ];
-  buttons.forEach((b, i) => {
-    const x = x0 + i * (bw + gap);
-    // Soft drop shadow only (no solid white plate)
-    cx.fillStyle = 'rgba(30,24,20,.12)';
-    rr(x + 2, y + 3, bw, btnH, 16); cx.fill();
-    drawUiChrome(x, y, bw, btnH, 16, { fill: b.fill, alpha: 0.36, line: 2.6 });
-    drawUiText(b.label, x + bw / 2, y + 36, { font: '800 17px Fredoka, system-ui, sans-serif' });
-    hit[b.id] = { x, y, w: bw, h: btnH };
-  });
+  hit[id] = { x, y, w: sz, h: sz };
 }
 
+/** @deprecated — bottom dock removed; kept as no-op for any stray callers. */
+function drawNavDock() {}
+
 function drawPlacesMenu() {
-  const panelW = Math.min(W - 28, 340);
   const items = [
-    { id: 'meadow', label: 'Flower run', sub: 'Lane run until dusk', fill: '#9fe870' },
-    { id: 'butterflies', label: 'Butterflies', sub: 'Net chase & catch', fill: '#f078be' },
-    { id: 'greenhouse', label: 'Nursery', sub: 'Pots, plant & grow', fill: '#7ec8ff' },
-    { id: 'hive', label: 'Beehive', sub: 'Bees, honey & jars', fill: '#ffd24a' },
-    { id: 'color', label: 'Color', sub: 'Color-by-number', fill: '#c8a0ff' },
-    { id: 'shop', label: 'Shop', sub: '3 upgrades', fill: '#ffb4c8' },
-    { id: 'home', label: 'Home', sub: 'Start screen', fill: '#ffe566' }
+    { id: 'meadow', label: 'Flower run', fill: '#9fe870', icon: 'run' },
+    { id: 'butterflies', label: 'Butterflies', fill: '#f078be', icon: 'butter' },
+    { id: 'greenhouse', label: 'Nursery', fill: '#7ec8ff', icon: 'nursery' },
+    { id: 'hive', label: 'Beehive', fill: '#ffd24a', icon: 'hive' },
+    { id: 'color', label: 'Color', fill: '#c8a0ff', icon: 'color' },
+    { id: 'shop', label: 'Shop', fill: '#ffb4c8', icon: 'shop' }
   ];
-  const panelH = 54 + items.length * 48 + 20;
+  const panelW = Math.min(W - 24, 360);
+  const gap = 10;
+  const cols = 2;
+  const rows = 3;
+  const tileW = (panelW - 28 - gap) / cols;
+  const tileH = Math.min(112, (contentBottom() - padT - 120) / rows - gap);
+  const panelH = 52 + rows * (tileH + gap) + 12;
   const px = (W - panelW) / 2;
-  const py = Math.max(padT + 56, (H - panelH) * 0.35);
+  const py = Math.max(padT + 56, (H - panelH) * 0.28);
   cx.fillStyle = 'rgba(30,24,20,.35)';
   cx.fillRect(0, 0, W, H);
-  drawUiChrome(px, py, panelW, panelH, 22, { fill: '#f4ebe0', alpha: 0.36, line: 2.6 });
-  drawUiText('Where to?', W / 2, py + 36, { font: '800 22px Fredoka, system-ui, sans-serif' });
+  drawUiChrome(px, py, panelW, panelH, 22, { fill: '#fff6e8', alpha: 0.42, line: 2.6 });
+  drawUiText('Where to?', W / 2, py + 34, { font: '800 22px Fredoka, system-ui, sans-serif' });
 
   hit.places = [];
   items.forEach((it, i) => {
-    const iy = py + 50 + i * 48;
-    const ih = 42;
-    drawUiChrome(px + 16, iy, panelW - 32, ih, 14, { fill: it.fill, alpha: 0.36 });
-    drawUiText(it.label, px + 28, iy + 20, {
-      font: '800 16px Fredoka, system-ui, sans-serif', align: 'left'
+    const col = i % cols;
+    const row = (i / cols) | 0;
+    const ix = px + 14 + col * (tileW + gap);
+    const iy = py + 48 + row * (tileH + gap);
+    // Soft playful tile
+    cx.fillStyle = 'rgba(30,24,20,.10)';
+    rr(ix + 2, iy + 3, tileW, tileH, 18); cx.fill();
+    drawUiChrome(ix, iy, tileW, tileH, 18, { fill: it.fill, alpha: 0.42, line: 2.4 });
+    drawPlaceTileIcon(it.icon, ix + tileW / 2, iy + tileH * 0.42, Math.min(44, tileH * 0.42));
+    drawUiText(it.label, ix + tileW / 2, iy + tileH - 14, {
+      font: '800 15px Fredoka, system-ui, sans-serif'
     });
-    drawUiText(it.sub, px + 28, iy + 36, {
-      font: '700 12px system-ui', align: 'left', color: '#3a342c', halo: 3
-    });
-    hit.places.push({ id: it.id, x: px + 16, y: iy, w: panelW - 32, h: ih });
+    hit.places.push({ id: it.id, x: ix, y: iy, w: tileW, h: tileH });
   });
+}
+
+/** Big friendly picture for each Places tile. */
+function drawPlaceTileIcon(kind, x, y, s) {
+  cx.save();
+  cx.translate(x, y);
+  if (kind === 'run') {
+    cx.fillStyle = '#ffd24a';
+    cx.beginPath(); cx.arc(0, -s * 0.15, s * 0.38, 0, 7); cx.fill();
+    cx.fillStyle = '#6aa84f';
+    cx.fillRect(-3, s * 0.15, 6, s * 0.35);
+    cx.fillStyle = '#ff8a4a';
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      cx.beginPath();
+      cx.ellipse(Math.cos(a) * s * 0.42, -s * 0.15 + Math.sin(a) * s * 0.42, 5, 3, a, 0, 7);
+      cx.fill();
+    }
+  } else if (kind === 'butter') {
+    cx.fillStyle = '#ff9ad4';
+    cx.beginPath(); cx.ellipse(-s * 0.28, 0, s * 0.28, s * 0.38, -0.3, 0, 7); cx.fill();
+    cx.beginPath(); cx.ellipse(s * 0.28, 0, s * 0.28, s * 0.38, 0.3, 0, 7); cx.fill();
+    cx.fillStyle = '#5a4030';
+    cx.fillRect(-2, -s * 0.35, 4, s * 0.7);
+  } else if (kind === 'nursery') {
+    cx.fillStyle = '#c48a4a';
+    cx.fillRect(-s * 0.35, -s * 0.05, s * 0.7, s * 0.5);
+    cx.fillStyle = '#7ecf6a';
+    cx.beginPath(); cx.ellipse(0, -s * 0.2, s * 0.28, s * 0.32, 0, 0, 7); cx.fill();
+    cx.fillStyle = '#ff6b8a';
+    cx.beginPath(); cx.arc(0, -s * 0.28, s * 0.12, 0, 7); cx.fill();
+  } else if (kind === 'hive') {
+    cx.fillStyle = '#e8b84a';
+    for (let i = 0; i < 4; i++) {
+      const w = s * (0.55 - i * 0.06);
+      cx.beginPath();
+      cx.ellipse(0, s * 0.28 - i * s * 0.18, w, s * 0.12, 0, 0, 7);
+      cx.fill();
+    }
+    cx.fillStyle = '#5a4030';
+    cx.beginPath(); cx.arc(0, s * 0.12, s * 0.08, 0, 7); cx.fill();
+  } else if (kind === 'color') {
+    const cols = ['#ff6b6b', '#ffd24a', '#7ec8ff', '#9fe870'];
+    cols.forEach((c, i) => {
+      cx.fillStyle = c;
+      cx.beginPath();
+      cx.arc(Math.cos(i) * s * 0.28, Math.sin(i * 1.3) * s * 0.28, s * 0.22, 0, 7);
+      cx.fill();
+    });
+  } else if (kind === 'shop') {
+    cx.fillStyle = '#ff8ab0';
+    cx.fillRect(-s * 0.4, -s * 0.15, s * 0.8, s * 0.55);
+    cx.fillStyle = '#fff6e8';
+    cx.fillRect(-s * 0.28, -s * 0.02, s * 0.56, s * 0.28);
+    cx.fillStyle = '#5a4030';
+    cx.font = '800 ' + Math.round(s * 0.45) + 'px Fredoka, system-ui, sans-serif';
+    cx.textAlign = 'center';
+    cx.fillText('✿', 0, s * 0.2);
+  }
+  cx.restore();
 }
 
 function drawParty() {
@@ -3505,23 +3767,23 @@ function drawSeedlingTray() {
   const n = Math.min(6, bouquet.length);
   const cell = Math.min(72, (W - 40) / Math.max(3, n));
   const trayW = cell * n + 16;
-  const trayH = 96;
+  const trayH = 72;
   const tx = (W - trayW) / 2;
-  const ty = contentBottom() - trayH - 58;
-  drawUiChrome(tx, ty, trayW, trayH, 16, { fill: '#f4ebe0', alpha: 0.32, line: 1.8 });
-  drawUiText('Drag a pot to a bed', W / 2, ty + 16, {
-    font: '700 12px Fredoka, system-ui, sans-serif', color: '#3a342c', halo: 3
+  const ty = contentBottom() - trayH - 4; // flush to bottom edge — beds stay free
+  drawUiChrome(tx, ty, trayW, trayH, 14, { fill: '#f4ebe0', alpha: 0.32, line: 1.8 });
+  drawUiText('Drag a pot', W / 2, ty + 12, {
+    font: '700 11px Fredoka, system-ui, sans-serif', color: '#3a342c', halo: 3
   });
   for (let i = 0; i < n; i++) {
     const id = bouquet[bouquet.length - n + i];
     const sx = tx + 8 + cell * i + cell / 2;
-    const sy = ty + trayH - 20;
+    const sy = ty + trayH - 12;
     const draggingThis = seedlingDrag && seedlingDrag.idx === (bouquet.length - n + i);
     if (!draggingThis) {
-      drawPottedSeedling(sx, sy, id, 1.15, seedlingSel === (bouquet.length - n + i));
+      drawPottedSeedling(sx, sy, id, 1.0, seedlingSel === (bouquet.length - n + i));
     }
     hit.seedlings.push({
-      x: sx - cell / 2 + 4, y: ty + 18, w: cell - 8, h: trayH - 22,
+      x: sx - cell / 2 + 4, y: ty + 14, w: cell - 8, h: trayH - 16,
       idx: bouquet.length - n + i, id
     });
   }
@@ -4324,16 +4586,7 @@ function update(dt) {
     SAVE.outdoorBeds.forEach((b) => { if (b && b.squash != null) b.squash += (1 - b.squash) * Math.min(1, dt * 4); });
   }
   if (state === ST.HIVE) {
-    hiveBees.forEach((b) => {
-      if (b.caught) return;
-      b.phase += dt * 2.2;
-      b.x += Math.sin(b.phase) * 18 * dt;
-      b.y += Math.cos(b.phase * 1.3) * 10 * dt;
-      b.x = Math.max(36, Math.min(W - 36, b.x));
-      b.y = Math.max(padT + 250, Math.min(contentBottom() - 80, b.y));
-    });
-    hiveBees = hiveBees.filter((b) => !b.caught);
-    if (hiveBees.length < 3 && Math.random() < dt * 0.25) spawnHiveBees(2);
+    updateHive(dt);
   }
 
   arcs.forEach((a) => {
@@ -4490,6 +4743,11 @@ function onDown(e) {
     }
     if (window.HGRunner) {
       const act = HGRunner.onPointerDown(p.x, p.y);
+      if (act === 'tryagain') {
+        applyRunnerResultsToBasket(HGRunner.getState().results);
+        startRunner(false);
+        return;
+      }
       if (act === 'continue') {
         finishRunnerToNursery();
         return;
@@ -4535,9 +4793,13 @@ function onDown(e) {
   }
 
   if (state === ST.HIVE) {
-    if (inRect(p, hit.hiveHarvest)) { hiveHarvest(); return; }
-    if (inRect(p, hit.hivePour)) { hivePourJar(); return; }
-    if (tryCatchHiveBeeAt(p.x, p.y)) return;
+    if (hiveCelebrateT > 0) { placesOpen = 1; return; }
+    if (inRect(p, hit.hivePour)) {
+      hivePouring = 1;
+      hivePourPtr = p.id;
+      AudioFX.ui();
+      return;
+    }
     return;
   }
   if (state === ST.SHOP) {
@@ -4728,10 +4990,17 @@ function onUp(e) {
   const p = ptr(e);
   if (p.id !== pointerId) return;
   if (parentHoldT) { clearTimeout(parentHoldT); parentHoldT = null; }
+  if (state === ST.HIVE) {
+    hivePouring = 0;
+    hivePourPtr = null;
+  }
   if (state === ST.RUNNER || state === ST.RUN_RESULTS) {
     if (window.HGRunner) {
       const act = HGRunner.onPointerUp(p.x, p.y);
-      if (act === 'continue') finishRunnerToNursery();
+      if (act === 'tryagain') {
+        applyRunnerResultsToBasket(HGRunner.getState().results);
+        startRunner(false);
+      } else if (act === 'continue') finishRunnerToNursery();
     }
     pointerId = null; lastPtr = null; dragging = 0; wateringHeld = 0;
     return;
@@ -5112,7 +5381,7 @@ async function boot() {
 
   try {
     if (navigator.serviceWorker && typeof navigator.serviceWorker.register === 'function') {
-      navigator.serviceWorker.register('./sw.js?v=0.9-play-fix-franz-scale2').catch(() => {});
+      navigator.serviceWorker.register('./sw.js?v=0.9-play-fix-ted-lives').catch(() => {});
     }
   } catch (eSw) {}
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));
@@ -5282,6 +5551,34 @@ window.HavensGarden = {
   getRunner: () => (window.HGRunner ? HGRunner.getState() : null),
   getBugs: () => fieldBugs.map((b) => b.kind),
   getHiveBees: () => hiveBees.filter((b) => !b.caught).length,
+  getHive: () => ({
+    nectar: hiveNectar,
+    jarFill: hiveJarFill,
+    shelf: hiveShelf.length,
+    shelfMax: HIVE_SHELF_MAX,
+    pouring: hivePouring,
+    celebrateT: hiveCelebrateT,
+    bees: hiveBees.length
+  }),
+  debugHiveFillShelf: () => {
+    while (hiveShelf.length < HIVE_SHELF_MAX) {
+      hiveNectar = Math.max(hiveNectar, HIVE_JAR_NEED);
+      hiveJarFill = 1;
+      finishHiveJar();
+    }
+  },
+  debugHiveSetNectar: (n) => { hiveNectar = Math.max(0, n); EX().honey = Math.floor(hiveNectar); },
+  debugHivePour: (on) => { hivePouring = on ? 1 : 0; },
+  openPlacesMenu,
+  getNavHits: () => ({
+    back: hit.navBack ? Object.assign({}, hit.navBack) : null,
+    places: hit.navPlaces ? Object.assign({}, hit.navPlaces) : null,
+    home: hit.navHome ? Object.assign({}, hit.navHome) : null,
+    placesOpen: !!placesOpen,
+    placesTiles: (hit.places || []).map((p) => ({ id: p.id, x: p.x, y: p.y, w: p.w, h: p.h })),
+    hivePour: hit.hivePour ? Object.assign({}, hit.hivePour) : null,
+    bottomDock: false
+  }),
   getPollinators: () => pollinators.map((p) => p.kind),
   getMeadowCritters: () => meadowCritters.map((p) => p.kind),
   getToast: () => ({ current: toastCurrent, cue, queue: toastQueue.slice() }),

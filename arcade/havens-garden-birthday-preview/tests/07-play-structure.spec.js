@@ -73,7 +73,8 @@ test.describe('play-structure runner', () => {
     expect(info.runner.lane).toBe(1);
     expect(info.runner.usingProjectedWorld).toBeTruthy();
     expect(info.flowerChance).toBeGreaterThanOrEqual(0.4);
-    expect(info.spawnEvery).toBeLessThanOrEqual(0.7);
+    expect(info.spawnEvery).toBeGreaterThanOrEqual(0.7);
+    expect(info.spawnEvery).toBeLessThanOrEqual(0.9);
     expect(info.runner.runSec).toBe(60);
     expect(info.runner.continuousHedges).toBeTruthy();
     expect(info.runner.hideTapZones).toBeTruthy();
@@ -84,7 +85,7 @@ test.describe('play-structure runner', () => {
     await shot(page, 'franz-mid-run-day');
   });
 
-  test('runner: swipe lanes, jump, duck, stumble never kills; dusk → results → nursery', async ({ page }) => {
+  test('runner: swipe lanes, jump, duck; dusk → results → nursery', async ({ page }) => {
     await page.setViewportSize({ width: 412, height: 915 });
     await bootGame(page);
     await playIntoRunner(page);
@@ -140,12 +141,16 @@ test.describe('play-structure runner', () => {
     await page.waitForTimeout(40);
     await shot(page, 'franz-jump-over');
 
-    await page.evaluate(() => { HGRunner.debugForceDuck(); });
-    st = await page.evaluate(() => HavensGarden.getRunner());
+    st = await page.evaluate(() => {
+      HGRunner.debugClearScrape();
+      HGRunner.debugForceDuck();
+      return HavensGarden.getRunner();
+    });
     expect(st.duckT).toBeGreaterThan(0);
 
     // Sunset crossfade
     await page.evaluate(() => {
+      HGRunner.debugClearScrape();
       HGRunner.debugSetDusk(0.55);
       HGRunner.debugSetEntities([
         { kind: 'flower', type: 'daisy', lane: 1, z: 1.0, high: 0, taken: 0 },
@@ -159,14 +164,16 @@ test.describe('play-structure runner', () => {
     await page.waitForTimeout(60);
     await shot(page, 'franz-sunset');
 
-    // Force dusk end — seed a few collects so results card shows flower pics
+    // Force dusk end — clear hazards so lives aren't drained while advancing time
     await page.evaluate(() => {
       const st = HGRunner.getState();
-      // Simulate a short productive run for the results card evidence
       if (st && !st.ended) {
-        // Nudge totals via finish after injecting through collect path:
-        // advance time with flowers already "picked" by finishing with custom results
-        for (let i = 0; i < 70; i++) HGRunner.update(1);
+        HGRunner.debugClearScrape();
+        HGRunner.debugSetLives(5);
+        HGRunner.debugSetEntities([]);
+        HGRunner.debugSetDusk(0.98);
+        for (let i = 0; i < 30; i++) HGRunner.update(1 / 30);
+        if (!HGRunner.getState().ended) HGRunner.finish();
       }
     });
     await page.waitForFunction(() => {
@@ -185,6 +192,7 @@ test.describe('play-structure runner', () => {
     });
     expect(afterDusk.ended).toBeTruthy();
     expect(afterDusk.results).toBeTruthy();
+    expect(afterDusk.results.gameOver | 0).toBe(0);
     expect(afterDusk.results.dusk).toBe(1);
     expect(afterDusk.results.byColor.bluebell).toBe(0); // hidden row
 
@@ -420,7 +428,7 @@ test.describe('play-structure runner', () => {
       expect(m.state).toBe('RUNNER');
       expect(m.cssW).toBe(phone.w);
       expect(m.active).toBeTruthy();
-      expect(m.verBoot).toContain('v0.9-play-fix-franz-scale2');
+      expect(m.verBoot).toContain('v0.9-play-fix-ted-lives');
       await shot(page, 'device-' + phone.name + '-runner');
 
       await page.evaluate(() => {
@@ -460,5 +468,148 @@ test.describe('play-structure runner', () => {
     }));
     expect(st.state).toBe('RUNNER');
     expect(st.bouquet).toBe(3);
+  });
+
+  test('lives decrement on hit; game over at 0 sunflowers', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootGame(page);
+    await playIntoRunner(page);
+
+    const before = await page.evaluate(() => {
+      const r = HGRunner.getState();
+      return { lives: r.lives, max: r.maxLives, sunflowerLives: r.sunflowerLives };
+    });
+    expect(before.max).toBe(5);
+    expect(before.lives).toBe(5);
+    expect(before.sunflowerLives).toBeTruthy();
+    await shot(page, 'lives-hud-sunflowers');
+
+    await page.evaluate(() => HGRunner.debugForceHit());
+    await page.waitForTimeout(200);
+    const mid = await page.evaluate(() => {
+      const r = HGRunner.getState();
+      return { lives: r.lives, scrape: r.scrapeKneeT, invuln: r.invulnT, ended: r.ended };
+    });
+    expect(mid.lives).toBe(4);
+    expect(mid.scrape).toBeGreaterThan(0.5);
+    expect(mid.invuln).toBeGreaterThan(0.5);
+    expect(mid.ended).toBeFalsy();
+    await shot(page, 'lives-scrape-knee');
+
+    // Drain remaining 4 lives
+    for (let i = 0; i < 4; i++) {
+      await page.evaluate(() => {
+        HGRunner.debugClearScrape();
+        HGRunner.debugForceHit();
+      });
+      await page.waitForTimeout(30);
+    }
+    await page.evaluate(() => {
+      HGRunner.debugClearScrape();
+      for (let k = 0; k < 10; k++) HGRunner.update(1 / 60);
+    });
+    await page.waitForFunction(() => {
+      const r = HGRunner.getState();
+      return r.ended && r.results && r.results.gameOver;
+    }, null, { timeout: 10000 });
+
+    // Draw results panel so hit rects exist
+    await page.evaluate(() => {
+      const cv = document.querySelector('canvas');
+      const cx = cv.getContext('2d');
+      HGRunner.draw(cx, Assets, {});
+    });
+
+    const over = await page.evaluate(() => {
+      const r = HGRunner.getState();
+      return {
+        lives: r.lives,
+        ended: r.ended,
+        gameOver: r.results && r.results.gameOver,
+        tryAgain: !!(r.tryAgainHit && r.tryAgainHit.w > 40),
+        nursery: !!(r.goNurseryHit && r.goNurseryHit.w > 40)
+      };
+    });
+    expect(over.lives).toBe(0);
+    expect(over.ended).toBeTruthy();
+    expect(over.gameOver).toBeTruthy();
+    expect(over.tryAgain).toBeTruthy();
+    expect(over.nursery).toBeTruthy();
+    await shot(page, 'lives-game-over-try-again');
+  });
+
+  test('beehive completes: pour jars → shelf full → celebrate', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootGame(page);
+    await page.evaluate(() => {
+      HavensGarden.SAVE.taughtHow = 1;
+      HavensGarden.enterHive();
+    });
+    await page.waitForFunction(() => HavensGarden.getState() === 'HIVE', null, { timeout: 15000 });
+    await page.waitForTimeout(300);
+
+    const start = await page.evaluate(() => {
+      HavensGarden.debugHiveSetNectar(6);
+      const h = HavensGarden.getHive();
+      return { bees: h.bees, nectar: h.nectar, shelfMax: h.shelfMax };
+    });
+    expect(start.bees).toBeGreaterThanOrEqual(5);
+    expect(start.shelfMax).toBe(4);
+    await shot(page, 'hive-pour-ready');
+
+    await page.evaluate(() => HavensGarden.debugHiveFillShelf());
+
+    const done = await page.evaluate(() => {
+      const h = HavensGarden.getHive();
+      return { shelf: h.shelf, celebrate: h.celebrateT, bees: h.bees };
+    });
+    expect(done.shelf).toBe(4);
+    expect(done.celebrate).toBeGreaterThan(0);
+    await shot(page, 'hive-complete-celebrate');
+  });
+
+  test('top nav icons present; no bottom dock; places 2x3', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootGame(page);
+    await page.evaluate(() => {
+      HavensGarden.SAVE.taughtHow = 1;
+      HavensGarden.enterGreenhouse('look');
+      HavensGarden.forceNurseryInside();
+    });
+    await page.waitForFunction(() => HavensGarden.getState() === 'GREENHOUSE', null, { timeout: 15000 });
+    await page.waitForTimeout(250);
+
+    const nav = await page.evaluate(() => HavensGarden.getNavHits());
+    expect(nav.bottomDock).toBe(false);
+    expect(nav.back).toBeTruthy();
+    expect(nav.places).toBeTruthy();
+    expect(nav.home).toBeTruthy();
+    expect(nav.back.w).toBeGreaterThanOrEqual(40);
+    expect(nav.places.h).toBeGreaterThanOrEqual(40);
+    // Top bar — not bottom dock
+    expect(nav.back.y).toBeLessThan(80);
+    expect(nav.home.y).toBeLessThan(80);
+
+    await page.evaluate(() => HavensGarden.openPlacesMenu());
+    await page.waitForTimeout(150);
+    const places = await page.evaluate(() => HavensGarden.getNavHits());
+    expect(places.placesOpen).toBeTruthy();
+    expect(places.placesTiles.length).toBe(6);
+    const ids = places.placesTiles.map((t) => t.id);
+    expect(ids).toEqual(['meadow', 'butterflies', 'greenhouse', 'hive', 'color', 'shop']);
+    expect(ids).not.toContain('home');
+    await shot(page, 'places-picture-menu-2x3');
+    await shot(page, 'nursery-top-nav');
+
+    const speed = await page.evaluate(() => ({
+      scroll0: HGRunner.SCROLL0,
+      scrollMax: HGRunner.SCROLL_MAX,
+      spawn: HGRunner.SPAWN_EVERY,
+      lives: HGRunner.MAX_LIVES
+    }));
+    expect(speed.scroll0).toBeLessThanOrEqual(210);
+    expect(speed.scrollMax).toBeLessThanOrEqual(310);
+    expect(speed.spawn).toBeGreaterThanOrEqual(0.7);
+    expect(speed.lives).toBe(5);
   });
 });

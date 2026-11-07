@@ -8,19 +8,24 @@
 const HGRunner = (() => {
   const LANES = 3;
   const RUN_SEC = 60;
-  const STUMBLE_PENALTY = 1.6;
-  const STUMBLE_LOCK = 0.55;
+  /** Scraped-knee cry hold (~1s) then resume. */
+  const SCRAPE_DUR = 1.05;
+  const INVULN_DUR = 1.55;
+  const STUMBLE_LOCK = SCRAPE_DUR;
   const JUMP_DUR = 0.52;
   const DUCK_DUR = 0.42;
   const LANE_LERP = 14;
   const SWIPE_MIN = 28;
   const SWIPE_RATIO = 1.05;
-  /** Dense enough that an active ~60s run yields ~10–20 flowers. */
-  const SPAWN_EVERY = 0.58;
+  /** ~25–30% slower spawn than prior pass. */
+  const SPAWN_EVERY = 0.78;
   const FLOWER_CHANCE = 0.46;
   const OBS_CHANCE = 0.36;
-  const SCROLL0 = 280;
-  const SCROLL_MAX = 420;
+  /** ~28% slower start + ramp (Ted phone playtest). */
+  const SCROLL0 = 200;
+  const SCROLL_MAX = 300;
+  const SCROLL_RAMP = 1.7;
+  const MAX_LIVES = 5;
   /** Raised bank width as fraction of track — Franz hedgerow ridges. */
   const HEDGE_FRAC = 0.11;
 
@@ -68,6 +73,8 @@ const HGRunner = (() => {
   let jumpT = 0;
   let duckT = 0;
   let stumbleT = 0;
+  let scrapeKneeT = 0;
+  let invulnT = 0;
   let pickFlash = 0;
   let runPhase = 0;
   let spawnAcc = 0;
@@ -76,12 +83,15 @@ const HGRunner = (() => {
   let collected = {};
   let totalPicked = 0;
   let stumbles = 0;
+  let lives = MAX_LIVES;
   let ended = false;
   let results = null;
   let ptr = null;
   let W = 390, H = 844;
   let playTop = 80, playBot = 760;
   let continueHit = null;
+  let tryAgainHit = null;
+  let goNurseryHit = null;
   let patterns = { dirt: null, grass: null, dirtKey: null, grassKey: null };
   /** Decorative off-lane fence / flower clumps (not collectible). */
   let scenery = [];
@@ -182,6 +192,8 @@ const HGRunner = (() => {
     ended = false;
     results = null;
     continueHit = null;
+    tryAgainHit = null;
+    goNurseryHit = null;
     t = 0;
     duskT = 0;
     scroll = SCROLL0;
@@ -191,6 +203,8 @@ const HGRunner = (() => {
     jumpT = 0;
     duckT = 0;
     stumbleT = 0;
+    scrapeKneeT = 0;
+    invulnT = 0;
     pickFlash = 0;
     runPhase = 0;
     spawnAcc = 0.35;
@@ -200,6 +214,7 @@ const HGRunner = (() => {
     collected = { daisy: 0, tulip: 0, sunflower: 0, bluebell: 0 };
     totalPicked = 0;
     stumbles = 0;
+    lives = opts.lives != null ? (opts.lives | 0) : MAX_LIVES;
     ptr = null;
     const xs = laneXs();
     laneX = xs[1];
@@ -306,14 +321,25 @@ const HGRunner = (() => {
   }
 
   function onPointerDown(x, y) {
-    if (ended && continueHit) {
-      if (x >= continueHit.x && x <= continueHit.x + continueHit.w
+    if (ended) {
+      if (tryAgainHit
+          && x >= tryAgainHit.x && x <= tryAgainHit.x + tryAgainHit.w
+          && y >= tryAgainHit.y && y <= tryAgainHit.y + tryAgainHit.h) {
+        return 'tryagain';
+      }
+      if (goNurseryHit
+          && x >= goNurseryHit.x && x <= goNurseryHit.x + goNurseryHit.w
+          && y >= goNurseryHit.y && y <= goNurseryHit.y + goNurseryHit.h) {
+        return 'continue';
+      }
+      if (continueHit
+          && x >= continueHit.x && x <= continueHit.x + continueHit.w
           && y >= continueHit.y && y <= continueHit.y + continueHit.h) {
         return 'continue';
       }
+      return null;
     }
     ptr = { x0: x, y0: y, x: x, y: y, t0: performance.now() };
-    if (ended) return null;
     const mid = W * 0.5;
     if (y > playTop && y < playBot) {
       if (x < mid - W * 0.22) changeLane(-1);
@@ -345,22 +371,29 @@ const HGRunner = (() => {
   }
 
   function stumble() {
-    if (stumbleT > 0) return;
+    if (stumbleT > 0 || scrapeKneeT > 0 || invulnT > 0 || ended) return;
     stumbleT = STUMBLE_LOCK;
+    scrapeKneeT = SCRAPE_DUR;
+    invulnT = INVULN_DUR;
+    jumpT = 0;
+    duckT = 0;
     stumbles++;
-    duskT = Math.min(RUN_SEC, duskT + STUMBLE_PENALTY);
+    lives = Math.max(0, lives - 1);
   }
 
-  function finish() {
+  function finish(opts) {
     if (ended) return results;
     ended = true;
     active = false;
+    const gameOver = !!(opts && opts.gameOver);
     results = {
       total: totalPicked,
       byColor: Object.assign({}, collected),
       stumbles: stumbles,
       dist: Math.round(dist),
-      dusk: 1
+      dusk: gameOver ? duskFactor() : 1,
+      gameOver: gameOver ? 1 : 0,
+      lives: lives
     };
     return results;
   }
@@ -369,13 +402,12 @@ const HGRunner = (() => {
     if (ended) return results;
     if (!active) return null;
     t += dt;
-    duskT += dt;
-    scroll = SCROLL0 + Math.min(SCROLL_MAX - SCROLL0, duskT * 2.4);
-    dist += scroll * dt;
 
     if (jumpT > 0) jumpT = Math.max(0, jumpT - dt);
     if (duckT > 0) duckT = Math.max(0, duckT - dt);
     if (stumbleT > 0) stumbleT = Math.max(0, stumbleT - dt);
+    if (scrapeKneeT > 0) scrapeKneeT = Math.max(0, scrapeKneeT - dt);
+    if (invulnT > 0) invulnT = Math.max(0, invulnT - dt);
     if (pickFlash > 0) pickFlash = Math.max(0, pickFlash - dt);
     if (laneAnim !== 0) {
       const s = Math.sign(laneAnim);
@@ -383,14 +415,25 @@ const HGRunner = (() => {
       if (Math.sign(laneAnim) !== s) laneAnim = 0;
     }
 
+    // Scraped-knee beat: freeze scroll; end run after cry if out of lives
+    if (scrapeKneeT > 0) {
+      if (lives <= 0 && scrapeKneeT <= 0.02) return finish({ gameOver: 1 });
+      return null;
+    }
+    if (lives <= 0) return finish({ gameOver: 1 });
+
+    duskT += dt;
+    scroll = SCROLL0 + Math.min(SCROLL_MAX - SCROLL0, duskT * SCROLL_RAMP);
+    dist += scroll * dt;
+
     if (jumpT <= 0 && duckT <= 0 && stumbleT <= 0) {
       runPhase += dt / RUN_FRAME_DT;
     }
 
     const xs = laneXs();
     const target = xs[lane]; // exact dirt-lane center at Haven's feet
-    if (jumpT > 0 || duckT > 0) {
-      // Hold X on lane center for the whole jump/duck arc — no lerp drift
+    if (jumpT > 0 || duckT > 0 || scrapeKneeT > 0) {
+      // Hold X on lane center for the whole jump/duck/scrape arc — no lerp drift
       laneX = target;
     } else {
       laneX += (target - laneX) * Math.min(1, LANE_LERP * dt);
@@ -434,6 +477,7 @@ const HGRunner = (() => {
         totalPicked++;
         pickFlash = 0.28;
       } else if (e.kind === 'ob' && !e.hit) {
+        if (invulnT > 0 || scrapeKneeT > 0) return;
         let clear = false;
         if (e.mode === 'jump' && jumpT > 0) clear = true;
         if (e.mode === 'duck' && duckT > 0) clear = true;
@@ -944,19 +988,21 @@ const HGRunner = (() => {
     if (jumpT > 0) {
       const u = 1 - jumpT / JUMP_DUR;
       bob = -Math.sin(Math.min(1, u) * Math.PI) * (havenH * 0.42);
-    } else if (duckT <= 0 && stumbleT <= 0) {
+    } else if (duckT <= 0 && scrapeKneeT <= 0 && stumbleT <= 0) {
       bob = -Math.abs(Math.sin(runPhase * Math.PI / 3)) * RUN_BOB_PX;
     }
-    // Exact lane-center X for the whole jump/duck arc (and while running, lerped laneX)
+    // Exact lane-center X for the whole jump/duck/scrape arc (and while running, lerped laneX)
     const laneMid = xs[lane];
-    const gx = (jumpT > 0 || duckT > 0) ? laneMid : laneX;
-    if (jumpT > 0 || duckT > 0) laneX = laneMid;
-    const gy = havenFootY() + bob + (stumbleT > 0 ? Math.sin(stumbleT * 40) * 3 : 0);
+    const scraping = scrapeKneeT > 0 || stumbleT > 0;
+    const gx = (jumpT > 0 || duckT > 0 || scraping) ? laneMid : laneX;
+    if (jumpT > 0 || duckT > 0 || scraping) laneX = laneMid;
+    const wobble = scraping ? Math.sin(performance.now() / 55) * 4 : 0;
+    const gy = havenFootY() + bob + (scraping ? Math.sin(scrapeKneeT * 28) * 4 : 0);
 
     let poseKey = ART.run(runPhase | 0);
     if (jumpT > 0) poseKey = ART.jump;
     else if (duckT > 0) poseKey = ART.duck;
-    else if (stumbleT > 0) poseKey = ART.stumble;
+    else if (scraping) poseKey = ART.stumble;
     else if (pickFlash > 0) poseKey = ART.pick;
     else {
       const dx = xs[lane] - laneX;
@@ -965,21 +1011,78 @@ const HGRunner = (() => {
       else if (laneAnim > 0.08) poseKey = ART.leanR;
     }
 
+    // Brief i-frame blink after a hit
+    if (invulnT > 0 && scrapeKneeT <= 0 && ((invulnT * 12) | 0) % 2 === 0) {
+      cx.globalAlpha = 0.45;
+    }
     const himg = imgFor(Assets, poseKey);
-    if (!drawHavenFrame(cx, himg, gx, gy, havenH * (duckT > 0 ? 0.92 : 1))) {
+    if (!drawHavenFrame(cx, himg, gx + wobble, gy, havenH * (duckT > 0 ? 0.92 : 1))) {
       cx.fillStyle = 'rgba(45,36,28,0.9)';
       cx.beginPath();
-      cx.ellipse(gx, gy - havenH * 0.82, havenH * 0.16, havenH * 0.14, 0, 0, 7);
+      cx.ellipse(gx + wobble, gy - havenH * 0.82, havenH * 0.16, havenH * 0.14, 0, 0, 7);
       cx.fill();
       cx.fillStyle = 'rgba(90,50,70,0.95)';
-      roundRect(cx, gx - havenH * 0.14, gy - havenH * 0.72, havenH * 0.28, havenH * 0.42, 8);
+      roundRect(cx, gx + wobble - havenH * 0.14, gy - havenH * 0.72, havenH * 0.28, havenH * 0.42, 8);
       cx.fill();
+    }
+    cx.globalAlpha = 1;
+
+    // Scraped-knee tears overlay (simple procedural — no dedicated art)
+    if (scrapeKneeT > 0) {
+      drawScrapeTears(cx, gx + wobble, gy, havenH);
     }
 
     drawSunTimerHud(cx);
+    drawLivesHud(cx);
     // Tap zones stay invisible — no grey side rectangles
 
     if (ended) drawResults(cx, Assets, W, H, playTop);
+  }
+
+  /** Small tears + knee-hold cue during the scraped-knee beat. */
+  function drawScrapeTears(cx, gx, gy, havenH) {
+    const faceY = gy - havenH * 0.78;
+    const tearPulse = 0.65 + 0.35 * Math.sin(performance.now() / 90);
+    cx.save();
+    cx.globalAlpha = 0.85 * tearPulse;
+    cx.fillStyle = '#7ec8ff';
+    [[-10, 0], [10, 2]].forEach(([ox, oy], i) => {
+      const drop = ((performance.now() / 180 + i) % 1) * 14;
+      cx.beginPath();
+      cx.ellipse(gx + ox, faceY + oy + drop, 3.2, 5.5, 0, 0, 7);
+      cx.fill();
+    });
+    // Soft pink knee scrape mark
+    cx.globalAlpha = 0.55;
+    cx.fillStyle = '#ff8a9a';
+    cx.beginPath();
+    cx.ellipse(gx + 8, gy - havenH * 0.28, 7, 5, 0.2, 0, 7);
+    cx.fill();
+    cx.restore();
+  }
+
+  /** Five sunflower life icons — filled while remaining, faded when lost. */
+  function drawLivesHud(cx) {
+    const size = 22;
+    const gap = 6;
+    const totalW = MAX_LIVES * size + (MAX_LIVES - 1) * gap;
+    const x0 = (W - totalW) / 2;
+    const y = playTop + 52;
+    const sunImg = imgFor(Assets, ART.flower('sunflower'));
+    for (let i = 0; i < MAX_LIVES; i++) {
+      const x = x0 + i * (size + gap) + size / 2;
+      const alive = i < lives;
+      cx.globalAlpha = alive ? 1 : 0.28;
+      if (sunImg && sunImg.width) {
+        drawSprite(cx, sunImg, x, y + size * 0.85, size);
+      } else {
+        cx.fillStyle = alive ? '#ffd24a' : '#c8b090';
+        cx.beginPath(); cx.arc(x, y + size * 0.4, size * 0.38, 0, 7); cx.fill();
+        cx.fillStyle = alive ? '#6aa84f' : '#9a9078';
+        cx.fillRect(x - 2, y + size * 0.55, 4, size * 0.35);
+      }
+      cx.globalAlpha = 1;
+    }
   }
 
   /** Timer = sun icon sliding along the bar. No "Day run" / sunset text. */
@@ -1024,12 +1127,17 @@ const HGRunner = (() => {
 
   function drawResults(cx, Assets, W0, H0, padT) {
     if (!results) return null;
+    const gameOver = !!(results.gameOver);
     const rows = SPECIES.filter((id) => (results.byColor[id] | 0) > 0);
     const panelW = Math.min(W0 - 36, 340);
-    const rowH = 64;
-    const panelH = 120 + rows.length * rowH + 70;
+    const rowH = 56;
+    const btnBlock = gameOver ? 118 : 58;
+    const panelH = 120 + Math.max(1, rows.length) * rowH + btnBlock + 24;
     const px = (W0 - panelW) / 2;
-    const py = Math.max(padT + 40, (H0 - panelH) * 0.22);
+    const py = Math.max(padT + 40, (H0 - panelH) * 0.2);
+    continueHit = null;
+    tryAgainHit = null;
+    goNurseryHit = null;
     cx.fillStyle = 'rgba(20,18,28,0.45)';
     cx.fillRect(0, 0, W0, H0);
     roundRect(cx, px, py, panelW, panelH, 22);
@@ -1039,15 +1147,15 @@ const HGRunner = (() => {
     cx.fillStyle = '#1e1814';
     cx.font = '800 24px Fredoka, system-ui, sans-serif';
     cx.textAlign = 'center';
-    cx.fillText('Dusk flowers!', W0 / 2, py + 40);
+    cx.fillText(gameOver ? 'Ouch — try again!' : 'Dusk flowers!', W0 / 2, py + 40);
     cx.font = '700 14px Fredoka, system-ui, sans-serif';
-    cx.fillText('Into your basket', W0 / 2, py + 64);
+    cx.fillText(gameOver ? 'Keep what you picked' : 'Into your basket', W0 / 2, py + 64);
 
     rows.forEach((id, i) => {
       const n = results.byColor[id] | 0;
       const iy = py + 88 + i * rowH;
       const img = imgFor(Assets, ART.flower(id));
-      const fh = 48;
+      const fh = 44;
       if (img && img.width) {
         drawSprite(cx, img, px + 56, iy + fh - 4, fh);
       } else {
@@ -1055,27 +1163,50 @@ const HGRunner = (() => {
         cx.beginPath(); cx.arc(px + 56, iy + 24, 16, 0, 7); cx.fill();
       }
       cx.fillStyle = '#1e1814';
-      cx.font = '800 36px Fredoka, system-ui, sans-serif';
+      cx.font = '800 32px Fredoka, system-ui, sans-serif';
       cx.textAlign = 'right';
-      cx.fillText(String(n), px + panelW - 36, iy + 40);
+      cx.fillText(String(n), px + panelW - 36, iy + 36);
     });
 
     if (!rows.length) {
       cx.fillStyle = '#5a5248';
       cx.font = '700 16px Fredoka, system-ui, sans-serif';
       cx.textAlign = 'center';
-      cx.fillText('No flowers this run', W0 / 2, py + 120);
+      cx.fillText(gameOver ? 'No flowers yet' : 'No flowers this run', W0 / 2, py + 120);
     }
 
-    const btnY = py + panelH - 58;
-    roundRect(cx, px + 48, btnY, panelW - 96, 42, 14);
-    cx.fillStyle = 'rgba(94,207,122,0.85)';
-    cx.fill();
-    cx.fillStyle = '#1e1814';
-    cx.font = '800 17px Fredoka, system-ui, sans-serif';
-    cx.textAlign = 'center';
-    cx.fillText('To the nursery', W0 / 2, btnY + 28);
-    continueHit = { x: px + 48, y: btnY, w: panelW - 96, h: 42 };
+    if (gameOver) {
+      const btnY = py + panelH - 112;
+      roundRect(cx, px + 36, btnY, panelW - 72, 48, 16);
+      cx.fillStyle = 'rgba(255,210,80,0.92)';
+      cx.fill();
+      cx.fillStyle = '#1e1814';
+      cx.font = '800 22px Fredoka, system-ui, sans-serif';
+      cx.textAlign = 'center';
+      cx.fillText('Try again', W0 / 2, btnY + 32);
+      tryAgainHit = { x: px + 36, y: btnY, w: panelW - 72, h: 48 };
+
+      const nY = btnY + 58;
+      roundRect(cx, px + 48, nY, panelW - 96, 40, 14);
+      cx.fillStyle = 'rgba(94,207,122,0.85)';
+      cx.fill();
+      cx.fillStyle = '#1e1814';
+      cx.font = '800 15px Fredoka, system-ui, sans-serif';
+      cx.fillText('To the nursery', W0 / 2, nY + 26);
+      goNurseryHit = { x: px + 48, y: nY, w: panelW - 96, h: 40 };
+      continueHit = goNurseryHit;
+    } else {
+      const btnY = py + panelH - 58;
+      roundRect(cx, px + 48, btnY, panelW - 96, 42, 14);
+      cx.fillStyle = 'rgba(94,207,122,0.85)';
+      cx.fill();
+      cx.fillStyle = '#1e1814';
+      cx.font = '800 17px Fredoka, system-ui, sans-serif';
+      cx.textAlign = 'center';
+      cx.fillText('To the nursery', W0 / 2, btnY + 28);
+      continueHit = { x: px + 48, y: btnY, w: panelW - 96, h: 42 };
+      goNurseryHit = continueHit;
+    }
     return continueHit;
   }
 
@@ -1090,6 +1221,10 @@ const HGRunner = (() => {
       total: totalPicked,
       collected: Object.assign({}, collected),
       stumbles: stumbles,
+      lives: lives,
+      maxLives: MAX_LIVES,
+      scrapeKneeT: scrapeKneeT,
+      invulnT: invulnT,
       results: results,
       jumpT: jumpT,
       duckT: duckT,
@@ -1098,16 +1233,40 @@ const HGRunner = (() => {
       entityCount: entities.length,
       flowerCount: entities.filter((e) => e.kind === 'flower' && !e.taken).length,
       continueHit: continueHit,
+      tryAgainHit: tryAgainHit,
+      goNurseryHit: goNurseryHit,
       havenHRatio: HAVEN_H_RATIO,
       usingProjectedWorld: true,
       phonePlateForbidden: true,
       continuousHedges: true,
       hideTapZones: true,
-      sunTimerHud: true
+      sunTimerHud: true,
+      sunflowerLives: true,
+      scroll0: SCROLL0,
+      scrollMax: SCROLL_MAX,
+      spawnEvery: SPAWN_EVERY
     };
   }
 
   function getContinueHit() { return continueHit; }
+
+  /** Test helper — force an obstacle hit / scrape without waiting for collision. */
+  function debugForceHit() {
+    // Clear i-frames so the hit always lands in tests
+    invulnT = 0;
+    scrapeKneeT = 0;
+    stumbleT = 0;
+    stumble();
+  }
+  function debugSetLives(n) {
+    lives = Math.max(0, Math.min(MAX_LIVES, n | 0));
+  }
+  /** Advance scrape/invuln timers without scrolling (for tests). */
+  function debugClearScrape() {
+    scrapeKneeT = 0;
+    stumbleT = 0;
+    invulnT = 0;
+  }
 
   /** Test helpers — force dusk phase / pose without waiting full run.
    *  Pass 0–1 for a fraction of RUN_SEC, or >1 for absolute seconds. */
@@ -1153,7 +1312,9 @@ const HGRunner = (() => {
     onPointerDown, onPointerMove, onPointerUp,
     changeLane, tryJump, tryDuck,
     debugSetDusk, debugForceJump, debugForceDuck, debugForceLane, debugSetEntities, debugSetCollected,
-    SPECIES, RUN_SEC, ART, FLOWER_CHANCE, SPAWN_EVERY, HAVEN_H_RATIO, RUN_FRAME_DT
+    debugForceHit, debugSetLives, debugClearScrape,
+    SPECIES, RUN_SEC, ART, FLOWER_CHANCE, SPAWN_EVERY, HAVEN_H_RATIO, RUN_FRAME_DT,
+    MAX_LIVES, SCROLL0, SCROLL_MAX, SCRAPE_DUR, INVULN_DUR
   };
 })();
 
