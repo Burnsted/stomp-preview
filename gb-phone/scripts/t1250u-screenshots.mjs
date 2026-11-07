@@ -11,11 +11,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
 const OUT = process.env.SHOT_DIR || "/opt/cursor/artifacts/t1250u";
 const DOCS = join(ROOT, "..", "docs/t1250u-gb-integration/screenshots");
-const LOCAL = join(ROOT, "screenshots/t1250u");
 const BASE = process.env.STOMP_URL || "http://127.0.0.1:8080/";
 const WIDTHS = [360, 390, 430];
 
-for (const dir of [OUT, DOCS, LOCAL]) mkdirSync(dir, { recursive: true });
+// t1253u: docs/ is canonical — do not dual-write identical PNGs under gb-phone/screenshots/t1250u.
+for (const dir of [OUT, DOCS]) mkdirSync(dir, { recursive: true });
 
 const browser = await chromium.launch({ headless: true });
 const a11y = [];
@@ -37,7 +37,6 @@ async function shot(page, name) {
   const p0 = join(OUT, file);
   await page.screenshot({ path: p0, fullPage: false });
   copyFileSync(p0, join(DOCS, file));
-  copyFileSync(p0, join(LOCAL, file));
   console.log("wrote", name);
 }
 
@@ -131,7 +130,6 @@ for (const w of WIDTHS) {
 }
 
 writeFileSync(join(DOCS, "a11y-smoke.json"), JSON.stringify(a11y, null, 2));
-writeFileSync(join(LOCAL, "a11y-smoke.json"), JSON.stringify(a11y, null, 2));
 console.log("a11y", JSON.stringify(a11y, null, 2));
 
 await browser.close();
