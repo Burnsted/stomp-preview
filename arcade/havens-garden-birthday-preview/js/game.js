@@ -6,7 +6,7 @@
    bugs+net, bees→hive→jars, color rows, CBN, shop.
    ============================================================ */
 
-const VER = 'v0.9-play-fix-ted-interact';
+const VER = 'v0.9-play-fix-ted-ev1';
 const PK = 'havensGarden.birthday.v2';
 const PK_LEGACY = 'havensGarden.v1';
 /** Prior preview / prototype keys that may still hold progress. */
@@ -1076,38 +1076,41 @@ function burstConfetti(n, cx0, cy0, opts) {
 
 /** Soft water-drop burst at a bed (plant/water finish — never confetti). */
 function burstWaterDrops(x, y, n) {
-  n = quiet ? Math.min(n || 10, 6) : (n || 14);
-  for (let i = 0; i < n && waterDrops.length < 80; i++) {
-    const a = -Math.PI / 2 + (Math.random() - 0.5) * 1.4;
-    const sp = 40 + Math.random() * 90;
+  n = quiet ? Math.min(n || 14, 10) : (n || 22);
+  for (let i = 0; i < n && waterDrops.length < 100; i++) {
+    const a = -Math.PI / 2 + (Math.random() - 0.5) * 1.6;
+    const sp = 55 + Math.random() * 110;
     waterDrops.push({
-      x: x + (Math.random() - 0.5) * 18,
+      x: x + (Math.random() - 0.5) * 22,
       y: y - 6,
-      vx: Math.cos(a) * sp * 0.55,
-      vy: Math.sin(a) * sp - 20,
+      vx: Math.cos(a) * sp * 0.6,
+      vy: Math.sin(a) * sp - 30,
       t: 0,
-      life: 0.45 + Math.random() * 0.35,
-      r: 2.2 + Math.random() * 2.8,
-      sparkle: Math.random() < 0.35 ? 1 : 0
+      life: 0.7 + Math.random() * 0.45,
+      r: 3.2 + Math.random() * 3.6,
+      sparkle: Math.random() < 0.4 ? 1 : 0
     });
   }
 }
 /** Drops falling from the watering-can spout while held. */
 function emitCanWaterDrops(wx, wy, dt) {
-  if (Math.random() > Math.min(1, dt * 28)) return;
-  const spoutX = wx + X(10);
-  const spoutY = wy + Y(8);
-  waterDrops.push({
-    x: spoutX + (Math.random() - 0.5) * 6,
-    y: spoutY,
-    vx: (Math.random() - 0.5) * 18,
-    vy: 70 + Math.random() * 50,
-    t: 0,
-    life: 0.55 + Math.random() * 0.25,
-    r: 2 + Math.random() * 2.2,
-    sparkle: 0,
-    fromCan: 1
-  });
+  // Dense stream so preschool eyes clearly see water leaving the can
+  const n = Math.max(1, Math.round(dt * 42));
+  for (let i = 0; i < n && waterDrops.length < 100; i++) {
+    const spoutX = wx + X(14);
+    const spoutY = wy + Y(14);
+    waterDrops.push({
+      x: spoutX + (Math.random() - 0.5) * 8,
+      y: spoutY,
+      vx: (Math.random() - 0.5) * 22,
+      vy: 90 + Math.random() * 70,
+      t: 0,
+      life: 0.7 + Math.random() * 0.35,
+      r: 2.8 + Math.random() * 2.6,
+      sparkle: 0,
+      fromCan: 1
+    });
+  }
 }
 function updateWaterDrops(dt) {
   waterDrops.forEach((d) => {
@@ -1121,17 +1124,23 @@ function updateWaterDrops(dt) {
 function drawWaterDrops() {
   waterDrops.forEach((d) => {
     const u = 1 - d.t / d.life;
-    cx.globalAlpha = Math.max(0, u);
+    cx.globalAlpha = Math.max(0.25, u);
     if (d.sparkle) {
       cx.fillStyle = '#fff8d0';
       cx.beginPath();
-      cx.arc(d.x, d.y, d.r * 0.7, 0, 7);
+      cx.arc(d.x, d.y, d.r * 0.85, 0, 7);
       cx.fill();
+      cx.strokeStyle = 'rgba(255,220,80,0.8)';
+      cx.lineWidth = 1.2;
+      cx.stroke();
     }
-    cx.fillStyle = '#6ec8ff';
+    cx.fillStyle = '#5eb8ff';
     cx.beginPath();
-    cx.ellipse(d.x, d.y, d.r * 0.65, d.r, 0, 0, 7);
+    cx.ellipse(d.x, d.y, d.r * 0.7, d.r * 1.15, 0, 0, 7);
     cx.fill();
+    cx.strokeStyle = 'rgba(40,120,200,0.45)';
+    cx.lineWidth = 1;
+    cx.stroke();
   });
   cx.globalAlpha = 1;
 }
@@ -2796,11 +2805,14 @@ function drawHiveScene() {
       cx.beginPath(); cx.ellipse(b.x, b.y + bob, 12, 9, 0, 0, 7); cx.fill();
     }
     if (b.pollen) {
+      // Obvious pollen load on the bee
       cx.fillStyle = '#ffd24a';
-      cx.beginPath(); cx.arc(b.x + 10, b.y + bob - 8, 5, 0, 7); cx.fill();
-      cx.strokeStyle = '#c48820';
-      cx.lineWidth = 1;
-      cx.stroke();
+      cx.beginPath(); cx.arc(b.x + 12, b.y + bob - 10, 8, 0, 7); cx.fill();
+      cx.fillStyle = '#ffe98a';
+      cx.beginPath(); cx.arc(b.x + 10, b.y + bob - 12, 3.5, 0, 7); cx.fill();
+      cx.strokeStyle = '#a06010';
+      cx.lineWidth = 2;
+      cx.beginPath(); cx.arc(b.x + 12, b.y + bob - 10, 8, 0, 7); cx.stroke();
     }
     hit.hiveBees.push({ i, x: b.x - box / 2, y: b.y + bob - box / 2, w: box, h: box });
   });
@@ -4345,19 +4357,28 @@ function drawInterior() {
   drawGirl(W * 0.5, H * 0.72, false);
 
   if (nurseryMode === 'water') {
-    // Watering can follows finger like a cursor — carried bed to bed
-    const wx = waterPtr ? waterPtr.x : W * 0.5;
-    const wy = waterPtr ? waterPtr.y : H * 0.55;
+    // Watering can follows finger — keep it OFF Haven's head (side/spout-down)
+    let wx = waterPtr ? waterPtr.x : W * 0.62;
+    let wy = waterPtr ? waterPtr.y : H * 0.58;
+    // Nudge away from Haven's torso if the pointer is on her
+    if (Math.hypot(wx - W * 0.5, wy - H * 0.72) < H * 0.16) {
+      wx = W * 0.66;
+      wy = Math.min(wy, H * 0.62);
+    }
     const can = Assets.get('wateringCan');
-    // Batch-2 compact can: ~44–60 CSS px following the finger
-    const size = WATER_CAN_CSS;
+    const size = WATER_CAN_CSS * 1.15;
     cx.save();
     cx.globalAlpha = 0.98;
     if (can) {
       const aspect = can.width / Math.max(1, can.height);
       const cw = size;
       const ch = size / aspect;
-      cx.drawImage(can, wx - cw * 0.5, wy - ch * 0.55, cw, ch);
+      // Draw can with spout angled down so falling drops read clearly
+      cx.translate(wx, wy);
+      cx.rotate(0.35);
+      cx.drawImage(can, -cw * 0.45, -ch * 0.35, cw, ch);
+      cx.rotate(-0.35);
+      cx.translate(-wx, -wy);
     } else {
       cx.fillStyle = '#5ecf7a';
       cx.beginPath(); cx.arc(wx, wy, 22, 0, 7); cx.fill();
@@ -5745,7 +5766,7 @@ async function boot() {
 
   try {
     if (navigator.serviceWorker && typeof navigator.serviceWorker.register === 'function') {
-      navigator.serviceWorker.register('./sw.js?v=0.9-play-fix-ted-interact').catch(() => {});
+      navigator.serviceWorker.register('./sw.js?v=0.9-play-fix-ted-ev1').catch(() => {});
     }
   } catch (eSw) {}
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));
@@ -5933,6 +5954,11 @@ window.HavensGarden = {
     return tryCatchBugAt(b.x, b.y);
   },
   getWaterDrops: () => waterDrops.length,
+  debugEmitWaterDrops: (x, y, n) => { burstWaterDrops(x != null ? x : W * 0.5, y != null ? y : H * 0.55, n || 18); return waterDrops.length; },
+  debugHoldWaterCan: (on, x, y) => {
+    wateringHeld = on ? 1 : 0;
+    if (on) waterPtr = { x: x != null ? x : W * 0.66, y: y != null ? y : H * 0.58 };
+  },
   getConfetti: () => confetti.length,
   getHiveBees: () => hiveBees.filter((b) => !b.caught).length,
   getHive: () => ({
