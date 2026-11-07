@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BG mockups — BD + TP (B trees + new mountains)</title>
+<style>
+html,body{margin:0;background:#0b1220;color:#e8eef8;font:14px/1.4 system-ui,sans-serif}
+header{padding:16px 18px 8px;max-width:1280px;margin:0 auto}
+header h1{margin:0 0 4px;font-size:22px}
+header p{margin:0;opacity:.75;max-width:760px}
+.sec{max-width:1280px;margin:8px auto 0;padding:0 18px;font:800 13px system-ui;color:#9fd3ff;letter-spacing:.06em;text-transform:uppercase}
+.grid{display:grid;grid-template-columns:1fr;gap:18px;padding:12px 18px 40px;max-width:1280px;margin:0 auto}
+@media(min-width:900px){.grid{grid-template-columns:1fr 1fr}}
+.card{background:#121a2a;border:1px solid #fff2;border-radius:12px;overflow:hidden}
+.card h2{margin:0;padding:10px 12px;font-size:15px;background:#1a2438;border-bottom:1px solid #fff1}
+.card h2 small{display:block;font-weight:500;opacity:.7;margin-top:2px}
+canvas{display:block;width:100%;height:auto;background:#000}
+.now{outline:2px dashed #ffd84a55}
+.pick{outline:2px solid #2bd17e88}
+.tag{display:inline-block;margin-left:8px;padding:2px 7px;border-radius:6px;background:#2bd17e33;color:#9dffc8;font:800 11px system-ui}
+.tag.old{background:#ffd84a22;color:#ffd84a}
+</style>
+</head><body>
+<header>
+  <h1>Background mockups v2 — Soft Alps trees + new mountains</h1>
+  <p>Ted liked <b>Option B trees</b> (both games). Mountains redesigned: clearer ridgelines, uneven peak heights, snow caps on selected peaks only. Tip / release / play untouched.</p>
+</header>
+<div class="sec">New — B trees + mountain variants</div>
+<div class="grid" id="gridNew"></div>
+<div class="sec">Prior round (keep for compare)</div>
+<div class="grid" id="gridOld"></div>
+<script>
+(function(){
+"use strict";
+var VH=360, GROUND=300, W=640, H=360;
+
+function terr(x, seed){
+  return 18*(0.55*Math.sin(x/380+seed)+0.3*Math.sin(x/170+seed*1.7)+0.15*Math.sin(x/88+seed*2.3));
+}
+function gY(x, seed){return GROUND+terr(x, seed||0.4);}
+
+/* pts: [x,y] or [x,y,snow] — snow>0 marks peak for a bold cap (drawn later via mtSnowCaps) */
+function mtRidge(cx,W,pts,col,edgeCol){
+  cx.fillStyle=col;cx.beginPath();cx.moveTo(-20,VH+40);
+  for(var i=0;i<pts.length;i++)cx.lineTo(pts[i][0],pts[i][1]);
+  cx.lineTo(W+20,VH+40);cx.closePath();cx.fill();
+  if(edgeCol){
+    cx.strokeStyle=edgeCol;cx.lineWidth=2.2;cx.lineJoin='round';cx.beginPath();
+    cx.moveTo(pts[0][0],pts[0][1]);
+    for(i=1;i<pts.length;i++)cx.lineTo(pts[i][0],pts[i][1]);
+    cx.stroke();
+  }
+}
+/* Bold phone-readable snow caps — bright filled wedges on SELECTED peaks only.
+   Call AFTER all mountain layers so caps are never buried. */
+function mtSnowCaps(cx, layers, snowCol){
+  cx.fillStyle=snowCol;
+  for(var L=0;L<layers.length;L++){
+    var pts=layers[L];
+    for(var i=1;i<pts.length-1;i++){
+      var p=pts[i], sn=p[2]||0; if(sn<=0) continue;
+      if(!(p[1]<pts[i-1][1]-4 && p[1]<pts[i+1][1]-4)) continue;
+      var A=pts[i-1], B=pts[i+1];
+      var riseL=A[1]-p[1], riseR=B[1]-p[1];
+      // BIG caps: 48–72px deep, ~55–95px wide — unmistakable at phone size
+      var depth=Math.max(48, Math.min(72, Math.min(riseL,riseR)*0.55))*sn;
+      var halfW=Math.max(28, Math.min(48, Math.min(p[0]-A[0], B[0]-p[0])*0.55))*sn;
+      var lean=(i%2?1:-1)*Math.max(6, halfW*0.18); // wind lean
+      var tipX=p[0]+lean*0.35, tipY=p[1]-2;
+      var leftX=p[0]-halfW+lean*0.15, leftY=p[1]+depth*0.92;
+      var rightX=p[0]+halfW+lean*0.55, rightY=p[1]+depth;
+      // filled asymmetric wedge (not a thin outline)
+      cx.beginPath();
+      cx.moveTo(leftX, leftY);
+      cx.lineTo(tipX-3, tipY);
+      cx.lineTo(tipX+4, tipY+1);
+      cx.lineTo(rightX, rightY);
+      cx.quadraticCurveTo(tipX+halfW*0.15, tipY+depth*0.55, tipX-halfW*0.1, tipY+depth*0.5);
+      cx.closePath();
+      cx.fill();
+    }
+  }
+}
+
+function pine(cx,x,baseY,scale,body,snow,trunk){
+  var s=scale, h=42*s, w=18*s;
+  cx.fillStyle=trunk||'#3a2a18';
+  cx.fillRect(x-1.5*s, baseY-h*0.22, 3*s, h*0.22);
+  cx.fillStyle=body;
+  for(var t=0;t<3;t++){
+    var ty=baseY-h*(0.28+t*0.24), tw=w*(1-t*0.22), th=h*(0.34-t*0.04);
+    cx.beginPath();cx.moveTo(x-tw,ty);cx.lineTo(x,ty-th);cx.lineTo(x+tw,ty);cx.closePath();cx.fill();
+  }
+  if(snow){
+    cx.fillStyle=snow;
+    for(var u=0;u<3;u++){
+      var uy=baseY-h*(0.38+u*0.22), uw=w*(0.55-u*0.12), uh=5*s;
+      cx.beginPath();
+      cx.moveTo(x-uw*0.55,uy-uh*0.2);cx.lineTo(x,uy-uh*1.6);cx.lineTo(x+uw*0.45,uy);cx.lineTo(x,uy+uh*0.3);
+      cx.closePath();cx.fill();
+    }
+  }
+}
+
+function snowGround(cx,W,H,seed,col,edge){
+  cx.fillStyle=col;
+  cx.beginPath();cx.moveTo(-20,H+40);
+  for(var x=-20;x<=W+24;x+=8)cx.lineTo(x,gY(x+seed*40,seed));
+  cx.lineTo(W+24,H+40);cx.closePath();cx.fill();
+  if(edge){cx.strokeStyle=edge;cx.lineWidth=2.5;cx.beginPath();
+    for(var gx=-20;gx<=W+24;gx+=8){var gy=gY(gx+seed*40,seed)+1;if(gx===-20)cx.moveTo(gx,gy);else cx.lineTo(gx,gy);}
+    cx.stroke();}
+}
+
+function drawSlopeHint(cx,W,seed){
+  var bx=W*0.55, ap=36, dk=50, ex=40, a=22;
+  var d0=bx-dk,d1=bx+dk,y0=gY(d0,seed)-a,y1=gY(d1,seed)-a;
+  cx.fillStyle='rgba(160,190,220,0.28)';
+  cx.beginPath();cx.moveTo(bx-ap-dk,gY(bx-ap-dk,seed));cx.lineTo(d0,y0);cx.lineTo(d1,y1);cx.lineTo(bx+dk+ex,gY(bx+dk+ex,seed));
+  cx.lineTo(bx+dk+ex,gY(bx+dk+ex,seed)+10);cx.lineTo(bx-ap-dk,gY(bx-ap-dk,seed)+10);cx.closePath();cx.fill();
+  cx.strokeStyle='#3a5a7a';cx.lineWidth=2;cx.beginPath();
+  cx.moveTo(bx-ap-dk,gY(bx-ap-dk,seed)+1);cx.lineTo(d0,y0+1);cx.lineTo(d1,y1+1);cx.lineTo(bx+dk+ex,gY(bx+dk+ex,seed)+1);cx.stroke();
+}
+
+function riderHint(cx,x,y,boardC,boardS){
+  cx.save();cx.translate(x,y);cx.rotate(-0.12);
+  cx.fillStyle=boardC;cx.fillRect(-18,-4,36,5);cx.fillStyle=boardS;cx.fillRect(-10,-3,20,2);
+  cx.fillStyle='#1d3b8a';cx.fillRect(-7,-16,6,12);cx.fillRect(1,-16,6,12);
+  cx.fillStyle='#ffcc00';cx.fillRect(-8,-28,16,12);
+  cx.fillStyle='#f2c9a0';cx.beginPath();cx.arc(0,-33,5,0,7);cx.fill();
+  cx.restore();
+}
+
+function parkBox(cx,W,seed){
+  var bx=W*0.5,y=gY(bx,seed);cx.fillStyle='#e8f2ee';cx.fillRect(bx-40,y-16,80,5);cx.fillStyle='#6a9088';cx.fillRect(bx-40,y-11,80,11);
+}
+
+/* Soft Alps trees — Ted liked these (Option B) */
+function treesSoftAlps(cx, seed, bodyNear, bodyMid, snowCol){
+  for(var i=0;i<18;i++){
+    var x=10+i*36+(i%2?8:0), sc=0.4+((i*7)%5)*0.09;
+    pine(cx,x,gY(x,seed)-3,sc, i%4===0?bodyMid:bodyNear, i%3? snowCol:null);
+  }
+  [[150,1.25],[400,1.4],[580,1.15]].forEach(function(t){
+    pine(cx,t[0],gY(t[0],seed)-2,t[1],bodyMid,snowCol);
+  });
+}
+
+function bdSky(cx,W,H){
+  var g=cx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#2c4a7a');g.addColorStop(1,'#a9c8ec');
+  cx.fillStyle=g;cx.fillRect(0,0,W,H);
+}
+function tpSky(cx,W,H){
+  var g=cx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#351868');g.addColorStop(0.45,'#6a3a9a');g.addColorStop(0.75,'#a878c8');g.addColorStop(1,'#e8c8b0');
+  cx.fillStyle=g;cx.fillRect(0,0,W,H);
+}
+
+/* ---- Mountain profiles (pts include selective snow on tall peaks) ----
+   B1 Crenellated — many uneven peaks, snow on ~1/3 tallest
+   B2 Statement — 2–3 dramatic tall peaks w/ snow, lower shoulders bare
+   B3 Massif — asymmetric dominant left massif + broken right ridge
+*/
+
+// BD B1
+var BD_B1_FAR=[
+  [-40,248],[40,190],[95,230],[155,128,1],[210,205],[270,160],[330,215],[400,118,1],[470,195],[540,150],[600,210],[680,145,0.7],[740,200]
+];
+var BD_B1_MID=[
+  [-20,268],[50,230],[110,255],[180,175,0.85],[250,240],[320,195],[390,250],[460,168,0.6],[530,235],[600,200],[680,245]
+];
+var BD_B1_NEAR=[
+  [-10,290],[80,270],[160,285],[240,255],[340,278],[440,262],[540,282],[640,268],[720,288]
+];
+
+// BD B2 statement peaks
+var BD_B2_FAR=[
+  [-50,255],[30,210],[100,235],[180,105,1],[250,220],[340,185],[430,112,1],[520,200],[600,170],[690,130,0.75],[760,205]
+];
+var BD_B2_MID=[
+  [-30,275],[70,240],[150,260],[240,188,0.5],[330,255],[420,210],[510,248],[600,195],[700,250]
+];
+var BD_B2_NEAR=[
+  [-10,292],[100,275],[220,288],[360,270],[500,285],[640,272],[740,290]
+];
+
+// BD B3 massif left
+var BD_B3_FAR=[
+  [-60,235],[20,145,1],[90,190],[150,125,1],[220,200],[300,175],[400,210],[500,155,0.75],[580,195],[660,140,1],[740,185]
+];
+var BD_B3_MID=[
+  [-30,270],[40,200,1],[110,245],[190,215],[280,250],[380,230],[480,255],[580,205,0.85],[680,245]
+];
+var BD_B3_NEAR=[
+  [-10,295],[90,278],[200,290],[320,268],[450,285],[580,275],[700,292]
+];
+
+// TP variants — same silhouettes, purple edges
+var TP_B1_FAR=BD_B1_FAR, TP_B1_MID=BD_B1_MID, TP_B1_NEAR=BD_B1_NEAR;
+var TP_B2_FAR=BD_B2_FAR, TP_B2_MID=BD_B2_MID, TP_B2_NEAR=BD_B2_NEAR;
+var TP_B3_FAR=BD_B3_FAR, TP_B3_MID=BD_B3_MID, TP_B3_NEAR=BD_B3_NEAR;
+
+function finishBD(cx,W,H,seed){
+  treesSoftAlps(cx, seed, '#2f5d50', '#1f4036', '#e9f2fb');
+  snowGround(cx,W,H,seed,'#e9f2fb','#bcd3ec');
+  drawSlopeHint(cx,W,seed);
+  riderHint(cx,120,gY(120,seed),'#ff6a1a','#ffffff');
+}
+function finishTP(cx,W,H,seed){
+  treesSoftAlps(cx, seed, '#2a1848', '#180c2c', '#f0e8f8');
+  snowGround(cx,W,H,seed,'#f4f0f8',null);
+  parkBox(cx,W,seed);
+  riderHint(cx,120,gY(120,seed),'#e85a2a','#ffe8d0');
+}
+
+function bdB1(cx,W,H){
+  bdSky(cx,W,H);
+  mtRidge(cx,W,BD_B1_FAR,'#445f88','#6a84a8');
+  mtRidge(cx,W,BD_B1_MID,'#5a789e','#7a94b4');
+  mtRidge(cx,W,BD_B1_NEAR,'#6b8ab0','#8aa0bc');
+  mtSnowCaps(cx,[BD_B1_FAR,BD_B1_MID],'#f7fbff'); // bright white — phone-readable
+  finishBD(cx,W,H,0.55);
+}
+function bdB2(cx,W,H){
+  bdSky(cx,W,H);
+  mtRidge(cx,W,BD_B2_FAR,'#3f5a82','#6580a4');
+  mtRidge(cx,W,BD_B2_MID,'#55749c','#7594b4');
+  mtRidge(cx,W,BD_B2_NEAR,'#6b8ab0','#8aa0bc');
+  mtSnowCaps(cx,[BD_B2_FAR,BD_B2_MID],'#f7fbff');
+  finishBD(cx,W,H,0.55);
+}
+function bdB3(cx,W,H){
+  bdSky(cx,W,H);
+  mtRidge(cx,W,BD_B3_FAR,'#3a557c','#5e7a9e');
+  mtRidge(cx,W,BD_B3_MID,'#4e6e96','#6e8eb0');
+  mtRidge(cx,W,BD_B3_NEAR,'#6586ac','#849cbc');
+  mtSnowCaps(cx,[BD_B3_FAR,BD_B3_MID],'#f7fbff');
+  finishBD(cx,W,H,0.55);
+}
+
+function tpB1(cx,W,H){
+  tpSky(cx,W,H);
+  mtRidge(cx,W,TP_B1_FAR,'#281650','#4a3478');
+  mtRidge(cx,W,TP_B1_MID,'#3a2468','#5a3a88');
+  mtRidge(cx,W,TP_B1_NEAR,'#5a3a88','#7a5aa8');
+  mtSnowCaps(cx,[TP_B1_FAR,TP_B1_MID],'#fffef8'); // near-white cream — max contrast on purple
+  finishTP(cx,W,H,0.9);
+}
+function tpB2(cx,W,H){
+  tpSky(cx,W,H);
+  mtRidge(cx,W,TP_B2_FAR,'#221248','#443070');
+  mtRidge(cx,W,TP_B2_MID,'#352060','#553a80');
+  mtRidge(cx,W,TP_B2_NEAR,'#5a3a88','#7a5aa8');
+  mtSnowCaps(cx,[TP_B2_FAR,TP_B2_MID],'#fffef8');
+  finishTP(cx,W,H,0.9);
+}
+function tpB3(cx,W,H){
+  tpSky(cx,W,H);
+  mtRidge(cx,W,TP_B3_FAR,'#1e1040','#3e2a68');
+  mtRidge(cx,W,TP_B3_MID,'#32205c','#503878');
+  mtRidge(cx,W,TP_B3_NEAR,'#543480','#7450a0');
+  mtSnowCaps(cx,[TP_B3_FAR,TP_B3_MID],'#fffef8');
+  finishTP(cx,W,H,0.9);
+}
+
+/* ---- Prior round (control + old A/B/C) for compare ---- */
+function mtRidgeOld(cx,W,pts,col,snowCol,snowAmt){
+  cx.fillStyle=col;cx.beginPath();cx.moveTo(-20,VH+40);
+  for(var i=0;i<pts.length;i++)cx.lineTo(pts[i][0],pts[i][1]);
+  cx.lineTo(W+20,VH+40);cx.closePath();cx.fill();
+  if(snowAmt>0){
+    cx.fillStyle=snowCol;cx.beginPath();
+    for(var j=0;j<pts.length-1;j++){
+      var a=pts[j],b=pts[j+1],my=Math.min(a[1],b[1]);
+      var peak=a[1]<b[1]?a:b;
+      if(peak[1]<my+8) continue;
+      var hw=(Math.abs(b[0]-a[0]))*0.22*snowAmt;
+      cx.moveTo(peak[0]-hw,peak[1]+6);cx.lineTo(peak[0],peak[1]-1);cx.lineTo(peak[0]+hw,peak[1]+6);cx.lineTo(peak[0],peak[1]+10+4*snowAmt);cx.closePath();
+    }
+    cx.fill();
+  }
+}
+function bdNow(cx,W,H){
+  bdSky(cx,W,H);
+  function ridge(col,amp,base,per){
+    cx.fillStyle=col;cx.beginPath();cx.moveTo(-20,H);
+    for(var x=-per;x<W+per;x+=per/2)cx.lineTo(x,base-amp*((Math.floor(x/(per/2))%2)?0.4:1));
+    cx.lineTo(W+20,H);cx.fill();
+  }
+  ridge('#5a77a3',90,230,260);ridge('#7f9cc4',55,260,180);
+  for(var x=-10;x<W+90;x+=90){cx.fillStyle='#2f5d50';cx.beginPath();cx.moveTo(x,gY(x,0.4)-6);cx.lineTo(x+8,gY(x,0.4)-46);cx.lineTo(x+16,gY(x,0.4)-6);cx.fill();}
+  snowGround(cx,W,H,0.4,'#e9f2fb','#bcd3ec');drawSlopeHint(cx,W,0.4);riderHint(cx,110,gY(110,0.4),'#ff6a1a','#ffffff');
+}
+function bdOldB(cx,W,H){
+  bdSky(cx,W,H);
+  mtRidgeOld(cx,W,[[-50,255],[100,175],[220,205],[340,150],[470,190],[620,160],[720,195]],'#55749c','#e4eef8',1.1);
+  mtRidgeOld(cx,W,[[-20,275],[90,220],[200,250],[310,200],[420,245],[540,210],[680,235]],'#6b8ab0','#eef5fb',0.7);
+  finishBD(cx,W,H,0.55);
+}
+function tpNow(cx,W,H){
+  tpSky(cx,W,H);
+  function ridge(col,amp,base,per){
+    cx.fillStyle=col;cx.beginPath();cx.moveTo(-20,H);
+    for(var x=-per;x<W+per;x+=per/2)cx.lineTo(x,base-amp*((Math.floor(x/(per/2))%2)?0.4:1));
+    cx.lineTo(W+20,H);cx.fill();
+  }
+  ridge('#3a2468',90,230,260);ridge('#5a3a88',55,260,180);
+  for(var x=0;x<W+100;x+=100){cx.fillStyle='#2a1848';cx.beginPath();cx.moveTo(x,gY(x,0.7)-4);cx.lineTo(x+10,gY(x,0.7)-36);cx.lineTo(x+20,gY(x,0.7)-4);cx.fill();}
+  snowGround(cx,W,H,0.7,'#f4f0f8',null);parkBox(cx,W,0.7);riderHint(cx,110,gY(110,0.7),'#e85a2a','#ffe8d0');
+}
+function tpOldB(cx,W,H){
+  tpSky(cx,W,H);
+  mtRidgeOld(cx,W,[[-50,255],[100,175],[220,205],[340,150],[470,190],[620,160],[720,195]],'#3a2468','#ebe2f4',1.1);
+  mtRidgeOld(cx,W,[[-20,275],[90,220],[200,250],[310,200],[420,245],[540,210],[680,235]],'#5a3a88','#f2eaf8',0.7);
+  finishTP(cx,W,H,0.9);
+}
+
+var NEW=[
+  {id:'bd-b1', game:'BD', name:'B1 · Soft Alps trees + crenellated range', fn:bdB1},
+  {id:'bd-b2', game:'BD', name:'B2 · Soft Alps trees + statement peaks', fn:bdB2, pick:1},
+  {id:'bd-b3', game:'BD', name:'B3 · Soft Alps trees + left massif', fn:bdB3},
+  {id:'tp-b1', game:'TP', name:'B1 · Soft Alps dusk + crenellated range', fn:tpB1},
+  {id:'tp-b2', game:'TP', name:'B2 · Soft Alps dusk + statement peaks', fn:tpB2, pick:1},
+  {id:'tp-b3', game:'TP', name:'B3 · Soft Alps dusk + left massif', fn:tpB3}
+];
+var OLD=[
+  {id:'bd-now', game:'BD', name:'Current tip (control)', fn:bdNow, now:1},
+  {id:'bd-opt-b', game:'BD', name:'Prior B · Soft Alps (old mountains)', fn:bdOldB, old:1},
+  {id:'tp-now', game:'TP', name:'Current tip (control)', fn:tpNow, now:1},
+  {id:'tp-opt-b', game:'TP', name:'Prior B · Soft Alps dusk (old mountains)', fn:tpOldB, old:1}
+];
+
+function mount(list, parentId){
+  var grid=document.getElementById(parentId);
+  var dpr=2;
+  list.forEach(function(o){
+    var card=document.createElement('div');
+    card.className='card'+(o.now?' now':'')+(o.pick?' pick':'');
+    card.id=o.id;
+    var tag=o.now?' <span class="tag old">NOW</span>':(o.pick?' <span class="tag">REC</span>':(o.old?' <span class="tag old">PRIOR</span>':''));
+    card.innerHTML='<h2>'+o.game+' — '+o.name+tag+'<small>1280×720 export · Soft Alps trees kept</small></h2>';
+    var cv=document.createElement('canvas');
+    cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+    cv.style.width=W+'px';cv.style.height=H+'px';
+    cv.dataset.id=o.id;
+    card.appendChild(cv);grid.appendChild(card);
+    var cx=cv.getContext('2d');cx.setTransform(dpr,0,0,dpr,0,0);
+    o.fn(cx,W,H);
+  });
+}
+mount(NEW,'gridNew');
+mount(OLD,'gridOld');
+})();
+</script>
+</body></html>
