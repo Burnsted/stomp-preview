@@ -1,0 +1,166 @@
+{
+  "version": 1,
+  "note": "Franz greenhouse-layers-v1 drop-in. Replace this file (and optional layer images) when the pack lands at greenhouse-layers-v1/. Coordinates are plate-normalized (0–1) on 585×1266. hitW/hitH are CSS px at design phone (390×844), scaled at runtime.",
+  "plate": { "w": 585, "h": 1266 },
+  "layers": {
+    "small": {
+      "empty": "assets/interior/int-small-empty.webp",
+      "grown": "assets/interior/int-small-grown.webp",
+      "planter": null,
+      "soil": null
+    },
+    "medium": {
+      "empty": "assets/interior/int-medium-empty.webp",
+      "grown": "assets/interior/int-medium-grown.webp",
+      "planter": null,
+      "soil": null
+    },
+    "large": {
+      "empty": "assets/interior/int-large-empty.webp",
+      "grown": "assets/interior/int-large-grown.webp",
+      "planter": null,
+      "soil": null
+    }
+  },
+  "sizes": {
+    "small": {
+      "id": "S",
+      "key": "small",
+      "planterCount": 2,
+      "slotsPerPlanter": 6,
+      "slotCount": 12,
+      "activeCount": 12,
+      "planters": [
+        { "id": 0, "nx": 0.14, "ny": 0.52, "nw": 0.34, "nh": 0.34, "label": "left" },
+        { "id": 1, "nx": 0.52, "ny": 0.52, "nw": 0.34, "nh": 0.34, "label": "right" }
+      ],
+      "slots": [
+        { "i": 0, "planter": 0, "slot": 0, "nx": 0.22, "ny": 0.58, "active": true, "hitW": 78, "hitH": 64 },
+        { "i": 1, "planter": 0, "slot": 1, "nx": 0.31, "ny": 0.58, "active": true, "hitW": 78, "hitH": 64 },
+        { "i": 2, "planter": 0, "slot": 2, "nx": 0.40, "ny": 0.58, "active": true, "hitW": 78, "hitH": 64 },
+        { "i": 3, "planter": 0, "slot": 3, "nx": 0.22, "ny": 0.72, "active": true, "hitW": 78, "hitH": 64 },
+        { "i": 4, "planter": 0, "slot": 4, "nx": 0.31, "ny": 0.72, "active": true, "hitW": 78, "hitH": 64 },
+        { "i": 5, "planter": 0, "slot": 5, "nx": 0.40, "ny": 0.72, "active": true, "hitW": 78, "hitH": 64 },
+        { "i": 6, "planter": 1, "slot": 0, "nx": 0.60, "ny": 0.58, "active": true, "hitW": 78, "hitH": 64 },
+        { "i": 7, "planter": 1, "slot": 1, "nx": 0.69, "ny": 0.58, "active": true, "hitW": 78, "hitH": 64 },
+        { "i": 8, "planter": 1, "slot": 2, "nx": 0.78, "ny": 0.58, "active": true, "hitW": 78, "hitH": 64 },
+        { "i": 9, "planter": 1, "slot": 3, "nx": 0.60, "ny": 0.72, "active": true, "hitW": 78, "hitH": 64 },
+        { "i": 10, "planter": 1, "slot": 4, "nx": 0.69, "ny": 0.72, "active": true, "hitW": 78, "hitH": 64 },
+        { "i": 11, "planter": 1, "slot": 5, "nx": 0.78, "ny": 0.72, "active": true, "hitW": 78, "hitH": 64 }
+      ]
+    },
+    "medium": {
+      "id": "M",
+      "key": "medium",
+      "planterCount": 4,
+      "slotsPerPlanter": 6,
+      "slotCount": 24,
+      "activeCount": 20,
+      "planters": [
+        { "id": 0, "nx": 0.08, "ny": 0.48, "nw": 0.40, "nh": 0.20, "label": "back-left" },
+        { "id": 1, "nx": 0.52, "ny": 0.48, "nw": 0.40, "nh": 0.20, "label": "back-right" },
+        { "id": 2, "nx": 0.08, "ny": 0.70, "nw": 0.40, "nh": 0.20, "label": "front-left" },
+        { "id": 3, "nx": 0.52, "ny": 0.70, "nw": 0.40, "nh": 0.20, "label": "front-right" }
+      ],
+      "slots": [
+        { "i": 0, "planter": 0, "slot": 0, "nx": 0.14, "ny": 0.52, "active": true, "hitW": 70, "hitH": 56 },
+        { "i": 1, "planter": 0, "slot": 1, "nx": 0.24, "ny": 0.52, "active": true, "hitW": 70, "hitH": 56 },
+        { "i": 2, "planter": 0, "slot": 2, "nx": 0.34, "ny": 0.52, "active": true, "hitW": 70, "hitH": 56 },
+        { "i": 3, "planter": 0, "slot": 3, "nx": 0.14, "ny": 0.60, "active": true, "hitW": 70, "hitH": 56 },
+        { "i": 4, "planter": 0, "slot": 4, "nx": 0.24, "ny": 0.60, "active": true, "hitW": 70, "hitH": 56 },
+        { "i": 5, "planter": 0, "slot": 5, "nx": 0.34, "ny": 0.60, "active": false, "hitW": 70, "hitH": 56 },
+        { "i": 6, "planter": 1, "slot": 0, "nx": 0.58, "ny": 0.52, "active": true, "hitW": 70, "hitH": 56 },
+        { "i": 7, "planter": 1, "slot": 1, "nx": 0.68, "ny": 0.52, "active": true, "hitW": 70, "hitH": 56 },
+        { "i": 8, "planter": 1, "slot": 2, "nx": 0.78, "ny": 0.52, "active": true, "hitW": 70, "hitH": 56 },
+        { "i": 9, "planter": 1, "slot": 3, "nx": 0.58, "ny": 0.60, "active": true, "hitW": 70, "hitH": 56 },
+        { "i": 10, "planter": 1, "slot": 4, "nx": 0.68, "ny": 0.60, "active": true, "hitW": 70, "hitH": 56 },
+        { "i": 11, "planter": 1, "slot": 5, "nx": 0.78, "ny": 0.60, "active": false, "hitW": 70, "hitH": 56 },
+        { "i": 12, "planter": 2, "slot": 0, "nx": 0.14, "ny": 0.74, "active": true, "hitW": 70, "hitH": 56 },
+        { "i": 13, "planter": 2, "slot": 1, "nx": 0.24, "ny": 0.74, "active": true, "hitW": 70, "hitH": 56 },
+        { "i": 14, "planter": 2, "slot": 2, "nx": 0.34, "ny": 0.74, "active": true, "hitW": 70, "hitH": 56 },
+        { "i": 15, "planter": 2, "slot": 3, "nx": 0.14, "ny": 0.82, "active": true, "hitW": 70, "hitH": 56 },
+        { "i": 16, "planter": 2, "slot": 4, "nx": 0.24, "ny": 0.82, "active": true, "hitW": 70, "hitH": 56 },
+        { "i": 17, "planter": 2, "slot": 5, "nx": 0.34, "ny": 0.82, "active": false, "hitW": 70, "hitH": 56 },
+        { "i": 18, "planter": 3, "slot": 0, "nx": 0.58, "ny": 0.74, "active": true, "hitW": 70, "hitH": 56 },
+        { "i": 19, "planter": 3, "slot": 1, "nx": 0.68, "ny": 0.74, "active": true, "hitW": 70, "hitH": 56 },
+        { "i": 20, "planter": 3, "slot": 2, "nx": 0.78, "ny": 0.74, "active": true, "hitW": 70, "hitH": 56 },
+        { "i": 21, "planter": 3, "slot": 3, "nx": 0.58, "ny": 0.82, "active": true, "hitW": 70, "hitH": 56 },
+        { "i": 22, "planter": 3, "slot": 4, "nx": 0.68, "ny": 0.82, "active": true, "hitW": 70, "hitH": 56 },
+        { "i": 23, "planter": 3, "slot": 5, "nx": 0.78, "ny": 0.82, "active": false, "hitW": 70, "hitH": 56 }
+      ]
+    },
+    "large": {
+      "id": "L",
+      "key": "large",
+      "planterCount": 5,
+      "slotsPerPlanter": 6,
+      "slotCount": 30,
+      "activeCount": 30,
+      "planters": [
+        { "id": 0, "nx": 0.06, "ny": 0.46, "nw": 0.28, "nh": 0.16, "label": "row0-a" },
+        { "id": 1, "nx": 0.36, "ny": 0.46, "nw": 0.28, "nh": 0.16, "label": "row0-b" },
+        { "id": 2, "nx": 0.66, "ny": 0.46, "nw": 0.28, "nh": 0.16, "label": "row0-c" },
+        { "id": 3, "nx": 0.12, "ny": 0.64, "nw": 0.36, "nh": 0.18, "label": "row1-a" },
+        { "id": 4, "nx": 0.52, "ny": 0.64, "nw": 0.36, "nh": 0.18, "label": "row1-b" }
+      ],
+      "slots": [
+        { "i": 0, "planter": 0, "slot": 0, "nx": 0.12, "ny": 0.50, "active": true, "hitW": 64, "hitH": 52 },
+        { "i": 1, "planter": 0, "slot": 1, "nx": 0.20, "ny": 0.50, "active": true, "hitW": 64, "hitH": 52 },
+        { "i": 2, "planter": 0, "slot": 2, "nx": 0.28, "ny": 0.50, "active": true, "hitW": 64, "hitH": 52 },
+        { "i": 3, "planter": 0, "slot": 3, "nx": 0.12, "ny": 0.57, "active": true, "hitW": 64, "hitH": 52 },
+        { "i": 4, "planter": 0, "slot": 4, "nx": 0.20, "ny": 0.57, "active": true, "hitW": 64, "hitH": 52 },
+        { "i": 5, "planter": 0, "slot": 5, "nx": 0.28, "ny": 0.57, "active": true, "hitW": 64, "hitH": 52 },
+        { "i": 6, "planter": 1, "slot": 0, "nx": 0.42, "ny": 0.50, "active": true, "hitW": 64, "hitH": 52 },
+        { "i": 7, "planter": 1, "slot": 1, "nx": 0.50, "ny": 0.50, "active": true, "hitW": 64, "hitH": 52 },
+        { "i": 8, "planter": 1, "slot": 2, "nx": 0.58, "ny": 0.50, "active": true, "hitW": 64, "hitH": 52 },
+        { "i": 9, "planter": 1, "slot": 3, "nx": 0.42, "ny": 0.57, "active": true, "hitW": 64, "hitH": 52 },
+        { "i": 10, "planter": 1, "slot": 4, "nx": 0.50, "ny": 0.57, "active": true, "hitW": 64, "hitH": 52 },
+        { "i": 11, "planter": 1, "slot": 5, "nx": 0.58, "ny": 0.57, "active": true, "hitW": 64, "hitH": 52 },
+        { "i": 12, "planter": 2, "slot": 0, "nx": 0.72, "ny": 0.50, "active": true, "hitW": 64, "hitH": 52 },
+        { "i": 13, "planter": 2, "slot": 1, "nx": 0.80, "ny": 0.50, "active": true, "hitW": 64, "hitH": 52 },
+        { "i": 14, "planter": 2, "slot": 2, "nx": 0.88, "ny": 0.50, "active": true, "hitW": 64, "hitH": 52 },
+        { "i": 15, "planter": 2, "slot": 3, "nx": 0.72, "ny": 0.57, "active": true, "hitW": 64, "hitH": 52 },
+        { "i": 16, "planter": 2, "slot": 4, "nx": 0.80, "ny": 0.57, "active": true, "hitW": 64, "hitH": 52 },
+        { "i": 17, "planter": 2, "slot": 5, "nx": 0.88, "ny": 0.57, "active": true, "hitW": 64, "hitH": 52 },
+        { "i": 18, "planter": 3, "slot": 0, "nx": 0.18, "ny": 0.68, "active": true, "hitW": 68, "hitH": 56 },
+        { "i": 19, "planter": 3, "slot": 1, "nx": 0.28, "ny": 0.68, "active": true, "hitW": 68, "hitH": 56 },
+        { "i": 20, "planter": 3, "slot": 2, "nx": 0.38, "ny": 0.68, "active": true, "hitW": 68, "hitH": 56 },
+        { "i": 21, "planter": 3, "slot": 3, "nx": 0.18, "ny": 0.78, "active": true, "hitW": 68, "hitH": 56 },
+        { "i": 22, "planter": 3, "slot": 4, "nx": 0.28, "ny": 0.78, "active": true, "hitW": 68, "hitH": 56 },
+        { "i": 23, "planter": 3, "slot": 5, "nx": 0.38, "ny": 0.78, "active": true, "hitW": 68, "hitH": 56 },
+        { "i": 24, "planter": 4, "slot": 0, "nx": 0.58, "ny": 0.68, "active": true, "hitW": 68, "hitH": 56 },
+        { "i": 25, "planter": 4, "slot": 1, "nx": 0.68, "ny": 0.68, "active": true, "hitW": 68, "hitH": 56 },
+        { "i": 26, "planter": 4, "slot": 2, "nx": 0.78, "ny": 0.68, "active": true, "hitW": 68, "hitH": 56 },
+        { "i": 27, "planter": 4, "slot": 3, "nx": 0.58, "ny": 0.78, "active": true, "hitW": 68, "hitH": 56 },
+        { "i": 28, "planter": 4, "slot": 4, "nx": 0.68, "ny": 0.78, "active": true, "hitW": 68, "hitH": 56 },
+        { "i": 29, "planter": 4, "slot": 5, "nx": 0.78, "ny": 0.78, "active": true, "hitW": 68, "hitH": 56 }
+      ]
+    }
+  },
+  "outdoor": {
+    "id": "O",
+    "key": "outdoor",
+    "planterCount": 2,
+    "slotsPerPlanter": 6,
+    "slotCount": 12,
+    "activeCount": 12,
+    "planters": [
+      { "id": 0, "nx": 0.10, "ny": 0.70, "nw": 0.38, "nh": 0.20, "label": "yard-left" },
+      { "id": 1, "nx": 0.52, "ny": 0.70, "nw": 0.38, "nh": 0.20, "label": "yard-right" }
+    ],
+    "slots": [
+      { "i": 0, "planter": 0, "slot": 0, "nx": 0.16, "ny": 0.74, "active": true, "hitW": 72, "hitH": 56 },
+      { "i": 1, "planter": 0, "slot": 1, "nx": 0.26, "ny": 0.74, "active": true, "hitW": 72, "hitH": 56 },
+      { "i": 2, "planter": 0, "slot": 2, "nx": 0.36, "ny": 0.74, "active": true, "hitW": 72, "hitH": 56 },
+      { "i": 3, "planter": 0, "slot": 3, "nx": 0.16, "ny": 0.84, "active": true, "hitW": 72, "hitH": 56 },
+      { "i": 4, "planter": 0, "slot": 4, "nx": 0.26, "ny": 0.84, "active": true, "hitW": 72, "hitH": 56 },
+      { "i": 5, "planter": 0, "slot": 5, "nx": 0.36, "ny": 0.84, "active": true, "hitW": 72, "hitH": 56 },
+      { "i": 6, "planter": 1, "slot": 0, "nx": 0.58, "ny": 0.74, "active": true, "hitW": 72, "hitH": 56 },
+      { "i": 7, "planter": 1, "slot": 1, "nx": 0.68, "ny": 0.74, "active": true, "hitW": 72, "hitH": 56 },
+      { "i": 8, "planter": 1, "slot": 2, "nx": 0.78, "ny": 0.74, "active": true, "hitW": 72, "hitH": 56 },
+      { "i": 9, "planter": 1, "slot": 3, "nx": 0.58, "ny": 0.84, "active": true, "hitW": 72, "hitH": 56 },
+      { "i": 10, "planter": 1, "slot": 4, "nx": 0.68, "ny": 0.84, "active": true, "hitW": 72, "hitH": 56 },
+      { "i": 11, "planter": 1, "slot": 5, "nx": 0.78, "ny": 0.84, "active": true, "hitW": 72, "hitH": 56 }
+    ]
+  }
+}

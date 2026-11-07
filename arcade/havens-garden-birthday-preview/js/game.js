@@ -6,7 +6,7 @@
    bugs+net, bees→hive→jars, color rows, CBN, shop.
    ============================================================ */
 
-const VER = 'v0.9-birthday-harden';
+const VER = 'v0.9-birthday-save-fix-touch';
 const PK = 'havensGarden.birthday.v2';
 const PK_LEGACY = 'havensGarden.v1';
 /** Prior preview / prototype keys that may still hold progress. */
@@ -18,6 +18,10 @@ const PK_PRIOR = [
 ];
 const MUTE_K = 'havensGarden.mute';
 const QUIET_K = 'havensGarden.quiet';
+const SCHEMA_VERSION = (window.HGSaveStore && HGSaveStore.SCHEMA_VERSION) || 9;
+const LAYOUT_VERSION = (window.HGSaveStore && HGSaveStore.LAYOUT_VERSION) || 4;
+/** Touch-v3: drag beyond this CSS px = pan (not plant/harvest). */
+const GARDEN_PAN_THRESHOLD = 12;
 
 const BOUQUET_GOAL = 20;
 /** Greenhouse v2: one plant per slot (66×66 hit → 44 CSS @390). Clusters explode on migrate. */
@@ -81,13 +85,18 @@ const SPECIES_ALIAS = {
 
 const ST = {
   BOOT: 'BOOT', MENU: 'MENU', HOWTO: 'HOWTO', MEADOW: 'MEADOW', GREENHOUSE: 'GREENHOUSE',
-  HIVE: 'HIVE', SHOP: 'SHOP', CBN: 'CBN', CBNMAP: 'CBNMAP', PAUSED: 'PAUSED'
+  HIVE: 'HIVE', SHOP: 'SHOP', CBN: 'CBN', CBNMAP: 'CBNMAP', PAUSED: 'PAUSED', BACKUPS: 'BACKUPS'
 };
 
-/* ---------- Save (compatible with havensGarden.v1) ---------- */
+/* ---------- Save (versioned — no saveRichness gate) ---------- */
 function freshSave() {
   return {
-    v: 8,
+    v: 9,
+    schemaVersion: SCHEMA_VERSION,
+    layoutVersion: 0,
+    revision: 0,
+    writerId: '',
+    legacyImported: 0,
     bedMapVersion: 1,
     unlocked: 1,
     baskets: 0,
@@ -106,6 +115,7 @@ function freshSave() {
     outdoorBeds: [],
     outdoorUnlocked: 0,
     bouquet: [],
+    plantReserve: [], // overflow flowers awaiting plant (lossless migration)
     scene: 'menu',
     nurseryMode: 'look',
     dayPhase: 0,
@@ -118,8 +128,8 @@ function freshSave() {
   };
 }
 
-/** Keep full legacy mix for remesh; truncate only after slot split. */
-function normalizeBedKeepMix(b) {
+/** Never truncate mix[] — lossless. Multi-flower beds are expanded by migrateBedsArray. */
+function normalizeBed(b) {
   if (!b || typeof b !== 'object') return null;
   let mix = Array.isArray(b.mix) ? b.mix.slice() : [];
   if (!mix.length && b.id) mix = [b.id];
@@ -133,12 +143,7 @@ function normalizeBedKeepMix(b) {
     pendingGrow: b.pendingGrow ? 1 : 0
   };
 }
-function normalizeBed(b) {
-  const n = normalizeBedKeepMix(b);
-  if (!n) return null;
-  n.mix = n.mix.slice(0, FLOWERS_PER_BED);
-  return n;
-}
+const normalizeBedKeepMix = normalizeBed;
 
 function countBedFlowers(beds) {
   let n = 0;
@@ -148,6 +153,53 @@ function countBedFlowers(beds) {
     n += Math.max(1, mix.length);
   });
   return n;
+}
+
+function countReserveFlowers(reserve) {
+  return (reserve || []).reduce((n, p) => n + (p && p.mix ? p.mix.length : (p ? 1 : 0)), 0);
+}
+
+/**
+ * Apply layout remesh when layoutVersion is behind. Idempotent.
+ * Immutable pre-migration backup via HGSaveStore.savePreMigration.
+ */
+function applyLayoutMigration(s, opts) {
+  opts = opts || {};
+  if (!(window.HGNursery && HGNursery.ready())) return s;
+  const need = (s.layoutVersion | 0) < LAYOUT_VERSION || opts.force;
+  if (!need) return s;
+
+  const backup = JSON.parse(JSON.stringify(s));
+  try {
+    if (window.HGSaveStore) HGSaveStore.savePreMigration(backup);
+
+    const beforeBeds = (s.beds || []).map(normalizeBed);
+    const beforeOut = (s.outdoorBeds || []).map(normalizeBed);
+    const beforeReserve = Array.isArray(s.plantReserve) ? s.plantReserve.slice() : [];
+    const totalIn = countBedFlowers(beforeBeds) + countBedFlowers(beforeOut) + countReserveFlowers(beforeReserve);
+
+    const indoor = HGNursery.migrateBedsArray(beforeBeds, s.ghSize | 0);
+    const outdoor = HGNursery.migrateBedsArray(beforeOut, -1);
+    // Each plant already 1-flower; keep as-is (normalizeBed no longer truncates)
+    s.beds = indoor.beds;
+    s.outdoorBeds = outdoor.beds;
+    const newReserve = beforeReserve.concat(indoor.reserve || []).concat(outdoor.reserve || []);
+    s.plantReserve = newReserve;
+    s.bedMapVersion = 2;
+    s.layoutVersion = LAYOUT_VERSION;
+
+    const totalOut = countBedFlowers(s.beds) + countBedFlowers(s.outdoorBeds) + countReserveFlowers(s.plantReserve);
+    if (totalOut !== totalIn) {
+      throw new Error('flower invariant failed: in=' + totalIn + ' out=' + totalOut);
+    }
+    s._lastMigration = { totalIn, placed: indoor.placed + outdoor.placed, reserve: newReserve.length, at: Date.now() };
+  } catch (err) {
+    console.warn('layout migration failed — restoring backup', err);
+    Object.keys(s).forEach((k) => { delete s[k]; });
+    Object.assign(s, backup);
+    s._migrationError = String(err && err.message || err);
+  }
+  return s;
 }
 
 function migrateSave(raw) {
@@ -160,8 +212,9 @@ function migrateSave(raw) {
   if (!Array.isArray(s.album)) s.album = [];
   if (!Array.isArray(s.bouquet)) s.bouquet = [];
   if (!Array.isArray(s.pots)) s.pots = [];
+  if (!Array.isArray(s.plantReserve)) s.plantReserve = [];
   ['taughtPlant', 'taughtHow', 'ghSize', 'cycles', 'mute', 'quiet', 'outdoorUnlocked',
-    'awaitingReturnGrowth', 'leftForOuting'].forEach((k) => {
+    'awaitingReturnGrowth', 'leftForOuting', 'legacyImported', 'layoutVersion', 'revision'].forEach((k) => {
     if (s[k] == null) s[k] = 0;
   });
   if (!s.step) s.step = 'ready';
@@ -170,36 +223,25 @@ function migrateSave(raw) {
   if (s.nurseryMode === 'night' || s.nurseryMode === 'morning') s.nurseryMode = s.step === 'growing' ? 'growing' : 'ready';
   s.bouquet = (s.bouquet || []).map((id) => SPECIES_ALIAS[id] || id);
   s.album = (s.album || []).map((id) => SPECIES_ALIAS[id] || id);
-  // Keep full mix through remesh so multi-flower legacy beds don't lose flowers.
-  // Do NOT truncate to FLOWERS_PER_BED until AFTER migrateBedsArray splits mixes.
-  s.beds = (s.beds || []).map(normalizeBedKeepMix);
-  s.outdoorBeds = (s.outdoorBeds || []).map(normalizeBedKeepMix);
-  const flowersIn = countBedFlowers(s.beds) + countBedFlowers(s.outdoorBeds);
-  // Remesh into Franz bed-map slot indices without losing flowers
+  s.beds = (s.beds || []).map(normalizeBed);
+  s.outdoorBeds = (s.outdoorBeds || []).map(normalizeBed);
+  s.plantReserve = (s.plantReserve || []).map(normalizeBed).filter(Boolean);
+
   if (window.HGNursery && HGNursery.ready()) {
-    s.beds = HGNursery.migrateBedsArray(s.beds, s.ghSize | 0);
-    s.outdoorBeds = HGNursery.migrateBedsArray(s.outdoorBeds, -1);
-    s.bedMapVersion = 2;
-    // Enforce 1 plant / slot only after remesh split
-    s.beds = (s.beds || []).map(normalizeBed);
-    s.outdoorBeds = (s.outdoorBeds || []).map(normalizeBed);
+    applyLayoutMigration(s);
   } else {
-    // Nursery not ready yet — keep full mixes; boot() remeshes later
     const need = GH_SIZES[Math.min(2, s.ghSize | 0)].beds;
     while (s.beds.length < need) s.beds.push(null);
     while (s.outdoorBeds.length < OUTDOOR_SLOTS) s.outdoorBeds.push(null);
   }
-  const flowersOut = countBedFlowers(s.beds) + countBedFlowers(s.outdoorBeds);
-  if (window.HGNursery && HGNursery.ready() && flowersOut < flowersIn) {
-    console.warn('migrateSave flower count', flowersIn, '→', flowersOut);
-  }
-  if (s.step === 'plant' && (s.bouquet || []).length < BOUQUET_GOAL) {
+
+  if (s.step === 'plant' && (s.bouquet || []).length < BOUQUET_GOAL && !(s.plantReserve || []).length) {
     s.step = 'ready';
     if (s.nurseryMode === 'plant') s.nurseryMode = 'look';
   }
-  s.v = Math.max(8, s.v | 0);
+  s.v = Math.max(9, s.v | 0);
+  s.schemaVersion = Math.max(SCHEMA_VERSION, s.schemaVersion | 0);
   s.ver = VER;
-  // Economy may live on root in older previews (don't trust freshSave().extras alone)
   if (window.HGSystems) {
     const rawEx = (raw.extras && typeof raw.extras === 'object') ? raw.extras : null;
     const exSrc = Object.assign({}, rawEx || {}, {
@@ -214,61 +256,116 @@ function migrateSave(raw) {
     });
     s.extras = HGSystems.migrateExtras(exSrc);
   } else if (!s.extras) s.extras = {};
-  // Sync greenhouse owned flag from ghSize
   if (s.extras && s.extras.owned) {
     if ((s.ghSize | 0) >= 2) s.extras.owned.greenhouse = 1;
   }
   return s;
 }
 
+/** Diagnostic only — NOT used to gate writes. */
 function saveRichness(s) {
   if (!s || typeof s !== 'object') return -1;
-  const beds = countBedFlowers(s.beds);
-  const out = countBedFlowers(s.outdoorBeds);
-  const bq = (s.bouquet || []).length;
-  const ex = s.extras || {};
-  const pts = ex.flowerPoints | 0;
-  const cbn = (ex.cbnDone && ex.cbnDone.length) | 0;
-  const jars = (ex.jarsFull | 0) * 4 + (ex.honey | 0) * 2 + (ex.bees | 0);
-  const owned = ex.owned
-    ? ((ex.owned.shovel | 0) * 10 + (ex.owned.sparkle | 0) * 15 + (ex.owned.greenhouse | 0) * 50)
-    : 0;
-  return beds * 20 + out * 10 + bq + pts + cbn * 3 + ((s.baskets | 0) * 5) + jars + owned + ((s.ghSize | 0) * 40);
+  return countBedFlowers(s.beds) + countBedFlowers(s.outdoorBeds) + countReserveFlowers(s.plantReserve)
+    + ((s.bouquet || []).length) + ((s.extras && s.extras.flowerPoints) | 0);
 }
 function parseLS(key) {
   try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { return null; }
 }
 function readRawSave() {
-  const v2 = parseLS(PK);
-  // birthday.v2 is canonical once it has any progress — never let a fatter legacy
-  // clobber a mid-Growing / mid-water v2 (or any intentional leaner v2 write).
-  if (v2 && saveRichness(v2) > 0) return v2;
-  let best = v2;
-  let bestR = saveRichness(v2);
-  PK_PRIOR.forEach((k) => {
-    const raw = parseLS(k);
-    const r = saveRichness(raw);
-    if (r > bestR) { best = raw; bestR = r; }
-  });
-  return best;
+  // Prefer store loader; fall back for early boot
+  if (window.HGSaveStore) {
+    const disk = HGSaveStore.parse(PK);
+    if (disk) return disk;
+    if (HGSaveStore.hasTombstone()) return null;
+  }
+  return parseLS(PK);
 }
 
+let bouquet = [];
 let SAVE;
-try {
-  SAVE = migrateSave(readRawSave());
-  try { localStorage.setItem(PK, JSON.stringify(SAVE)); } catch (e3) {}
-} catch (e) { SAVE = freshSave(); }
+let saveRemoteNotice = '';
+function adoptSaveObject(next) {
+  if (!SAVE) {
+    SAVE = migrateSave(next);
+  } else {
+    const migrated = migrateSave(next);
+    Object.keys(SAVE).forEach((k) => { delete SAVE[k]; });
+    Object.assign(SAVE, migrated);
+  }
+  bouquet = Array.isArray(SAVE.bouquet) ? SAVE.bouquet.slice() : [];
+  saveRemoteNotice = 'Synced from another tab';
+}
 
-function persist() {
+if (window.HGSaveStore) {
+  HGSaveStore.configure({
+    pk: PK,
+    pkLegacy: PK_LEGACY,
+    pkPrior: PK_PRIOR,
+    onRemoteNewer: (disk) => {
+      const diskRev = disk.revision | 0;
+      const localRev = (SAVE && SAVE.revision) | 0;
+      if (diskRev > localRev) adoptSaveObject(disk);
+    }
+  });
+  HGSaveStore.bindStorage();
+  try {
+    const boot = HGSaveStore.loadInitial(migrateSave);
+    SAVE = boot.save;
+  } catch (e) { SAVE = freshSave(); }
+} else {
+  try {
+    SAVE = migrateSave(readRawSave());
+    try { localStorage.setItem(PK, JSON.stringify(SAVE)); } catch (e3) {}
+  } catch (e) { SAVE = freshSave(); }
+}
+bouquet = Array.isArray(SAVE.bouquet) ? SAVE.bouquet.slice() : [];
+
+function persist(reason) {
   try {
     SAVE.ver = VER;
-    // Never clobber a richer on-disk save (multi-tab / restore race)
-    try {
-      const existing = JSON.parse(localStorage.getItem(PK) || 'null');
-      if (existing && saveRichness(existing) > saveRichness(SAVE)) return;
-    } catch (e0) {}
+    // Runtime bouquet is gameplay source of truth; allow direct SAVE.bouquet
+    // mutations (tests / tooling) when the live basket is empty.
+    if (bouquet.length) SAVE.bouquet = bouquet.slice();
+    else if (Array.isArray(SAVE.bouquet) && SAVE.bouquet.length) bouquet = SAVE.bouquet.slice();
+    else SAVE.bouquet = [];
+    if (!Array.isArray(SAVE.plantReserve)) SAVE.plantReserve = [];
+    if (window.HGSaveStore) {
+      const r = HGSaveStore.persist(SAVE, reason || 'persist');
+      if (!r.ok && r.reason === 'stale-tab' && r.disk) {
+        adoptSaveObject(r.disk);
+        return r;
+      }
+      return r;
+    }
     localStorage.setItem(PK, JSON.stringify(SAVE));
-  } catch (e) {}
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, reason: 'err' };
+  }
+}
+
+/** Pull next reserve flower into bouquet so existing plant flow can place it. */
+function pullReserveIntoBouquet(n) {
+  n = n || 1;
+  if (!SAVE.plantReserve) SAVE.plantReserve = [];
+  let pulled = 0;
+  while (pulled < n && SAVE.plantReserve.length && bouquet.length < BOUQUET_GOAL) {
+    const plant = SAVE.plantReserve.shift();
+    const id = plant && plant.mix && plant.mix[0];
+    if (id) { bouquet.push(id); pulled++; }
+  }
+  if (pulled) SAVE.bouquet = bouquet.slice();
+  return pulled;
+}
+
+/** Apply remesh result + merge overflow into plantReserve. */
+function applyMigrateBedsResult(targetKey, result) {
+  if (!result || !result.beds) return;
+  SAVE[targetKey] = result.beds;
+  if (!SAVE.plantReserve) SAVE.plantReserve = [];
+  if (result.reserve && result.reserve.length) {
+    SAVE.plantReserve = SAVE.plantReserve.concat(result.reserve);
+  }
 }
 
 let muted = localStorage.getItem(MUTE_K) === '1' || !!SAVE.mute;
@@ -339,8 +436,9 @@ let cbnSelected = 1;
 /** Per-page CBN paint cache: idBuf (Uint16), fill canvas, filled set signature. */
 const cbnPaintCache = Object.create(null);
 let shopFlash = '';
-let bouquet = Array.isArray(SAVE.bouquet) ? SAVE.bouquet.slice() : [];
 let spawnTypeIdx = 0;
+let backupsScroll = 0;
+let backupsListCache = [];
 let spawnT = 0;
 let cue = '';
 let party = { t: 0, kind: '' };
@@ -541,8 +639,100 @@ function plateToCanvas(nx, ny) {
   const r = plateCoverRect();
   return { x: r.dx + nx * r.dw, y: r.dy + ny * r.dh };
 }
-/** Screen canvas → plate pixels (585×1266). */
-function canvasToPlatePx(x, y) {
+
+/* ---------- Touch-v3 planting camera (uniform zoom + 2-axis pan) ---------- */
+let gardenCam = {
+  panX: 0,
+  panY: 0,
+  outdoor: 0,
+  dragging: 0,
+  panning: 0,
+  moved: 0,
+  startX: 0,
+  startY: 0,
+  startPanX: 0,
+  startPanY: 0
+};
+
+function activeGardenSize(outdoor) {
+  if (!(window.HGNursery && HGNursery.ready())) return null;
+  return outdoor ? HGNursery.outdoorDef() : HGNursery.sizeForGh(SAVE.ghSize | 0);
+}
+
+/** Declared native→screen scale from map.view (small 1.0 / med·large 1.375 / outdoor ~0.917). */
+function gardenScale(sz) {
+  if (sz && sz.view && sz.view.nativeToScreenScale != null) return +sz.view.nativeToScreenScale;
+  return W / DW;
+}
+
+function gardenPanLimits(sz) {
+  const scale = gardenScale(sz);
+  const pw = DW * scale;
+  const ph = DH * scale;
+  // Prefer map range at reference phone; recompute against live canvas so every spot stays reachable
+  let maxX = Math.max(0, pw - W);
+  let maxY = Math.max(0, ph - H);
+  if (sz && sz.view && sz.view.panScreenPxRange && Math.abs(W - 390) < 1 && Math.abs(H - 844) < 1) {
+    maxX = sz.view.panScreenPxRange.x[1];
+    maxY = sz.view.panScreenPxRange.y[1];
+  }
+  return { minX: 0, maxX, minY: 0, maxY, pw, ph, scale };
+}
+
+function clampGardenPan(sz, x, y) {
+  const lim = gardenPanLimits(sz);
+  return {
+    x: Math.max(lim.minX, Math.min(lim.maxX, x)),
+    y: Math.max(lim.minY, Math.min(lim.maxY, y))
+  };
+}
+
+function resetGardenCam(outdoor) {
+  const sz = activeGardenSize(outdoor);
+  gardenCam.outdoor = outdoor ? 1 : 0;
+  gardenCam.dragging = 0;
+  gardenCam.panning = 0;
+  gardenCam.moved = 0;
+  if (sz && sz.view && sz.view.defaultPanScreenPx) {
+    const c = clampGardenPan(sz, sz.view.defaultPanScreenPx.x, sz.view.defaultPanScreenPx.y);
+    gardenCam.panX = c.x;
+    gardenCam.panY = c.y;
+  } else {
+    const lim = gardenPanLimits(sz);
+    gardenCam.panX = lim.maxX / 2;
+    gardenCam.panY = lim.maxY;
+  }
+}
+
+function revealGardenSlot(slotIdx, outdoor) {
+  const sz = activeGardenSize(outdoor);
+  if (!sz) return;
+  const slot = sz.slots[slotIdx];
+  if (slot && slot.revealPanScreenPx) {
+    const c = clampGardenPan(sz, slot.revealPanScreenPx.x, slot.revealPanScreenPx.y);
+    gardenCam.panX = c.x;
+    gardenCam.panY = c.y;
+  }
+}
+
+/** Native plate px → screen via README forward transform. */
+function nativeToScreen(nx, ny, sz) {
+  const scale = gardenScale(sz);
+  return { x: nx * scale - gardenCam.panX, y: ny * scale - gardenCam.panY };
+}
+
+/** Screen → native via README inverse transform. */
+function screenToNative(sx, sy, sz) {
+  const scale = gardenScale(sz);
+  return { px: (sx + gardenCam.panX) / scale, py: (sy + gardenCam.panY) / scale };
+}
+
+/** Screen canvas → plate pixels (585×1266). Uses garden camera when zoomed. */
+function canvasToPlatePx(x, y, outdoor) {
+  const sz = activeGardenSize(outdoor != null ? outdoor : gardenCam.outdoor);
+  if (sz && sz.view && state === ST.GREENHOUSE && nurseryView === 'inside') {
+    return screenToNative(x, y, sz);
+  }
   const r = plateCoverRect();
   return {
     px: ((x - r.dx) / r.dw) * DW,
@@ -551,10 +741,9 @@ function canvasToPlatePx(x, y) {
 }
 
 /**
- * Resolve greenhouse tap to nearest root among overlapping hit candidates.
- * Never first-match. Optional emptyRadius expands to nearest empty slot.
+ * Exclusive-rect hit only (touch-v3). No nearest-root, no radius fallback.
  */
-function pickSpotNearestRoot(p, outdoor, opts) {
+function pickSpotExclusive(p, outdoor, opts) {
   opts = opts || {};
   if (!(window.HGNursery && HGNursery.ready())) {
     for (const s of (hit.spots || [])) {
@@ -565,14 +754,18 @@ function pickSpotNearestRoot(p, outdoor, opts) {
   }
   const sz = outdoor ? HGNursery.outdoorDef() : HGNursery.sizeForGh(SAVE.ghSize | 0);
   if (!sz) return -1;
-  const { px, py } = canvasToPlatePx(p.x, p.y);
+  const { px, py } = canvasToPlatePx(p.x, p.y, outdoor);
   const bedsArr = outdoor ? SAVE.outdoorBeds : SAVE.beds;
-  return HGNursery.nearestRootIndex(sz, px, py, {
+  return HGNursery.exclusiveHitIndex(sz, px, py, {
     emptyOnly: !!opts.emptyOnly,
     allowOccupied: !!opts.allowOccupied,
-    beds: bedsArr,
-    emptyRadius: opts.emptyRadius != null ? opts.emptyRadius : 48
+    beds: bedsArr
   });
+}
+
+/** Back-compat name used by older call sites / tests. */
+function pickSpotNearestRoot(p, outdoor, opts) {
+  return pickSpotExclusive(p, outdoor, opts);
 }
 
 function ensureBgCrossfade(desiredKey, plateImg) {
@@ -629,19 +822,19 @@ function drawAnchored(img, x, y, h, face, bobY) {
   return true;
 }
 
-/** Bed/slot positions from Franz bed-map.json (plate-normalized → canvas). */
-/** Franz slot → canvas spot (rootAnchor + hitBounds). hitW/H are screen px (66→44 @390). */
-function franzSlotToSpot(slot, outdoor) {
-  const root = plateToCanvas(slot.nx, slot.ny);
-  const r = plateCoverRect();
-  const hw = (slot.hitW || 66) * (r.dw / DW);
-  const hh = (slot.hitH || 66) * (r.dh / DH);
-  const hx = r.dx + (slot.hitNx != null ? slot.hitNx : (slot.hitX || 0) / DW) * r.dw;
-  const hy = r.dy + (slot.hitNy != null ? slot.hitNy : (slot.hitY || 0) / DH) * r.dh;
+/** Franz slot → screen spot via garden camera (native×scale − pan). Screen box = 44×44 at declared zoom. */
+function franzSlotToSpot(slot, outdoor, sz) {
+  sz = sz || activeGardenSize(outdoor);
+  const scale = gardenScale(sz);
+  const root = nativeToScreen(slot.rootX, slot.rootY, sz);
+  const hw = (slot.hitW || 44) * scale;
+  const hh = (slot.hitH || 44) * scale;
+  const hx = slot.hitX * scale - gardenCam.panX;
+  const hy = slot.hitY * scale - gardenCam.panY;
   return {
     x: root.x, y: root.y, r: Math.max(hw, hh) * 0.45,
     hitW: hw, hitH: hh, hitX: hx, hitY: hy,
-    plantScale: slot.plantScale || 0.28,
+    plantScale: slot.plantScale || 0.30,
     outdoor: outdoor ? 1 : 0, i: slot.i, planter: slot.planter, slot: slot.slot
   };
 }
@@ -650,7 +843,7 @@ function plantSpots() {
   const g = gh();
   if (window.HGNursery && HGNursery.ready()) {
     const sz = HGNursery.sizeForGh(SAVE.ghSize | 0);
-    return (sz.slots || []).filter((slot) => slot.active !== false).map((slot) => franzSlotToSpot(slot, 0));
+    return (sz.slots || []).filter((slot) => slot.active !== false).map((slot) => franzSlotToSpot(slot, 0, sz));
   }
   const layout = (BED_LAYOUTS_FALLBACK[g.id] || BED_LAYOUTS_FALLBACK.S);
   const r = X(g.id === 'L' ? 30 : g.id === 'M' ? 34 : 38);
@@ -664,7 +857,7 @@ function outdoorSpots() {
   if (!SAVE.outdoorUnlocked) return [];
   if (window.HGNursery && HGNursery.ready()) {
     const od = HGNursery.outdoorDef();
-    return (od.slots || []).filter((s) => s.active !== false).map((slot) => franzSlotToSpot(slot, 1));
+    return (od.slots || []).filter((s) => s.active !== false).map((slot) => franzSlotToSpot(slot, 1, od));
   }
   const layout = BED_LAYOUTS_FALLBACK.outdoor;
   const r = X(34);
@@ -700,14 +893,16 @@ function spotXY(i, outdoor) {
   return s ? { x: s.x, y: s.y } : { x: W / 2, y: outdoor ? H * 0.7 : H * 0.6 };
 }
 
-function snapshotRuntime() {
+function snapshotRuntime(reason) {
   SAVE.bouquet = bouquet.slice();
+  SAVE.plantReserve = Array.isArray(SAVE.plantReserve) ? SAVE.plantReserve : [];
   SAVE.scene = state === ST.GREENHOUSE ? 'greenhouse'
     : state === ST.MEADOW || state === ST.PAUSED ? 'meadow'
       : state === ST.HIVE ? 'hive'
         : state === ST.SHOP ? 'shop'
           : state === ST.CBN || state === ST.CBNMAP ? 'color'
-            : state === ST.HOWTO ? 'howto' : 'menu';
+            : state === ST.BACKUPS ? 'backups'
+              : state === ST.HOWTO ? 'howto' : 'menu';
   SAVE.nurseryMode = nurseryMode;
   // Keep loop step in sync for mid-Growing / watering resume
   if (growAnim || nurseryMode === 'growing') SAVE.step = 'growing';
@@ -721,7 +916,12 @@ function snapshotRuntime() {
     SAVE.girlNX = Math.min(0.95, Math.max(0.05, girl.x / Math.max(1, W)));
     SAVE.girlNY = Math.min(0.95, Math.max(0.05, girl.y / Math.max(1, H)));
   }
-  persist();
+  const r = reason
+    || (growAnim || nurseryMode === 'growing' ? 'growing'
+      : nurseryMode === 'water' ? 'water'
+        : nurseryMode === 'plant' ? 'plant'
+          : 'snapshot');
+  persist(r);
 }
 
 /* ---------- Particles / party ---------- */
@@ -1017,9 +1217,19 @@ function enterGreenhouse(mode) {
   ensureBedCapacity();
   if (SAVE.awaitingReturnGrowth && SAVE.leftForOuting) applyReturnTimeLapse();
 
+  // Feed overflow reserve into bouquet via existing plant flow (no new UI)
+  if ((SAVE.plantReserve || []).length && bouquet.length < BOUQUET_GOAL) {
+    pullReserveIntoBouquet(Math.min(BOUQUET_GOAL - bouquet.length, SAVE.plantReserve.length));
+  }
+
   // Never force plant mode from a peek when bouquet is short
-  if (mode === 'plant' && !canStartPlant() && SAVE.step !== 'plant') mode = 'look';
+  if (mode === 'plant' && !canStartPlant() && SAVE.step !== 'plant' && !(SAVE.plantReserve || []).length) mode = 'look';
   nurseryMode = mode || resolveNurseryMode();
+  // Reserve-only plant session (migration overflow)
+  if (nurseryMode === 'look' && (SAVE.plantReserve || []).length && hasPlantRoom()) {
+    pullReserveIntoBouquet(Math.min(BOUQUET_GOAL, SAVE.plantReserve.length));
+    if (bouquet.length) nurseryMode = 'plant';
+  }
   plantAnim = 0; plantAnimT = 0; plantSpot = -1; plantIsOutdoor = 0;
   plantFly = null;
   growAnim = 0; growT = 0;
@@ -1048,6 +1258,11 @@ function enterGreenhouse(mode) {
   state = ST.GREENHOUSE;
   pushNav('greenhouse');
   announce('Greenhouse');
+  {
+    const outdoor = !!(SAVE.outdoorUnlocked && freeIndoorSpot() < 0 && freeOutdoorSpot() >= 0
+      && nurseryMode === 'plant');
+    resetGardenCam(outdoor);
+  }
   snapshotRuntime();
 }
 
@@ -1083,7 +1298,9 @@ function greenhouseGirlScreen() {
 
 /** Plant ONE small flower: tap bed → flower flies from basket into that dirt. */
 function doPlantAt(spotIdx, outdoor) {
-  if (nurseryMode !== 'plant' || !bouquet.length || plantAnim) return;
+  if (nurseryMode !== 'plant' || plantAnim) return;
+  if (!bouquet.length && (SAVE.plantReserve || []).length) pullReserveIntoBouquet(1);
+  if (!bouquet.length) return;
   const b = outdoor ? outdoorAt(spotIdx) : bedAt(spotIdx);
   if (outdoor && !SAVE.outdoorUnlocked) return;
   if (b && (b.grown | 0) > 0) return;
@@ -1135,6 +1352,8 @@ function doPlantAt(spotIdx, outdoor) {
     life: plantAnimDuration()
   };
   AudioFX.plant();
+  // Persist immediately at plant start so mid-action close loses nothing
+  snapshotRuntime('plant');
 }
 
 function finishPlant() {
@@ -1180,8 +1399,14 @@ function finishPlant() {
   plantAnim = 0;
   SAVE.taughtPlant = 1;
 
+  if (!bouquet.length && (SAVE.plantReserve || []).length) pullReserveIntoBouquet(1);
   const canPlantMore = bouquet.length > 0 && hasPlantRoom();
   if (canPlantMore) {
+    cue = 'Tap a bed';
+    nurseryMode = 'plant';
+    SAVE.step = 'plant';
+  } else if ((SAVE.plantReserve || []).length && hasPlantRoom()) {
+    pullReserveIntoBouquet(Math.min(BOUQUET_GOAL, SAVE.plantReserve.length));
     cue = 'Tap a bed';
     nurseryMode = 'plant';
     SAVE.step = 'plant';
@@ -1193,7 +1418,7 @@ function finishPlant() {
     cue = 'Water the beds';
     waterPtr = { x: W * 0.5, y: H * 0.58 };
   }
-  snapshotRuntime();
+  snapshotRuntime('plant');
 }
 
 function doWaterAt(spotIdx, outdoor) {
@@ -1208,13 +1433,13 @@ function doWaterAt(spotIdx, outdoor) {
   girlPoseT = 0.7;
   startParty('water');
   cue = 'Water!';
+  snapshotRuntime('water');
   if (allUnwateredDone()) {
     SAVE.step = 'growing';
     nurseryMode = 'growing';
     cue = 'Growing…';
     beginGrowing();
   }
-  snapshotRuntime();
 }
 
 function allUnwateredDone() {
@@ -1230,6 +1455,8 @@ function beginGrowing() {
   if (growAnim) return;
   growAnim = 1;
   growT = 0;
+  SAVE.step = 'growing';
+  nurseryMode = 'growing';
   cue = 'Growing…';
   nurseryView = 'inside';
   doorOpen = 1;
@@ -1237,7 +1464,7 @@ function beginGrowing() {
   wateringHeld = 0;
   AudioFX.grow();
   startParty('grow');
-  snapshotRuntime();
+  snapshotRuntime('growing');
 }
 
 function finishGrowing() {
@@ -1276,10 +1503,23 @@ function doUpgrade() {
   const prevBeds = (SAVE.beds || []).slice();
   SAVE.ghSize = Math.min(2, (SAVE.ghSize | 0) + 1);
   if (window.HGNursery && HGNursery.ready()) {
-    SAVE.beds = HGNursery.migrateBedsArray(prevBeds, SAVE.ghSize | 0);
+    try {
+      if (window.HGSaveStore) HGSaveStore.savePreMigration(SAVE);
+      const beforeN = countBedFlowers(prevBeds);
+      const indoor = HGNursery.migrateBedsArray(prevBeds, SAVE.ghSize | 0);
+      if ((indoor.placed + (indoor.reserve || []).length) !== beforeN) {
+        throw new Error('upgrade flower invariant');
+      }
+      applyMigrateBedsResult('beds', indoor);
+      SAVE.layoutVersion = LAYOUT_VERSION;
+      SAVE.bedMapVersion = 2;
+    } catch (err) {
+      console.warn('doUpgrade remesh failed', err);
+      SAVE.beds = prevBeds;
+    }
   } else {
-    const n = bedCount();
-    while (SAVE.beds.length < n) SAVE.beds.push(null);
+    const n0 = bedCount();
+    while (SAVE.beds.length < n0) SAVE.beds.push(null);
   }
   const n = bedCount();
   while (SAVE.beds.length < n) SAVE.beds.push(null);
@@ -1291,7 +1531,7 @@ function doUpgrade() {
   beginGhEnter();
   startParty('upgrade');
   growFlash = 1;
-  snapshotRuntime();
+  snapshotRuntime('migrate');
   setTimeout(() => {
     SAVE.step = 'ready';
     nurseryMode = 'ready';
@@ -1339,7 +1579,7 @@ function harvestBed(spotIdx, outdoor) {
   } else {
     cue = 'Undone? Hold Places → Undo pick';
   }
-  snapshotRuntime();
+  snapshotRuntime('harvest');
 }
 
 function spawnPollinators() {
@@ -1673,7 +1913,7 @@ function buyUpgrade(id) {
   }
   shopFlash = 'Yay!';
   startParty('upgrade');
-  snapshotRuntime();
+  snapshotRuntime('buy');
 }
 
 function hiveHarvest() {
@@ -2637,12 +2877,16 @@ function drawBedFlowers(s, b) {
   let pop = 1;
   if (planting) pop = 0.35 + 0.65 * Math.min(1, plantAnimT / 0.7);
   const sway = Math.sin((performance.now() / 700) + (s.i || 0)) * (grown >= 2 ? 1.6 : 0.4);
-  const r = plateCoverRect();
+  const sz = activeGardenSize(s.outdoor);
+  const camScale = (state === ST.GREENHOUSE && nurseryView === 'inside' && sz)
+    ? gardenScale(sz)
+    : (plateCoverRect().dw / DW);
   const stage = window.HGNursery && HGNursery.ready() ? HGNursery.growthStage(grown, species) : null;
   const gimg = window.HGNursery && HGNursery.ready() ? HGNursery.growthImg(grown, species) : null;
   if (gimg && stage) {
     const size = stage.size || HGNursery.GROWTH_SIZE || [224, 224];
-    const sc = (s.plantScale || stage.suggestedPlateScale || 0.48) * squash * pop * (r.dw / DW);
+    // Native sprite scale (~0.30) × camera scale → screen px (README)
+    const sc = (s.plantScale || 0.30) * squash * pop * camScale;
     const dw = size[0] * sc;
     const dh = size[1] * sc;
     const ax = (stage.rootAnchor && stage.rootAnchor.x != null) ? stage.rootAnchor.x / size[0] : 0.5;
@@ -2660,17 +2904,32 @@ function drawNurserySoilFloor() {
   /* No opaque code soil — greenhouse-v2 empty plate already has wooden beds + soil. */
 }
 
-/** greenhouse-v2: empty plate → plants only (no soil/lip layers, no code soil masks). */
+/** touch-v3: empty plate under uniform zoom + pan; plants only; no soil masks. */
 function drawFranzComposite(sz, bedsArr, outdoorFlag) {
   if (!sz || !window.HGNursery) return false;
   HGNursery.warmImages(sz);
   const layers = HGNursery.layerImages(sz);
   const plate = layers.plateNoLip;
   if (!plate) return false;
-  const key = 'ghv2-' + sz.key;
-  ensureBgCrossfade(key, plate);
-  if (bgKey === key && bgBlend < 1 && !(bgFrom && bgFrom !== plate)) bgBlend = 1;
-  drawCrossfadedPlate(bgFrom, bgTo || plate, bgBlend);
+
+  // Keep gardenCam outdoor flag aligned with the drawn scene
+  if (!!gardenCam.outdoor !== !!outdoorFlag) resetGardenCam(outdoorFlag);
+
+  const lim = gardenPanLimits(sz);
+  const c = clampGardenPan(sz, gardenCam.panX, gardenCam.panY);
+  gardenCam.panX = c.x;
+  gardenCam.panY = c.y;
+
+  // Draw zoomed plate crop (NOT whole-scene cover fit)
+  cx.save();
+  cx.beginPath();
+  cx.rect(0, 0, W, H);
+  cx.clip();
+  cx.drawImage(plate, -gardenCam.panX, -gardenCam.panY, lim.pw, lim.ph);
+  cx.restore();
+  bgKey = 'ghv3-' + sz.key;
+  bgTo = plate;
+  bgBlend = 1;
 
   const spots = (outdoorFlag ? outdoorSpots() : plantSpots()).slice().sort((a, b) => a.y - b.y);
   spots.forEach((s) => {
@@ -2726,7 +2985,7 @@ function undoHarvest() {
   harvestUndo = null;
   cue = 'Put back!';
   AudioFX.plant();
-  snapshotRuntime();
+  snapshotRuntime('undo');
 }
 
 function drawPollinators() {
@@ -2793,12 +3052,10 @@ function drawInterior() {
     });
   }
 
-  // Planter-level hit targets (easier planting for ~5yo) — plant into next open slot in that planter
-  hit.planters = nurseryPlanterRects().map((pr) => ({
-    x: pr.x, y: pr.y, w: pr.w, h: pr.h, planter: pr.id, outdoor: wantOutdoor ? 1 : 0
-  }));
+  // Touch-v3: exclusive 44×44 slot boxes only — no planter mega-targets (would overlap).
+  hit.planters = [];
 
-  // Haven on the center path (above bottom nav dock)
+  // Haven stays screen-anchored (UI layer) while the garden pans underneath
   drawGirl(W * 0.5, H * 0.72, false);
 
   if (nurseryMode === 'water') {
@@ -3333,14 +3590,18 @@ function onDown(e) {
       if (!gate) return;
       const year = String(new Date().getFullYear());
       if (String(gate) !== year) { cue = 'Nope'; return; }
-      const act = prompt('Type RESET or BACKUP or RESTORE:');
+      const act = prompt('Type RESET, BACKUPS, BACKUP, or RESTORE:');
       if (!act) return;
       const a = String(act).trim().toUpperCase();
       if (a === 'RESET') {
         const r = parentResetGarden(year);
         cue = r.ok ? 'Garden reset' : 'No';
+      } else if (a === 'BACKUPS') {
+        const r = parentOpenBackups(year);
+        cue = r.ok ? ('Backups (' + r.count + ')') : 'No';
       } else if (a === 'BACKUP') {
         try {
+          if (window.HGSaveStore) HGSaveStore.rotateBackup(JSON.parse(JSON.stringify(SAVE)));
           localStorage.setItem(PK + '.backup', JSON.stringify(SAVE));
           cue = 'Backup saved';
         } catch (err) { cue = 'Backup failed'; }
@@ -3352,6 +3613,25 @@ function onDown(e) {
     }, 1200);
   }
   if (state === ST.BOOT) return;
+
+  if (state === ST.BACKUPS) {
+    if (inRect(p, hit.backupClose)) {
+      state = ST.MENU;
+      cue = '';
+      AudioFX.ui();
+      return;
+    }
+    for (const row of (hit.backupRows || [])) {
+      if (inRect(p, row)) {
+        const r = parentRestoreBackup(String(new Date().getFullYear()), row.index);
+        cue = r.ok ? 'Restored' : 'Restore failed';
+        if (r.ok) state = ST.MENU;
+        AudioFX.ui();
+        return;
+      }
+    }
+    return;
+  }
 
   // Home / Back / Places always available (except boot)
   if (handleNavTap(p)) return;
@@ -3448,60 +3728,64 @@ function onDown(e) {
       resumeOuting();
       return;
     }
-    if (nurseryMode === 'water') {
-      wateringHeld = 1;
-      waterPtr = { x: p.x, y: p.y };
-      // Prefer outdoor yard when indoor beds are all watered
-      let outdoor = 0;
-      if (SAVE.outdoorUnlocked && SAVE.beds.every((b) => !b || b.watered) &&
-          SAVE.outdoorBeds.some((b) => b && !b.watered)) outdoor = 1;
-      const idx = pickSpotNearestRoot(p, outdoor, { allowOccupied: 1, emptyRadius: 56 });
-      if (idx >= 0) { doWaterAt(idx, outdoor); return; }
-      const idx2 = pickSpotNearestRoot(p, 1 - outdoor, { allowOccupied: 1, emptyRadius: 56 });
-      if (idx2 >= 0) { doWaterAt(idx2, 1 - outdoor); return; }
-      return;
+    if (inRect(p, hit.harvestArm)) { armHarvestMode(); return; }
+    if (inRect(p, hit.harvestUndo) && harvestUndo) { undoHarvest(); return; }
+    // Defer plant/water/harvest to onUp — onMove may pan past threshold (drag ≠ tap)
+    if (nurseryMode === 'plant' || nurseryMode === 'water'
+        || nurseryMode === 'ready' || nurseryMode === 'look') {
+      gardenCam.dragging = 1;
+      gardenCam.panning = 0;
+      gardenCam.moved = 0;
+      gardenCam.startX = p.x;
+      gardenCam.startY = p.y;
+      gardenCam.startPanX = gardenCam.panX;
+      gardenCam.startPanY = gardenCam.panY;
+      if (nurseryMode === 'water') {
+        wateringHeld = 1;
+        waterPtr = { x: p.x, y: p.y };
+      }
     }
-    if (nurseryMode === 'plant' && nurseryView === 'inside') {
-      let outdoor = 0;
-      if (SAVE.outdoorUnlocked && freeIndoorSpot() < 0 && freeOutdoorSpot() >= 0) outdoor = 1;
-      const idx = pickSpotNearestRoot(p, outdoor, { emptyOnly: 1, emptyRadius: 56 });
-      if (idx >= 0) {
-        const bed = outdoor ? outdoorAt(idx) : bedAt(idx);
-        if (bed && bed.grown) { celebrateBed(idx, outdoor); return; }
-        if (bedHasRoom(bed)) { doPlantAt(idx, outdoor); return; }
-      }
-      // Fallback: nearest empty via other yard
-      const idx2 = pickSpotNearestRoot(p, 1 - outdoor, { emptyOnly: 1, emptyRadius: 56 });
-      if (idx2 >= 0 && bedHasRoom((1 - outdoor) ? outdoorAt(idx2) : bedAt(idx2))) {
-        doPlantAt(idx2, 1 - outdoor);
-        return;
-      }
-      AudioFX.rustle();
-      return;
+  }
+}
+
+/** Resolve a greenhouse tap (only when the gesture was NOT a pan). */
+function handleGreenhouseTap(p) {
+  if (plantAnim || growAnim || upgradeAnim) return;
+  if (nurseryMode === 'water') {
+    waterPtr = { x: p.x, y: p.y };
+    let outdoor = 0;
+    if (SAVE.outdoorUnlocked && SAVE.beds.every((b) => !b || b.watered) &&
+        SAVE.outdoorBeds.some((b) => b && !b.watered)) outdoor = 1;
+    if (!!gardenCam.outdoor !== !!outdoor) resetGardenCam(outdoor);
+    const idx = pickSpotExclusive(p, outdoor, { allowOccupied: 1 });
+    if (idx >= 0) { doWaterAt(idx, outdoor); return; }
+    return;
+  }
+  if (nurseryMode === 'plant' && nurseryView === 'inside') {
+    let outdoor = 0;
+    if (SAVE.outdoorUnlocked && freeIndoorSpot() < 0 && freeOutdoorSpot() >= 0) outdoor = 1;
+    if (!!gardenCam.outdoor !== !!outdoor) resetGardenCam(outdoor);
+    const idx = pickSpotExclusive(p, outdoor, { emptyOnly: 1 });
+    if (idx >= 0) {
+      const bed = outdoor ? outdoorAt(idx) : bedAt(idx);
+      if (bed && bed.grown) { celebrateBed(idx, outdoor); return; }
+      if (bedHasRoom(bed)) { doPlantAt(idx, outdoor); return; }
     }
-    // Ready/look: celebrate grown beds — harvest only if armed
-    if (nurseryMode === 'ready' || nurseryMode === 'look') {
-      for (const pol of (hit.pollinators || [])) {
-        if (inRect(p, pol)) { tapPollinator(pol); return; }
-      }
-      let outdoor = 0;
-      if (SAVE.outdoorUnlocked && SAVE.outdoorBeds.some((b) => b && b.grown)) outdoor = 1;
-      const idx = pickSpotNearestRoot(p, outdoor, { allowOccupied: 1, emptyRadius: 40 });
-      if (idx >= 0) {
-        const b = outdoor ? outdoorAt(idx) : bedAt(idx);
-        if (b && b.grown) { harvestBed(idx, outdoor); return; }
-        celebrateBed(idx, outdoor);
-        return;
-      }
-      const idx2 = pickSpotNearestRoot(p, 1 - outdoor, { allowOccupied: 1, emptyRadius: 40 });
-      if (idx2 >= 0) {
-        const b = (1 - outdoor) ? outdoorAt(idx2) : bedAt(idx2);
-        if (b && b.grown) { harvestBed(idx2, 1 - outdoor); return; }
-        celebrateBed(idx2, 1 - outdoor);
-        return;
-      }
-      if (inRect(p, hit.harvestArm)) { armHarvestMode(); return; }
-      if (inRect(p, hit.harvestUndo) && harvestUndo) { undoHarvest(); return; }
+    AudioFX.rustle();
+    return;
+  }
+  if (nurseryMode === 'ready' || nurseryMode === 'look') {
+    for (const pol of (hit.pollinators || [])) {
+      if (inRect(p, pol)) { tapPollinator(pol); return; }
+    }
+    let outdoor = 0;
+    if (SAVE.outdoorUnlocked && SAVE.outdoorBeds.some((b) => b && b.grown)) outdoor = 1;
+    if (!!gardenCam.outdoor !== !!outdoor) resetGardenCam(outdoor);
+    const idx = pickSpotExclusive(p, outdoor, { allowOccupied: 1 });
+    if (idx >= 0) {
+      const b = outdoor ? outdoorAt(idx) : bedAt(idx);
+      if (b && b.grown) { harvestBed(idx, outdoor); return; }
+      celebrateBed(idx, outdoor);
     }
   }
 }
@@ -3533,13 +3817,22 @@ function onMove(e) {
   const p = ptr(e);
   if (pointerId == null || p.id !== pointerId || !lastPtr) return;
 
-  if (state === ST.GREENHOUSE && nurseryMode === 'water' && wateringHeld) {
-    waterPtr = { x: p.x, y: p.y };
-    let outdoor = 0;
-    if (SAVE.outdoorUnlocked && SAVE.beds.every((b) => !b || b.watered) &&
-        SAVE.outdoorBeds.some((b) => b && !b.watered)) outdoor = 1;
-    const idx = pickSpotNearestRoot(p, outdoor, { allowOccupied: 1, emptyRadius: 56 });
-    if (idx >= 0) doWaterAt(idx, outdoor);
+  if (state === ST.GREENHOUSE && gardenCam.dragging) {
+    const dx = p.x - gardenCam.startX;
+    const dy = p.y - gardenCam.startY;
+    const dist = Math.hypot(dx, dy);
+    if (dist >= GARDEN_PAN_THRESHOLD) gardenCam.panning = 1;
+    if (gardenCam.panning) {
+      gardenCam.moved = 1;
+      wateringHeld = 0; // drag is pan, not water-paint
+      const sz = activeGardenSize(gardenCam.outdoor);
+      // Dragging the garden under the finger: pan moves opposite to finger
+      const next = clampGardenPan(sz, gardenCam.startPanX - dx, gardenCam.startPanY - dy);
+      gardenCam.panX = next.x;
+      gardenCam.panY = next.y;
+    } else if (nurseryMode === 'water' && wateringHeld) {
+      waterPtr = { x: p.x, y: p.y };
+    }
     lastPtr = p;
     return;
   }
@@ -3565,6 +3858,17 @@ function onUp(e) {
   const p = ptr(e);
   if (p.id !== pointerId) return;
   if (parentHoldT) { clearTimeout(parentHoldT); parentHoldT = null; }
+  // Greenhouse: tap acts only if we did not pan
+  if (state === ST.GREENHOUSE && gardenCam.dragging) {
+    const wasPan = !!gardenCam.moved || !!gardenCam.panning;
+    gardenCam.dragging = 0;
+    gardenCam.panning = 0;
+    wateringHeld = 0;
+    pointerId = null; lastPtr = null; dragging = 0;
+    if (!wasPan) handleGreenhouseTap(p);
+    gardenCam.moved = 0;
+    return;
+  }
   pointerId = null; lastPtr = null; dragging = 0; wateringHeld = 0;
 }
 
@@ -3653,8 +3957,9 @@ function frame(now) {
   else if (state === ST.SHOP) drawShopScene();
   else if (state === ST.CBNMAP) drawCbnMap();
   else if (state === ST.CBN) drawCbnPage();
+  else if (state === ST.BACKUPS) drawBackups();
   else drawMeadow();
-  if (state !== ST.BOOT) drawChrome();
+  if (state !== ST.BOOT && state !== ST.BACKUPS) drawChrome();
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
@@ -3837,14 +4142,10 @@ async function boot() {
   // greenhouse-v2 maps + growth before assets so migrate remeshes slots
   try {
     await HGNursery.load('assets/greenhouse-v2/');
-    if (saveRichness(SAVE) <= 0) {
-      const legacy = readRawSave();
-      if (legacy && saveRichness(legacy) > 0) SAVE = migrateSave(legacy);
-    }
-    SAVE.beds = HGNursery.migrateBedsArray(SAVE.beds || [], SAVE.ghSize | 0);
-    SAVE.outdoorBeds = HGNursery.migrateBedsArray(SAVE.outdoorBeds || [], -1);
-    SAVE.bedMapVersion = 2;
-    persist();
+    // Layout remesh only when layoutVersion needs it (idempotent)
+    applyLayoutMigration(SAVE);
+    bouquet = Array.isArray(SAVE.bouquet) ? SAVE.bouquet.slice() : [];
+    persist('boot-layout');
   } catch (e) {
     console.warn('greenhouse-v2 load', e);
   }
@@ -3885,7 +4186,7 @@ async function boot() {
 
   try {
     if (navigator.serviceWorker && typeof navigator.serviceWorker.register === 'function') {
-      navigator.serviceWorker.register('./sw.js?v=0.9-birthday-harden').catch(() => {});
+      navigator.serviceWorker.register('./sw.js?v=0.9-birthday-save-fix-touch').catch(() => {});
     }
   } catch (eSw) {}
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));
@@ -3895,16 +4196,29 @@ async function boot() {
 function parentResetGarden(adultGate) {
   const year = String(new Date().getFullYear());
   if (String(adultGate) !== year) return { ok: false, reason: 'gate' };
-  const backup = JSON.stringify(SAVE);
-  try { localStorage.setItem(PK + '.backup', backup); } catch (e) {}
+  // Keep a recovery backup of pre-reset state, then tombstone blocks auto-restore
+  if (window.HGSaveStore) {
+    try { HGSaveStore.rotateBackup(JSON.parse(JSON.stringify(SAVE))); } catch (e0) {}
+    HGSaveStore.writeTombstone('parent-reset');
+  } else {
+    try { localStorage.setItem(PK + '.backup', JSON.stringify(SAVE)); } catch (e) {}
+  }
   const next = freshSave();
-  // Replace in place so window.HavensGarden.SAVE (exported ref) stays live
+  next.legacyImported = 1;
+  next.resetTombstone = 1;
+  next.schemaVersion = SCHEMA_VERSION;
+  next.layoutVersion = LAYOUT_VERSION;
   Object.keys(SAVE).forEach((k) => { delete SAVE[k]; });
   Object.assign(SAVE, next);
-  try { localStorage.setItem(PK, JSON.stringify(SAVE)); } catch (e2) {}
+  bouquet = [];
+  if (window.HGSaveStore) {
+    HGSaveStore.persist(SAVE, 'reset', { force: true });
+  } else {
+    try { localStorage.setItem(PK, JSON.stringify(SAVE)); } catch (e2) {}
+  }
   // Clear prior preview keys so boot cannot resurrect leftover progress
   PK_PRIOR.forEach((k) => { try { localStorage.removeItem(k); } catch (e3) {} });
-  bouquet = [];
+  try { localStorage.removeItem(PK_LEGACY); } catch (e4) {}
   flowers = []; particles = []; arcs = []; confetti = []; pollinators = []; flowerPops = [];
   meadowCritters = []; fieldBugs = [];
   harvestArmed = 0;
@@ -3921,25 +4235,112 @@ function parentResetGarden(adultGate) {
   return { ok: true };
 }
 
-function parentRestoreBackup(adultGate) {
+/** Restore from legacy single backup key OR recovery index (parent gate). */
+function parentRestoreBackup(adultGate, backupIndex) {
   const year = String(new Date().getFullYear());
   if (String(adultGate) !== year) return { ok: false, reason: 'gate' };
   try {
-    const raw = JSON.parse(localStorage.getItem(PK + '.backup') || 'null');
+    let raw = null;
+    if (backupIndex != null && window.HGSaveStore) {
+      raw = HGSaveStore.readBackup(backupIndex);
+    }
+    if (!raw) {
+      // Prefer newest recovery backup, then legacy .backup key
+      if (window.HGSaveStore) {
+        const list = HGSaveStore.listBackups();
+        if (list.length) raw = HGSaveStore.readBackup(list[0].index);
+      }
+      if (!raw) {
+        try { raw = JSON.parse(localStorage.getItem(PK + '.backup') || 'null'); } catch (e) { raw = null; }
+      }
+    }
     if (!raw) return { ok: false, reason: 'none' };
+    // Manual restore clears tombstone so this becomes authoritative
+    if (window.HGSaveStore) {
+      try { HGSaveStore.remove(HGSaveStore.keys().tombstone); } catch (eT) {}
+    }
     const next = migrateSave(raw);
     Object.keys(SAVE).forEach((k) => { delete SAVE[k]; });
     Object.assign(SAVE, next);
-    if (HGNursery.ready()) {
-      SAVE.beds = HGNursery.migrateBedsArray(SAVE.beds, SAVE.ghSize | 0);
-      SAVE.outdoorBeds = HGNursery.migrateBedsArray(SAVE.outdoorBeds || [], -1);
-    }
-    persist();
+    if (HGNursery.ready()) applyLayoutMigration(SAVE);
+    bouquet = Array.isArray(SAVE.bouquet) ? SAVE.bouquet.slice() : [];
+    persist('restore');
     tryResumeFromSave();
     return { ok: true };
   } catch (e) {
     return { ok: false, reason: 'err' };
   }
+}
+
+function parentOpenBackups(adultGate) {
+  const year = String(new Date().getFullYear());
+  if (String(adultGate) !== year) return { ok: false, reason: 'gate' };
+  backupsListCache = window.HGSaveStore ? HGSaveStore.listBackups() : [];
+  backupsScroll = 0;
+  state = ST.BACKUPS;
+  cue = 'Backups';
+  announce('Backups');
+  return { ok: true, count: backupsListCache.length };
+}
+
+function drawBackups() {
+  cx.fillStyle = '#2a3a28';
+  cx.fillRect(0, 0, W, H);
+  cx.fillStyle = 'rgba(255,250,240,0.95)';
+  cx.font = '700 ' + Math.round(Y(36)) + 'px Fredoka,sans-serif';
+  cx.textAlign = 'center';
+  cx.fillText('Garden Backups', W / 2, H * 0.12);
+  cx.font = '500 ' + Math.round(Y(18)) + 'px Fredoka,sans-serif';
+  cx.fillStyle = 'rgba(255,250,240,0.75)';
+  cx.fillText('Parent restore — pick a snapshot', W / 2, H * 0.17);
+
+  const list = backupsListCache;
+  const rowH = Math.max(44, Y(52));
+  const top = H * 0.22;
+  hit.backupRows = [];
+  hit.backupClose = { x: W * 0.5 - X(70), y: H * 0.88, w: X(140), h: Math.max(44, Y(48)) };
+
+  if (!list.length) {
+    cx.fillStyle = 'rgba(255,250,240,0.8)';
+    cx.fillText('No recovery backups yet', W / 2, H * 0.45);
+  } else {
+    list.forEach((b, i) => {
+      const y = top + i * (rowH + 8) - backupsScroll;
+      if (y < top - rowH || y > H * 0.82) return;
+      const x = W * 0.1;
+      const w = W * 0.8;
+      cx.fillStyle = 'rgba(255,250,240,0.12)';
+      roundRect(cx, x, y, w, rowH, 10);
+      cx.fill();
+      cx.fillStyle = '#fffaf0';
+      cx.textAlign = 'left';
+      cx.font = '600 ' + Math.round(Y(16)) + 'px Fredoka,sans-serif';
+      const when = b.at ? new Date(b.at).toLocaleString() : 'unknown';
+      const label = (b.kind === 'pre-migration' ? 'Pre-migration · ' : 'Rev ' + b.revision + ' · ')
+        + when + ' · beds ' + (b.beds | 0) + ' · ✿' + (b.flowerPoints | 0);
+      cx.fillText(label, x + 14, y + rowH * 0.62);
+      hit.backupRows.push({ x, y, w, h: rowH, index: b.index });
+    });
+  }
+
+  cx.fillStyle = 'rgba(255,250,240,0.9)';
+  roundRect(cx, hit.backupClose.x, hit.backupClose.y, hit.backupClose.w, hit.backupClose.h, 12);
+  cx.fill();
+  cx.fillStyle = '#2a3a28';
+  cx.textAlign = 'center';
+  cx.font = '700 ' + Math.round(Y(20)) + 'px Fredoka,sans-serif';
+  cx.fillText('Close', W / 2, hit.backupClose.y + hit.backupClose.h * 0.65);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  const rr = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rr);
+  ctx.arcTo(x + w, y + h, x, y + h, rr);
+  ctx.arcTo(x, y + h, x, y, rr);
+  ctx.arcTo(x, y, x + w, y, rr);
+  ctx.closePath();
 }
 
 boot();
@@ -3953,13 +4354,18 @@ window.HavensGarden = {
   tryCatchBugAt, spawnFieldBugs, goTitleHome, choosePlace, flowerPoints,
   getBugs: () => fieldBugs.map((b) => b.kind),
   getGirl: () => ({ x: girl.x, y: girl.y, face: girl.face }),
-  parentResetGarden, parentRestoreBackup, armHarvestMode, undoHarvest,
+  parentResetGarden, parentRestoreBackup, parentOpenBackups, armHarvestMode, undoHarvest,
   harvestBed, clearHarvestMode,
   isHarvestArmed: () => !!harvestArmed,
   getHarvestUndo: () => harvestUndo,
   migrateSave, saveRichness, persist, readRawSave, freshSave,
+  applyLayoutMigration, pullReserveIntoBouquet, countBedFlowers, countReserveFlowers,
   sparkleActive, shovelOwned,
-  pickSpotNearestRoot, canvasToPlatePx,
+  pickSpotNearestRoot, pickSpotExclusive, canvasToPlatePx,
+  gardenCam, resetGardenCam, revealGardenSlot, gardenScale, clampGardenPan,
+  nativeToScreen, screenToNative, handleGreenhouseTap,
+  forceNurseryInside: () => { nurseryView = 'inside'; doorOpen = 1; ghEnterT = -1; ghExitT = -1; },
+  getNurseryView: () => nurseryView,
   measureHits: (phoneW) => {
     if (!window.HGNursery || !HGNursery.ready()) return null;
     return {
@@ -3969,6 +4375,15 @@ window.HavensGarden = {
       outdoor: HGNursery.measureExclusiveHits(HGNursery.outdoorDef(), phoneW)
     };
   },
-  PK, PK_LEGACY, PK_PRIOR,
-  ST
+  reachabilityReport: () => {
+    if (!window.HGNursery || !HGNursery.ready()) return null;
+    return {
+      small: HGNursery.assertAllSlotsReachable(HGNursery.sizeForGh(0)),
+      medium: HGNursery.assertAllSlotsReachable(HGNursery.sizeForGh(1)),
+      large: HGNursery.assertAllSlotsReachable(HGNursery.sizeForGh(2)),
+      outdoor: HGNursery.assertAllSlotsReachable(HGNursery.outdoorDef())
+    };
+  },
+  PK, PK_LEGACY, PK_PRIOR, SCHEMA_VERSION, LAYOUT_VERSION,
+  ST, SaveStore: window.HGSaveStore || null
 };

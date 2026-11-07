@@ -1,0 +1,31 @@
+{
+  "name": "Haven's Garden (Save Fix Preview)",
+  "short_name": "Haven's Garden (Save Fix Preview)",
+  "description": "A cozy birthday garden for Haven — pick flowers, plant, water, and watch bees visit.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#96cdf0",
+  "theme_color": "#5ecf7a",
+  "icons": [
+    {
+      "src": "assets/icon/app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon/app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon/app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

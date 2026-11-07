@@ -8,11 +8,11 @@
     "dpr": 2
   },
   "metrics": {
-    "ver": "v0.9-birthday-harden",
+    "ver": "v0.9-birthday-save-fix-touch",
     "w": 360,
     "h": 780,
-    "hitsSmallExclusiveMin": 31.1,
-    "hitsSmallCandidate": 40.6,
+    "hitsSmallExclusiveMin": 44,
+    "hitsSmallCandidate": 44,
     "navBtnCss": 56
   },
   "note": "EMULATED Playwright profile — not a real device cloud run"

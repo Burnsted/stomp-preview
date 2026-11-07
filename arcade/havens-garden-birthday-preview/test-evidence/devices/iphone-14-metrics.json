@@ -8,10 +8,10 @@
     "dpr": 3
   },
   "metrics": {
-    "ver": "v0.9-birthday-harden",
+    "ver": "v0.9-birthday-save-fix-touch",
     "w": 390,
     "h": 844,
-    "hitsSmallExclusiveMin": 33.7,
+    "hitsSmallExclusiveMin": 44,
     "hitsSmallCandidate": 44,
     "navBtnCss": 56
   },

@@ -1,8 +1,9 @@
 'use strict';
-/* Haven's Garden — greenhouse-v2 / redo-v2 production plates.
-   Capacities: small 12 | medium 20 | large 30 (7/8/8/7) | outdoor 12.
-   Render: empty plate → per-species growth at rootAnchors (112,208 on 224).
-   Hits: 66×66 candidate bounds OVERLAP — resolve tap to nearest root. */
+/* Haven's Garden — greenhouse touch-v3 plates + exclusive maps.
+   Capacities: small 12 | medium 20 | large 30 (6×5) | outdoor 12.
+   Render: empty plate → growth at root (112,208 on 224); sprite scale ~0.30.
+   Hits: exclusive half-open rects; uniform zoom + 2-axis pan (see map.view).
+   NO nearest-root among overlaps — maps guarantee zero positive-area overlap. */
 
 const HGNursery = (() => {
   const SIZE_KEYS = ['small', 'medium', 'large'];
@@ -11,6 +12,9 @@ const HGNursery = (() => {
   const PLATE_H = 1266;
   const GROWTH_ROOT = { x: 112, y: 208 };
   const GROWTH_SIZE = [224, 224];
+  const LAYOUT_VERSION = 4; // touch-v3 exclusive maps + planting camera
+  const PHONE_W = 390;
+  const PHONE_H = 844;
   let map = null;
   let growth = null;
   let loadPromise = null;
@@ -22,27 +26,62 @@ const HGNursery = (() => {
     return m ? (m[1] | 0) : 0;
   }
 
-  /** Near rows ~0.48, far rows ~0.30–0.36 (Ted / Franz redo-v2). */
+  /** Touch-v3: recommended ~0.30; slight depth ease, never crowd. */
   function scaleForRootY(rootY, explicit) {
-    if (explicit != null && explicit > 0.05) return explicit;
-    const t = Math.max(0, Math.min(1, (rootY - 620) / 520));
-    // Far (small t) → 0.32; near (large t) → 0.48
-    return 0.32 + t * 0.16;
+    if (explicit != null && explicit > 0.05 && explicit <= 0.35) return explicit;
+    const t = Math.max(0, Math.min(1, (rootY - 575) / 520));
+    // Far → 0.26; near → 0.30 (README suggestedNativeSpriteScale)
+    return 0.26 + t * 0.04;
+  }
+
+  function normalizeView(raw, key) {
+    const v = (raw && raw.view) || {};
+    const defaults = {
+      small: { zoom: 1.5, scale: 1.0 },
+      medium: { zoom: 2.0625, scale: 1.375 },
+      large: { zoom: 2.0625, scale: 1.375 },
+      outdoor: { zoom: 1.375, scale: 0.9166666667 }
+    }[key] || { zoom: 1.5, scale: 1.0 };
+    const scale = v.nativeToScreenScale != null ? +v.nativeToScreenScale : defaults.scale;
+    const zoom = v.uniformZoomOverFit != null ? +v.uniformZoomOverFit : defaults.zoom;
+    const cw = PLATE_W * scale;
+    const ch = PLATE_H * scale;
+    const maxX = Math.max(0, cw - PHONE_W);
+    const maxY = Math.max(0, ch - PHONE_H);
+    const range = v.panScreenPxRange || { x: [0, maxX], y: [0, maxY] };
+    const def = v.defaultPanScreenPx || { x: maxX / 2, y: maxY };
+    return {
+      viewportScreenPx: v.viewportScreenPx || [PHONE_W, PHONE_H],
+      fitScale: v.fitScale != null ? +v.fitScale : (PHONE_W / PLATE_W),
+      uniformZoomOverFit: zoom,
+      nativeToScreenScale: scale,
+      renderedCanvasScreenPx: v.renderedCanvasScreenPx || [cw, ch],
+      panScreenPxRange: {
+        x: [range.x[0], range.x[1]],
+        y: [range.y[0], range.y[1]]
+      },
+      defaultPanScreenPx: { x: +def.x, y: +def.y },
+      forwardTransform: v.forwardTransform || 'screenX = nativeX * scale - pan.x',
+      inverseTransform: v.inverseTransform || 'native = (screen + pan) / scale'
+    };
   }
 
   function normalizeSize(raw, key) {
+    const view = normalizeView(raw, key);
+    const spriteScale = (raw.rootConvention && raw.rootConvention.recommendedNativeSpriteScale) || 0.30;
     const slots = (raw.slots || []).map((s, i) => {
-      const hb = s.hitBounds || { x: 0, y: 0, w: 66, h: 66 };
+      const hb = s.hitBounds || { x: 0, y: 0, w: 44, h: 44 };
       const ra = s.rootAnchor
         || (s.rootX != null ? { x: s.rootX, y: s.rootY } : null)
         || { x: hb.x + hb.w / 2, y: hb.y + hb.h * 0.65 };
       const idx = s.index != null ? s.index : (s.id != null && typeof s.id === 'number' ? s.id : i);
+      const reveal = s.revealPanScreenPx || null;
       return {
         i: idx,
         id: typeof s.id === 'string' ? s.id : (key + '_s' + idx),
         bedId: s.bedId,
         planter: bedIndexFromId(s.bedId),
-        slot: s.grid ? (s.grid.col | 0) : (idx % 6),
+        slot: s.grid ? (s.grid.col | 0) : (idx % 5),
         grid: s.grid || null,
         active: s.active !== false && !s.unavailable,
         nx: ra.x / PLATE_W,
@@ -57,16 +96,14 @@ const HGNursery = (() => {
         hitNy: hb.y / PLATE_H,
         hitNw: hb.w / PLATE_W,
         hitNh: hb.h / PLATE_H,
-        plantScale: scaleForRootY(ra.y, s.recommendedPlantScale),
-        drawOrder: s.drawOrder != null ? s.drawOrder : (ra.y | 0)
+        plantScale: scaleForRootY(ra.y, spriteScale),
+        drawOrder: s.drawOrder != null ? s.drawOrder : (ra.y | 0),
+        revealPanScreenPx: reveal ? { x: +reveal.x, y: +reveal.y } : null
       };
     });
-    // Depth-sort helper: ascending rootY
     slots.sort((a, b) => (a.rootY - b.rootY) || (a.i - b.i));
-    // Restore index order for array access by i — keep slots[i] === slot with id i
     const byIndex = Array.from({ length: slots.length }, () => null);
     slots.forEach((s) => { byIndex[s.i] = s; });
-    // If ids aren't dense 0..n-1, fall back to sorted list with reassigned i
     const dense = byIndex.every((s, i) => s && s.i === i) ? byIndex : slots.map((s, i) => Object.assign({}, s, { i }));
 
     const planters = (raw.beds || []).map((b, bi) => {
@@ -82,14 +119,27 @@ const HGNursery = (() => {
         soilPolygon: b.soilPolygon || null
       };
     });
-    const plateRel = String(raw.plateNoLip || raw.plate || ('plates/' + key + '-empty.webp')).replace(/^\.\//, '');
+    const plateRel = String(raw.plateNoLip || raw.plate || ('plates/' + key + '-empty.png')).replace(/^\.\//, '');
     const active = dense.filter((s) => s && s.active).length;
+    // Count positive-area overlaps (should be 0 for touch-v3)
+    const overlapPairs = [];
+    for (let i = 0; i < dense.length; i++) {
+      const a = dense[i];
+      if (!a || !a.active) continue;
+      for (let j = i + 1; j < dense.length; j++) {
+        const b = dense[j];
+        if (!b || !b.active) continue;
+        const iw = Math.min(a.hitX + a.hitW, b.hitX + b.hitW) - Math.max(a.hitX, b.hitX);
+        const ih = Math.min(a.hitY + a.hitH, b.hitY + b.hitH) - Math.max(a.hitY, b.hitY);
+        if (iw > 1e-9 && ih > 1e-9) overlapPairs.push([a.i, b.i]);
+      }
+    }
     return {
       id: ({ small: 'S', medium: 'M', large: 'L', outdoor: 'O' }[key] || 'S'),
       key,
       kind: raw.kind || (key === 'outdoor' ? 'outdoor-yard' : 'greenhouse-interior'),
       plateSize: raw.plateSize || raw.size || [PLATE_W, PLATE_H],
-      phoneScale: raw.phoneScale != null ? raw.phoneScale : (390 / PLATE_W),
+      phoneScale: view.nativeToScreenScale,
       plate: BASE + plateRel,
       plateNoLip: BASE + plateRel,
       layers: { soilDry: null, soilWet: null, frontLip: null },
@@ -98,8 +148,9 @@ const HGNursery = (() => {
       slotCount: dense.length,
       activeCount: active,
       capacityTarget: raw.capacityTarget != null ? raw.capacityTarget : active,
-      overlapPairs: raw.overlapPairs || [],
-      routing: raw.routing || 'nearest-root',
+      overlapPairs,
+      routing: 'exclusive-rect',
+      view,
       planters,
       slots: dense,
       raw
@@ -182,8 +233,8 @@ const HGNursery = (() => {
         fetch(root + 'maps/growth.json').then((r) => { if (!r.ok) throw new Error('growth map'); return r.json(); })
       ]);
       map = {
-        version: 3,
-        pack: 'greenhouse-redo-v2',
+        version: LAYOUT_VERSION,
+        pack: 'greenhouse-touch-v3',
         plate: { w: PLATE_W, h: PLATE_H },
         sizes: {
           small: normalizeSize(small, 'small'),
@@ -309,76 +360,58 @@ const HGNursery = (() => {
   }
 
   /**
-   * Among slots whose hitBounds contain plate-pixel (px,py), pick nearest root.
-   * Exact tie → lowest slot id. Returns slot index or -1.
+   * Exclusive half-open hit test [x,x+w)×[y,y+h) in native plate pixels.
+   * No nearest-root, no radius fallback, no overlap resolution.
+   * Returns slot index or -1.
    */
-  function nearestRootIndex(sz, px, py, opts) {
+  function exclusiveHitIndex(sz, px, py, opts) {
     opts = opts || {};
     if (!sz || !sz.slots) return -1;
     const emptyOnly = !!opts.emptyOnly;
     const bedsArr = opts.beds || null;
-    const radius = opts.emptyRadius != null ? opts.emptyRadius : 0;
-    let best = -1;
-    let bestD = Infinity;
-    const candidates = [];
-    sz.slots.forEach((s) => {
-      if (!s || !s.active) return;
-      if (px >= s.hitX && py >= s.hitY && px < s.hitX + s.hitW && py < s.hitY + s.hitH) {
-        candidates.push(s);
+    let found = -1;
+    for (let i = 0; i < sz.slots.length; i++) {
+      const s = sz.slots[i];
+      if (!s || !s.active) continue;
+      if (px >= s.hitX && px < s.hitX + s.hitW && py >= s.hitY && py < s.hitY + s.hitH) {
+        if (emptyOnly && bedsArr && bedsArr[s.i] && !opts.allowOccupied) continue;
+        // Maps guarantee at most one match; first (only) wins
+        found = s.i;
+        break;
       }
-    });
-    // If outside all bounds but emptyRadius set, consider empty slots by root distance
-    if (!candidates.length && radius > 0) {
-      sz.slots.forEach((s) => {
-        if (!s || !s.active) return;
-        if (emptyOnly && bedsArr && bedsArr[s.i]) return;
-        const dx = px - s.rootX, dy = py - s.rootY;
-        if (dx * dx + dy * dy <= radius * radius) candidates.push(s);
-      });
     }
-    candidates.forEach((s) => {
-      if (emptyOnly && bedsArr && bedsArr[s.i] && !opts.allowOccupied) return;
-      const dx = px - s.rootX, dy = py - s.rootY;
-      const d = dx * dx + dy * dy;
-      if (d < bestD || (d === bestD && s.i < best)) {
-        bestD = d;
-        best = s.i;
-      }
-    });
-    return best;
+    return found;
+  }
+
+  /** @deprecated touch-v3: use exclusiveHitIndex. Kept as alias for older call sites. */
+  function nearestRootIndex(sz, px, py, opts) {
+    // Intentionally NO emptyRadius / nearest-root fallback
+    const o = Object.assign({}, opts || {});
+    delete o.emptyRadius;
+    return exclusiveHitIndex(sz, px, py, o);
   }
 
   /**
-   * Measure exclusive (Voronoi) target size per slot in CSS px @ phoneW.
-   * Honest: overlapping 66×66 candidates are NOT exclusive 44px targets.
+   * At declared gardening zoom, every exclusive box projects to 44×44 CSS.
    */
   function measureExclusiveHits(sz, phoneW) {
-    phoneW = phoneW || 390;
+    phoneW = phoneW || PHONE_W;
     if (!sz || !sz.slots) return null;
-    const scale = phoneW / PLATE_W;
+    const scale = (sz.view && sz.view.nativeToScreenScale) || (phoneW / PLATE_W);
     const active = sz.slots.filter((s) => s && s.active);
     const overlapCount = (sz.overlapPairs || []).length;
     const cells = active.map((s) => {
-      // Sample exclusive radius: min half-distance to any other root (clamped by hit half-size)
-      let minHalf = Math.min(s.hitW, s.hitH) / 2;
-      active.forEach((o) => {
-        if (o.i === s.i) return;
-        const dx = o.rootX - s.rootX, dy = o.rootY - s.rootY;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist > 0) minHalf = Math.min(minHalf, dist / 2);
-      });
-      const exclusiveNative = minHalf * 2;
-      const exclusiveCss = exclusiveNative * scale;
-      const candidateCss = s.hitW * scale;
+      const exclusiveCss = s.hitW * scale;
       return {
         i: s.i,
         rootX: s.rootX,
         rootY: s.rootY,
         candidateNative: s.hitW,
-        candidateCss: Math.round(candidateCss * 10) / 10,
-        exclusiveNative: Math.round(exclusiveNative * 10) / 10,
+        candidateCss: Math.round(exclusiveCss * 10) / 10,
+        exclusiveNative: s.hitW,
         exclusiveCss: Math.round(exclusiveCss * 10) / 10,
-        plantScale: s.plantScale
+        plantScale: s.plantScale,
+        revealPanScreenPx: s.revealPanScreenPx
       };
     });
     const exclusives = cells.map((c) => c.exclusiveCss);
@@ -387,16 +420,47 @@ const HGNursery = (() => {
       key: sz.key,
       active: active.length,
       overlapPairs: overlapCount,
-      candidateCss: Math.round((66 * scale) * 10) / 10,
-      exclusiveCssMin: exclusives[0],
-      exclusiveCssMedian: exclusives[(exclusives.length / 2) | 0],
-      exclusiveCssMax: exclusives[exclusives.length - 1],
-      below44: exclusives.filter((v) => v < 44).length,
+      nativeToScreenScale: scale,
+      uniformZoomOverFit: sz.view ? sz.view.uniformZoomOverFit : null,
+      candidateCss: exclusives.length ? exclusives[(exclusives.length / 2) | 0] : 0,
+      exclusiveCssMin: exclusives[0] || 0,
+      exclusiveCssMedian: exclusives[(exclusives.length / 2) | 0] || 0,
+      exclusiveCssMax: exclusives[exclusives.length - 1] || 0,
+      below44: exclusives.filter((v) => v < 44 - 1e-6).length,
       cells
     };
   }
 
-  /** Remesh SAVE.beds into pack slots without losing flowers (1 plant / active slot). */
+  /** True if revealPan places the full 44×44 screen box inside the phone viewport. */
+  function slotFullyReachable(sz, slot, pan, viewport) {
+    if (!sz || !slot) return false;
+    const scale = sz.view.nativeToScreenScale;
+    const panX = pan && pan.x != null ? +pan.x : 0;
+    const panY = pan && pan.y != null ? +pan.y : 0;
+    const vw = (viewport && viewport.w) || PHONE_W;
+    const vh = (viewport && viewport.h) || PHONE_H;
+    const left = slot.hitX * scale - panX;
+    const top = slot.hitY * scale - panY;
+    const box = slot.hitW * scale;
+    return left >= -1e-6 && top >= -1e-6 && left + box <= vw + 1e-6 && top + box <= vh + 1e-6;
+  }
+
+  function assertAllSlotsReachable(sz) {
+    if (!sz || !sz.slots) return { ok: false, missing: ['no-size'] };
+    const missing = [];
+    sz.slots.forEach((s) => {
+      if (!s || !s.active) return;
+      const pan = s.revealPanScreenPx || sz.view.defaultPanScreenPx;
+      if (!slotFullyReachable(sz, s, pan)) missing.push(s.i);
+    });
+    return { ok: missing.length === 0, missing, count: sz.activeCount };
+  }
+
+  /**
+   * Lossless remesh: expand every mix[] flower into its own 1-plant slot.
+   * Never truncates. Overflow → reserve[] (same plant shape) for later planting.
+   * Returns { beds, reserve, totalIn, placed } — callers must keep reserve.
+   */
   function migrateBedsArray(oldBeds, ghSize) {
     const sz = ghSize < 0 ? outdoorDef() : sizeForGh(ghSize);
     const targetLen = sz ? sz.slotCount : [12, 20, 30][Math.min(2, Math.max(0, ghSize | 0))];
@@ -407,9 +471,11 @@ const HGNursery = (() => {
     const plants = [];
     (oldBeds || []).forEach((b) => {
       if (!b) return;
+      // Never truncate — keep every species with watered/grown state
       const mix = Array.isArray(b.mix) ? b.mix.slice() : (b.id ? [b.id] : []);
       if (!mix.length) return;
       mix.forEach((id) => {
+        if (!id) return;
         plants.push({
           mix: [id],
           watered: b.watered ? 1 : 0,
@@ -419,12 +485,14 @@ const HGNursery = (() => {
         });
       });
     });
+    const totalIn = plants.length;
 
     const next = Array.from({ length: targetLen }, () => null);
     let fi = 0;
     for (let a = 0; a < active.length && fi < plants.length; a++) {
       next[active[a]] = plants[fi++];
     }
+    // Fill any remaining empty active slots
     while (fi < plants.length) {
       let placed = false;
       for (let a = 0; a < active.length; a++) {
@@ -435,16 +503,27 @@ const HGNursery = (() => {
           break;
         }
       }
-      if (!placed) next.push(plants[fi++]);
+      if (!placed) break;
     }
-    return next;
+    const reserve = plants.slice(fi);
+    const placed = totalIn - reserve.length;
+    return { beds: next, reserve, totalIn, placed };
+  }
+
+  /** Back-compat: array-only view (reserve discarded — prefer migrateBedsLossless). */
+  function migrateBedsArrayLegacy(oldBeds, ghSize) {
+    const r = migrateBedsArray(oldBeds, ghSize);
+    return r.beds;
   }
 
   return {
     load, ready, getMap, getGrowth, sizeForGh, slotCount, activeSlotIndices, isSlotActive,
-    slotDef, planters, outdoorDef, ghInfo, migrateBedsArray, layerImages, growthStage,
-    growthImg, warmImages, loadImg, nearestRootIndex, measureExclusiveHits,
-    GROWTH_ROOT, GROWTH_SIZE, SIZE_KEYS, BASE, PLATE_W, PLATE_H
+    slotDef, planters, outdoorDef, ghInfo, migrateBedsArray, migrateBedsArrayLegacy,
+    layerImages, growthStage,
+    growthImg, warmImages, loadImg, nearestRootIndex, exclusiveHitIndex, measureExclusiveHits,
+    slotFullyReachable, assertAllSlotsReachable,
+    GROWTH_ROOT, GROWTH_SIZE, SIZE_KEYS, BASE, PLATE_W, PLATE_H, LAYOUT_VERSION,
+    PHONE_W, PHONE_H
   };
 })();
 
