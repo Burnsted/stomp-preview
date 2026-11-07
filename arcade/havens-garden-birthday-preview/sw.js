@@ -1,5 +1,5 @@
-/* Haven's Garden v0.9-play-fix-ted-lives — Franz lanes+HUD polish */
-const CACHE = 'havens-garden-play-fix-preview-v0.9-play-fix-ted-lives';
+/* Haven's Garden v0.9-play-fix-ted-slow — cache bust + skipWaiting/clients.claim */
+const CACHE = 'havens-garden-play-fix-preview-v0.9-play-fix-ted-slow';
 const PRECACHE = [
   './',
   './index.html',

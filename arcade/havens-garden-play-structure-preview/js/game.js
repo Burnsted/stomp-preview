@@ -6,7 +6,7 @@
    bugs+net, bees→hive→jars, color rows, CBN, shop.
    ============================================================ */
 
-const VER = 'v0.9-play-fix-ted-lives';
+const VER = 'v0.9-play-fix-ted-slow';
 const PK = 'havensGarden.birthday.v2';
 const PK_LEGACY = 'havensGarden.v1';
 /** Prior preview / prototype keys that may still hold progress. */
@@ -1492,6 +1492,9 @@ function startRunner(resetBouquet, opts) {
   try { Assets.ensureScene('runner'); } catch (e) {}
   if (window.HGRunner) {
     HGRunner.setViewport(W, H, playfieldTop(), playfieldBot());
+    if (typeof HGRunner.setOnHit === 'function') {
+      HGRunner.setOnHit(() => { try { AudioFX.ouch(); } catch (e) {} });
+    }
     HGRunner.reset(opts || {});
   }
   state = ST.RUNNER;
@@ -2099,6 +2102,14 @@ function goBackNav() {
 
 function openPlacesMenu() {
   placesOpen = placesOpen ? 0 : 1;
+  if (placesOpen) {
+    try {
+      Assets.ensureScene('runner');
+      Assets.ensureScene('hive');
+      Assets.ensureScene('shop');
+      Assets.ensureScene('cbn');
+    } catch (e) {}
+  }
   AudioFX.ui();
 }
 
@@ -2257,15 +2268,18 @@ function tryCatchBugAt(wx, wy) {
 }
 
 function hiveFlowerSpots() {
+  // Ground-level meadow forage points (plate grass — not sky)
+  const ground = contentBottom() - 36;
   return [
-    { x: W * 0.72, y: padT + 210 },
-    { x: W * 0.84, y: padT + 280 },
-    { x: W * 0.68, y: padT + 340 },
-    { x: W * 0.88, y: padT + 390 }
+    { x: W * 0.58, y: ground - 70, type: 'daisy' },
+    { x: W * 0.78, y: ground - 40, type: 'tulip' },
+    { x: W * 0.48, y: ground - 28, type: 'sunflower' },
+    { x: W * 0.88, y: ground - 88, type: 'bluebell' }
   ];
 }
 function hiveHomePos() {
-  return { x: W * 0.28, y: padT + 260 };
+  // Entrance of the illustrated hive on the plate (left stool) — no overlay hive
+  return { x: W * 0.26, y: H * 0.56 };
 }
 function hivePourZone() {
   return { x: W * 0.18, y: contentBottom() - 210, w: W * 0.36, h: 150 };
@@ -2440,8 +2454,10 @@ function finishHiveJar() {
     hiveCelebrateT = 2.4;
     startParty('full');
     addFlowerPoints(8);
-    setCue('Honey done!');
-    showToast('Yay — honey!');
+    cue = '';
+    toastCurrent = '';
+    toastQueue = [];
+    showToast('★★★');
   }
   snapshotRuntime();
 }
@@ -2516,28 +2532,22 @@ function drawHiveScene() {
     cx.fillStyle = '#78c35f'; cx.fillRect(0, H * 0.55, W, H * 0.45);
   }
 
-  // Flower markers bees visit
+  // Ground-level meadow flowers bees visit (real art — never sky lollipops / floating hive)
   const flowers = hiveFlowerSpots();
-  flowers.forEach((f, i) => {
-    const cols = ['#ffd24a', '#ff8ab0', '#7ec8ff', '#ffe566'];
-    cx.fillStyle = cols[i % cols.length];
-    cx.beginPath(); cx.arc(f.x, f.y, 14, 0, 7); cx.fill();
-    cx.fillStyle = '#6aa84f';
-    cx.fillRect(f.x - 2, f.y + 10, 4, 16);
+  const flowerKey = { daisy: 'flowerDaisy', tulip: 'flowerTulip', sunflower: 'flowerSunflower', bluebell: 'flowerBluebell' };
+  flowers.forEach((f) => {
+    const img = Assets.get(flowerKey[f.type] || 'flowerDaisy')
+      || (Assets.runner && Assets.runner('flower-' + (f.type || 'daisy')));
+    const fh = Y(52);
+    if (img && img.width) {
+      const fw = fh * (img.width / img.height);
+      cx.drawImage(img, f.x - fw / 2, f.y - fh, fw, fh);
+    }
   });
-
-  // Hive mound
+  // Bees return to the illustrated plate hive — do NOT draw a placeholder hive overlay
   const home = hiveHomePos();
-  cx.fillStyle = '#e8b84a';
-  for (let i = 0; i < 4; i++) {
-    cx.beginPath();
-    cx.ellipse(home.x, home.y + 28 - i * 16, 46 - i * 6, 14, 0, 0, 7);
-    cx.fill();
-  }
-  cx.fillStyle = '#5a4030';
-  cx.beginPath(); cx.arc(home.x, home.y + 10, 8, 0, 7); cx.fill();
 
-  // Flying bees
+  // Flying bees (forage ground flowers ↔ real hive)
   const now = performance.now();
   const flap = ((now / POLLINATOR_FLAP_MS) | 0) % 2;
   const box = X(40);
@@ -2614,16 +2624,20 @@ function drawHiveScene() {
   }
 
   if (hiveCelebrateT > 0) {
+    // Single celebration (center) — no second cue/pill
+    cue = '';
     cx.fillStyle = 'rgba(255,240,180,' + (0.18 + 0.12 * Math.sin(performance.now() / 120)) + ')';
     cx.fillRect(0, 0, W, H);
-    drawUiText('Honey done!', W / 2, H * 0.42, {
-      font: '800 28px Fredoka, system-ui, sans-serif', color: '#a05010', halo: 5
+    drawUiChrome(W / 2 - 120, H * 0.38, 240, 88, 20, { fill: '#fff6e8', alpha: 0.42 });
+    drawUiText('Honey done!', W / 2, H * 0.44, {
+      font: '800 26px Fredoka, system-ui, sans-serif', color: '#a05010', halo: 4
     });
-    drawUiText('★★★', W / 2, H * 0.48, {
-      font: '800 32px Fredoka, system-ui, sans-serif', color: '#ffd24a', halo: 4
+    drawUiText('★★★', W / 2, H * 0.52, {
+      font: '800 30px Fredoka, system-ui, sans-serif', color: '#ffd24a', halo: 4
     });
+  } else if (cue) {
+    drawCue(cue);
   }
-  if (cue) drawCue(cue);
 }
 
 function drawShopScene() {
@@ -3422,14 +3436,17 @@ function drawChrome() {
 
   const titleX = x + 4;
   const pointsLeft = mx - 52; // room for "99 ✿" before mute
+  const titleRoom = Math.max(24, pointsLeft - titleX - 8);
+  // Fit title in remaining chrome — shorten when top-nav icons crowd the bar
+  const title = titleRoom < 118 ? 'Haven' : (titleRoom < 150 ? "Haven's" : "Haven's Garden");
+  const titleSize = titleRoom < 100 ? 12 : 13;
 
-  // Title clipped before the points column
   cx.save();
   cx.beginPath();
-  cx.rect(titleX, padT + 2, Math.max(24, pointsLeft - titleX - 8), 28);
+  cx.rect(titleX, padT + 2, titleRoom, 28);
   cx.clip();
-  drawUiText("Haven's Garden", titleX, padT + 24, {
-    font: '800 14px Fredoka, system-ui, sans-serif', align: 'left'
+  drawUiText(title, titleX, padT + 24, {
+    font: '800 ' + titleSize + 'px Fredoka, system-ui, sans-serif', align: 'left'
   });
   cx.restore();
 
@@ -3464,17 +3481,14 @@ function drawTopNavIcon(id, x, fill, kind) {
     cx.closePath();
     cx.fill();
   } else if (kind === 'places') {
-    cx.beginPath();
-    cx.moveTo(cx0 - 10, cy0 + 8);
-    cx.lineTo(cx0 - 4, cy0 - 10);
-    cx.lineTo(cx0 + 4, cy0 - 2);
-    cx.lineTo(cx0 + 10, cy0 - 10);
-    cx.lineTo(cx0 + 10, cy0 + 10);
-    cx.lineTo(cx0 - 10, cy0 + 10);
-    cx.closePath();
-    cx.fill();
-    cx.fillStyle = '#ffe566';
-    cx.beginPath(); cx.arc(cx0 + 2, cy0 - 1, 3, 0, 7); cx.fill();
+    // Clear map / 2×2 grid icon (not a flag)
+    const g = 7, gap = 3;
+    const ox = cx0 - g - gap / 2, oy = cy0 - g - gap / 2;
+    cx.fillStyle = '#1e1814';
+    cx.fillRect(ox, oy, g, g);
+    cx.fillRect(ox + g + gap, oy, g, g);
+    cx.fillRect(ox, oy + g + gap, g, g);
+    cx.fillRect(ox + g + gap, oy + g + gap, g, g);
   } else {
     cx.beginPath();
     cx.moveTo(cx0, cy0 - 12);
@@ -3526,7 +3540,7 @@ function drawPlacesMenu() {
     cx.fillStyle = 'rgba(30,24,20,.10)';
     rr(ix + 2, iy + 3, tileW, tileH, 18); cx.fill();
     drawUiChrome(ix, iy, tileW, tileH, 18, { fill: it.fill, alpha: 0.42, line: 2.4 });
-    drawPlaceTileIcon(it.icon, ix + tileW / 2, iy + tileH * 0.42, Math.min(44, tileH * 0.42));
+    drawPlaceTileIcon(it.icon, ix + tileW / 2, iy + tileH * 0.40, Math.min(64, tileH * 0.55));
     drawUiText(it.label, ix + tileW / 2, iy + tileH - 14, {
       font: '800 15px Fredoka, system-ui, sans-serif'
     });
@@ -3534,62 +3548,78 @@ function drawPlacesMenu() {
   });
 }
 
-/** Big friendly picture for each Places tile. */
+/** Big friendly picture for each Places tile — real game art. */
 function drawPlaceTileIcon(kind, x, y, s) {
   cx.save();
   cx.translate(x, y);
+  const box = Math.max(36, s * 1.35);
+  function drawArt(img, h) {
+    if (!img || !img.width) return false;
+    const hh = h || box;
+    const ww = hh * (img.width / img.height);
+    cx.drawImage(img, -ww / 2, -hh / 2, ww, hh);
+    return true;
+  }
   if (kind === 'run') {
-    cx.fillStyle = '#ffd24a';
-    cx.beginPath(); cx.arc(0, -s * 0.15, s * 0.38, 0, 7); cx.fill();
-    cx.fillStyle = '#6aa84f';
-    cx.fillRect(-3, s * 0.15, 6, s * 0.35);
-    cx.fillStyle = '#ff8a4a';
-    for (let i = 0; i < 8; i++) {
-      const a = (i / 8) * Math.PI * 2;
-      cx.beginPath();
-      cx.ellipse(Math.cos(a) * s * 0.42, -s * 0.15 + Math.sin(a) * s * 0.42, 5, 3, a, 0, 7);
-      cx.fill();
+    const img = (Assets.runner && Assets.runner('flower-sunflower')) || Assets.get('flowerSunflower');
+    if (!drawArt(img, box)) {
+      cx.fillStyle = '#ffd24a';
+      cx.beginPath(); cx.arc(0, 0, box * 0.35, 0, 7); cx.fill();
     }
   } else if (kind === 'butter') {
-    cx.fillStyle = '#ff9ad4';
-    cx.beginPath(); cx.ellipse(-s * 0.28, 0, s * 0.28, s * 0.38, -0.3, 0, 7); cx.fill();
-    cx.beginPath(); cx.ellipse(s * 0.28, 0, s * 0.28, s * 0.38, 0.3, 0, 7); cx.fill();
-    cx.fillStyle = '#5a4030';
-    cx.fillRect(-2, -s * 0.35, 4, s * 0.7);
-  } else if (kind === 'nursery') {
-    cx.fillStyle = '#c48a4a';
-    cx.fillRect(-s * 0.35, -s * 0.05, s * 0.7, s * 0.5);
-    cx.fillStyle = '#7ecf6a';
-    cx.beginPath(); cx.ellipse(0, -s * 0.2, s * 0.28, s * 0.32, 0, 0, 7); cx.fill();
-    cx.fillStyle = '#ff6b8a';
-    cx.beginPath(); cx.arc(0, -s * 0.28, s * 0.12, 0, 7); cx.fill();
-  } else if (kind === 'hive') {
-    cx.fillStyle = '#e8b84a';
-    for (let i = 0; i < 4; i++) {
-      const w = s * (0.55 - i * 0.06);
-      cx.beginPath();
-      cx.ellipse(0, s * 0.28 - i * s * 0.18, w, s * 0.12, 0, 0, 7);
-      cx.fill();
+    const img = Assets.get('bugButterfly') || Assets.get('butterfly01') || Assets.get('butterfly02');
+    if (!drawArt(img, box)) {
+      cx.fillStyle = '#ff9ad4';
+      cx.beginPath(); cx.ellipse(-box * 0.2, 0, box * 0.22, box * 0.3, -0.3, 0, 7); cx.fill();
     }
-    cx.fillStyle = '#5a4030';
-    cx.beginPath(); cx.arc(0, s * 0.12, s * 0.08, 0, 7); cx.fill();
+  } else if (kind === 'nursery') {
+    // Pot + sprout from flower art
+    cx.fillStyle = '#c48a4a';
+    cx.beginPath();
+    cx.moveTo(-box * 0.28, -box * 0.05);
+    cx.lineTo(box * 0.28, -box * 0.05);
+    cx.lineTo(box * 0.22, box * 0.38);
+    cx.lineTo(-box * 0.22, box * 0.38);
+    cx.closePath();
+    cx.fill();
+    const img = Assets.get('flowerTulip') || Assets.get('flowerDaisy');
+    if (img && img.width) {
+      const hh = box * 0.7;
+      const ww = hh * (img.width / img.height);
+      cx.drawImage(img, -ww / 2, -box * 0.55, ww, hh);
+    }
+  } else if (kind === 'hive') {
+    const img = Assets.get('hive') || Assets.get('jarFull');
+    if (!drawArt(img, box * 1.05)) {
+      cx.fillStyle = '#e8b84a';
+      cx.beginPath(); cx.ellipse(0, 0, box * 0.35, box * 0.4, 0, 0, 7); cx.fill();
+    }
   } else if (kind === 'color') {
-    const cols = ['#ff6b6b', '#ffd24a', '#7ec8ff', '#9fe870'];
-    cols.forEach((c, i) => {
-      cx.fillStyle = c;
+    const stem = (HGSystems.CBN_PAGES && HGSystems.CBN_PAGES[0] && (HGSystems.CBN_PAGES[0].stem || HGSystems.CBN_PAGES[0].id)) || null;
+    const img = (stem && Assets.cbnPage && Assets.cbnPage(stem)) || Assets.get('cbnLadder');
+    if (img && img.width) {
+      const hh = box * 1.05;
+      const ww = Math.min(box * 1.15, hh * (img.width / img.height));
+      cx.save();
       cx.beginPath();
-      cx.arc(Math.cos(i) * s * 0.28, Math.sin(i * 1.3) * s * 0.28, s * 0.22, 0, 7);
-      cx.fill();
-    });
+      // rounded clip
+      const rw = ww, rh = hh;
+      cx.rect(-rw / 2, -rh / 2, rw, rh);
+      cx.clip();
+      cx.drawImage(img, -rw / 2, -rh / 2, rw, rh);
+      cx.restore();
+    } else {
+      ['#ff6b6b', '#ffd24a', '#7ec8ff', '#9fe870'].forEach((c, i) => {
+        cx.fillStyle = c;
+        cx.fillRect(-box * 0.4 + (i % 2) * box * 0.42, -box * 0.4 + ((i / 2) | 0) * box * 0.42, box * 0.38, box * 0.38);
+      });
+    }
   } else if (kind === 'shop') {
-    cx.fillStyle = '#ff8ab0';
-    cx.fillRect(-s * 0.4, -s * 0.15, s * 0.8, s * 0.55);
-    cx.fillStyle = '#fff6e8';
-    cx.fillRect(-s * 0.28, -s * 0.02, s * 0.56, s * 0.28);
-    cx.fillStyle = '#5a4030';
-    cx.font = '800 ' + Math.round(s * 0.45) + 'px Fredoka, system-ui, sans-serif';
-    cx.textAlign = 'center';
-    cx.fillText('✿', 0, s * 0.2);
+    const img = Assets.get('shovelBig') || Assets.get('multiPickBasket') || Assets.get('basket');
+    if (!drawArt(img, box)) {
+      cx.fillStyle = '#ff8ab0';
+      cx.fillRect(-box * 0.35, -box * 0.2, box * 0.7, box * 0.5);
+    }
   }
   cx.restore();
 }
@@ -4247,7 +4277,7 @@ function drawGreenhouse() {
   const canLeave = !growAnim && !plantAnim && (nurseryMode === 'ready' || nurseryMode === 'look' ||
     (nurseryMode === 'upgrade' && !upgradeAnim && SAVE.step === 'ready'));
   // Single clear CTA when basket is empty — never stack with a cue pill
-  if (canLeave && !bouquet.length) {
+  if (canLeave && !bouquet.length && !placesOpen) {
     const gy = contentBottom() - 52;
     drawUiChrome(W / 2 - 110, gy, 220, 44, 16, { fill: '#5ecf7a', alpha: 0.38 });
     drawUiText('Run for flowers!', W / 2, gy + 28, { font: '800 15px Fredoka, system-ui, sans-serif' });
@@ -5381,7 +5411,7 @@ async function boot() {
 
   try {
     if (navigator.serviceWorker && typeof navigator.serviceWorker.register === 'function') {
-      navigator.serviceWorker.register('./sw.js?v=0.9-play-fix-ted-lives').catch(() => {});
+      navigator.serviceWorker.register('./sw.js?v=0.9-play-fix-ted-slow').catch(() => {});
     }
   } catch (eSw) {}
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));

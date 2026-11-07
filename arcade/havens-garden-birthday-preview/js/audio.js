@@ -83,6 +83,12 @@ const AudioFX = (() => {
     isMuted: () => muted,
     ui() { tone(520, 0.05, 'triangle', 0.05); },
     rustle() { noiseBurst(0.08, 0.03, 800); tone(170, 0.05, 'triangle', 0.02); },
+    /** Soft scraped-knee / bump — quiet enough for a preschooler. */
+    ouch() {
+      noiseBurst(0.07, 0.025, 600);
+      tone(220, 0.09, 'triangle', 0.04);
+      setTimeout(() => tone(180, 0.08, 'sine', 0.03), 40);
+    },
     bloom() { tone(560, 0.08, 'sine', 0.07); setTimeout(() => tone(720, 0.09, 'sine', 0.06), 45); },
     pick(n) {
       const f = 440 + (n % 8) * 30;

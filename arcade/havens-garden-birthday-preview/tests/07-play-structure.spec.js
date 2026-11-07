@@ -73,8 +73,10 @@ test.describe('play-structure runner', () => {
     expect(info.runner.lane).toBe(1);
     expect(info.runner.usingProjectedWorld).toBeTruthy();
     expect(info.flowerChance).toBeGreaterThanOrEqual(0.4);
-    expect(info.spawnEvery).toBeGreaterThanOrEqual(0.7);
-    expect(info.spawnEvery).toBeLessThanOrEqual(0.9);
+    expect(info.spawnEvery).toBeGreaterThanOrEqual(1.0);
+    expect(info.spawnEvery).toBeLessThanOrEqual(1.4);
+    expect(info.runner.scroll0).toBeLessThanOrEqual(140);
+    expect(info.runner.scrollMax).toBeLessThanOrEqual(200);
     expect(info.runner.runSec).toBe(60);
     expect(info.runner.continuousHedges).toBeTruthy();
     expect(info.runner.hideTapZones).toBeTruthy();
@@ -428,7 +430,7 @@ test.describe('play-structure runner', () => {
       expect(m.state).toBe('RUNNER');
       expect(m.cssW).toBe(phone.w);
       expect(m.active).toBeTruthy();
-      expect(m.verBoot).toContain('v0.9-play-fix-ted-lives');
+      expect(m.verBoot).toContain('v0.9-play-fix-ted-slow');
       await shot(page, 'device-' + phone.name + '-runner');
 
       await page.evaluate(() => {
@@ -485,7 +487,9 @@ test.describe('play-structure runner', () => {
     await shot(page, 'lives-hud-sunflowers');
 
     await page.evaluate(() => HGRunner.debugForceHit());
-    await page.waitForTimeout(200);
+    await page.waitForFunction(() => HGRunner.getState().scrapeKneeT > 0.6, null, { timeout: 3000 });
+    // Let a couple frames paint the crouch before the evidence shot
+    await page.waitForTimeout(120);
     const mid = await page.evaluate(() => {
       const r = HGRunner.getState();
       return { lives: r.lives, scrape: r.scrapeKneeT, invuln: r.invulnT, ended: r.ended };
@@ -605,11 +609,51 @@ test.describe('play-structure runner', () => {
       scroll0: HGRunner.SCROLL0,
       scrollMax: HGRunner.SCROLL_MAX,
       spawn: HGRunner.SPAWN_EVERY,
-      lives: HGRunner.MAX_LIVES
+      lives: HGRunner.MAX_LIVES,
+      clumps: HGRunner.CLUMP_MAX,
+      fences: HGRunner.getState().sceneryFences
     }));
-    expect(speed.scroll0).toBeLessThanOrEqual(210);
-    expect(speed.scrollMax).toBeLessThanOrEqual(310);
-    expect(speed.spawn).toBeGreaterThanOrEqual(0.7);
+    expect(speed.scroll0).toBeLessThanOrEqual(140);
+    expect(speed.scrollMax).toBeLessThanOrEqual(200);
+    expect(speed.spawn).toBeGreaterThanOrEqual(1.0);
     expect(speed.lives).toBe(5);
+    expect(speed.clumps).toBeLessThanOrEqual(2);
+    expect(speed.fences).toBe(0);
+  });
+
+  test('each obstacle type collides: −1 life, scrape, soft hit sound', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootGame(page);
+    await playIntoRunner(page);
+
+    const types = ['hay', 'rock', 'log', 'fence', 'wheelbarrow', 'sprinkler'];
+    const results = await page.evaluate((types) => {
+      const hits = [];
+      let soundCalls = 0;
+      HGRunner.setOnHit(() => { soundCalls++; });
+      HGRunner.debugSetLives(5);
+      types.forEach((type) => {
+        HGRunner.debugClearScrape();
+        HGRunner.debugSetLives(5);
+        const r = HGRunner.debugCollideObstacle(type);
+        hits.push({
+          type,
+          hit: r.hit,
+          lostLife: r.livesAfter === r.livesBefore - 1,
+          scrape: r.scrape > 0.5,
+          lastHitType: r.lastHitType
+        });
+      });
+      return { hits, soundCalls, kinds: HGRunner.OB_KINDS.slice() };
+    }, types);
+
+    expect(results.kinds).toEqual(expect.arrayContaining(types));
+    expect(results.soundCalls).toBe(types.length);
+    results.hits.forEach((h) => {
+      expect(h.hit).toBeTruthy();
+      expect(h.lostLife).toBeTruthy();
+      expect(h.scrape).toBeTruthy();
+      expect(h.lastHitType).toBe(h.type);
+    });
   });
 });

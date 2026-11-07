@@ -17,15 +17,17 @@ const HGRunner = (() => {
   const LANE_LERP = 14;
   const SWIPE_MIN = 28;
   const SWIPE_RATIO = 1.05;
-  /** ~25–30% slower spawn than prior pass. */
-  const SPAWN_EVERY = 0.78;
+  /** Another ~35% slower spawn vs ted-lives (preschool reaction time). */
+  const SPAWN_EVERY = 1.2;
   const FLOWER_CHANCE = 0.46;
   const OBS_CHANCE = 0.36;
-  /** ~28% slower start + ramp (Ted phone playtest). */
-  const SCROLL0 = 200;
-  const SCROLL_MAX = 300;
-  const SCROLL_RAMP = 1.7;
+  /** ~35% slower than ted-lives start/cap, with a gentle ramp. */
+  const SCROLL0 = 130;
+  const SCROLL_MAX = 195;
+  const SCROLL_RAMP = 1.15;
   const MAX_LIVES = 5;
+  /** Side grass: at most a couple of flower clumps; no fence rows. */
+  const CLUMP_MAX = 2;
   /** Raised bank width as fraction of track — Franz hedgerow ridges. */
   const HEDGE_FRAC = 0.11;
 
@@ -92,6 +94,8 @@ const HGRunner = (() => {
   let continueHit = null;
   let tryAgainHit = null;
   let goNurseryHit = null;
+  let lastHitType = null;
+  let onHitCb = null;
   let patterns = { dirt: null, grass: null, dirtKey: null, grassKey: null };
   /** Decorative off-lane fence / flower clumps (not collectible). */
   let scenery = [];
@@ -224,25 +228,15 @@ const HGRunner = (() => {
 
   function seedScenery() {
     scenery = [];
-    // Sparse flower clumps on the side grass only (never on the track / horizon)
-    for (let i = 0; i < 7; i++) {
+    // Side grass mostly clean — at most a couple of small flower clumps, no fences
+    for (let i = 0; i < CLUMP_MAX; i++) {
       scenery.push({
         kind: 'clump',
         type: SPECIES[(rng() * SPECIES.length) | 0],
         side: i % 2 === 0 ? -1 : 1,
-        z: 1.0 + rng() * 1.7, // stay below ~85% depth
-        jitter: (rng() - 0.5) * 0.55,
-        scale: 0.7 + rng() * 0.55
-      });
-    }
-    // Fence posts / short fence segments along the outer meadow edge
-    for (let i = 0; i < 5; i++) {
-      scenery.push({
-        kind: 'fence',
-        side: i % 2 === 0 ? -1 : 1,
-        z: 1.1 + (i % 3) * 0.45 + rng() * 0.25,
-        jitter: (rng() - 0.5) * 0.2,
-        scale: 1
+        z: 1.2 + rng() * 1.4,
+        jitter: (rng() - 0.5) * 0.4,
+        scale: 0.55 + rng() * 0.35
       });
     }
   }
@@ -370,8 +364,8 @@ const HGRunner = (() => {
     return null;
   }
 
-  function stumble() {
-    if (stumbleT > 0 || scrapeKneeT > 0 || invulnT > 0 || ended) return;
+  function stumble(hitType) {
+    if (stumbleT > 0 || scrapeKneeT > 0 || invulnT > 0 || ended) return false;
     stumbleT = STUMBLE_LOCK;
     scrapeKneeT = SCRAPE_DUR;
     invulnT = INVULN_DUR;
@@ -379,6 +373,11 @@ const HGRunner = (() => {
     duckT = 0;
     stumbles++;
     lives = Math.max(0, lives - 1);
+    lastHitType = hitType || lastHitType || 'ob';
+    if (typeof onHitCb === 'function') {
+      try { onHitCb({ type: lastHitType, lives: lives, stumbles: stumbles }); } catch (e) {}
+    }
+    return true;
   }
 
   function finish(opts) {
@@ -443,30 +442,22 @@ const HGRunner = (() => {
     entities.forEach((e) => { e.z -= speed * dt * 0.01; });
     scenery.forEach((s) => { s.z -= speed * dt * 0.01; });
     // Drop decor that scrolled past camera or drifted into the far/horizon band
-    scenery = scenery.filter((s) => s.z > -0.8 && s.z < 2.9);
-    // Respawn only mid-field (z ≲ 2.8) — never near the horizon / hill band
-    while (scenery.filter((s) => s.kind === 'clump').length < 6) {
+    scenery = scenery.filter((s) => s.kind !== 'fence' && s.z > -0.8 && s.z < 2.9);
+    // Rare mid-field flower clumps only — never fences, never a dense edge row
+    while (scenery.filter((s) => s.kind === 'clump').length < CLUMP_MAX) {
       scenery.push({
         kind: 'clump',
         type: SPECIES[(rng() * SPECIES.length) | 0],
         side: rng() < 0.5 ? -1 : 1,
-        z: 1.2 + rng() * 1.5,
-        jitter: (rng() - 0.5) * 0.55,
-        scale: 0.7 + rng() * 0.55
-      });
-    }
-    while (scenery.filter((s) => s.kind === 'fence').length < 4) {
-      scenery.push({
-        kind: 'fence',
-        side: rng() < 0.5 ? -1 : 1,
-        z: 1.3 + rng() * 1.4,
-        jitter: (rng() - 0.5) * 0.2,
-        scale: 1
+        z: 1.4 + rng() * 1.2,
+        jitter: (rng() - 0.5) * 0.35,
+        scale: 0.5 + rng() * 0.35
       });
     }
 
     entities.forEach((e) => {
-      if (e.z > 0.55 || e.z < -0.35) return;
+      // Slightly generous Z window so every obstacle type clearly registers
+      if (e.z > 0.62 || e.z < -0.42) return;
       if (e.lane !== lane) return;
       if (e.kind === 'flower' && !e.taken) {
         const needJump = !!e.high;
@@ -483,7 +474,7 @@ const HGRunner = (() => {
         if (e.mode === 'duck' && duckT > 0) clear = true;
         if (!clear) {
           e.hit = 1;
-          stumble();
+          stumble(e.type);
         }
       }
     });
@@ -993,16 +984,23 @@ const HGRunner = (() => {
     }
     // Exact lane-center X for the whole jump/duck/scrape arc (and while running, lerped laneX)
     const laneMid = xs[lane];
-    const scraping = scrapeKneeT > 0 || stumbleT > 0;
-    const gx = (jumpT > 0 || duckT > 0 || scraping) ? laneMid : laneX;
-    if (jumpT > 0 || duckT > 0 || scraping) laneX = laneMid;
-    const wobble = scraping ? Math.sin(performance.now() / 55) * 4 : 0;
-    const gy = havenFootY() + bob + (scraping ? Math.sin(scrapeKneeT * 28) * 4 : 0);
+    const scraping = scrapeKneeT > 0;
+    const gx = (jumpT > 0 || duckT > 0 || scraping || stumbleT > 0) ? laneMid : laneX;
+    if (jumpT > 0 || duckT > 0 || scraping || stumbleT > 0) laneX = laneMid;
 
     let poseKey = ART.run(runPhase | 0);
+    let drawH = havenH * (duckT > 0 ? 0.92 : 1);
+    let gy = havenFootY() + bob;
+    let cryShake = 0;
     if (jumpT > 0) poseKey = ART.jump;
-    else if (duckT > 0) poseKey = ART.duck;
-    else if (scraping) poseKey = ART.stumble;
+    else if (scraping) {
+      // STOP: sit/crouch on the path (duck base + stumble tilt), hold knee — scroll frozen
+      poseKey = ART.stumble;
+      drawH = havenH * 0.68; // clearly seated vs run height
+      gy = havenFootY() + havenH * 0.22; // drop onto the dirt
+      cryShake = Math.sin(performance.now() / 90) * 1.2; // tiny cry shake only
+    } else if (duckT > 0) poseKey = ART.duck;
+    else if (stumbleT > 0) poseKey = ART.stumble;
     else if (pickFlash > 0) poseKey = ART.pick;
     else {
       const dx = xs[lane] - laneX;
@@ -1011,25 +1009,42 @@ const HGRunner = (() => {
       else if (laneAnim > 0.08) poseKey = ART.leanR;
     }
 
-    // Brief i-frame blink after a hit
+    // Brief i-frame blink after a hit (not during the scrape crouch)
     if (invulnT > 0 && scrapeKneeT <= 0 && ((invulnT * 12) | 0) % 2 === 0) {
       cx.globalAlpha = 0.45;
     }
     const himg = imgFor(Assets, poseKey);
-    if (!drawHavenFrame(cx, himg, gx + wobble, gy, havenH * (duckT > 0 ? 0.92 : 1))) {
+    if (scraping) {
+      // Sit forward on the path: tilt + squash so the stop reads clearly from rear
+      cx.save();
+      cx.translate(gx + cryShake, gy);
+      cx.rotate(0.22);
+      cx.scale(1.05, 0.78);
+      if (!drawHavenFrame(cx, himg, 0, 0, drawH)) {
+        cx.fillStyle = 'rgba(45,36,28,0.9)';
+        cx.beginPath();
+        cx.ellipse(0, -drawH * 0.82, drawH * 0.16, drawH * 0.14, 0, 0, 7);
+        cx.fill();
+        cx.fillStyle = 'rgba(90,50,70,0.95)';
+        roundRect(cx, -drawH * 0.14, -drawH * 0.72, drawH * 0.28, drawH * 0.42, 8);
+        cx.fill();
+      }
+      cx.restore();
+    } else if (!drawHavenFrame(cx, himg, gx + cryShake, gy, drawH)) {
       cx.fillStyle = 'rgba(45,36,28,0.9)';
       cx.beginPath();
-      cx.ellipse(gx + wobble, gy - havenH * 0.82, havenH * 0.16, havenH * 0.14, 0, 0, 7);
+      cx.ellipse(gx + cryShake, gy - drawH * 0.82, drawH * 0.16, drawH * 0.14, 0, 0, 7);
       cx.fill();
       cx.fillStyle = 'rgba(90,50,70,0.95)';
-      roundRect(cx, gx + wobble - havenH * 0.14, gy - havenH * 0.72, havenH * 0.28, havenH * 0.42, 8);
+      roundRect(cx, gx + cryShake - drawH * 0.14, gy - drawH * 0.72, drawH * 0.28, drawH * 0.42, 8);
       cx.fill();
     }
     cx.globalAlpha = 1;
 
-    // Scraped-knee tears overlay (simple procedural — no dedicated art)
+    // Scraped-knee: tears + hold-knee hands while crouched
     if (scrapeKneeT > 0) {
-      drawScrapeTears(cx, gx + wobble, gy, havenH);
+      drawScrapeKneeHold(cx, gx + cryShake, gy, drawH);
+      drawScrapeTears(cx, gx + cryShake, gy, drawH);
     }
 
     drawSunTimerHud(cx);
@@ -1039,25 +1054,38 @@ const HGRunner = (() => {
     if (ended) drawResults(cx, Assets, W, H, playTop);
   }
 
-  /** Small tears + knee-hold cue during the scraped-knee beat. */
-  function drawScrapeTears(cx, gx, gy, havenH) {
-    const faceY = gy - havenH * 0.78;
-    const tearPulse = 0.65 + 0.35 * Math.sin(performance.now() / 90);
+  /** Hands holding the scraped knee while crouched. */
+  function drawScrapeKneeHold(cx, gx, gy, havenH) {
+    const kneeY = gy - havenH * 0.22;
+    const kneeX = gx + havenH * 0.06;
     cx.save();
-    cx.globalAlpha = 0.85 * tearPulse;
-    cx.fillStyle = '#7ec8ff';
-    [[-10, 0], [10, 2]].forEach(([ox, oy], i) => {
-      const drop = ((performance.now() / 180 + i) % 1) * 14;
-      cx.beginPath();
-      cx.ellipse(gx + ox, faceY + oy + drop, 3.2, 5.5, 0, 0, 7);
-      cx.fill();
-    });
-    // Soft pink knee scrape mark
-    cx.globalAlpha = 0.55;
+    // Pink scrape mark on knee
+    cx.globalAlpha = 0.7;
     cx.fillStyle = '#ff8a9a';
     cx.beginPath();
-    cx.ellipse(gx + 8, gy - havenH * 0.28, 7, 5, 0.2, 0, 7);
+    cx.ellipse(kneeX, kneeY, 8, 6, 0.15, 0, 7);
     cx.fill();
+    // Both hands on the knee
+    cx.globalAlpha = 0.95;
+    cx.fillStyle = '#f0c8a8';
+    cx.beginPath(); cx.ellipse(kneeX - 10, kneeY - 4, 7, 5.5, -0.4, 0, 7); cx.fill();
+    cx.beginPath(); cx.ellipse(kneeX + 9, kneeY - 2, 7, 5.5, 0.35, 0, 7); cx.fill();
+    cx.restore();
+  }
+
+  /** Tears during the scraped-knee crouch beat. */
+  function drawScrapeTears(cx, gx, gy, havenH) {
+    const faceY = gy - havenH * 0.72;
+    const tearPulse = 0.7 + 0.3 * Math.sin(performance.now() / 90);
+    cx.save();
+    cx.globalAlpha = 0.9 * tearPulse;
+    cx.fillStyle = '#7ec8ff';
+    [[-9, 0], [9, 2]].forEach(([ox, oy], i) => {
+      const drop = ((performance.now() / 200 + i) % 1) * 12;
+      cx.beginPath();
+      cx.ellipse(gx + ox, faceY + oy + drop, 3.4, 6, 0, 0, 7);
+      cx.fill();
+    });
     cx.restore();
   }
 
@@ -1244,7 +1272,11 @@ const HGRunner = (() => {
       sunflowerLives: true,
       scroll0: SCROLL0,
       scrollMax: SCROLL_MAX,
-      spawnEvery: SPAWN_EVERY
+      spawnEvery: SPAWN_EVERY,
+      lastHitType: lastHitType,
+      clumpMax: CLUMP_MAX,
+      sceneryCount: scenery.length,
+      sceneryFences: scenery.filter((s) => s.kind === 'fence').length
     };
   }
 
@@ -1256,7 +1288,7 @@ const HGRunner = (() => {
     invulnT = 0;
     scrapeKneeT = 0;
     stumbleT = 0;
-    stumble();
+    stumble('debug');
   }
   function debugSetLives(n) {
     lives = Math.max(0, Math.min(MAX_LIVES, n | 0));
@@ -1266,6 +1298,42 @@ const HGRunner = (() => {
     scrapeKneeT = 0;
     stumbleT = 0;
     invulnT = 0;
+  }
+  /** Hold the scrape beat at a fixed remaining time (evidence / tests). */
+  function debugHoldScrape(sec) {
+    jumpT = 0;
+    duckT = 0;
+    scrapeKneeT = sec != null ? Math.max(0.2, sec) : SCRAPE_DUR;
+    stumbleT = scrapeKneeT;
+    invulnT = INVULN_DUR;
+  }
+  function setOnHit(fn) { onHitCb = fn; }
+
+  /**
+   * Test helper — place one obstacle of `type` in Haven's lane and step until
+   * collision registers (life −1 + scrape). Clears i-frames first.
+   */
+  function debugCollideObstacle(type) {
+    type = type || 'hay';
+    debugClearScrape();
+    invulnT = 0;
+    jumpT = 0;
+    duckT = 0;
+    let mode = 'block';
+    if (type === 'fence' || type === 'log') mode = 'jump';
+    else if (type === 'puddle' || type === 'sprinkler') mode = 'duck';
+    entities = [{ kind: 'ob', type: type, mode: mode, lane: lane, z: 0.18, hit: 0 }];
+    const before = lives;
+    // One collision step (scroll frozen after hit)
+    update(1 / 60);
+    return {
+      type: type,
+      hit: !!(entities[0] && entities[0].hit),
+      livesBefore: before,
+      livesAfter: lives,
+      scrape: scrapeKneeT,
+      lastHitType: lastHitType
+    };
   }
 
   /** Test helpers — force dusk phase / pose without waiting full run.
@@ -1312,9 +1380,10 @@ const HGRunner = (() => {
     onPointerDown, onPointerMove, onPointerUp,
     changeLane, tryJump, tryDuck,
     debugSetDusk, debugForceJump, debugForceDuck, debugForceLane, debugSetEntities, debugSetCollected,
-    debugForceHit, debugSetLives, debugClearScrape,
-    SPECIES, RUN_SEC, ART, FLOWER_CHANCE, SPAWN_EVERY, HAVEN_H_RATIO, RUN_FRAME_DT,
-    MAX_LIVES, SCROLL0, SCROLL_MAX, SCRAPE_DUR, INVULN_DUR
+    debugForceHit, debugSetLives, debugClearScrape, debugHoldScrape,
+    debugCollideObstacle, setOnHit,
+    SPECIES, OB_KINDS, RUN_SEC, ART, FLOWER_CHANCE, SPAWN_EVERY, HAVEN_H_RATIO, RUN_FRAME_DT,
+    MAX_LIVES, SCROLL0, SCROLL_MAX, SCRAPE_DUR, INVULN_DUR, CLUMP_MAX
   };
 })();
 
