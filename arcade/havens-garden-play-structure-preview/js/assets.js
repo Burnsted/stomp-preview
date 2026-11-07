@@ -4,7 +4,7 @@
 */
 'use strict';
 
-const ASSET_VER = 'play-fix-franz-scale';
+const ASSET_VER = 'play-fix-franz-scale2';
 
 /** Franz HAVENS-GARDEN-RUNNER-V1 finals under assets/runner/.
  *  Placeholders/ remain as load fallback only. Phone reference plates are NOT listed. */

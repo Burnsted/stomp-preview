@@ -908,9 +908,12 @@ const HGRunner = (() => {
         const img = imgFor(Assets, ART.flower(e.type));
         // ~2× prior tiny props; X stays pure lane center
         let fh = 52 * PROP_SCALE * sc;
+        // Don't let mid-field lane narrowing crush the 2× read
+        const minFh = H * HAVEN_H_RATIO * 0.28 * sc;
+        if (fh < minFh) fh = minFh;
         if (img && img.width) {
           const fw = fh * (img.width / img.height);
-          if (fw > laneW * 0.88) fh *= (laneW * 0.88) / fw;
+          if (fw > laneW * 1.05) fh *= (laneW * 1.05) / fw;
         }
         if (!drawSprite(cx, img, x, y, fh)) {
           cx.fillStyle = '#ffd23c';
@@ -919,14 +922,17 @@ const HGRunner = (() => {
       } else if (e.kind === 'ob' && !e.hit) {
         if (e.type === 'sprinkler') {
           const water = imgFor(Assets, ART.water);
-          const wh = Math.min(44 * PROP_SCALE * sc, laneW * 0.8);
+          const wh = Math.min(44 * PROP_SCALE * sc, laneW * 1.0);
           drawSprite(cx, water, x, y - 8 * sc, wh);
         }
         const img = imgFor(Assets, ART.obs(e.type));
-        let oh = (e.type === 'puddle' ? 34 : 52) * PROP_SCALE * sc;
+        let oh = (e.type === 'puddle' ? 34 : 56) * PROP_SCALE * sc;
+        const minOh = H * HAVEN_H_RATIO * 0.36 * sc;
+        if (oh < minOh) oh = minOh;
         if (img && img.width) {
           const fw = oh * (img.width / img.height);
-          if (fw > laneW * 0.9) oh *= (laneW * 0.9) / fw;
+          // Allow slight overhang so mid-field hay/rock keep ~2× vs Haven
+          if (fw > laneW * 1.2) oh *= (laneW * 1.2) / fw;
         }
         if (!drawSprite(cx, img, x, y, oh)) drawObstacleFallback(cx, e, x, y, sc * PROP_SCALE);
       }

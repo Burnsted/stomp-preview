@@ -21,8 +21,8 @@ test.describe('offline SW + resume mid-Growing', () => {
       const swText = await (await fetch('./sw.js')).text();
       const gameText = await (await fetch('./js/game.js')).text();
       return {
-        cache: /havens-garden-play-fix-preview-v0\.9-play-fix-franz-scale/.test(swText),
-        register: /sw\.js\?v=0\.9-play-fix-franz-scale/.test(gameText),
+        cache: /havens-garden-play-fix-preview-v0\.9-play-fix-franz-scale2/.test(swText),
+        register: /sw\.js\?v=0\.9-play-fix-franz-scale2/.test(gameText),
         ghv2: /greenhouse-v2/.test(swText) || /greenhouse-v2/.test(gameText)
       };
     });
