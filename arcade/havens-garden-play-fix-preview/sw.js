@@ -1,5 +1,5 @@
-/* Haven's Garden v0.9-play-fix-runner — 3-lane runner + Franz-ready placeholders */
-const CACHE = 'havens-garden-play-fix-preview-v0.9-play-fix-runner';
+/* Haven's Garden v0.9-play-fix-runner-idle — standing idle + pot seedlings */
+const CACHE = 'havens-garden-play-fix-preview-v0.9-play-fix-runner-idle';
 const PRECACHE = [
   './',
   './index.html',

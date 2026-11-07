@@ -175,7 +175,13 @@ const HavenAnim = (() => {
     STATE.skirt += ((moving ? spdN * 0.04 : 0) - STATE.skirt) * Math.min(1, dt * 6);
 
     // Idle look-around when standing — soft bob only (no jump-pose hop = no float)
-    if (!moving && !meta.busyPose && !meta.noHop) {
+    // Nursery stand pose: keep feet planted, no look-flip that reads as motion
+    if (meta.pose === 'stand' || meta.pose === 'idleStand') {
+      STATE.idleKind = 0;
+      STATE.hopT = 0;
+      STATE.bob = lerp(STATE.bob, 0, Math.min(1, dt * 10));
+      STATE.lean = lerp(STATE.lean, 0, Math.min(1, dt * 8));
+    } else if (!moving && !meta.busyPose && !meta.noHop) {
       STATE.idleT -= dt;
       if (STATE.idleKind === 0 && STATE.idleT <= 0) {
         STATE.idleKind = 1; // look only — hop used jump art and read as floating
@@ -223,6 +229,12 @@ const HavenAnim = (() => {
     if (pose === 'water') return Assets.get('havenWater') || Assets.pose('plant');
     if (pose === 'jump' || pose === 'celebrate') return Assets.pose('jump');
     if (pose === 'chase') return Assets.pose('chase');
+    // Nursery calm standing — three-quarter / front (not skip hop)
+    if (pose === 'stand' || pose === 'idleStand') {
+      return (Assets.standPose && Assets.standPose()) || Assets.pose('stand')
+        || Assets.get('havenFront') || Assets.get('havenThreeQuarter')
+        || Assets.get('havenWalk01') || Assets.get('havenSkip');
+    }
     if (gait === 'run') return Assets.get('havenRun') || Assets.walkFrame(walkFrame);
     if (gait === 'walk') {
       // Prefer true walk cycle frames when present
@@ -230,7 +242,7 @@ const HavenAnim = (() => {
       if (w) return w;
       return Assets.walkFrame(walkFrame);
     }
-    // Idle: same cartoon sprite set as walk/run (havenSkip). Never painterly havenFront.
+    // Field idle stays on cartoon skip; callers wanting stand pass pose:'stand'
     return Assets.pose('idle') || Assets.get('havenSkip') || Assets.get('havenRun');
   }
 
@@ -267,8 +279,9 @@ const HavenAnim = (() => {
       const dx = -dw / 2;
       const dy = -h;
 
-      // Action poses: single-pass draw (split body/head caused plant squat flicker)
-      if (pose === 'plant' || pose === 'pick' || pose === 'water' || pose === 'chase') {
+      // Action poses + standing sheets: single-pass draw (split body/head warps front/3q)
+      if (pose === 'plant' || pose === 'pick' || pose === 'water' || pose === 'chase'
+          || pose === 'stand' || pose === 'idleStand') {
         cx.drawImage(img, dx, dy, dw, h);
       } else {
         // Body (lower ~62%) — planted

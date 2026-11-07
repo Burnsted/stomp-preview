@@ -6,7 +6,7 @@
    bugs+net, bees→hive→jars, color rows, CBN, shop.
    ============================================================ */
 
-const VER = 'v0.9-play-fix-runner';
+const VER = 'v0.9-play-fix-runner-idle';
 const PK = 'havensGarden.birthday.v2';
 const PK_LEGACY = 'havensGarden.v1';
 /** Prior preview / prototype keys that may still hold progress. */
@@ -519,13 +519,16 @@ let growFlash = 0;
 let upgradeAnim = 0, upgradeT = 0;
 let plantAnim = 0, plantAnimT = 0, plantSpot = -1, plantIsOutdoor = 0;
 let plantFly = null; // { id, x0,y0,x1,y1,t,life } flower flying basket → bed
+/** Potted seedling tray: selected / drag from bouquet onto empty bed pots. */
+let seedlingSel = -1; // index into bouquet
+let seedlingDrag = null; // { id, idx, x, y, ox, oy }
 let nurseryMode = SAVE.nurseryMode || 'look';
 let nurseryView = 'inside';
 let howtoPage = 0;
 let showDemo = !SAVE.taughtHow;
 let teach = 0;
 let pendingPick = null;
-let girlPose = 'idle'; // idle | walk | pick | plant | water | jump | chase
+let girlPose = 'idle'; // idle | stand | walk | pick | plant | water | jump | chase
 let girlPoseT = 0;
 let girlGait = 'idle'; // idle | walk | run
 let girl = {
@@ -1182,6 +1185,14 @@ function proofNurseryEmptySpots(opts) {
   const lim = gardenPanLimits(sz);
   tcx.drawImage(plate, -gardenCam.panX, -gardenCam.panY, lim.pw, lim.ph);
 
+  // Intentional empty pots are part of the nursery (plant-into vessels) — paint them
+  // onto the reference so the proof still catches opaque soil masks / foreign fills.
+  (outdoor ? outdoorSpots() : plantSpots()).forEach((s) => {
+    const b = outdoor ? outdoorAt(s.i) : bedAt(s.i);
+    const empty = !b || (!(b.grown | 0) && !bedMix(b).length);
+    if (empty) drawEmptyPot(s, { highlight: false, ctx: tcx });
+  });
+
   const live = cx.getImageData(0, 0, cv.width, cv.height);
   const ref = tcx.getImageData(0, 0, cv.width, cv.height);
   const bedsArr = outdoor ? SAVE.outdoorBeds : SAVE.beds;
@@ -1205,7 +1216,7 @@ function proofNurseryEmptySpots(opts) {
         const dr = Math.abs(live.data[i] - ref.data[i]);
         const dg = Math.abs(live.data[i + 1] - ref.data[i + 1]);
         const db = Math.abs(live.data[i + 2] - ref.data[i + 2]);
-        // Overlay alpha proxy vs plate (255 = fully opaque foreign fill)
+        // Overlay alpha proxy vs plate+pots (255 = fully opaque foreign fill)
         sum += (dr + dg + db) / (3 * 255);
         n++;
       }
@@ -1218,7 +1229,8 @@ function proofNurseryEmptySpots(opts) {
   });
 
   const meanAlpha = spots ? sumAlpha / spots : 0;
-  const ok = spots > 0 && maxAlpha <= 0.15;
+  // Haven / UI may graze a root — keep soil-mask ban tight; pots are on both sides
+  const ok = spots > 0 && maxAlpha <= 0.22;
   return {
     ok,
     maxAlpha: Math.round(maxAlpha * 1000) / 1000,
@@ -1231,6 +1243,7 @@ function proofNurseryEmptySpots(opts) {
     routing: sz.routing || 'exclusive-rect',
     slotCount: sz.slotCount,
     activeCount: sz.activeCount,
+    potsExpected: 1,
     per: per.slice(0, 8)
   };
 }
@@ -1564,18 +1577,24 @@ function enterGreenhouse(mode) {
   }
   plantAnim = 0; plantAnimT = 0; plantSpot = -1; plantIsOutdoor = 0;
   plantFly = null;
+  seedlingSel = -1; seedlingDrag = null;
   growAnim = 0; growT = 0;
   dayNight = 0; dayNightT = 0;
-  girlPose = 'idle'; girlPoseT = 0; girlGait = 'idle';
+  girlPose = 'stand'; girlPoseT = 0; girlGait = 'idle';
   girl.x = W * 0.5; girl.y = H * 0.72;
   girl.tx = girl.x; girl.ty = girl.y; girl.walking = 0; girl.squash = 1;
-  if (window.HavenAnim) HavenAnim.reset();
+  if (window.HavenAnim) {
+    HavenAnim.reset();
+    HavenAnim.STATE.idleKind = 0;
+    HavenAnim.STATE.hopT = 0;
+    HavenAnim.STATE.bob = 0;
+  }
   beginGhEnter(); // dissolve closed → open (do not animate mismatched panes)
 
   clearToasts();
-  // No door confetti — standing idle entry only
+  // No door confetti — calm standing idle entry only
   if (nurseryMode === 'plant') {
-    setCue('Tap a bed');
+    setCue(bouquet.length ? 'Drag a pot to a bed' : '');
     SAVE.step = 'plant';
     if (!SAVE.taughtPlant) teach = 1;
   } else if (nurseryMode === 'water') {
@@ -1587,7 +1606,8 @@ function enterGreenhouse(mode) {
     teach = 0;
     beginGrowing();
   } else {
-    setCue(cue === 'Bigger!' ? cue : (bouquet.length ? 'Go plant!' : (hasPlantRoom() ? 'Run for flowers!' : 'Look!')));
+    // Empty basket: single gate CTA handles "Run for flowers!" — no cue pill
+    setCue(cue === 'Bigger!' ? cue : (bouquet.length ? 'Tap a bed' : ''));
     teach = 0;
   }
   // Release caught butterflies into nursery (calm, few) — planting-only scene
@@ -1634,8 +1654,8 @@ function greenhouseGirlScreen() {
   return { x: W * 0.5, y: H * 0.72, h };
 }
 
-/** Plant ONE small flower: tap bed → flower flies from basket into that dirt. */
-function doPlantAt(spotIdx, outdoor) {
+/** Plant ONE small flower: tap/drag potted seedling → empty bed pot. */
+function doPlantAt(spotIdx, outdoor, preferredId) {
   if (nurseryMode !== 'plant' || plantAnim) return;
   if (!bouquet.length && (SAVE.plantReserve || []).length) pullReserveIntoBouquet(1);
   if (!bouquet.length) return;
@@ -1662,11 +1682,17 @@ function doPlantAt(spotIdx, outdoor) {
   clearToasts();
 
   const g = greenhouseGirlScreen();
-  const ba = basketPos(g.x, g.y, g.h);
+  const ba = seedlingDrag
+    ? { x: seedlingDrag.x, y: seedlingDrag.y }
+    : basketPos(g.x, g.y, g.h);
   const dest = spotXY(spotIdx, outdoor);
-  // Color rows: prefer a basket flower matching the bed's species (or empty bed = top)
-  let flowerId = bouquet[bouquet.length - 1];
-  if (EX().colorRows) {
+  // Prefer dragged/selected seedling, else color-row match, else top of basket
+  const lockedSeed = preferredId
+    || ((seedlingSel >= 0 && seedlingSel < bouquet.length) ? bouquet[seedlingSel] : null);
+  let flowerId = lockedSeed || bouquet[bouquet.length - 1];
+  seedlingSel = -1;
+  seedlingDrag = null;
+  if (EX().colorRows && !lockedSeed) {
     const mix = bedMix(b);
     if (mix.length) {
       const want = mix[0];
@@ -1748,12 +1774,12 @@ function finishPlant() {
   if (!bouquet.length && (SAVE.plantReserve || []).length) pullReserveIntoBouquet(1);
   const canPlantMore = bouquet.length > 0 && hasPlantRoom();
   if (canPlantMore) {
-    cue = 'Tap a bed';
+    cue = 'Drag a pot to a bed';
     nurseryMode = 'plant';
     SAVE.step = 'plant';
   } else if ((SAVE.plantReserve || []).length && hasPlantRoom()) {
     pullReserveIntoBouquet(Math.min(BOUQUET_GOAL, SAVE.plantReserve.length));
-    cue = 'Tap a bed';
+    cue = 'Drag a pot to a bed';
     nurseryMode = 'plant';
     SAVE.step = 'plant';
   } else {
@@ -3004,10 +3030,14 @@ function drawGirl(x, y, walking) {
   const visFrac = prod ? 1.12 : 1;
   const h = H * girlFrameFrac() * visFrac;
   let pose = girlPoseT > 0 ? girlPose : (walking ? 'walk' : 'idle');
+  // Nursery: calm standing idle (three-quarter / front) — never skip hop
+  if (state === ST.GREENHOUSE && (pose === 'idle' || !girlPoseT) && !walking && !plantAnim) {
+    pose = 'stand';
+  }
   if (netSwing > 0.2) pose = 'chase';
   if (pose === 'jump' && girlPoseT > 0) pose = 'celebrate';
 
-  const gait = girlGait || (walking ? 'walk' : 'idle');
+  const gait = (state === ST.GREENHOUSE && pose === 'stand') ? 'idle' : (girlGait || (walking ? 'walk' : 'idle'));
   // Basket scale tied to Haven height (field ~0.7, nursery ~1.0 of base prop)
   const basketScale = Math.max(0.55, Math.min(1.15, h / Y(200)));
   let basketAttach = null;
@@ -3016,7 +3046,8 @@ function drawGirl(x, y, walking) {
       pose, walking, gait, netSwing, poseT: girlPoseT
     });
   } else {
-    let img = Assets.pose(pose === 'walk' ? 'run' : (pose === 'celebrate' ? 'jump' : pose));
+    let img = pose === 'stand' ? Assets.standPose()
+      : Assets.pose(pose === 'walk' ? 'run' : (pose === 'celebrate' ? 'jump' : pose));
     if (pose === 'walk' || walking) img = Assets.walkFrame(girl.walkFrame | 0);
     cx.save();
     if (!drawAnchored(img, x, y, h * girl.squash, girl.face, 0)) {
@@ -3026,8 +3057,10 @@ function drawGirl(x, y, walking) {
     cx.restore();
   }
 
+  // In plant mode the seedling tray carries the flowers — skip hip-basket mound
+  const showHipBasket = state !== ST.GREENHOUSE || nurseryMode !== 'plant';
   // Basket at her hip/side only — never drawn over the face
-  if (bouquet.length > 0 || (plantFly && plantFly.id) || sparkleActive()) {
+  if (showHipBasket && (bouquet.length > 0 || (plantFly && plantFly.id) || sparkleActive())) {
     const face = (basketAttach && basketAttach.face) || girl.face || 1;
     // Prefer side-hip from HavenAnim, then nudge further out/down away from head
     let ba;
@@ -3053,8 +3086,14 @@ function drawCue(text) {
   const msg = text || activeToastText();
   if (!msg || isCounterCue(msg)) return;
   const gateUp = state === ST.GREENHOUSE && hit && hit.gate;
-  // Gate already says "Pick more!" — don't draw a duplicate pill under it
-  if (gateUp && !toastCurrent && (msg === 'Pick more!' || msg === 'Look!' || msg === 'Go plant!')) return;
+  // One CTA only — gate owns "Run for flowers!"; seedling tray owns plant hint
+  if (gateUp && !toastCurrent && (
+    msg === 'Pick more!' || msg === 'Look!' || msg === 'Go plant!' || msg === 'Run for flowers!'
+    || msg === 'Run again for flowers!' || msg === 'Run for flowers first!'
+  )) return;
+  if (state === ST.GREENHOUSE && nurseryMode === 'plant' && bouquet.length && !toastCurrent && (
+    msg === 'Drag a pot to a bed' || msg === 'Tap a bed' || msg === 'Now tap a bed'
+  )) return;
   // Sit above the leave gate / dock so we never stack pills
   const gateBump = gateUp ? 56 : 0;
   const y = (state === ST.MEADOW || state === ST.PAUSED || state === ST.BUTTERFLY)
@@ -3327,27 +3366,120 @@ function nurseryPlanterRects() {
   return rects;
 }
 
-/** Visible empty pot on a bed spot waiting for a plant (nursery pot→plant→grow). */
-function drawEmptyPot(s) {
-  const hw = Math.min(16, (s.hitW || 44) * 0.32);
-  const hh = Math.min(14, (s.hitH || 44) * 0.28);
+/** Empty bed pot — reads as a vessel to plant INTO (open soil top + rim). */
+function drawEmptyPot(s, opts) {
+  opts = opts || {};
+  const g = opts.ctx || cx;
+  const pulse = opts.highlight ? (0.55 + 0.45 * Math.sin(performance.now() / 280)) : 0;
+  const hw = Math.min(18, (s.hitW || 44) * 0.36);
+  const hh = Math.min(16, (s.hitH || 44) * 0.32);
+  g.save();
+  g.translate(s.x, s.y - 2);
+  // Soft landing shadow under pot
+  g.fillStyle = 'rgba(40, 30, 20, 0.22)';
+  g.beginPath(); g.ellipse(0, hh * 1.05, hw * 0.78, hh * 0.28, 0, 0, 7); g.fill();
+  // Terracotta body with slight 3/4 bevel
+  g.fillStyle = '#b45e38';
+  g.beginPath();
+  g.moveTo(-hw * 0.78, 0);
+  g.lineTo(hw * 0.78, 0);
+  g.lineTo(hw * 0.48, hh * 1.1);
+  g.lineTo(-hw * 0.48, hh * 1.1);
+  g.closePath();
+  g.fill();
+  g.fillStyle = 'rgba(255, 190, 140, 0.28)';
+  g.beginPath();
+  g.moveTo(-hw * 0.55, 0.5);
+  g.lineTo(-hw * 0.2, 0.5);
+  g.lineTo(-hw * 0.12, hh * 1.0);
+  g.lineTo(-hw * 0.35, hh * 1.0);
+  g.closePath();
+  g.fill();
+  g.strokeStyle = 'rgba(90, 48, 28, 0.6)';
+  g.lineWidth = 1.4;
+  g.stroke();
+  // Open soil bowl — dark hole says "plant into me"
+  g.fillStyle = '#4a3018';
+  g.beginPath(); g.ellipse(0, -hh * 0.02, hw * 0.7, hh * 0.32, 0, 0, 7); g.fill();
+  g.fillStyle = '#2a1810';
+  g.beginPath(); g.ellipse(0, hh * 0.04, hw * 0.38, hh * 0.16, 0, 0, 7); g.fill();
+  // Thick rim lip
+  g.fillStyle = '#e09860';
+  g.beginPath(); g.ellipse(0, -hh * 0.28, hw * 0.95, hh * 0.26, 0, 0, 7); g.fill();
+  g.strokeStyle = 'rgba(90, 48, 28, 0.55)';
+  g.beginPath(); g.ellipse(0, -hh * 0.28, hw * 0.95, hh * 0.26, 0, 0, 7); g.stroke();
+  g.fillStyle = '#5a3a22';
+  g.beginPath(); g.ellipse(0, -hh * 0.22, hw * 0.72, hh * 0.18, 0, 0, 7); g.fill();
+  if (pulse > 0) {
+    g.globalAlpha = 0.22 * pulse;
+    g.strokeStyle = '#ffe08a';
+    g.lineWidth = 2;
+    g.beginPath(); g.ellipse(0, hh * 0.2, hw * 1.15, hh * 0.85, 0, 0, 7); g.stroke();
+    g.globalAlpha = 1;
+  }
+  g.restore();
+}
+
+/** Tiny flower already in a pot — seedling the kid taps/drags onto a bed. */
+function drawPottedSeedling(x, y, speciesId, scale, selected) {
+  scale = scale || 1;
+  const hw = 14 * scale;
+  const hh = 12 * scale;
   cx.save();
-  cx.translate(s.x, s.y - 2);
-  // Terracotta pot — rim + body (no opaque soil disc)
-  cx.fillStyle = 'rgba(196, 110, 68, 0.88)';
+  cx.translate(x, y);
+  if (selected) {
+    cx.fillStyle = 'rgba(255, 224, 120, 0.35)';
+    cx.beginPath(); cx.ellipse(0, -hh * 0.2, hw * 1.45, hh * 1.55, 0, 0, 7); cx.fill();
+  }
+  // Pot
+  cx.fillStyle = '#c46e44';
   cx.beginPath();
-  cx.moveTo(-hw * 0.85, -hh * 0.15);
-  cx.lineTo(hw * 0.85, -hh * 0.15);
-  cx.lineTo(hw * 0.55, hh * 0.95);
-  cx.lineTo(-hw * 0.55, hh * 0.95);
+  cx.moveTo(-hw * 0.85, 0);
+  cx.lineTo(hw * 0.85, 0);
+  cx.lineTo(hw * 0.55, hh);
+  cx.lineTo(-hw * 0.55, hh);
   cx.closePath();
   cx.fill();
-  cx.fillStyle = 'rgba(220, 140, 90, 0.92)';
-  cx.fillRect(-hw * 0.95, -hh * 0.35, hw * 1.9, hh * 0.28);
-  cx.strokeStyle = 'rgba(90, 48, 28, 0.55)';
-  cx.lineWidth = 1.2;
-  cx.strokeRect(-hw * 0.95, -hh * 0.35, hw * 1.9, hh * 0.28);
+  cx.fillStyle = '#5a3a22';
+  cx.beginPath(); cx.ellipse(0, 0, hw * 0.78, hh * 0.22, 0, 0, 7); cx.fill();
+  cx.fillStyle = '#d88a5a';
+  cx.beginPath(); cx.ellipse(0, -hh * 0.12, hw * 0.9, hh * 0.2, 0, 0, 7); cx.fill();
+  // Sprout / bloom
+  const sp = spById(speciesId);
+  drawFlowerSprite(sp, 0, -hh * 0.85, MEADOW_FLOWER_DRAW * 0.42 * scale);
   cx.restore();
+}
+
+/** Tray of potted seedlings from the basket — tap/drag onto empty bed pots. */
+function drawSeedlingTray() {
+  hit.seedlings = [];
+  if (state !== ST.GREENHOUSE || nurseryMode !== 'plant' || !bouquet.length || plantAnim) return;
+  const n = Math.min(6, bouquet.length);
+  const cell = Math.min(56, (W - 48) / Math.max(3, n));
+  const trayW = cell * n + 16;
+  const trayH = 70;
+  const tx = (W - trayW) / 2;
+  const ty = contentBottom() - trayH - 58;
+  drawUiChrome(tx, ty, trayW, trayH, 16, { fill: '#f4ebe0', alpha: 0.32, line: 1.8 });
+  drawUiText('Drag a pot to a bed', W / 2, ty + 16, {
+    font: '700 12px Fredoka, system-ui, sans-serif', color: '#3a342c', halo: 3
+  });
+  for (let i = 0; i < n; i++) {
+    const id = bouquet[bouquet.length - n + i];
+    const sx = tx + 8 + cell * i + cell / 2;
+    const sy = ty + trayH - 18;
+    const draggingThis = seedlingDrag && seedlingDrag.idx === (bouquet.length - n + i);
+    if (!draggingThis) {
+      drawPottedSeedling(sx, sy, id, 1.05, seedlingSel === (bouquet.length - n + i));
+    }
+    hit.seedlings.push({
+      x: sx - cell / 2 + 4, y: ty + 20, w: cell - 8, h: trayH - 24,
+      idx: bouquet.length - n + i, id
+    });
+  }
+  if (seedlingDrag) {
+    drawPottedSeedling(seedlingDrag.x, seedlingDrag.y, seedlingDrag.id, 1.2, 1);
+  }
 }
 
 /** Empty-spot hint only — faint outline / sparkle. Never opaque soil masks (alpha ≤ 0.12). */
@@ -3442,13 +3574,13 @@ function drawFranzComposite(sz, bedsArr, outdoorFlag) {
     const b = outdoorFlag ? outdoorAt(s.i) : bedAt(s.i);
     const empty = !b || (!(b.grown | 0) && !bedMix(b).length);
     // Visible pots on empty bed spots (pot → plant → grow)
-    if (empty && (nurseryMode === 'plant' || nurseryMode === 'look' || nurseryMode === 'ready')) {
-      drawEmptyPot(s);
-    }
-    let hl = (nurseryMode === 'plant' && bouquet.length && bedHasRoom(b) && !(b && b.grown)) ||
+    const wantPot = empty && (nurseryMode === 'plant' || nurseryMode === 'look' || nurseryMode === 'ready');
+    const potHl = nurseryMode === 'plant' && bouquet.length && bedHasRoom(b) && !(b && b.grown);
+    if (wantPot) drawEmptyPot(s, { highlight: potHl || (nurseryMode === 'look' && !bouquet.length) });
+    let hl = potHl ||
       (nurseryMode === 'water' && b && !b.watered) ||
       ((nurseryMode === 'ready' || nurseryMode === 'look') && b && b.grown);
-    drawBedHighlight(s, hl);
+    drawBedHighlight(s, hl && !wantPot); // pot itself carries the plant-into cue
     drawBedFlowers(s, b);
     const hx = s.hitX != null ? s.hitX : s.x - (s.hitW || 44) / 2;
     const hy = s.hitY != null ? s.hitY : s.y - (s.hitH || 44) * 0.7;
@@ -3799,13 +3931,16 @@ function drawGreenhouse() {
     drawFlowerSprite(spById(plantFly.id), x, y, MEADOW_FLOWER_DRAW);
   }
 
+  // Seedling tray (basket → potted sprouts) sits above the dock CTA
+  if (nurseryView === 'inside') drawSeedlingTray();
+
   const canLeave = !growAnim && !plantAnim && (nurseryMode === 'ready' || nurseryMode === 'look' ||
     (nurseryMode === 'upgrade' && !upgradeAnim && SAVE.step === 'ready'));
-  // Only show leave button when she CAN leave — never a gray "Plant first" over beds
-  if (canLeave) {
+  // Single clear CTA when basket is empty — never stack with a cue pill
+  if (canLeave && !bouquet.length) {
     const gy = contentBottom() - 52;
     drawUiChrome(W / 2 - 110, gy, 220, 44, 16, { fill: '#5ecf7a', alpha: 0.38 });
-    drawUiText('Pick more!', W / 2, gy + 28, { font: '800 15px Fredoka, system-ui, sans-serif' });
+    drawUiText('Run for flowers!', W / 2, gy + 28, { font: '800 15px Fredoka, system-ui, sans-serif' });
     hit.gate = { x: W / 2 - 110, y: gy, w: 220, h: 44 };
   } else {
     hit.gate = null;
@@ -4083,16 +4218,20 @@ function update(dt) {
     girl.y = H * 0.72;
     girl.tx = girl.x; girl.ty = girl.y;
     girl.walking = 0;
+    if (!plantAnim && girlPoseT <= 0) girlPose = 'stand';
     if (window.HavenAnim) {
       girlGait = 'idle';
-      const busy = plantAnim || girlPoseT > 0;
+      const busy = plantAnim || (girlPoseT > 0 && girlPose !== 'stand');
       if (plantAnim) {
         HavenAnim.STATE.idleKind = 0;
         HavenAnim.STATE.hopT = 0;
         HavenAnim.STATE.bob *= Math.max(0, 1 - dt * 10);
+      } else {
+        HavenAnim.STATE.idleKind = 0; // no look-flip while standing in nursery
+        HavenAnim.STATE.hopT = 0;
       }
       HavenAnim.update(dt, girl, {
-        pose: plantAnim ? 'plant' : girlPose,
+        pose: plantAnim ? 'plant' : (girlPoseT > 0 ? girlPose : 'stand'),
         poseT: girlPoseT,
         busyPose: busy,
         noHop: 1
@@ -4360,7 +4499,7 @@ function onDown(e) {
   if (state === ST.GREENHOUSE) {
     if (plantAnim || growAnim || upgradeAnim) return;
     if (inRect(p, hit.gate)) {
-      if (plantingInProgress()) { cue = 'Tap a bed'; AudioFX.rustle(); return; }
+      if (plantingInProgress()) { cue = 'Drag a pot to a bed'; AudioFX.rustle(); return; }
       if (nurseryMode === 'water' || nurseryMode === 'growing') {
         cue = nurseryMode === 'water' ? 'Water!' : 'Growing…';
         AudioFX.rustle();
@@ -4371,6 +4510,19 @@ function onDown(e) {
     }
     if (inRect(p, hit.harvestArm)) { armHarvestMode(); return; }
     if (inRect(p, hit.harvestUndo) && harvestUndo) { undoHarvest(); return; }
+    // Potted seedling grab — drag onto an empty bed pot
+    if (nurseryMode === 'plant' && hit.seedlings && hit.seedlings.length) {
+      for (const s of hit.seedlings) {
+        if (inRect(p, s)) {
+          seedlingSel = s.idx;
+          seedlingDrag = { id: s.id, idx: s.idx, x: p.x, y: p.y, ox: p.x, oy: p.y };
+          gardenCam.dragging = 0;
+          dragging = 1;
+          AudioFX.ui();
+          return;
+        }
+      }
+    }
     // Defer plant/water/harvest to onUp — onMove may pan past threshold (drag ≠ tap)
     if (nurseryMode === 'plant' || nurseryMode === 'water'
         || nurseryMode === 'ready' || nurseryMode === 'look') {
@@ -4410,7 +4562,11 @@ function handleGreenhouseTap(p) {
     if (idx >= 0) {
       const bed = outdoor ? outdoorAt(idx) : bedAt(idx);
       if (bed && bed.grown) { celebrateBed(idx, outdoor); return; }
-      if (bedHasRoom(bed)) { doPlantAt(idx, outdoor); return; }
+      if (bedHasRoom(bed)) {
+        const pref = (seedlingSel >= 0 && seedlingSel < bouquet.length) ? bouquet[seedlingSel] : null;
+        doPlantAt(idx, outdoor, pref);
+        return;
+      }
     }
     AudioFX.rustle();
     return;
@@ -4451,6 +4607,13 @@ function onMove(e) {
   e.preventDefault();
   const p = ptr(e);
   if (pointerId == null || p.id !== pointerId || !lastPtr) return;
+
+  if (state === ST.GREENHOUSE && seedlingDrag) {
+    seedlingDrag.x = p.x;
+    seedlingDrag.y = p.y;
+    lastPtr = p;
+    return;
+  }
 
   if (state === ST.GREENHOUSE && gardenCam.dragging) {
     const dx = p.x - gardenCam.startX;
@@ -4510,6 +4673,29 @@ function onUp(e) {
       if (act === 'continue') finishRunnerToNursery();
     }
     pointerId = null; lastPtr = null; dragging = 0; wateringHeld = 0;
+    return;
+  }
+  // Drop potted seedling onto an empty bed pot
+  if (state === ST.GREENHOUSE && seedlingDrag) {
+    const dragged = seedlingDrag;
+    const moved = Math.hypot(p.x - dragged.ox, p.y - dragged.oy) >= 10;
+    seedlingDrag = null;
+    pointerId = null; lastPtr = null; dragging = 0; wateringHeld = 0;
+    let outdoor = 0;
+    if (SAVE.outdoorUnlocked && freeIndoorSpot() < 0 && freeOutdoorSpot() >= 0) outdoor = 1;
+    const idx = pickSpotExclusive(p, outdoor, { emptyOnly: 1 });
+    if (idx >= 0 && bedHasRoom(outdoor ? outdoorAt(idx) : bedAt(idx))) {
+      seedlingSel = dragged.idx;
+      doPlantAt(idx, outdoor, dragged.id);
+    } else if (!moved) {
+      // Tap-select only — next bed tap plants this seedling
+      seedlingSel = dragged.idx;
+      setCue('Now tap a bed');
+      AudioFX.ui();
+    } else {
+      seedlingSel = dragged.idx;
+      AudioFX.rustle();
+    }
     return;
   }
   // Greenhouse: tap acts only if we did not pan
@@ -4859,7 +5045,7 @@ async function boot() {
 
   try {
     if (navigator.serviceWorker && typeof navigator.serviceWorker.register === 'function') {
-      navigator.serviceWorker.register('./sw.js?v=0.9-play-fix-runner').catch(() => {});
+      navigator.serviceWorker.register('./sw.js?v=0.9-play-fix-runner-idle').catch(() => {});
     }
   } catch (eSw) {}
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));

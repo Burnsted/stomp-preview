@@ -2,62 +2,63 @@
   "empty": {
     "spots": {
       "ok": true,
-      "maxAlpha": 0.118,
-      "meanAlpha": 0.11,
+      "maxAlpha": 0.003,
+      "meanAlpha": 0.003,
       "spots": 11,
       "worst": 11,
       "plateKey": "small",
-      "plateSrc": "small-empty.webp?v=v0.9-play-fix-runner",
+      "plateSrc": "small-empty.webp?v=v0.9-play-fix-runner-idle",
       "layoutVersion": 4,
       "routing": "exclusive-rect",
       "slotCount": 12,
       "activeCount": 12,
+      "potsExpected": 1,
       "per": [
         {
           "i": 0,
-          "alpha": 0.104,
+          "alpha": 0.003,
           "x": 239,
           "y": 1148
         },
         {
           "i": 1,
-          "alpha": 0.107,
+          "alpha": 0.003,
           "x": 196,
           "y": 1270
         },
         {
           "i": 2,
-          "alpha": 0.11,
+          "alpha": 0.003,
           "x": 156,
           "y": 1393
         },
         {
           "i": 3,
-          "alpha": 0.111,
+          "alpha": 0.003,
           "x": 114,
           "y": 1513
         },
         {
           "i": 4,
-          "alpha": 0.113,
+          "alpha": 0.003,
           "x": 71,
           "y": 1635
         },
         {
           "i": 6,
-          "alpha": 0.105,
+          "alpha": 0.003,
           "x": 709,
           "y": 1148
         },
         {
           "i": 7,
-          "alpha": 0.108,
+          "alpha": 0.003,
           "x": 746,
           "y": 1270
         },
         {
           "i": 8,
-          "alpha": 0.111,
+          "alpha": 0.003,
           "x": 786,
           "y": 1393
         }
@@ -65,15 +66,15 @@
     },
     "face": {
       "ok": true,
-      "skinFrac": 0.936,
-      "brightFrac": 0,
+      "skinFrac": 0.801,
+      "brightFrac": 0.108,
       "samples": 15625,
       "h": 225,
       "girlFrac": 0.22,
       "mean": [
-        202,
-        139,
-        74
+        222,
+        169,
+        125
       ]
     },
     "frac": 0.22,
@@ -81,7 +82,7 @@
       "x": 206,
       "y": 658.8,
       "face": 1,
-      "pose": "idle",
+      "pose": "stand",
       "gait": "idle"
     },
     "party": {

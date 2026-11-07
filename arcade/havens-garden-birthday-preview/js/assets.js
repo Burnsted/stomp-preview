@@ -194,6 +194,7 @@ const AssetManifest = Object.assign({}, AssetPaths, buildGreenhousePaths(), buil
 const CORE_KEYS = [
   'plateMeadow', 'meadowDay',
   'havenRun', 'havenJump', 'havenPick', 'havenChase', 'havenSkip', 'havenPlant', 'havenFront',
+  'havenThreeQuarter', // nursery calm standing idle (not skip)
   'havenWalk01', 'havenWalk02', 'havenWalk03', 'havenWalk04',
   'bouquet0', 'bouquet1', 'bouquet2', 'bouquet3', 'bouquetFull',
   'flowerDaisy', 'flowerTulip', 'flowerSunflower', 'flowerBluebell', 'flowerPop',
@@ -206,7 +207,8 @@ const SCENE_KEYS = {
   meadow: CORE_KEYS.slice(),
   greenhouse: [
     'plateGreenhouse',
-    'havenPlant', 'wateringCan', 'basket', 'shovelBig',
+    'havenPlant', 'havenThreeQuarter', 'havenFront', 'havenWalk01',
+    'wateringCan', 'basket', 'shovelBig',
     'flowerDaisy', 'flowerTulip', 'flowerSunflower', 'flowerBluebell',
     // Prefer current size empty interiors; Franz may drop distinct S/L/outdoor later
     'gh_small_closed_day', 'gh_small_open_day',
@@ -374,13 +376,24 @@ const Assets = {
 
   pose(name) {
     const map = {
-      // Same cartoon set as walk/run — never painterly havenFront (wrong style + scale)
-      idle: 'havenSkip', run: 'havenRun', jump: 'havenJump', pick: 'havenPick',
-      chase: 'havenChase', skip: 'havenSkip', plant: 'havenPlant', water: 'havenPlant',
-      front: 'havenSkip', walk: 'havenRun'
+      // Field locomotion stays on cartoon skip/run. Nursery standing idle uses
+      // the calm three-quarter / front sheets (most neutral standing frames we have).
+      idle: 'havenSkip', stand: 'havenThreeQuarter', run: 'havenRun', jump: 'havenJump',
+      pick: 'havenPick', chase: 'havenChase', skip: 'havenSkip', plant: 'havenPlant',
+      water: 'havenPlant', front: 'havenFront', walk: 'havenRun'
     };
     const k = map[name] || 'havenSkip';
+    if (name === 'stand' || name === 'idleStand') {
+      // Prefer front (feet together, arms down) over three-quarter (reads mid-step)
+      return this.get('havenFront') || this.get('havenThreeQuarter')
+        || this.get('havenWalk01') || this.get('havenSkip') || this.get('havenRun');
+    }
     return this.get(k) || this.get('havenRun');
+  },
+
+  /** Calm standing sprite for nursery entry (not skip/hop). */
+  standPose() {
+    return this.pose('stand');
   },
 
   /** Runner sprites — basename without .png (e.g. 'haven-back-run', 'flower-daisy'). */

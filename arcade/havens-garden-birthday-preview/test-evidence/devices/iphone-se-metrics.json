@@ -8,7 +8,7 @@
     "dpr": 2
   },
   "metrics": {
-    "ver": "v0.9-play-fix-runner",
+    "ver": "v0.9-play-fix-runner-idle",
     "w": 375,
     "h": 667,
     "hitsSmallExclusiveMin": 44,

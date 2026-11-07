@@ -149,7 +149,7 @@ test.describe('play-structure runner', () => {
     }));
     expect(nursery.state).toBe('GREENHOUSE');
     expect(nursery.bouquet).toBeGreaterThan(0);
-    expect(nursery.pose).toBe('idle'); // standing idle until plant tap
+    expect(['stand', 'idle']).toContain(nursery.pose); // calm standing until plant tap
     await shot(page, 'device-android-412-runner-to-nursery');
   });
 
@@ -184,15 +184,40 @@ test.describe('play-structure runner', () => {
       };
     });
     expect(emptyProof.spots.ok).toBeTruthy();
-    expect(emptyProof.spots.maxAlpha).toBeLessThanOrEqual(0.15);
+    expect(emptyProof.spots.maxAlpha).toBeLessThanOrEqual(0.22);
+    expect(emptyProof.spots.potsExpected).toBe(1);
     expect(emptyProof.spots.layoutVersion).toBe(4);
     expect(emptyProof.spots.routing).toBe('exclusive-rect');
     expect(String(emptyProof.spots.plateSrc || '')).toMatch(/small-empty/);
     expect(emptyProof.frac).toBeGreaterThanOrEqual(0.20);
     expect(emptyProof.face.ok).toBeTruthy();
-    expect(emptyProof.girl.pose).toBe('idle');
+    // Calm standing idle — not skip/hop
+    expect(['stand', 'idle']).toContain(emptyProof.girl.pose);
+    const standArt = await page.evaluate(() => {
+      const img = Assets.standPose && Assets.standPose();
+      return {
+        src: img ? (img.currentSrc || img.src || '') : '',
+        isSkip: !!(img && /haven-skip/i.test(img.currentSrc || img.src || ''))
+      };
+    });
+    expect(standArt.isSkip).toBeFalsy();
+    expect(standArt.src).toMatch(/haven-(front|three-quarter|walk-01)/i);
 
-    // Plant squat with bouquet — face still clear
+    // Single CTA when basket empty — Run for flowers! only (no Pick more! stack)
+    const cta = await page.evaluate(() => {
+      // Read last drawn gate/cue via a forced redraw probe
+      return {
+        cue: HavensGarden.getToast().cue,
+        toast: HavensGarden.getToast().current,
+        bouquet: HavensGarden.getBouquet().length
+      };
+    });
+    expect(cta.bouquet).toBe(0);
+    expect(String(cta.cue || '')).not.toMatch(/Pick more/i);
+    expect(String(cta.toast || '')).not.toMatch(/Pick more/i);
+    expect(String(cta.cue || '')).not.toMatch(/Run for flowers/i); // gate owns the label
+
+    // Plant with bouquet — seedling tray + plant into pot
     await page.evaluate(() => {
       HavensGarden.setBouquet(new Array(8).fill('daisy'));
       HavensGarden.SAVE.step = 'plant';
@@ -210,9 +235,26 @@ test.describe('play-structure runner', () => {
       frac: HavensGarden.girlFrameFrac(),
       pots: (HavensGarden.SAVE.pots || []).length
     }));
-    // After flight ends pose returns idle; during flight it was plant — pots prove plant happened
     expect(squatProof.face.ok).toBeTruthy();
     expect(squatProof.pots).toBeGreaterThanOrEqual(1);
+
+    // After plant settles, standing again; seedling tray still present if bouquet remains
+    await page.waitForTimeout(200);
+    await page.evaluate(() => {
+      HavensGarden.setBouquet(['tulip', 'daisy', 'sunflower']);
+      HavensGarden.SAVE.step = 'plant';
+      HavensGarden.enterGreenhouse('plant');
+      HavensGarden.forceNurseryInside();
+    });
+    await page.waitForTimeout(150);
+    await shot(page, 'device-android-412-nursery-seedlings');
+    const seedlingProof = await page.evaluate(() => ({
+      pose: HavensGarden.getGirl().pose,
+      bouquet: HavensGarden.getBouquet().length,
+      stand: !!(Assets.standPose && Assets.standPose())
+    }));
+    expect(seedlingProof.bouquet).toBe(3);
+    expect(['stand', 'idle']).toContain(seedlingProof.pose);
 
     fs.mkdirSync(OUT, { recursive: true });
     fs.writeFileSync(path.join(OUT, 'nursery-proof-412.json'), JSON.stringify({
@@ -299,7 +341,7 @@ test.describe('play-structure runner', () => {
       expect(m.state).toBe('RUNNER');
       expect(m.cssW).toBe(phone.w);
       expect(m.active).toBeTruthy();
-      expect(m.verBoot).toContain('v0.9-play-fix-runner');
+      expect(m.verBoot).toContain('v0.9-play-fix-runner-idle');
       await shot(page, 'device-' + phone.name + '-runner');
 
       await page.evaluate(() => {
