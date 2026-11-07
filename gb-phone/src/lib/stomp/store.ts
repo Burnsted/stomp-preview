@@ -4,8 +4,38 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { findTrick, isLanded, type TrickStatus } from "@/lib/stomp/goals";
 import type { Band } from "@/lib/stomp/library";
 import { publicUrl } from "@/lib/public-url";
+import { pushScreenHistory } from "@/lib/stomp/nav-history";
+import { createSafeJSONStorage } from "@/lib/stomp/playtest/safe-storage";
 
-export type Screen = "greet" | "home" | "run" | "map" | "log" | "guide" | "stash" | "playlist" | "goals" | "park" | "crew" | "session" | "stompers" | "woz";
+export type Screen =
+  | "greet"
+  | "home"
+  | "run"
+  | "map"
+  | "log"
+  | "guide"
+  | "stash"
+  | "playlist"
+  | "favorites"
+  | "offline"
+  | "goals"
+  | "park"
+  | "crew"
+  | "session"
+  | "stompers"
+  | "bag"
+  | "hub"
+  | "woz"
+  | "avatar-onboard"
+  | "stomper-id"
+  | "avatar-locker"
+  | "trip-hub"
+  | "grom-onboard"
+  | "explore-demo"
+  | "feedback"
+  | "welcome"
+  | "meet-sesh"
+  | "trip-choice";
 
 export type Landing = {
   id: string;
@@ -85,6 +115,8 @@ export type CrewMate = {
 
 type State = {
   screen: Screen;
+  /** In-memory previous screens for text ‹ Back (t1236u) — not persisted. */
+  screenHistory: Screen[];
   running: boolean;
   runStartedAt: number | null;
   boardStowed: boolean;
@@ -108,6 +140,8 @@ type State = {
   meetup: string;
   tomorrow: string;
   setScreen: (screen: Screen) => void;
+  /** Pop previous screen when history exists (t1236u). */
+  goBack: () => void;
   setBand: (band: Band) => void;
   startRun: () => void;
   endRun: () => void;
@@ -133,26 +167,15 @@ type State = {
   advanceCue: () => void;
 };
 
-const memory = new Map<string, string>();
-
-const storage = createJSONStorage(() =>
-  typeof window === "undefined"
-    ? {
-        getItem: (key: string) => memory.get(key) ?? null,
-        setItem: (key: string, value: string) => {
-          memory.set(key, value);
-        },
-        removeItem: (key: string) => {
-          memory.delete(key);
-        },
-      }
-    : localStorage,
-);
+const storage = createJSONStorage(() => createSafeJSONStorage());
 
 export const useStomp = create<State>()(
   persist(
     (set) => ({
-      screen: "greet",
+      // First-time fictional visitors land on branded welcome (t1215u).
+      // Returning completed profiles are routed to greet/Home after rehydrate.
+      screen: "welcome",
+      screenHistory: [],
       running: false,
       runStartedAt: null,
       boardStowed: true,
@@ -207,17 +230,38 @@ export const useStomp = create<State>()(
       discover: false,
       meetup: "",
       tomorrow: "",
-      setScreen: (screen) => set({ screen }),
+      setScreen: (screen) =>
+        set((state) => {
+          if (screen === state.screen) return state;
+          return {
+            screen,
+            screenHistory: pushScreenHistory(state.screenHistory, state.screen, screen),
+          };
+        }),
+      goBack: () =>
+        set((state) => {
+          if (state.screenHistory.length === 0) return state;
+          const screenHistory = [...state.screenHistory];
+          const prev = screenHistory.pop()!;
+          return { screen: prev, screenHistory };
+        }),
       setBand: (band) => set({ band }),
       startRun: () =>
-        set({
+        set((state) => ({
           running: true,
           runStartedAt: Date.now(),
           boardStowed: true,
           cueIndex: 0,
           screen: "run",
-        }),
-      endRun: () => set({ running: false, runStartedAt: null, screen: "greet" }),
+          screenHistory: pushScreenHistory(state.screenHistory, state.screen, "run"),
+        })),
+      endRun: () =>
+        set((state) => ({
+          running: false,
+          runStartedAt: null,
+          screen: "greet",
+          screenHistory: pushScreenHistory(state.screenHistory, state.screen, "greet"),
+        })),
       toggleStow: () => set((state) => ({ boardStowed: !state.boardStowed })),
       logLanding: (seconds) =>
         set((state) => {
@@ -284,6 +328,7 @@ export const useStomp = create<State>()(
           activeSession: id,
           sessionDone: state.activeSession === id ? state.sessionDone : [],
           screen: "session",
+          screenHistory: pushScreenHistory(state.screenHistory, state.screen, "session"),
         })),
       toggleStep: (id) =>
         set((state) => ({
@@ -336,7 +381,39 @@ export const useStomp = create<State>()(
       merge: (persisted, current) => {
         const saved = (persisted ?? {}) as Partial<State>;
         const band = saved.band === "intermediate" || saved.band === "advanced" ? saved.band : "beginner";
-        const screen = saved.screen && saved.screen !== "home" ? saved.screen : "greet";
+        // Invalid / stale screens fall back to welcome — entry resolver may promote to Home.
+        const knownScreens = new Set<string>([
+          "greet",
+          "home",
+          "run",
+          "map",
+          "log",
+          "guide",
+          "stash",
+          "playlist",
+          "favorites",
+          "offline",
+          "goals",
+          "park",
+          "crew",
+          "session",
+          "stompers",
+          "bag",
+          "hub",
+          "woz",
+          "avatar-onboard",
+          "stomper-id",
+          "avatar-locker",
+          "trip-hub",
+          "grom-onboard",
+          "explore-demo",
+          "feedback",
+          "welcome",
+          "meet-sesh",
+          "trip-choice",
+        ]);
+        const rawScreen = saved.screen && saved.screen !== "home" ? saved.screen : "welcome";
+        const screen = knownScreens.has(String(rawScreen)) ? (rawScreen as Screen) : "welcome";
         const trickStatus = { ...(saved.trickStatus ?? {}) };
         for (const id of saved.stomped ?? []) {
           if (!trickStatus[id]) trickStatus[id] = "landed";
@@ -344,13 +421,22 @@ export const useStomp = create<State>()(
         const stomped = Object.entries(trickStatus)
           .filter(([, status]) => isLanded(status))
           .map(([id]) => id);
+        const landings = Array.isArray(saved.landings) ? saved.landings : current.landings;
+        const clips = Array.isArray(saved.clips) ? saved.clips : current.clips;
+        const stashes = Array.isArray(saved.stashes) ? saved.stashes : current.stashes;
         return {
           ...current,
           ...saved,
+          landings,
+          clips,
+          stashes,
+          screen,
+          // t1236u: never restore back-stack from disk
+          screenHistory: [],
           stomped,
           trickStatus,
-          studied: saved.studied ?? [],
-          crew: saved.crew ?? [],
+          studied: Array.isArray(saved.studied) ? saved.studied : [],
+          crew: Array.isArray(saved.crew) ? saved.crew : [],
           selfie: saved.selfie ?? "",
           riderName: saved.riderName || "Rider",
           riderCode: saved.riderCode ?? "",
@@ -361,12 +447,16 @@ export const useStomp = create<State>()(
           meetup: saved.meetup ?? "",
           tomorrow: saved.tomorrow ?? "",
           band,
-          screen,
         };
       },
     },
   ),
 );
+
+/** Dev / screenshot hook (t1223u). */
+if (typeof window !== "undefined" && import.meta.env?.DEV) {
+  (window as unknown as { __stompLine?: typeof useStomp }).__stompLine = useStomp;
+}
 
 export function crewPayload(code: string, name: string): string {
   return `STOMP|${code}|${name.replace(/[|\n]/g, " ").trim().slice(0, 24) || "Rider"}`;

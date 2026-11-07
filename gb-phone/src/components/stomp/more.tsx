@@ -2,12 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, Share2, Trash2 } from "lucide-react";
 import { BackBar } from "@/components/stomp/chrome";
 import { ConfirmBar } from "@/components/stomp/confirm-bar";
+import { MusicSourcesRow } from "@/components/stomp/music-sources-row";
+import { BeatStrip } from "@/components/stomp/beat-strip";
 import { AIRTIME_EMPTY, LINE_EMPTY, MUSIC_EMPTY, MUSIC_PLAY_FAIL, MUSIC_SAVE_FAIL, PLAYLIST_EMPTY, STASH_EMPTY, STASH_PRIVACY_NOTE, checkStash } from "@/lib/stomp/woz-bridge/more-copy";
 import { listTracks, removeTrack, saveTrack, trackUrl, type TrackMeta } from "@/lib/stomp/music";
 import { loadTrackOrder, moveTrack, orderedIds, saveTrackOrder } from "@/lib/stomp/music-order";
-import { BeatStrip } from "@/components/stomp/beat-strip";
 import { mountainPlaylistFor } from "@/lib/stomp/mountain-playlists";
 import { useHomeMountain } from "@/lib/stomp/home-mountain";
+import { nativeShare, parseShareTarget, shareResultNote } from "@/lib/stomp/native-share";
 import { sessionById, suggestedSession } from "@/lib/stomp/sessions";
 import {
   CUES,
@@ -30,7 +32,7 @@ export function AirLog() {
         {landings.map((landing) => (
           <li key={landing.id} className="rounded-3xl bg-snow p-4 ring-1 ring-line">
             <div className="flex items-baseline justify-between gap-3">
-              <p className="font-display text-5xl text-pink tabular-nums">
+              <p className="font-display text-5xl text-accent tabular-nums">
                 {formatAir(landing.seconds)}
                 <span className="text-2xl text-ink">s</span>
               </p>
@@ -38,7 +40,7 @@ export function AirLog() {
             </div>
             <p className="mt-1 text-sm font-medium">{landing.label}</p>
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-paper">
-              <div className="h-full rounded-full bg-pink" style={{ width: `${(landing.seconds / peak) * 100}%` }} />
+              <div className="h-full rounded-full bg-cta" style={{ width: `${(landing.seconds / peak) * 100}%` }} />
             </div>
           </li>
         ))}
@@ -66,7 +68,7 @@ export function Guide() {
               "rounded-3xl p-4 " + (index === cueIndex ? "bg-ink text-snow" : "bg-snow ring-1 ring-line")
             }
           >
-            <p className={"text-xs font-semibold tracking-widest " + (index === cueIndex ? "text-lime" : "text-teal")}>
+            <p className={"text-xs font-semibold tracking-widest " + (index === cueIndex ? "text-accent" : "text-accent")}>
               {cue.feet} ft
             </p>
             <p className="mt-2 text-pretty font-medium">{cue.line}</p>
@@ -77,7 +79,7 @@ export function Guide() {
         <button
           type="button"
           onClick={startRun}
-          className="mt-4 h-14 w-full rounded-full bg-pink font-display text-2xl tracking-wide text-snow"
+          className="mt-4 h-14 w-full rounded-full bg-cta font-display text-2xl tracking-wide text-cta-fg"
         >
           Ride it
         </button>
@@ -146,12 +148,12 @@ export function StashPins() {
           type="submit"
           disabled={!name.trim()}
           title={name.trim() ? undefined : "Name the spot first"}
-          className="h-12 rounded-full bg-teal font-semibold text-ink disabled:opacity-40"
+          className="h-12 rounded-full bg-accent font-semibold text-ink disabled:opacity-40"
         >
           Drop the pin
         </button>
         {error ? (
-          <p role="alert" data-testid="stash-error" className="text-sm font-semibold text-pink">
+          <p role="alert" data-testid="stash-error" className="text-sm font-semibold text-accent">
             {error}
           </p>
         ) : null}
@@ -302,12 +304,12 @@ function MusicDeck() {
       <button
         type="button"
         onClick={() => fileRef.current?.click()}
-        className="h-14 w-full rounded-full bg-pink font-display text-2xl tracking-wide text-snow"
+        className="h-14 w-full rounded-full bg-cta font-display text-2xl tracking-wide text-cta-fg"
       >
         Upload tracks
       </button>
       <p className="mt-2 text-sm text-pretty text-muted">Songs stay on this phone. Use arrows to adjust order.</p>
-      {note ? <p className="mt-2 text-sm font-semibold text-teal">{note}</p> : null}
+      {note ? <p className="mt-2 text-sm font-semibold text-accent">{note}</p> : null}
       {tracks.length === 0 && !note ? <p data-testid="music-empty" className="mt-2 text-sm text-muted">{MUSIC_EMPTY}</p> : null}
       {ordered.length > 0 ? (
         <ul className="mt-3 flex flex-col gap-2">
@@ -352,6 +354,7 @@ export function Playlist() {
   const band = useStomp((state) => state.band);
   const crew = useStomp((state) => state.crew);
   const activeSession = useStomp((state) => state.activeSession);
+  const setScreen = useStomp((state) => state.setScreen);
   const resortId = useHomeMountain((state) => state.resortId);
   const hydrateMountain = useHomeMountain((state) => state.hydrate);
   const template = sessionById(activeSession) ?? suggestedSession(band, crew.length);
@@ -359,8 +362,7 @@ export function Playlist() {
   const rows = playlistRows({ landings, callouts, clips });
   const [now] = useState(() => Date.now());
   const [shareNote, setShareNote] = useState("");
-  const searchQuery = mountain?.search ?? template.search;
-  const search = `https://open.spotify.com/search/${encodeURIComponent(searchQuery)}`;
+  const [shareInbox, setShareInbox] = useState("");
 
   useEffect(() => {
     hydrateMountain();
@@ -370,69 +372,91 @@ export function Playlist() {
     const text = mountain
       ? `STOMP · ${mountain.title}. ${mountain.blurb} Demo share — stays on this phone until you send it.`
       : `STOMP playlist · ${template.mood} · ${template.name}. Demo share — stays on this phone until you send it.`;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: "STOMP playlist", text });
-        setShareNote("Share sheet opened.");
-        return;
-      }
-    } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") {
-        setShareNote("Share canceled.");
-        return;
-      }
-    }
-    try {
-      await navigator.clipboard.writeText(text);
-      setShareNote("Playlist blurb copied.");
-    } catch {
-      setShareNote("Share stub ready.");
-    }
+    const result = await nativeShare({ title: "STOMP playlist", text });
+    setShareNote(shareResultNote(result));
   }
 
   return (
-    <div className="px-1 pb-10">
+    <div className="px-1 pb-28">
       <BackBar title="Playlist" />
       <div className="flex gap-2 px-2 pt-3">
         <div className="min-w-0 flex-1 px-2">
-          <p className="text-xs font-bold tracking-widest text-pink">
-            {mountain ? "MOUNTAIN PLAYLIST" : template.mood}
-          </p>
+          <p className="text-xs font-bold tracking-widest text-accent">CREW SOUNDTRACK</p>
           <p className="font-display text-3xl tracking-wide leading-none">
             {mountain ? mountain.title : template.name}
           </p>
           <p className="mt-1 text-pretty text-sm text-muted">
             {mountain
-              ? `${mountain.blurb} Beat strip (right) syncs demo song timing to mountain sections + tricks.`
-              : `For ${template.name}. Your uploads play here. Pick a mountain for a beat-synced run.`}
+              ? `${mountain.blurb} Beat strip syncs demo timing to mountain sections.`
+              : `For ${template.name}. Uploads stay on this phone.`}
           </p>
           {mountain ? (
             <ul data-testid="playlist-beat-legend" className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
-              <li className="rounded-full bg-teal/35 px-2.5 py-1 text-ink">Section</li>
-              <li className="rounded-full bg-pink/25 px-2.5 py-1 text-pink">Beat</li>
-              <li className="rounded-full bg-lime px-2.5 py-1 text-ink">Trick</li>
+              <li className="rounded-full bg-accent/35 px-2.5 py-1 text-ink">Section</li>
+              <li className="rounded-full bg-accent/25 px-2.5 py-1 text-accent">Beat</li>
+              <li className="rounded-full bg-accent px-2.5 py-1 text-navy">Trick</li>
             </ul>
           ) : null}
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <a
-              href={search}
-              target="_blank"
-              rel="noreferrer"
-              className="flex h-12 items-center justify-center rounded-full bg-ink font-semibold text-snow"
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              data-testid="music-to-favorites"
+              onClick={() => setScreen("favorites")}
+              className="h-11 flex-1 rounded-full bg-orange/20 text-sm font-semibold text-orange ring-1 ring-orange/40"
             >
-              Open in Spotify
-            </a>
+              Favorites
+            </button>
+            <button
+              type="button"
+              data-testid="music-to-offline"
+              onClick={() => setScreen("offline")}
+              className="h-11 flex-1 rounded-full bg-snow text-sm font-semibold ring-1 ring-line"
+            >
+              Offline
+            </button>
             <button
               type="button"
               data-testid="playlist-share"
               onClick={() => void sharePlaylist()}
-              className="flex h-12 items-center justify-center gap-2 rounded-full bg-snow font-semibold ring-1 ring-line"
+              className="flex h-11 items-center justify-center gap-1 rounded-full bg-snow px-3 font-semibold ring-1 ring-line"
             >
               <Share2 className="size-4" aria-hidden="true" />
               Share
             </button>
           </div>
-          {shareNote ? <p className="mt-2 text-sm font-semibold text-teal">{shareNote}</p> : null}
+          {shareNote ? <p className="mt-2 text-sm font-semibold text-accent">{shareNote}</p> : null}
+
+          <div className="mt-5">
+            <MusicSourcesRow
+              onOpen={(src) => {
+                window.open(src.openUrl, "_blank", "noopener,noreferrer");
+                setShareNote(
+                  src.mode === "external-demo"
+                    ? `${src.name} · external demo link`
+                    : `Opening ${src.name}`,
+                );
+              }}
+            />
+          </div>
+
+          <label className="mt-4 block text-xs font-bold tracking-widest text-muted">
+            SHARE-TO-STOMP (paste a link)
+            <input
+              data-testid="share-to-stomp-input"
+              value={shareInbox}
+              onChange={(e) => setShareInbox(e.target.value)}
+              onBlur={() => {
+                const item = parseShareTarget(shareInbox);
+                if (item) {
+                  setShareNote(`Inboxed “${item.title}” from ${item.sourceHint} (local).`);
+                  setShareInbox("");
+                }
+              }}
+              placeholder="https://open.spotify.com/…"
+              className="mt-1 h-11 w-full rounded-2xl bg-snow px-3 text-sm ring-1 ring-line outline-none"
+            />
+          </label>
+
           <MusicDeck />
           <p className="pt-5 text-pretty text-muted">Air, callouts, and clips from this line, newest first.</p>
           {rows.length === 0 ? <p data-testid="playlist-empty" className="pt-3 text-pretty text-muted">{PLAYLIST_EMPTY}</p> : null}
@@ -442,7 +466,7 @@ export function Playlist() {
                 {row.image ? (
                   <img src={row.image} alt="" className="size-16 rounded-2xl object-cover" />
                 ) : (
-                  <span className="flex size-16 items-center justify-center rounded-2xl bg-ink font-display text-lg text-lime">
+                  <span className="flex size-16 items-center justify-center rounded-2xl bg-navy font-display text-lg text-accent">
                     STOMP
                   </span>
                 )}

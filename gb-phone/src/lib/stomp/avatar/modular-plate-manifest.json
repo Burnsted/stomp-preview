@@ -1,0 +1,388 @@
+{
+  "task": "t1225u",
+  "status": "REGISTERED_VISUAL_PROTOTYPE_ONLY",
+  "androidAccepted": false,
+  "androidQa": "NOT_RUN",
+  "sourceZipSha256": {
+    "m-samir": "5105bcea04ab2b27eb0708e3aaa207b5d17ba1b8c72e1300416db654b93d534e",
+    "f-priya": "b8d9fee95a9d12234bf178d43914cb86fcf6ef9716b51f4c21caf118d8330a6d",
+    "m-devon": "7f11f205db0b673f5918fbae7cd7d8161471d19b75b10fa74c0269dc7f6aaf04",
+    "f-hana": "c006bcc25b8370defab935a8702b10b5579991d1ba99c1bbf8d509dd6081d5dd"
+  },
+  "riders": [
+    "m-samir",
+    "f-priya",
+    "m-devon"
+  ],
+  "prototypePlateCountPerRider": 8,
+  "productionSlotCount": 11,
+  "missingProductionSlots": [
+    "face (separated)",
+    "hair (separated)",
+    "headwear (separated)",
+    "goggles (separated)",
+    "board (real bindings)",
+    "backpack (independent)"
+  ],
+  "plates": [
+    {
+      "path": "gb-phone/public/stomper/adult/body/body-look1-male@512.webp",
+      "url": "/stomper/adult/body/body-look1-male@512.webp",
+      "sha256": "6aa97bdd18907861b03a8f3bbf6bf5ce2c6f1312c6430f4a7ab665db08463b49",
+      "bytes": 10638,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "body",
+      "starterId": "m-samir"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/face/face-m-samir-locked-composite@512.webp",
+      "url": "/stomper/adult/face/face-m-samir-locked-composite@512.webp",
+      "sha256": "4449cd3953489820d38a1569e616975b1b210e8d1e3170c284a22cbecfea247c",
+      "bytes": 11056,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "face",
+      "starterId": "m-samir"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/jacket/jacket-look1-tan@512.webp",
+      "url": "/stomper/adult/jacket/jacket-look1-tan@512.webp",
+      "sha256": "a43385e4cc7ecbe1723aed72d262cac11b5a25c2645875924e9352348e9b341f",
+      "bytes": 32178,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "jacket",
+      "starterId": "m-samir"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/jacket/jacket-look1-orange@512.webp",
+      "url": "/stomper/adult/jacket/jacket-look1-orange@512.webp",
+      "sha256": "b546c9dd5987db2e006bf26f0b36f6fddb80d3930092fb2ec61758e86f3f5a8a",
+      "bytes": 32020,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "jacket",
+      "starterId": "m-samir"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/pants/pants-look1-black@512.webp",
+      "url": "/stomper/adult/pants/pants-look1-black@512.webp",
+      "sha256": "7efdbb5d3dcb4e924e0bbc336bff1f1a1834b8190fcbfe096771b7ed297dffbb",
+      "bytes": 34244,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "pants",
+      "starterId": "m-samir"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/pants/pants-look1-charcoal@512.webp",
+      "url": "/stomper/adult/pants/pants-look1-charcoal@512.webp",
+      "sha256": "3099400a67aba537bab16ee76fc1b757271b9d722db9b54d03e1454e4a720e82",
+      "bytes": 34232,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "pants",
+      "starterId": "m-samir"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/gloves/gloves-look1-photo@512.webp",
+      "url": "/stomper/adult/gloves/gloves-look1-photo@512.webp",
+      "sha256": "1f0f9bac5bfcd247c8182ee2d527f3c9e7270b17138fc65e8a042b5636d617c7",
+      "bytes": 5076,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "gloves",
+      "starterId": "m-samir"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/boots/boots-look1-photo@512.webp",
+      "url": "/stomper/adult/boots/boots-look1-photo@512.webp",
+      "sha256": "11401dc8c99047ea210081c508ae669f5cbaa5cac685850a3c01da873df12f99",
+      "bytes": 8276,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "boots",
+      "starterId": "m-samir"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/starter/m-samir/preview@512.webp",
+      "url": "/stomper/adult/starter/m-samir/preview@512.webp",
+      "sha256": "fba3d85e90de04cf6e72aa171c461ccfdba34f572b3689c8ea98f1a59043db91",
+      "bytes": 82862,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "starter",
+      "starterId": "m-samir"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/body/body-look3-solid@512.webp",
+      "url": "/stomper/adult/body/body-look3-solid@512.webp",
+      "sha256": "2d1643f28059a27c41f2ad7b3aec65873c4da1e08b7960da6661056e34a65279",
+      "bytes": 10048,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "body",
+      "starterId": "f-priya"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/face/face-f-priya-locked-composite@512.webp",
+      "url": "/stomper/adult/face/face-f-priya-locked-composite@512.webp",
+      "sha256": "5314d38bc77dc85c841485383c9d7194516870d3715d704af7b5b09f9a25f3e2",
+      "bytes": 14414,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "face",
+      "starterId": "f-priya"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/jacket/jacket-look3-purple@512.webp",
+      "url": "/stomper/adult/jacket/jacket-look3-purple@512.webp",
+      "sha256": "83228249f33b687c7e6c889c57a3fecef8d541051817432e6b2cfcb138ad5fee",
+      "bytes": 39210,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "jacket",
+      "starterId": "f-priya"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/jacket/jacket-look3-fuchsia@512.webp",
+      "url": "/stomper/adult/jacket/jacket-look3-fuchsia@512.webp",
+      "sha256": "858efefbffae7d0f3adedbed41913b9fcd2feebdf6f6d96d802d4f1b8685597c",
+      "bytes": 38778,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "jacket",
+      "starterId": "f-priya"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/pants/pants-look3-purple@512.webp",
+      "url": "/stomper/adult/pants/pants-look3-purple@512.webp",
+      "sha256": "7d1de412e93658d409f604d290614f85a7668f6a6f4bd148a388ed4aa9a85a1d",
+      "bytes": 39104,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "pants",
+      "starterId": "f-priya"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/pants/pants-look3-charcoal@512.webp",
+      "url": "/stomper/adult/pants/pants-look3-charcoal@512.webp",
+      "sha256": "b271af7271637d3f8797dd196034c7e21ab0e1607fb847c8edc213ab9741be1f",
+      "bytes": 24974,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "pants",
+      "starterId": "f-priya"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/gloves/gloves-look3-photo@512.webp",
+      "url": "/stomper/adult/gloves/gloves-look3-photo@512.webp",
+      "sha256": "0c52319d4996db87e4f34c102245c72a6bce6bc42d3e0d265de456ebbd6bcce5",
+      "bytes": 4644,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "gloves",
+      "starterId": "f-priya"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/boots/boots-look3-photo@512.webp",
+      "url": "/stomper/adult/boots/boots-look3-photo@512.webp",
+      "sha256": "0e9b7fd21ee3c1cfa69908d58a063ecc30be61eda71e0bd2dd1eeb8946f16881",
+      "bytes": 8900,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "boots",
+      "starterId": "f-priya"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/starter/f-priya/preview@512.webp",
+      "url": "/stomper/adult/starter/f-priya/preview@512.webp",
+      "sha256": "1f0fcea4d4127cdc73ff974adfadedf891f3698f677d2b893809e3f9448393c3",
+      "bytes": 95452,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "starter",
+      "starterId": "f-priya"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/body/body-look4-lean@512.webp",
+      "url": "/stomper/adult/body/body-look4-lean@512.webp",
+      "sha256": "1e4153a1fb2274436b2cb6fc31617090b474c400972498e12892de467c4fdffe",
+      "bytes": 11854,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "body",
+      "starterId": "m-devon"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/face/face-m-devon-locked-composite@512.webp",
+      "url": "/stomper/adult/face/face-m-devon-locked-composite@512.webp",
+      "sha256": "9c24379508c93b31422ce6b589b5189d384d3c049a4269f7a0f394666ac2f38e",
+      "bytes": 9998,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "face",
+      "starterId": "m-devon"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/jacket/jacket-look4-orange@512.webp",
+      "url": "/stomper/adult/jacket/jacket-look4-orange@512.webp",
+      "sha256": "738ae7769d848bc76310983de397e54c8445026c74f9f20dabd518be0cd4ada0",
+      "bytes": 45332,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "jacket",
+      "starterId": "m-devon"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/jacket/jacket-look4-white@512.webp",
+      "url": "/stomper/adult/jacket/jacket-look4-white@512.webp",
+      "sha256": "5202690e715bba90851869d131ab7a3391063fc624cbcbdf526e50247e48ad0d",
+      "bytes": 31210,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "jacket",
+      "starterId": "m-devon"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/pants/pants-look4-charcoal@512.webp",
+      "url": "/stomper/adult/pants/pants-look4-charcoal@512.webp",
+      "sha256": "a02c6b0fa7667db19f96c8380e992753a3066e057de6b68b8514055adf44fb7f",
+      "bytes": 41158,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "pants",
+      "starterId": "m-devon"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/pants/pants-look4-charcoal-silver@512.webp",
+      "url": "/stomper/adult/pants/pants-look4-charcoal-silver@512.webp",
+      "sha256": "029b77c05aedd137102c98c814e5f8e0a3ba2247d1f24b4d10e27122e5f74d99",
+      "bytes": 37446,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "pants",
+      "starterId": "m-devon"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/gloves/gloves-look4-photo@512.webp",
+      "url": "/stomper/adult/gloves/gloves-look4-photo@512.webp",
+      "sha256": "3de5c68632420712bcbca58f0f6ec093bcfca31481e0754096970c12e06e533f",
+      "bytes": 6482,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "gloves",
+      "starterId": "m-devon"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/boots/boots-look4-photo@512.webp",
+      "url": "/stomper/adult/boots/boots-look4-photo@512.webp",
+      "sha256": "b1f440f1bb6bcb139c83b42b8c7ab06a74c90d1ed8ed09849645c30e12c86fe2",
+      "bytes": 8556,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "boots",
+      "starterId": "m-devon"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/starter/m-devon/preview@512.webp",
+      "url": "/stomper/adult/starter/m-devon/preview@512.webp",
+      "sha256": "ab3467d569e9fb94a324b48e631155cca06406df8615c38703df234116127cee",
+      "bytes": 99076,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "starter",
+      "starterId": "m-devon"
+    }
+  ],
+  "requiredUrlsByStarter": {
+    "m-samir": [
+      "/stomper/adult/body/body-look1-male@512.webp",
+      "/stomper/adult/face/face-m-samir-locked-composite@512.webp",
+      "/stomper/adult/jacket/jacket-look1-tan@512.webp",
+      "/stomper/adult/jacket/jacket-look1-orange@512.webp",
+      "/stomper/adult/pants/pants-look1-black@512.webp",
+      "/stomper/adult/pants/pants-look1-charcoal@512.webp",
+      "/stomper/adult/gloves/gloves-look1-photo@512.webp",
+      "/stomper/adult/boots/boots-look1-photo@512.webp"
+    ],
+    "f-priya": [
+      "/stomper/adult/body/body-look3-solid@512.webp",
+      "/stomper/adult/face/face-f-priya-locked-composite@512.webp",
+      "/stomper/adult/jacket/jacket-look3-purple@512.webp",
+      "/stomper/adult/jacket/jacket-look3-fuchsia@512.webp",
+      "/stomper/adult/pants/pants-look3-purple@512.webp",
+      "/stomper/adult/pants/pants-look3-charcoal@512.webp",
+      "/stomper/adult/gloves/gloves-look3-photo@512.webp",
+      "/stomper/adult/boots/boots-look3-photo@512.webp"
+    ],
+    "m-devon": [
+      "/stomper/adult/body/body-look4-lean@512.webp",
+      "/stomper/adult/face/face-m-devon-locked-composite@512.webp",
+      "/stomper/adult/jacket/jacket-look4-orange@512.webp",
+      "/stomper/adult/jacket/jacket-look4-white@512.webp",
+      "/stomper/adult/pants/pants-look4-charcoal@512.webp",
+      "/stomper/adult/pants/pants-look4-charcoal-silver@512.webp",
+      "/stomper/adult/gloves/gloves-look4-photo@512.webp",
+      "/stomper/adult/boots/boots-look4-photo@512.webp"
+    ]
+  },
+  "franzIngest": "2026-11-05-alpha-v1",
+  "franzAlphaFillV2": "t228u-promoted-4",
+  "man1GloveFillQuarantined": true
+}

@@ -1,0 +1,51 @@
+STOMP Rider source handoff
+Workspace: Grok Build /workspace (grok-workspace-3)
+Date: 2026-11-02
+Purpose: Woz can open and diff the actual Rider source. Not a merge. Not a deploy.
+
+Dependencies
+- No new npm packages.
+- package-lock.json was not changed and is not in this ZIP.
+- Uses React, Zustand, and node:test already in this app.
+- social.test.ts imports ./social.ts.
+
+Test instructions
+  node --experimental-strip-types --test src/lib/stomp/social.test.ts
+  npx tsc --noEmit
+Results on 2026-11-02: 7 passed, 0 failed. tsc passed.
+Also clicked in the local preview: save avatar, join trip, join squad, share preview, confirm, then expire the pass and confirm Send is refused.
+
+ADDED — copy these in at the same paths
+- src/lib/stomp/social.ts
+- src/lib/stomp/social-store.ts
+- src/lib/stomp/social.test.ts
+- src/components/stomp/rider-hub.tsx
+
+MODIFIED — full current Grok Build files, cherry-pick only
+Do not replace Woz's copies wholesale.
+- src/lib/stomp/store.ts — Screen adds "hub"
+- src/lib/stomp/session-voice.ts — social/message fields; confirm, cancel, catch up, upcoming, message North Crew, share the clip; campfire opens "hub"
+- src/components/stomp/session-mic.tsx — useSocial in apply()
+- src/components/stomp/app.tsx — RiderHub when screen is "hub"
+- src/components/stomp/stompers.tsx — Campfire "Open campfire" opens "hub"
+- src/components/stomp/bag.tsx — My Bag note: self-reported vs confirmed
+- src/components/stomp/mountain-home.tsx — one "Rider" text control opens "hub". Home otherwise unchanged.
+- package.json — test script also runs src/lib/stomp/social.test.ts
+
+DO NOT OVERWRITE
+- src/components/stomp/greet.tsx (Crew Invite / CrewLink). Not in this ZIP.
+  GB sha256 d8cf8ee2824bee80ca5545cf0dcf8951b4094bd119b0b5894affd99844c47a7c
+  Do not treat that as the published pin 7795349de918fc1228687f677ff0064f4287e817662f6ccb4fd0fa2ba421fcbe.
+- Woz draft PRs #12-#16 and any later Woz branch.
+- public/og.jpg and other promotional art. Not in this ZIP. Home and the five-tab nav stay as they are aside from the one Rider text control.
+
+Mock only
+Avatar, trip join/decline, attendance, co-host, Day Sesh, squads, Campfire text/reply/reaction, share confirm with a 20-second expiry, rider/viewer/expired pass, and the JSON export all run on this phone. Mira and Kai are demo names. A chosen photo or video is stored as a file name only.
+
+Known blockers
+- No account, delivered invite, upload, or server-issued pass.
+- Squad "invite" does not reach another person. Join is local.
+- GROK-BUILD-BRIDGE.txt and PREVIEW-BRANDING-SYNC.md are not in this workspace. They were not recreated.
+- Outstanding visual defect: public/og.jpg still shows a third male rider. The approved lineup is the blonde Core Sesh and the East Asian rider with Oakley Meta Vanguard-style glasses. This ZIP does not change that image and is not permission to redesign it.
+
+This archive is source code plus this manifest. No screenshots.

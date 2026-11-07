@@ -1,0 +1,165 @@
+{
+  "starterId": "f-priya",
+  "look": "Adult Look 3",
+  "ageBand": "adult",
+  "state": "REGISTERED_VISUAL_PROTOTYPE_ONLY",
+  "approvedDefault": "purple/white geometric jacket + purple snowboard pants",
+  "alternateFitTest": "pink/fuchsia recolor + charcoal pants (requires owner visual acceptance)",
+  "sourcePhoto": "stomp_blonde_lookbook_showcase.png",
+  "rosterReference": "STOMP_Adult_Look_3.png",
+  "sourceCropGlobal": [
+    210,
+    0,
+    765,
+    1455
+  ],
+  "oneTransform": {
+    "productionCanvas": [
+      1024,
+      1024
+    ],
+    "runtimeCanvas": [
+      512,
+      512
+    ],
+    "scale": 0.6804123711340206,
+    "dx": 323,
+    "dy": 17,
+    "allPlatesSameCoordinates": true
+  },
+  "assets": [
+    {
+      "path": "README.md",
+      "sha256": "b69120d45a59f81ae156601d7e508eb19a1705a3a4b631ea7d4bd7af24fec371",
+      "bytes": 2294
+    },
+    {
+      "path": "STOMP_f-priya_REGISTERED_PROTOTYPE.ora",
+      "sha256": "d262d28c9794ddd7e2c6e3d77d68ff0aeea2512057a38d87ea518bdff1fe7472",
+      "bytes": 1385156
+    },
+    {
+      "path": "plates-1024/body_underjacket@1024.png",
+      "sha256": "4675a96d11c396c4e3dac3c427c11f1e735c5a94342899fe11c2fd8e89a425d7",
+      "bytes": 41951
+    },
+    {
+      "path": "plates-1024/boots@1024.png",
+      "sha256": "dd98be3f0491f8138c5fba7131287961f4cfc49945a3caba8bfbcb462973c0fe",
+      "bytes": 50995
+    },
+    {
+      "path": "plates-1024/gloves@1024.png",
+      "sha256": "7ff40974daa472eff7177a1984282504dcae9e4e091475c5adb2533fe9bfa160",
+      "bytes": 24386
+    },
+    {
+      "path": "plates-1024/head_locked@1024.png",
+      "sha256": "8cbfe888b0d548640066c0a2fccae1c6dcdd84530e5d9999f11a20811c17d433",
+      "bytes": 70324
+    },
+    {
+      "path": "plates-1024/jacket_fuchsia_test@1024.png",
+      "sha256": "9a2cf74e9a1ca3249632527aadbd0654e1b549d30481b8c62a887cade70a7a24",
+      "bytes": 196119
+    },
+    {
+      "path": "plates-1024/jacket_purple@1024.png",
+      "sha256": "0647d78e258f80ab7fb282045c7aec5ceadfc5779a6d8143e074e99e74923524",
+      "bytes": 202630
+    },
+    {
+      "path": "plates-1024/pants_charcoal_test@1024.png",
+      "sha256": "d1b713f34d2dad111f6263f49dc3a57ea845a584b87cca0a6f5e19bcb5ccb9d5",
+      "bytes": 139113
+    },
+    {
+      "path": "plates-1024/pants_purple@1024.png",
+      "sha256": "36cbd09ed43f88bfcef2646cacf4954d31ed79e7fd0e6f856e5bd3d070d9fa37",
+      "bytes": 194540
+    },
+    {
+      "path": "proofs/A_B_C_REGISTERED_PROTOTYPE.jpg",
+      "sha256": "282fcea19c613301dfcfe055345098dcf7eec37561c2f0e83a924e2f6f9ca761",
+      "bytes": 131540
+    },
+    {
+      "path": "proofs/A_B_C_REGISTERED_PROTOTYPE.png",
+      "sha256": "18054963dd0549331390fd9052c84f622dfd6a587ce8910211b8deeb36ebac9a",
+      "bytes": 197466
+    },
+    {
+      "path": "proofs/A_JACKET_OFF_PURPLE_PANTS@1024.png",
+      "sha256": "3b1f86bf2053bed0d2613fa17d7f206837d0dc51516d2db551d6416a622714f8",
+      "bytes": 329036
+    },
+    {
+      "path": "proofs/B_PURPLE_APPROVED@1024.png",
+      "sha256": "247b77d143ed985a6de85527e6b190173f04c80c790c8abaf493a5533376ed31",
+      "bytes": 462624
+    },
+    {
+      "path": "proofs/C_FUCHSIA_CHARCOAL_TEST@1024.png",
+      "sha256": "0ff663ca6a1e30f72743854d2ceaa3cca50441c68478ea5c8050d857edfb11de",
+      "bytes": 406074
+    },
+    {
+      "path": "source/look3-blonde-existing-full-body-studio-reference.png",
+      "sha256": "2970a7254774e9919253a4bffc399788daa1a54f9ad69aa5a794e3d9001184cf",
+      "bytes": 2132588
+    },
+    {
+      "path": "source/look3-f-priya-approved-roster-v24-reference-card.png",
+      "sha256": "264882a760d129d9ada50369fc13875fccf7c057b56e375b521264affefc0fff",
+      "bytes": 971511
+    },
+    {
+      "path": "webp-512/body_underjacket@512.webp",
+      "sha256": "2d1643f28059a27c41f2ad7b3aec65873c4da1e08b7960da6661056e34a65279",
+      "bytes": 10048
+    },
+    {
+      "path": "webp-512/boots@512.webp",
+      "sha256": "3e148c85e3a5b5d2906b4c72b1db8091c9b5e19b85345105bca4ac8b4507359b",
+      "bytes": 10030
+    },
+    {
+      "path": "webp-512/gloves@512.webp",
+      "sha256": "747d4b66741bb4b9cf568c654d5f75e6e2b107da06cf585b337dc7bc5de01f50",
+      "bytes": 4818
+    },
+    {
+      "path": "webp-512/head_locked@512.webp",
+      "sha256": "5314d38bc77dc85c841485383c9d7194516870d3715d704af7b5b09f9a25f3e2",
+      "bytes": 14414
+    },
+    {
+      "path": "webp-512/jacket_fuchsia_test@512.webp",
+      "sha256": "c99d2b38aa33942540a8add875dc4690c4a4f27a4519bcc9d16d3ab751a4cb12",
+      "bytes": 43238
+    },
+    {
+      "path": "webp-512/jacket_purple@512.webp",
+      "sha256": "cb86173765e4a924b442c09354e5b88bb68392e3673d956158dce156ab4b8ecb",
+      "bytes": 42600
+    },
+    {
+      "path": "webp-512/pants_charcoal_test@512.webp",
+      "sha256": "9238d61d847a0b24120ba6b53857d10d26eb9a8d440bf9d6d242006800124028",
+      "bytes": 26174
+    },
+    {
+      "path": "webp-512/pants_purple@512.webp",
+      "sha256": "5f1580c2057f581bff98940a2f2c70650223132fbf0c81dacb0cfab845ca2788",
+      "bytes": 39226
+    }
+  ],
+  "unresolved": [
+    "Underbody is constructed dark athletic fabric; hidden anatomy is not source photography",
+    "Locked head combines face, hair, helmet and goggles (no independent eyewear or hairstyle)",
+    "No genuine snowboard or backpack plates in this prototype",
+    "Source silhouette/background matte needs edge cleanup, particularly near hair, cuffs and boots",
+    "Owner must confirm studio reference identity and fuchsia alternate fit",
+    "Not tested in Woz AvatarRenderer/Locker or physical Android; no merge or prod approval"
+  ]
+}

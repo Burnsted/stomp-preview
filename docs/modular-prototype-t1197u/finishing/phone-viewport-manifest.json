@@ -1,0 +1,149 @@
+{
+  "stream": "t1202u-finishing",
+  "status": "REGISTERED_VISUAL_PROTOTYPE_ONLY",
+  "honesty": {
+    "androidPass": false,
+    "ownerVisualPass": false,
+    "browserPhoneViewportIsNotDevicePass": true,
+    "viewport": {
+      "width": 390,
+      "height": 844,
+      "deviceScaleFactor": 2
+    }
+  },
+  "capturedAt": "2026-11-04T15:16:11.407Z",
+  "baseUrl": "http://127.0.0.1:8080/",
+  "results": {
+    "A": {
+      "attrs": {
+        "renderMode": "plates",
+        "acceptanceEligible": "false",
+        "jacket": "jacket-none",
+        "pants": "pants-look2-mint",
+        "backpack": "off",
+        "board": "board-none",
+        "starter": "f-hana",
+        "plateComplete": "true"
+      },
+      "lockerAttrs": {
+        "acceptanceEligible": "false",
+        "missingPlates": "0",
+        "plateSlotStatus": "ingest-ready"
+      },
+      "paths": {
+        "full": "/agent/repos/stomp-preview/docs/modular-prototype-t1197u/finishing/A-jacket-off-phone-390x844.png",
+        "avatar": "/agent/repos/stomp-preview/docs/modular-prototype-t1197u/finishing/A-jacket-off-avatar.png",
+        "closeups": {
+          "head_neck_jaw": "/agent/repos/stomp-preview/docs/modular-prototype-t1197u/finishing/closeups/A-jacket-off-head_neck_jaw.png",
+          "cuffs_wrists": "/agent/repos/stomp-preview/docs/modular-prototype-t1197u/finishing/closeups/A-jacket-off-cuffs_wrists.png",
+          "waist_band": "/agent/repos/stomp-preview/docs/modular-prototype-t1197u/finishing/closeups/A-jacket-off-waist_band.png",
+          "crotch": "/agent/repos/stomp-preview/docs/modular-prototype-t1197u/finishing/closeups/A-jacket-off-crotch.png",
+          "boots": "/agent/repos/stomp-preview/docs/modular-prototype-t1197u/finishing/closeups/A-jacket-off-boots.png"
+        }
+      }
+    },
+    "B": {
+      "attrs": {
+        "renderMode": "plates",
+        "acceptanceEligible": "false",
+        "jacket": "jacket-look2-mint",
+        "pants": "pants-look2-mint",
+        "backpack": "off",
+        "board": "board-none",
+        "starter": "f-hana",
+        "plateComplete": "true"
+      },
+      "lockerAttrs": {
+        "acceptanceEligible": "false",
+        "missingPlates": "0",
+        "plateSlotStatus": "ingest-ready"
+      },
+      "paths": {
+        "full": "/agent/repos/stomp-preview/docs/modular-prototype-t1197u/finishing/B-mint-phone-390x844.png",
+        "avatar": "/agent/repos/stomp-preview/docs/modular-prototype-t1197u/finishing/B-mint-avatar.png",
+        "closeups": {
+          "head_neck_jaw": "/agent/repos/stomp-preview/docs/modular-prototype-t1197u/finishing/closeups/B-mint-head_neck_jaw.png",
+          "cuffs_wrists": "/agent/repos/stomp-preview/docs/modular-prototype-t1197u/finishing/closeups/B-mint-cuffs_wrists.png",
+          "waist_band": "/agent/repos/stomp-preview/docs/modular-prototype-t1197u/finishing/closeups/B-mint-waist_band.png",
+          "crotch": "/agent/repos/stomp-preview/docs/modular-prototype-t1197u/finishing/closeups/B-mint-crotch.png",
+          "boots": "/agent/repos/stomp-preview/docs/modular-prototype-t1197u/finishing/closeups/B-mint-boots.png"
+        }
+      }
+    },
+    "C": {
+      "attrs": {
+        "renderMode": "plates",
+        "acceptanceEligible": "false",
+        "jacket": "jacket-look2-ink",
+        "pants": "pants-look2-ink",
+        "backpack": "off",
+        "board": "board-none",
+        "starter": "f-hana",
+        "plateComplete": "true"
+      },
+      "lockerAttrs": {
+        "acceptanceEligible": "false",
+        "missingPlates": "0",
+        "plateSlotStatus": "ingest-ready"
+      },
+      "paths": {
+        "full": "/agent/repos/stomp-preview/docs/modular-prototype-t1197u/finishing/C-ink-phone-390x844.png",
+        "avatar": "/agent/repos/stomp-preview/docs/modular-prototype-t1197u/finishing/C-ink-avatar.png",
+        "closeups": {
+          "head_neck_jaw": "/agent/repos/stomp-preview/docs/modular-prototype-t1197u/finishing/closeups/C-ink-head_neck_jaw.png",
+          "cuffs_wrists": "/agent/repos/stomp-preview/docs/modular-prototype-t1197u/finishing/closeups/C-ink-cuffs_wrists.png",
+          "waist_band": "/agent/repos/stomp-preview/docs/modular-prototype-t1197u/finishing/closeups/C-ink-waist_band.png",
+          "crotch": "/agent/repos/stomp-preview/docs/modular-prototype-t1197u/finishing/closeups/C-ink-crotch.png",
+          "boots": "/agent/repos/stomp-preview/docs/modular-prototype-t1197u/finishing/closeups/C-ink-boots.png"
+        }
+      }
+    },
+    "swapBack": {
+      "jacket": "jacket-look2-mint",
+      "pants": "pants-look2-mint"
+    },
+    "persist": {
+      "afterReload": {
+        "jacket": "jacket-none",
+        "pants": "pants-look2-mint",
+        "backpack": "off",
+        "starter": "f-hana",
+        "acceptanceEligible": "false",
+        "prototypeOnly": "true"
+      },
+      "lockerAfter": {
+        "acceptanceEligible": "false"
+      },
+      "displayName": "FinishHana",
+      "expectedName": "FinishHana",
+      "nameOk": true,
+      "jacketStillOff": true,
+      "backpackOff": true,
+      "acceptanceEligibleFalse": true
+    },
+    "registration": {
+      "boxes": {
+        "A": {
+          "x": 111,
+          "y": 76,
+          "width": 168,
+          "height": 168
+        },
+        "B": {
+          "x": 111,
+          "y": 76,
+          "width": 168,
+          "height": 168
+        },
+        "C": {
+          "x": 111,
+          "y": 76,
+          "width": 168,
+          "height": 168
+        }
+      },
+      "zeroDrift": true,
+      "note": "Element bbox registration across A/B/C on same Locker shell — face/hair/stance plates share fixed 1024→512 canvas"
+    }
+  }
+}

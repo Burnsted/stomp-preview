@@ -1,0 +1,323 @@
+{
+  "task": "t1225u",
+  "status": "PARTIAL_INGEST_EIGHT_PACKAGES_PLUS_V2_FILLS",
+  "androidPassClaimed": false,
+  "ownerVisualPassClaimed": false,
+  "man2OwnerVisualPass": false,
+  "man1GloveFillQuarantined": true,
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "shots": [
+    {
+      "kind": "modular-abc",
+      "starterId": "m-samir",
+      "slotLabel": "Man1",
+      "variant": "A",
+      "file": "docs/franz-ingest-t1225u/screenshots/Man1_A@390x844.png",
+      "sha256": "80f1a1eb5afb4a07a8505c170d6db9ac2dd58a8cb0244c588774ef5883f80523",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "Jacket OFF — omit jacket plate (provisional underbody ART)"
+    },
+    {
+      "kind": "modular-abc",
+      "starterId": "m-samir",
+      "slotLabel": "Man1",
+      "variant": "B",
+      "file": "docs/franz-ingest-t1225u/screenshots/Man1_B@390x844.png",
+      "sha256": "f33784af6fa47da2784912654587eb942bc1e48dd2ed3845b0d90939cd9102a5",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "Default B jacket-on"
+    },
+    {
+      "kind": "modular-abc",
+      "starterId": "m-samir",
+      "slotLabel": "Man1",
+      "variant": "C",
+      "file": "docs/franz-ingest-t1225u/screenshots/Man1_C@390x844.png",
+      "sha256": "bd15c57339ee9bc621ae84f57fe5407e81407cde01c0cd76de653a9e5327ec70",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "Alternate TEST"
+    },
+    {
+      "kind": "modular-abc",
+      "starterId": "f-hana",
+      "slotLabel": "Woman2",
+      "variant": "A",
+      "file": "docs/franz-ingest-t1225u/screenshots/Woman2_A@390x844.png",
+      "sha256": "6ac6bc285e7d385759479b7baa3a3db6c0213a88d43d9b0958b8c1ac46510594",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "Jacket OFF — omit jacket plate (provisional underbody ART)"
+    },
+    {
+      "kind": "modular-abc",
+      "starterId": "f-hana",
+      "slotLabel": "Woman2",
+      "variant": "B",
+      "file": "docs/franz-ingest-t1225u/screenshots/Woman2_B@390x844.png",
+      "sha256": "480e435f1dd9ae1d8622741f3b7cadf23788c17a1cab84c221502357893bed6e",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "Default B jacket-on"
+    },
+    {
+      "kind": "modular-abc",
+      "starterId": "f-hana",
+      "slotLabel": "Woman2",
+      "variant": "C",
+      "file": "docs/franz-ingest-t1225u/screenshots/Woman2_C@390x844.png",
+      "sha256": "b26abc58b528d59216611b516ed62eb152a16a756edd510183fe54b397f3af69",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "Alternate TEST"
+    },
+    {
+      "kind": "modular-abc",
+      "starterId": "f-priya",
+      "slotLabel": "Woman3",
+      "variant": "A",
+      "file": "docs/franz-ingest-t1225u/screenshots/Woman3_A@390x844.png",
+      "sha256": "663bd66d6ffcfa23d0c9735d439935389d14b8b43009a6b2328ad4957f412012",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "Jacket OFF — omit jacket plate (provisional underbody ART)"
+    },
+    {
+      "kind": "modular-abc",
+      "starterId": "f-priya",
+      "slotLabel": "Woman3",
+      "variant": "B",
+      "file": "docs/franz-ingest-t1225u/screenshots/Woman3_B@390x844.png",
+      "sha256": "8b09648470f7a1b27ae306cc175ab7eb225e5b1ca4fac1ce0aa3e70141e67d53",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "Default B jacket-on"
+    },
+    {
+      "kind": "modular-abc",
+      "starterId": "f-priya",
+      "slotLabel": "Woman3",
+      "variant": "C",
+      "file": "docs/franz-ingest-t1225u/screenshots/Woman3_C@390x844.png",
+      "sha256": "5e858211c99c017d5519b100cf688103f4533c72be194cc8f23fc38ea1f44a7a",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "Alternate TEST"
+    },
+    {
+      "kind": "modular-abc",
+      "starterId": "m-devon",
+      "slotLabel": "Man2",
+      "variant": "A",
+      "file": "docs/franz-ingest-t1225u/screenshots/Man2_A@390x844.png",
+      "sha256": "41d2aee7ad16fbfe27f8f9a28b53d488efe3abe0b6ea610e4c8cd5c256c91e54",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "Jacket OFF — omit jacket plate (provisional underbody ART)"
+    },
+    {
+      "kind": "modular-abc",
+      "starterId": "m-devon",
+      "slotLabel": "Man2",
+      "variant": "B",
+      "file": "docs/franz-ingest-t1225u/screenshots/Man2_B@390x844.png",
+      "sha256": "3ebe8535d826c8480d0f4939e3e9df88ebb3c27a5097c13722aac7e878a2dd9e",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "Default B jacket-on"
+    },
+    {
+      "kind": "modular-abc",
+      "starterId": "m-devon",
+      "slotLabel": "Man2",
+      "variant": "C",
+      "file": "docs/franz-ingest-t1225u/screenshots/Man2_C@390x844.png",
+      "sha256": "ca229fddcd6997ae6170949aa1f80c73c791c0cc4f45e9fc31f0ccbb0310782d",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "White FIT TEST — NOT Man 3"
+    },
+    {
+      "kind": "appearance-preview",
+      "starterId": "f-nova",
+      "slotLabel": "Woman1",
+      "background": "white",
+      "file": "docs/franz-ingest-t1225u/screenshots/Woman1_appearance-white@390x844.png",
+      "sha256": "1b9d19b69daa9b26e0d0ed1b6ffbc9f28d1fdbea2efbbe4da60cc90b880754eb",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "SOURCE_APPEARANCE_PREVIEW_ONLY — no modular A/B/C"
+    },
+    {
+      "kind": "appearance-preview",
+      "starterId": "f-nova",
+      "slotLabel": "Woman1",
+      "background": "black",
+      "file": "docs/franz-ingest-t1225u/screenshots/Woman1_appearance-black@390x844.png",
+      "sha256": "f7a3662eb78386c0ee6499881a0b09674d1de22f63e5290c19f3d11917a39846",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "SOURCE_APPEARANCE_PREVIEW_ONLY — no modular A/B/C"
+    },
+    {
+      "kind": "appearance-preview",
+      "starterId": "f-nova",
+      "slotLabel": "Woman1",
+      "background": "magenta",
+      "file": "docs/franz-ingest-t1225u/screenshots/Woman1_appearance-magenta@390x844.png",
+      "sha256": "499ed3c90365c0a11f6872ee5767676814c08fe817f282096a93221a82fbcdd2",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "SOURCE_APPEARANCE_PREVIEW_ONLY — no modular A/B/C"
+    },
+    {
+      "kind": "appearance-preview",
+      "starterId": "f-nova",
+      "slotLabel": "Woman1",
+      "background": "mountain",
+      "file": "docs/franz-ingest-t1225u/screenshots/Woman1_appearance-mountain@390x844.png",
+      "sha256": "0b1d9863dde8038bf62716f5c04be70b42378784690ed835c3c4bc210e3de034",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "SOURCE_APPEARANCE_PREVIEW_ONLY — no modular A/B/C"
+    },
+    {
+      "kind": "appearance-preview",
+      "starterId": "m-leo",
+      "slotLabel": "Man3",
+      "background": "white",
+      "file": "docs/franz-ingest-t1225u/screenshots/Man3_appearance-white@390x844.png",
+      "sha256": "ddbd5904179c1db671e7106b5e68e32a1e4087ab13396877818d72f0eff9e55e",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "SOURCE_APPEARANCE_PREVIEW_ONLY — no modular A/B/C"
+    },
+    {
+      "kind": "appearance-preview",
+      "starterId": "m-leo",
+      "slotLabel": "Man3",
+      "background": "black",
+      "file": "docs/franz-ingest-t1225u/screenshots/Man3_appearance-black@390x844.png",
+      "sha256": "e108aedfbf2b69192194537a8f647d2da97a319bdab10cbd978edeab641f9fd7",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "SOURCE_APPEARANCE_PREVIEW_ONLY — no modular A/B/C"
+    },
+    {
+      "kind": "appearance-preview",
+      "starterId": "m-leo",
+      "slotLabel": "Man3",
+      "background": "magenta",
+      "file": "docs/franz-ingest-t1225u/screenshots/Man3_appearance-magenta@390x844.png",
+      "sha256": "1c98d6d637a9182fef7dd8b49d6359b9014837bfb0a980966754d49e6ed08f17",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "SOURCE_APPEARANCE_PREVIEW_ONLY — no modular A/B/C"
+    },
+    {
+      "kind": "appearance-preview",
+      "starterId": "m-leo",
+      "slotLabel": "Man3",
+      "background": "mountain",
+      "file": "docs/franz-ingest-t1225u/screenshots/Man3_appearance-mountain@390x844.png",
+      "sha256": "bc3508cb2428085386fec335084e08162269bdf6d30b986c2d4cd26d1de9f201",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "SOURCE_APPEARANCE_PREVIEW_ONLY — no modular A/B/C"
+    },
+    {
+      "kind": "appearance-preview",
+      "starterId": "g-milo",
+      "slotLabel": "Grom1",
+      "background": "white",
+      "file": "docs/franz-ingest-t1225u/screenshots/Grom1_appearance-white@390x844.png",
+      "sha256": "d9d689cba413f0246d403372152c3ff703d7437bdc2b6203af214b15ca28c3eb",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "SOURCE_APPEARANCE_PREVIEW_ONLY — no modular A/B/C"
+    },
+    {
+      "kind": "appearance-preview",
+      "starterId": "g-milo",
+      "slotLabel": "Grom1",
+      "background": "black",
+      "file": "docs/franz-ingest-t1225u/screenshots/Grom1_appearance-black@390x844.png",
+      "sha256": "2037727e2167430e964c1ea86e53629c134a8b2536610c0cc924735d350a6074",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "SOURCE_APPEARANCE_PREVIEW_ONLY — no modular A/B/C"
+    },
+    {
+      "kind": "appearance-preview",
+      "starterId": "g-milo",
+      "slotLabel": "Grom1",
+      "background": "magenta",
+      "file": "docs/franz-ingest-t1225u/screenshots/Grom1_appearance-magenta@390x844.png",
+      "sha256": "ac8566b392aa3f732c588ae1cfdd8a2717a631be174cf34d09f35e1e4b0fa548",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "SOURCE_APPEARANCE_PREVIEW_ONLY — no modular A/B/C"
+    },
+    {
+      "kind": "appearance-preview",
+      "starterId": "g-milo",
+      "slotLabel": "Grom1",
+      "background": "mountain",
+      "file": "docs/franz-ingest-t1225u/screenshots/Grom1_appearance-mountain@390x844.png",
+      "sha256": "06d8a9d06ed4a27ef1e253df22434d5041a75db78b7280313b711567d9de2c99",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "SOURCE_APPEARANCE_PREVIEW_ONLY — no modular A/B/C"
+    },
+    {
+      "kind": "appearance-preview",
+      "starterId": "g-aria",
+      "slotLabel": "Grom2",
+      "background": "white",
+      "file": "docs/franz-ingest-t1225u/screenshots/Grom2_appearance-white@390x844.png",
+      "sha256": "e24d9956d9292337e75325f1cf0026be47d15aafe88c43a3d77443da72b649ec",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "SOURCE_APPEARANCE_PREVIEW_ONLY — no modular A/B/C"
+    },
+    {
+      "kind": "appearance-preview",
+      "starterId": "g-aria",
+      "slotLabel": "Grom2",
+      "background": "black",
+      "file": "docs/franz-ingest-t1225u/screenshots/Grom2_appearance-black@390x844.png",
+      "sha256": "41fd3770f4e760bc724ee3be0bbae62ff7d0fd88d30c1ca94039038f968a9396",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "SOURCE_APPEARANCE_PREVIEW_ONLY — no modular A/B/C"
+    },
+    {
+      "kind": "appearance-preview",
+      "starterId": "g-aria",
+      "slotLabel": "Grom2",
+      "background": "magenta",
+      "file": "docs/franz-ingest-t1225u/screenshots/Grom2_appearance-magenta@390x844.png",
+      "sha256": "59534e7bd0f0fb05590b949d63e874b95023cc39bc97974c46c6dfad52fa64af",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "SOURCE_APPEARANCE_PREVIEW_ONLY — no modular A/B/C"
+    },
+    {
+      "kind": "appearance-preview",
+      "starterId": "g-aria",
+      "slotLabel": "Grom2",
+      "background": "mountain",
+      "file": "docs/franz-ingest-t1225u/screenshots/Grom2_appearance-mountain@390x844.png",
+      "sha256": "5dfb65d010a0a18bc7c60ff3f51f42f88536c02ce5ce80298827fbbcaa51f25b",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "SOURCE_APPEARANCE_PREVIEW_ONLY — no modular A/B/C"
+    }
+  ],
+  "generatedAtIso": "2026-11-06T02:23:21.174Z"
+}

@@ -1,0 +1,163 @@
+{
+  "starterId": "m-devon",
+  "look": "Adult Look 4",
+  "ageBand": "adult",
+  "state": "REGISTERED_VISUAL_PROTOTYPE_ONLY",
+  "approvedDefault": "orange/charcoal technical jacket + dark charcoal pants with orange trims + NONREFLECTIVE BLACK SNOW GOGGLES",
+  "alternateFitTest": "white/charcoal technical jacket + charcoal pants with cool gray trim \u2014 test only, not new default",
+  "sourceMaster": "STOMP_Look4_approved_exact_source.png",
+  "sourceSHA256": "5dc68660db8db27e9a0d7989d601da5598a5e3d0292bc80f1f9f9754e3c70270",
+  "oneTransform": {
+    "sourceSize": [
+      1024,
+      1536
+    ],
+    "productionCanvas": [
+      1024,
+      1024
+    ],
+    "runtimeCanvas": [
+      512,
+      512
+    ],
+    "scale": 0.6471354166666666,
+    "dx": 180,
+    "dy": 15,
+    "everyPlateSameCoordinates": true
+  },
+  "assets": [
+    {
+      "path": "README.md",
+      "sha256": "d525ebfb0c3059a1a46d59c5b4cc0d589a2124ed447242f63abf4e72afcdbd2c",
+      "bytes": 2054
+    },
+    {
+      "path": "STOMP_m-devon_REGISTERED_PROTOTYPE.ora",
+      "sha256": "33f9410c0bcb966cfac7ce3d1daad37daa45081f7bef794265343d0c3c86c776",
+      "bytes": 1438164
+    },
+    {
+      "path": "plates-1024/body_underjacket@1024.png",
+      "sha256": "ad618d104465d0dae522957a8d5bf23c78a7cfa72948600bb245e49f4373cfdf",
+      "bytes": 47967
+    },
+    {
+      "path": "plates-1024/boots@1024.png",
+      "sha256": "393cfdae81eb268cb4653f1c360d5ca85b5e8213bc3ce7ca415f42456245c8a4",
+      "bytes": 43941
+    },
+    {
+      "path": "plates-1024/gloves@1024.png",
+      "sha256": "438ade2ab0e9387af9e20c12f0747b29f1fe19a65030a919c745fcd178c235d9",
+      "bytes": 37974
+    },
+    {
+      "path": "plates-1024/head_locked@1024.png",
+      "sha256": "2bda41cc0c4efd067a86da07f677a128614944e2a1c61598f8466077f403fc1d",
+      "bytes": 52885
+    },
+    {
+      "path": "plates-1024/jacket_orange@1024.png",
+      "sha256": "9712771afb5b37884dc1720665bc59e92b894ef8943457a287fa75cc2f589618",
+      "bytes": 205963
+    },
+    {
+      "path": "plates-1024/jacket_white_fit_test@1024.png",
+      "sha256": "77dc3ab93c7ed2fcd22c20ea9d91421321380b42cdadfced6a99f4e571a5a65f",
+      "bytes": 160470
+    },
+    {
+      "path": "plates-1024/pants_charcoal@1024.png",
+      "sha256": "9aae307da27126c7defaf483152f772e28c4d272c836d0cfcb4774bf5b817b58",
+      "bytes": 209166
+    },
+    {
+      "path": "plates-1024/pants_charcoal_silver_fit_test@1024.png",
+      "sha256": "74f5dbab0ac4c4c393b300733e5f4ea7e3b75dbdb005c93d137adf27f7a92617",
+      "bytes": 209516
+    },
+    {
+      "path": "proofs/A_B_C_REGISTERED_PROTOTYPE.png",
+      "sha256": "1c5f0c60497546a5edd1cba8436cd3c7f154dc8d32ca9c1c00919cfe8bbf372d",
+      "bytes": 185383
+    },
+    {
+      "path": "proofs/A_JACKET_OFF@1024.png",
+      "sha256": "28e32a49f84f2cde9f8e3f561eff5055c3b4f0176ae3165d0cbe7b0af653a17d",
+      "bytes": 317548
+    },
+    {
+      "path": "proofs/B_ORANGE_APPROVED@1024.png",
+      "sha256": "d32dd7e31931565d5b90c42d173346e2d899bb637c1ce2da57c398330b670522",
+      "bytes": 467755
+    },
+    {
+      "path": "proofs/C_WHITE_ALT_TEST@1024.png",
+      "sha256": "53484ca397cde6252ad13290c0a26617a05d2e6b7e400ab4bac60dc6a5023483",
+      "bytes": 423464
+    },
+    {
+      "path": "source/look4-foreground-matte-PROVISIONAL.png",
+      "sha256": "84148284dac2ed80e5376b513d685b285db76c4d932da50d108cf3ce841c4037",
+      "bytes": 2031706
+    },
+    {
+      "path": "source/look4-m-devon-APPROVED-LOCKED-ORIGINAL.png",
+      "sha256": "5dc68660db8db27e9a0d7989d601da5598a5e3d0292bc80f1f9f9754e3c70270",
+      "bytes": 1930066
+    },
+    {
+      "path": "source/look4-m-devon-roster-card-reference.png",
+      "sha256": "c489fc91ba7ac3755da99949e72281928b6f9804b1f51fed4f2d1dce5c84454a",
+      "bytes": 910802
+    },
+    {
+      "path": "webp-512/body_underjacket@512.webp",
+      "sha256": "1e4153a1fb2274436b2cb6fc31617090b474c400972498e12892de467c4fdffe",
+      "bytes": 11854
+    },
+    {
+      "path": "webp-512/boots@512.webp",
+      "sha256": "c5eee71c92610252d9c43863b967e782bc22ed2ed8ad8476f0458832e05f94bc",
+      "bytes": 8996
+    },
+    {
+      "path": "webp-512/gloves@512.webp",
+      "sha256": "284fdf5a886414610575d16acdcedea4b51372b83d8e839d4ded98deb7f9f39e",
+      "bytes": 6522
+    },
+    {
+      "path": "webp-512/head_locked@512.webp",
+      "sha256": "9c24379508c93b31422ce6b589b5189d384d3c049a4269f7a0f394666ac2f38e",
+      "bytes": 9998
+    },
+    {
+      "path": "webp-512/jacket_orange@512.webp",
+      "sha256": "4ef8f8ce81825ca11ec6e8ba60888f8e1f98889f1a38644941f4480c9065c411",
+      "bytes": 44308
+    },
+    {
+      "path": "webp-512/jacket_white_fit_test@512.webp",
+      "sha256": "2d616e5a11c749d772a08b7cd479068c8f70930d62b56b34efdc8d8761b442c9",
+      "bytes": 31362
+    },
+    {
+      "path": "webp-512/pants_charcoal@512.webp",
+      "sha256": "4a47b5e215280e565636a78b4827fe77a9b766c2557b8f7450fa5242c877ef02",
+      "bytes": 40954
+    },
+    {
+      "path": "webp-512/pants_charcoal_silver_fit_test@512.webp",
+      "sha256": "e097355eeead6eca70054517aeaaaf924144e332ad21d26b3ee28fbe1cff5c25",
+      "bytes": 37368
+    }
+  ],
+  "unresolved": [
+    "Dark underbody is constructed fitted base layer, not recovered photoreal anatomy",
+    "Head is a LOCKED combined original image including helmet and non-reflective black goggles; no independent eyewear yet",
+    "No separate actual board with two bindings or backpack plate in this prototype",
+    "Matte is provisional; edges at black helmet/shoulder/sleeves/boots and wrist-to-glove connections need art QC",
+    "White colorway is a fit test only; tan and blue camo option not produced",
+    "Not tested in real Woz AvatarRenderer/Locker or physical Samsung; no merge/production approval"
+  ]
+}

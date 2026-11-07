@@ -1,196 +1,198 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import QRCode from "qrcode";
-import { Flag, Layers, Users } from "lucide-react";
-import { BoltBadge, HomeButton } from "@/components/stomp/chrome";
+import { ChevronRight, Play } from "lucide-react";
+import { Form7Brand } from "@/components/stomp/brand/form7-brand";
+import { HomeButton } from "@/components/stomp/chrome";
+import { HomeFeatureRows } from "@/components/stomp/home-feature-rows";
 import { HomeMapCard } from "@/components/stomp/home-map-card";
 import { HomePlaylistBlock } from "@/components/stomp/home-playlist-block";
-import { SessionMic } from "@/components/stomp/session-mic";
-import { countProgress } from "@/lib/stomp/goals";
-import { BAND_LABEL } from "@/lib/stomp/library";
-import { SESSIONS, sessionById, suggestedSession } from "@/lib/stomp/sessions";
+import { HomeStomperStage } from "@/components/stomp/avatar/home-stomper-stage";
+import { HomeTripStatus } from "@/components/stomp/home-trip-status";
+import { HomeMountainLabel } from "@/components/stomp/home-mountain-label";
+import { SessionVoicePrompt } from "@/components/stomp/session-mic";
+import { useAvatar } from "@/lib/stomp/avatar/store";
+import { PROGRESS_STATS, useBag } from "@/lib/stomp/bag";
+import { useHomeMountain } from "@/lib/stomp/home-mountain";
+import { SESSIONS } from "@/lib/stomp/sessions";
 import { PHOTOS, crewPayload, parseCrew, useStomp } from "@/lib/stomp/store";
 
-function shrinkSelfie(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const image = new Image();
-    image.onload = () => {
-      const scale = Math.min(1, 480 / Math.max(image.width, image.height));
-      const canvas = document.createElement("canvas");
-      canvas.width = Math.max(1, Math.round(image.width * scale));
-      canvas.height = Math.max(1, Math.round(image.height * scale));
-      const context = canvas.getContext("2d");
-      if (!context) {
-        URL.revokeObjectURL(url);
-        reject(new Error("canvas"));
-        return;
-      }
-      context.drawImage(image, 0, 0, canvas.width, canvas.height);
-      URL.revokeObjectURL(url);
-      resolve(canvas.toDataURL("image/jpeg", 0.72));
-    };
-    image.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("image"));
-    };
-    image.src = url;
-  });
-}
+/** Look-board demo lineups (visual density) — not a full Lineups ship. */
+const DEMO_LINEUPS = [
+  { id: "big-line", name: "Big Line Sesh", place: "Revelstoke · 4 hits", feet: "1,842 ft", today: true, image: "line" as const },
+  { id: "park-lap", name: "Park Lap", place: "Main Park · 6 hits", feet: "980 ft", today: false, image: "hud" as const },
+  { id: "tree-run", name: "Tree Run Flow", place: "North Bowl · 5 hits", feet: "1,210 ft", today: false, image: "hero" as const },
+  { id: "groomer", name: "Groomer Cruise", place: "Upper Mtn · 3 hits", feet: "740 ft", today: false, image: "air" as const },
+] as const;
 
-/** Home (first page). Concept B map + playlist zones; CrewLink below stays Invite-locked. */
+/**
+ * Home — restored hierarchy (t1218u / t1222u / t1223u).
+ * After Stomper is established: Stomper-first hero with 3-pose cycle (t1223u).
+ * Weather / mountain conditions live on Trails (Map tab) — not on Home (t1222u).
+ * CrewLink below stays Invite-locked (byte-pinned).
+ */
 export function Greet() {
   const setScreen = useStomp((state) => state.setScreen);
-  const startRun = useStomp((state) => state.startRun);
-  const selfie = useStomp((state) => state.selfie);
-  const setSelfie = useStomp((state) => state.setSelfie);
   const riderName = useStomp((state) => state.riderName);
-  const crew = useStomp((state) => state.crew);
-  const band = useStomp((state) => state.band);
-  const trickStatus = useStomp((state) => state.trickStatus);
-  const activeSession = useStomp((state) => state.activeSession);
-  const sessionDone = useStomp((state) => state.sessionDone);
   const chooseSession = useStomp((state) => state.chooseSession);
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [note, setNote] = useState("");
+  const displayName = useAvatar((s) => s.config?.displayName);
+  const avatarConfig = useAvatar((s) => s.config);
+  const onboardComplete = useAvatar((s) => s.onboardComplete);
+  const resortId = useHomeMountain((s) => s.resortId);
+  const hydrateMountain = useHomeMountain((s) => s.hydrate);
   const [showPlans, setShowPlans] = useState(false);
-  const template = sessionById(activeSession) ?? suggestedSession(band, crew.length);
-  const counts = countProgress(trickStatus);
-  const goalsDone = template.steps.filter((step) => sessionDone.includes(step.id)).length;
+  const today = DEMO_LINEUPS[0]!;
+  const welcomeName = (displayName || riderName || "STOMPER").trim();
+  const stomperReady = onboardComplete && Boolean(avatarConfig);
 
-  async function onSelfie(file: File | undefined) {
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setNote("That file isn’t a photo.");
-      return;
-    }
-    try {
-      setSelfie(await shrinkSelfie(file));
-      setNote("Selfie’s on your pass.");
-    } catch {
-      setNote("Couldn’t read that photo. Try another.");
-    }
-  }
+  useEffect(() => {
+    hydrateMountain();
+  }, [hydrateMountain]);
 
   return (
-    <div className="relative overflow-hidden pb-16">
-      {/* Zone 1 — Ride */}
-      <section data-testid="home-zone-ride" className="px-5 pt-5" aria-label="Ride">
-        <div className="flex items-start justify-between">
-          <span className="rounded-full border-2 border-ink px-3 py-1.5 text-[11px] font-bold tracking-widest">
-            TRAIL · HIT · CLIP
-          </span>
-          <BoltBadge />
-        </div>
-        <div className="mt-3 flex items-end justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <h1 className="font-display text-7xl leading-none tracking-tight">STOMP</h1>
-            <p className="mt-2 max-w-52 text-lg font-medium text-pretty">Hands-free caddy. Lap the park. Log the hit.</p>
-          </div>
-          <button type="button" onClick={() => fileRef.current?.click()} className="w-24 shrink-0 rotate-3">
-            <img
-              src={selfie || PHOTOS.crew}
-              alt={selfie ? `${riderName} selfie` : "Crew selfie on the ridge"}
-              className="aspect-square w-full rounded-2xl object-cover ring-4 ring-snow"
-            />
-            <span className="mt-1 block text-center text-[10px] font-bold tracking-widest">
-              {selfie ? riderName : "Crew selfie"}
-            </span>
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            capture="user"
-            className="sr-only"
-            onChange={(event) => void onSelfie(event.target.files?.[0])}
+    <div
+      className="relative overflow-hidden pb-28"
+      data-testid="home-look-board"
+      data-home-layout="t1218u"
+      data-stomper-stage={stomperReady ? "on" : "off"}
+    >
+      {/* Cinematic mountain hero — Form #7 brand first; Stomper stage when ready */}
+      <section data-testid="home-zone-ride" className="relative" aria-label="Home hero">
+        <div className={`relative overflow-hidden ${stomperReady ? "min-h-[24rem]" : "min-h-[20rem]"}`}>
+          <img
+            src={PHOTOS.hero}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+            data-testid="home-hero-image"
           />
-        </div>
-        <button
-          type="button"
-          onClick={startRun}
-          className="mt-4 h-16 w-full rounded-full bg-ink font-display text-3xl tracking-wide text-snow"
-        >
-          Drop in
-        </button>
-        <button
-          type="button"
-          onClick={() => chooseSession(template.id)}
-          className="mt-2 h-12 w-full rounded-full bg-pink font-semibold text-snow"
-        >
-          {template.name}
-        </button>
-        <p className="mt-2 text-center text-sm text-muted">
-          {BAND_LABEL[band]} · ~{template.minutes} min · no GPS
-          {template.sample ? " · Sample" : ""}
-        </p>
-        <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-          <div>
-            <p className="font-display text-3xl leading-none text-pink">{counts.landed}</p>
-            <p className="text-xs font-semibold text-muted">Landed</p>
+          <div className="absolute inset-0 bg-gradient-to-b from-navy/50 via-navy/25 to-navy" />
+          <div className="relative px-5 pt-6">
+            <Form7Brand tone="onDark" size="lg" testId="home-form7-brand" />
           </div>
-          <div>
-            <p className="font-display text-3xl leading-none">{counts.working}</p>
-            <p className="text-xs font-semibold text-muted">Working</p>
-          </div>
-          <div>
-            <p className="font-display text-3xl leading-none text-teal">
-              {goalsDone}/{template.steps.length}
-            </p>
-            <p className="text-xs font-semibold text-muted">Goals</p>
-          </div>
+          {stomperReady && avatarConfig ? (
+            <HomeStomperStage config={avatarConfig} />
+          ) : (
+            <div className="relative px-5 pb-8 pt-16">
+              <p data-testid="home-personal-welcome" className="font-display text-4xl tracking-wide text-ink">
+                Welcome, {welcomeName}
+              </p>
+              <HomeMountainLabel
+                resortId={resortId}
+                className="mt-2"
+                nameTestId="home-selected-resort"
+              />
+            </div>
+          )}
+          {stomperReady ? (
+            <HomeMountainLabel
+              resortId={resortId}
+              className="relative px-5 pb-4"
+              nameTestId="home-selected-resort"
+            />
+          ) : null}
         </div>
-        <div className="mt-3">
-          <SessionMic />
+        <div className="px-5 pt-2">
+          {/* t1224u: no mid-page Hey Session pill — FAB + quiet voice prompt */}
+          <SessionVoicePrompt />
         </div>
-        {note ? <p className="mt-2 text-sm font-semibold text-teal">{note}</p> : null}
       </section>
 
-      {/* Zone 2 — Location + map (Concept B; location is inside the card, not a side pill) */}
+      <HomeTripStatus />
+      <HomeFeatureRows />
+
+      {/* Today's Lineup — image-led row, not a heavy card wall */}
+      <section data-testid="home-zone-today" className="mt-5 px-5" aria-label="Today's Lineup">
+        <p className="text-xs font-bold tracking-widest text-muted">TODAY&apos;S LINEUP</p>
+        <button
+          type="button"
+          data-testid="home-today-lineup"
+          onClick={() => setScreen("session")}
+          className="relative mt-2 flex min-h-12 w-full items-center gap-3 text-left"
+        >
+          <img src={PHOTOS[today.image]} alt="" className="h-16 w-16 shrink-0 object-cover" />
+          <span className="min-w-0 flex-1">
+            <span className="block font-display text-2xl tracking-wide text-ink">{today.name}</span>
+            <span className="mt-0.5 block text-sm text-muted">
+              {today.place} · {today.feet}
+            </span>
+          </span>
+          <span className="flex size-12 items-center justify-center rounded-full bg-ink text-lime">
+            <Play className="size-5" fill="currentColor" aria-hidden="true" />
+          </span>
+        </button>
+      </section>
+
+      {/* My Lineups list — open rows */}
+      <section data-testid="home-zone-lineups" className="mt-5 px-5" aria-label="My Lineups">
+        <div className="flex min-h-12 items-center justify-between">
+          <p className="text-xs font-bold tracking-widest text-muted">MY LINEUPS</p>
+          <button
+            type="button"
+            data-testid="home-lineups-all"
+            onClick={() => setScreen("park")}
+            className="min-h-12 px-2 text-sm font-semibold text-teal"
+          >
+            All ›
+          </button>
+        </div>
+        <ul className="mt-1 divide-y divide-line/60">
+          {DEMO_LINEUPS.map((row) => (
+            <li key={row.id}>
+              <button
+                type="button"
+                data-testid={`home-lineup-${row.id}`}
+                onClick={() => setScreen(row.today ? "session" : "park")}
+                className="flex min-h-12 w-full items-center gap-3 py-2.5 text-left"
+              >
+                <img src={PHOTOS[row.image]} alt="" className="size-12 object-cover" />
+                <span className="min-w-0 flex-1">
+                  <span className="block font-semibold text-ink">{row.name}</span>
+                  <span className="block text-xs text-muted">{row.place}</span>
+                </span>
+                <ChevronRight className="size-4 text-muted" aria-hidden="true" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Trick journey — compact row (Bag entry; not a colored tile) */}
+      <section data-testid="home-zone-bag" className="mt-4 px-5" aria-label="Progress">
+        <button
+          type="button"
+          data-testid="home-trick-journey"
+          onClick={() => {
+            useBag.getState().openView("journey");
+            setScreen("bag");
+          }}
+          className="flex min-h-12 w-full items-center justify-between py-2 text-left"
+        >
+          <span>
+            <span className="block text-xs font-bold tracking-widest text-teal">MY TRICK JOURNEY</span>
+            <span className="mt-0.5 block text-sm font-semibold text-ink">
+              {PROGRESS_STATS.landed} landed · {PROGRESS_STATS.inProgress} in progress
+            </span>
+          </span>
+          <ChevronRight className="size-5 text-teal" aria-hidden="true" />
+        </button>
+      </section>
+
+      {/* Secondary map — official source card (no invented trail diagram) */}
       <section data-testid="home-zone-mountain" className="mt-5 px-5" aria-label="Location and map">
         <HomeMapCard />
       </section>
 
-      {/* Zone 3 — Playlist */}
+      {/* Playlist soft bar */}
       <section data-testid="home-zone-playlist" className="mt-4 px-5" aria-label="Music">
         <HomePlaylistBlock />
       </section>
 
-      {/* Compact tools — icons, not pill soup */}
-      <section data-testid="home-zone-tools" className="mt-4 px-5 pb-4" aria-label="Tools">
-        <div className="grid grid-cols-3 gap-2">
-          <button
-            type="button"
-            data-testid="home-tool-crew"
-            onClick={() => setScreen("crew")}
-            className="flex flex-col items-center gap-1 rounded-3xl bg-snow px-2 py-4 ring-1 ring-line"
-          >
-            <Users className="size-5" aria-hidden="true" />
-            <span className="text-xs font-semibold">{crew.length > 0 ? `Crew · ${crew.length}` : "Crew"}</span>
-          </button>
-          <button
-            type="button"
-            data-testid="home-tool-park"
-            onClick={() => setScreen("park")}
-            className="flex flex-col items-center gap-1 rounded-3xl bg-teal/30 px-2 py-4 ring-1 ring-line"
-          >
-            <Flag className="size-5" aria-hidden="true" />
-            <span className="text-xs font-semibold">Park</span>
-          </button>
-          <button
-            type="button"
-            data-testid="home-tool-stompers"
-            onClick={() => setScreen("stompers")}
-            className="flex flex-col items-center gap-1 rounded-3xl bg-snow px-2 py-4 ring-1 ring-line"
-          >
-            <Layers className="size-5" aria-hidden="true" />
-            <span className="text-xs font-semibold">Stompers</span>
-          </button>
-        </div>
+      {/* Session plans (collapsed) */}
+      <section data-testid="home-zone-tools" className="mt-4 px-5 pb-4" aria-label="Session plans">
         <button
           type="button"
           data-testid="home-plans-toggle"
           onClick={() => setShowPlans((v) => !v)}
-          className="mt-3 h-11 w-full rounded-2xl bg-paper text-sm font-semibold ring-1 ring-line"
+          className="h-12 w-full text-sm font-semibold ring-1 ring-line"
         >
           {showPlans ? "Hide plans" : "Session plans"}
         </button>
@@ -201,7 +203,7 @@ export function Greet() {
                 <button
                   type="button"
                   onClick={() => chooseSession(session.id)}
-                  className="flex w-full items-center justify-between rounded-2xl bg-snow px-4 py-3 text-left ring-1 ring-line"
+                  className="flex min-h-12 w-full items-center justify-between px-1 text-left"
                 >
                   <span className="font-semibold">{session.name}</span>
                   {session.sample ? <span className="text-xs font-bold tracking-widest text-pink">Sample</span> : null}
@@ -210,6 +212,16 @@ export function Greet() {
             ))}
           </ul>
         ) : null}
+      </section>
+
+      {/* Keep quick-zone test hook for older suites — Map remains glove-friendly entry */}
+      <section data-testid="home-zone-quick" className="sr-only" aria-hidden="true">
+        <button type="button" data-testid="home-quick-map" onClick={() => setScreen("map")}>
+          Map
+        </button>
+        <button type="button" data-testid="home-tool-crew" onClick={() => setScreen("crew")}>
+          Crew invite
+        </button>
       </section>
     </div>
   );

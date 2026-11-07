@@ -1,0 +1,59 @@
+STOMP Spot / Stash — Grok Build handoff for Woz
+No git repository in this workspace. No branch. No commit SHA.
+Preview: the phone app. Open Map after a STOMPER exists.
+
+FILES
+Modified:
+- src/components/stomp/home-map-card.tsx
+  Renders <TrailSpots resortId={shownId} /> under the mountain card.
+  Map tab uses screen "home", which mounts HomeMapCard.
+- src/components/stomp/map.tsx
+  Also renders <TrailSpots resortId={resortId} /> at the bottom of ClipMap.
+  ClipMap is screen "map", not the Map tab.
+
+Added:
+- src/components/stomp/spots.tsx
+  Export: TrailSpots
+  Imports: react, useSocial from @/lib/stomp/social-store
+  No new packages. No new stylesheets. No image assets.
+
+ENTRY
+Map tab -> screen "home" -> HomeMapCard -> TrailSpots
+Do not replace HomeMapCard or ClipMap wholesale. Keep the TrailSpots mount.
+
+SAMPLE DATA (in spots.tsx, rebuilt for the open resort)
+Spot "Ridge lip" kind spot, two clips:
+- Demo clip, uploaded 2 days ago (export allowed)
+- Older demo clip, uploaded 8 days ago (expired)
+Stash "Trees pocket" kind stash, crewId "north", one clip uploaded 1 day ago.
+Squads come from the existing social store: North Crew (id north), Lot Crew (id lot).
+
+RULES ALREADY IN THE COMPONENT
+- Public map lists kind "spot" only.
+- Stash list lists kind "stash" for the selected crewId only.
+- Geolocation is one getCurrentPosition. The control then reads "Captured once".
+- Manual Up/Down/Left/Right still moves that pin. Nothing is shared.
+- Share and Archive ask Confirm. Share result text is "Not sent."
+- Clip clock is uploadedAt + 7 days. Not the Trip Drop length.
+- Expired clips have no play and no export. Copy says nothing was deleted.
+- Sesh phrases are touch buttons. States: Standing, Listening, Riding, Got it.
+- If SpeechRecognition is missing, the line says the mic is unavailable.
+- There is no second character. The floating Sesh button is unchanged.
+
+DO NOT
+- Merge or deploy from this package.
+- Edit greet.tsx or CrewLink.
+- Treat the demo pins as live places or live riders.
+
+TYPECHECK
+npx tsc --noEmit --pretty false --project tsconfig.json
+passed after these files were saved (no errors printed).
+
+BROWSER
+Saved STOMPER "Rio" via localStorage key stomp-avatar-locker, then opened Map.
+Checked on screen: public list has Ridge lip and not Trees pocket;
+North Crew stash shows Trees pocket; Lot Crew hides it;
+expired clip shows "Not playable. Not exportable. Nothing was deleted.";
+Sesh lists the six phrases from Standing.
+Screenshots are in artifacts/spots/.
+Issue 87 was not readable from this workspace.

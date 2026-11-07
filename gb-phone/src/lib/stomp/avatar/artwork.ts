@@ -1,0 +1,146 @@
+/**
+ * Artwork plate URL + layering contract (t1170u → t1171u v2.4 → t1173u).
+ * Prefer plate WebP by layer itemId; AvatarRenderer falls back to SVG when
+ * the plate is missing (until GB delivers modular transparent plates).
+ *
+ * HARD: do not crop composite posters or approved visual masters into fake
+ * layers. All eight owner visual masters live under
+ * docs/character-production-t1173u/masters/ (+ handoff-t1175u/) for QA only —
+ * they are NOT interchangeable with modular plates (see slot-readiness.ts).
+ * Runtime plates: /stomper/{ageBand}/{slot}/{itemId}@512.webp when GB delivers.
+ */
+import type { AgeBand, AvatarSlot } from "@/lib/stomp/avatar/types";
+
+export const ARTWORK_MASTER_SIZE = 1024;
+export const ARTWORK_RUNTIME_SIZE = 512;
+
+/** Paint order bottom → top (matches AvatarRenderer composite). */
+export const ARTWORK_LAYER_ORDER: readonly AvatarSlot[] = [
+  "board",
+  "boots",
+  "pants",
+  "body",
+  "face",
+  "jacket",
+  "backpack",
+  "gloves",
+  "hair",
+  "headwear",
+  "goggles",
+] as const;
+
+export type ArtworkSize = 512 | 1024;
+
+export type PlateResolveResult =
+  | { mode: "plate"; url: string; slot: AvatarSlot; itemId: string }
+  | { mode: "svg-fallback"; slot: AvatarSlot; itemId: string; reason: "missing-plate" | "backpack-off" };
+
+/**
+ * Canonical plate path — itemId MUST match LOCKER_CATALOG.id / layer.itemId.
+ * Examples:
+ *   stomper/adult/jacket/jacket-basic@512.webp
+ *   stomper/adult/goggles/glasses-meta-oakley@512.webp
+ *   stomper/adult/starter/m-samir/preview@512.webp
+ */
+export function buildPlateUrl(
+  ageBand: AgeBand,
+  slot: AvatarSlot,
+  itemId: string,
+  size: ArtworkSize = ARTWORK_RUNTIME_SIZE,
+): string {
+  return `/stomper/${ageBand}/${slot}/${itemId}@${size}.webp`;
+}
+
+export function buildStarterPreviewUrl(
+  ageBand: AgeBand,
+  starterId: string,
+  size: ArtworkSize = ARTWORK_RUNTIME_SIZE,
+): string {
+  return `/stomper/${ageBand}/starter/${starterId}/preview@${size}.webp`;
+}
+
+export function buildMasterPlateUrl(ageBand: AgeBand, slot: AvatarSlot, itemId: string): string {
+  return buildPlateUrl(ageBand, slot, itemId, ARTWORK_MASTER_SIZE);
+}
+
+/** Sentinel: backpack OFF by default — no plate, no draw. */
+export const BACKPACK_OFF_ITEM_ID = "backpack-none";
+
+/** Jacket OFF — show body underlayer (t1197u prototype). */
+export const JACKET_OFF_ITEM_ID = "jacket-none";
+
+/** Board OFF — Franz prototype proofs have no board; do not invent one. */
+export const BOARD_OFF_ITEM_ID = "board-none";
+
+/**
+ * Slots covered by Look 2 locked head composite (`face-f-hana-locked-composite`).
+ * No separate plate; skipped in required assembly (not a fake PASS for production).
+ */
+export const LOOK2_LOCKED_HEAD_INCLUDED_ITEM_IDS = [
+  "hair-locked-included",
+  "headwear-locked-included",
+  "goggles-locked-included",
+] as const;
+
+/** ItemIds that intentionally omit a plate draw (like backpack-none). */
+export const PLATE_SKIP_ITEM_IDS: ReadonlySet<string> = new Set([
+  BACKPACK_OFF_ITEM_ID,
+  JACKET_OFF_ITEM_ID,
+  BOARD_OFF_ITEM_ID,
+  ...LOOK2_LOCKED_HEAD_INCLUDED_ITEM_IDS,
+]);
+
+/**
+ * Resolve how a slot should render. Without real assets on disk we always
+ * report svg-fallback (contract for AvatarRenderer). When GB drops plates
+ * under /public/stomper/…, callers may probe existence and prefer `plate`.
+ */
+export function resolveLayerPlate(opts: {
+  ageBand: AgeBand;
+  slot: AvatarSlot;
+  itemId: string;
+  /** Optional existence probe — return true when the WebP is fetchable. */
+  plateExists?: (url: string) => boolean;
+  size?: ArtworkSize;
+}): PlateResolveResult {
+  const { ageBand, slot, itemId, plateExists, size = ARTWORK_RUNTIME_SIZE } = opts;
+  if (slot === "backpack" && (itemId === BACKPACK_OFF_ITEM_ID || !itemId)) {
+    return { mode: "svg-fallback", slot, itemId: BACKPACK_OFF_ITEM_ID, reason: "backpack-off" };
+  }
+  const url = buildPlateUrl(ageBand, slot, itemId, size);
+  // Docs masters / handoff refs are never runtime plates (t1178u).
+  if (
+    url.includes("/docs/") ||
+    url.includes("character-production") ||
+    url.includes("APPROVED_REFERENCES") ||
+    !url.startsWith("/stomper/")
+  ) {
+    return { mode: "svg-fallback", slot, itemId, reason: "missing-plate" };
+  }
+  if (plateExists?.(url)) {
+    return { mode: "plate", url, slot, itemId };
+  }
+  return { mode: "svg-fallback", slot, itemId, reason: "missing-plate" };
+}
+
+/** Compression budgets (from ARTWORK-INTEGRATION-SPEC). */
+export const ARTWORK_BUDGETS = {
+  layerWebpTypicalKb: 40,
+  layerWebpHardKb: 80,
+  starterPreviewWebpKb: 120,
+  firstPaintAdultPreviewSetMb: 1.5,
+} as const;
+
+/** Eyewear option IDs on the goggles slot. */
+export const EYEWEAR_ITEM_IDS = {
+  goggles: "goggles-basic",
+  glassesMetaOakley: "glasses-meta-oakley",
+} as const;
+
+/** Original STOMP board graphic IDs (no third-party marks). */
+export const STOMP_BOARD_ITEM_IDS = [
+  "board-basic",
+  "board-park-graphic",
+  "board-powder",
+  "board-stomp-graphic",
+] as const;

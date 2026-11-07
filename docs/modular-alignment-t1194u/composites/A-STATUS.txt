@@ -1,0 +1,6 @@
+BLOCKED — AWAITING_FRANZ_BODY
+jacket_footprint_px=12641
+body_cover_of_jacket_footprint=0.8536
+Threshold for honest PASS would require coherent torso+arms under jacket with shoulders matching jacket, no holes, Franz-approved paint.
+Provisional sheet body is insufficient (see evidence/A-BLOCKED-underjacket-holes.png).
+Franz: blank Drive stack; Runway auto FAIL (face/pose drift); will NOT invent body.

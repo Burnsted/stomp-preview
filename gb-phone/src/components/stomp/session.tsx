@@ -28,7 +28,7 @@ export function TodaySession() {
         <h1 className="font-display text-4xl tracking-wide">Today</h1>
       </header>
       <div className="px-4 pt-4">
-        <p className="text-xs font-bold tracking-widest text-pink">Your next session</p>
+        <p className="text-xs font-bold tracking-widest text-accent">Your next session</p>
         <p className="mt-1 font-display text-4xl leading-none tracking-tight" style={{ transform: "skewX(-8deg)" }}>
           {template.name}
         </p>
@@ -50,10 +50,10 @@ export function TodaySession() {
                   onClick={() => toggleStep(step.id)}
                   className={
                     "w-full rounded-2xl px-4 py-3 text-left ring-1 " +
-                    (checked ? "bg-lime ring-lime" : "bg-snow ring-line")
+                    (checked ? "bg-accent ring-accent" : "bg-snow ring-line")
                   }
                 >
-                  <p className="text-xs font-bold tracking-widest text-teal">
+                  <p className="text-xs font-bold tracking-widest text-accent">
                     {String(index + 1).padStart(2, "0")} · {checked ? "Done" : "Open"}
                   </p>
                   <p className="mt-1 font-semibold">{step.title}</p>
@@ -75,7 +75,7 @@ export function TodaySession() {
                   className="flex h-14 w-full items-center justify-between rounded-2xl bg-snow px-4 text-left ring-1 ring-line"
                 >
                   <span className="font-semibold">{trick.name}</span>
-                  <span className="text-sm text-pink">{statusLabel(status)}</span>
+                  <span className="text-sm text-accent">{statusLabel(status)}</span>
                 </button>
               </li>
             );

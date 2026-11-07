@@ -1,6 +1,15 @@
+/**
+ * Session voice helpers (t1224u).
+ * Primary Hey Session control is the little-snowboarder FAB (hey-session-fab.tsx).
+ * This module keeps routing + quiet voice-prompt / secondary typed Yo Session path.
+ */
 import { useEffect, useRef, useState, type FormEvent, type PointerEvent } from "react";
 import { holdListen, readAudioRoute, type AudioRoute } from "@/lib/stomp/audio-route";
+import { useMusicSources } from "@/lib/stomp/music-sources";
 import { routeSession, speakSession, type SessionAct, type SessionMode } from "@/lib/stomp/session-voice";
+import { useSpotStash } from "@/lib/stomp/spot-stash/client-store";
+import { slotLabelForMember } from "@/lib/stomp/playtest/character-labels";
+import { useSocial } from "@/lib/stomp/social-store";
 import { useStomp } from "@/lib/stomp/store";
 
 export function useSessionRouter() {
@@ -10,32 +19,66 @@ export function useSessionRouter() {
   const addCallout = useStomp((state) => state.addCallout);
   const meetup = useStomp((state) => state.meetup);
   const tomorrow = useStomp((state) => state.tomorrow);
+  const setActiveSource = useMusicSources((state) => state.setActive);
 
   function apply(raw: string, mode: SessionMode = "command", speak = true): SessionAct {
     const act = routeSession(raw, { meetup, tomorrow, mode });
-    if (speak) speakSession(act.say);
+    let say = act.say;
+    // t1238u: drive Spot/Stash client when voice intent matched
+    if (act.spotVoice) {
+      const reply = useSpotStash.getState().handleVoice(raw);
+      say = reply.say;
+    }
+    if (act.social === "catchup") {
+      const last = useSocial.getState().notes.at(-1);
+      say = last ? `${slotLabelForMember(last.from)} said ${last.text}` : "No messages.";
+    } else if (act.social === "share") {
+      useSocial.getState().stageShare("north", "1.4s air", "photo");
+      say = useSocial.getState().notice || say;
+    } else if (act.social === "message" && act.message) {
+      useSocial.getState().stageShare("north", act.message, "text");
+      say = useSocial.getState().notice || say;
+    } else if (act.social === "confirm") {
+      useSocial.getState().confirmShare();
+      say = useSocial.getState().notice || say;
+    } else if (act.social === "cancel") {
+      useSocial.getState().cancelShare();
+      say = "Share cancelled.";
+    } else if (act.social === "sessions") {
+      const trip = useSocial.getState().trip;
+      say = trip.joined ? `You're on ${trip.name}.` : `${trip.name} is waiting. Preview, then join.`;
+    }
+    if (speak) speakSession(say);
+    if (act.musicSource) setActiveSource(act.musicSource);
     if (act.run === "start") startRun();
     else if (act.run === "end") endRun();
     else if (act.screen) setScreen(act.screen);
     if (act.note) addCallout(act.note);
-    return act;
+    return { ...act, say };
   }
 
   return { apply };
 }
 
-export function SessionMic({ quiet = false }: { quiet?: boolean }) {
+/**
+ * Quiet voice-activation prompt for key surfaces (t1224u).
+ * Leads the rider to speak — primary control is the bottom-right snowboarder FAB.
+ * Typed “Yo Session” stays secondary / accessibility only.
+ */
+export function SessionVoicePrompt({
+  secondaryType = true,
+  className = "",
+}: {
+  secondaryType?: boolean;
+  className?: string;
+}) {
   const { apply } = useSessionRouter();
-  const [holding, setHolding] = useState(false);
-  const [line, setLine] = useState("Hey Session");
   const [draft, setDraft] = useState("");
+  const [line, setLine] = useState("");
   const [route, setRoute] = useState<AudioRoute | null>(null);
-  const heard = useRef("");
-  const holdingRef = useRef(false);
-  const listen = useRef<ReturnType<typeof holdListen> | null>(null);
+  const [showType, setShowType] = useState(false);
 
   useEffect(() => {
-    if (quiet) return;
     let cancel = false;
     void readAudioRoute().then((next) => {
       if (!cancel) setRoute(next);
@@ -43,7 +86,70 @@ export function SessionMic({ quiet = false }: { quiet?: boolean }) {
     return () => {
       cancel = true;
     };
-  }, [quiet]);
+  }, []);
+
+  function onType(event: FormEvent) {
+    event.preventDefault();
+    const text = draft.trim();
+    if (!text) return;
+    setDraft("");
+    setLine(apply(text, "command").say);
+  }
+
+  const micHint = !route
+    ? "Checking phone audio…"
+    : route.speechIn
+      ? "Hold the snowboarder · say Hey Sesh or Yo Sesh"
+      : "No mic here — type below if you need it";
+
+  return (
+    <div data-testid="session-voice-prompt" className={"text-center " + className}>
+      <p data-testid="session-voice-prompt-copy" className="text-xs font-semibold text-ink/90">
+        {line || micHint}
+      </p>
+      <p className="mt-1 text-[10px] text-muted">
+        Voice first · Cardo / Sena / Aleck are not linked here
+      </p>
+      {secondaryType ? (
+        showType ? (
+          <form onSubmit={onType} className="mt-2 flex gap-2" data-testid="session-voice-type-form">
+            <input
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              placeholder="Yo Sesh, drop in"
+              aria-label="Type a Sesh command"
+              className="h-10 min-w-0 flex-1 rounded-full bg-snow/90 px-3 text-sm ring-1 ring-line outline-none"
+            />
+            <button type="submit" className="h-10 rounded-full bg-ink px-3 text-sm font-semibold text-snow">
+              Go
+            </button>
+          </form>
+        ) : (
+          <button
+            type="button"
+            data-testid="session-voice-type-toggle"
+            onClick={() => setShowType(true)}
+            className="mt-2 text-[10px] font-semibold tracking-wide text-muted underline-offset-2 hover:underline"
+          >
+            Type instead
+          </button>
+        )
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * Legacy quiet mid-page hold control — used only where FAB is hidden (e.g. run).
+ * Not a full-width primary CTA on Home / chrome pages (t1224u).
+ */
+export function SessionMic({ quiet = false }: { quiet?: boolean }) {
+  const { apply } = useSessionRouter();
+  const [holding, setHolding] = useState(false);
+  const [line, setLine] = useState("Hey Session");
+  const heard = useRef("");
+  const holdingRef = useRef(false);
+  const listen = useRef<ReturnType<typeof holdListen> | null>(null);
 
   function run(text: string) {
     setLine(apply(text, "command").say);
@@ -75,55 +181,26 @@ export function SessionMic({ quiet = false }: { quiet?: boolean }) {
     }, 280);
   }
 
-  function onType(event: FormEvent) {
-    event.preventDefault();
-    const text = draft.trim();
-    if (!text) return;
-    setDraft("");
-    run(text);
+  if (!quiet) {
+    // Mid-page giant pill removed — voice prompt + FAB replace it.
+    return <SessionVoicePrompt />;
   }
 
-  const routeLine = !route
-    ? "Checking the phone's audio route."
-    : route.speechIn
-      ? `${route.label}. Same commands on a headset or the phone speaker.`
-      : "This browser has no mic. Type the command. The action still runs.";
-
   return (
-    <div>
+    <div data-testid="session-mic-quiet">
       <button
         type="button"
         onPointerDown={begin}
         onPointerUp={end}
         onPointerCancel={end}
         className={
-          "h-14 w-full rounded-full font-semibold " +
-          (holding ? "bg-lime text-ink" : "bg-snow text-ink ring-1 ring-line")
+          "mx-auto flex h-11 w-auto min-w-[10rem] items-center justify-center rounded-full px-5 text-sm font-semibold " +
+          (holding ? "bg-cta text-cta-fg" : "bg-snow text-ink ring-1 ring-line")
         }
       >
         {holding ? "Listening" : "Hey Session"}
       </button>
-      {line !== "Hey Session" ? <p className="mt-2 text-center text-sm font-semibold text-teal">{line}</p> : null}
-      {quiet ? null : (
-        <>
-          <form onSubmit={onType} className="mt-2 flex gap-2">
-            <input
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-              placeholder="Yo Session, drop in"
-              aria-label="Say it to Session"
-              className="h-12 min-w-0 flex-1 rounded-full bg-snow px-4 ring-1 ring-line outline-none"
-            />
-            <button type="submit" className="h-12 rounded-full bg-ink px-4 font-semibold text-snow">
-              Go
-            </button>
-          </form>
-          <p className="mt-2 text-center text-xs text-pretty text-muted">
-            {routeLine} Hey Session and Yo Session, only while you hold this. Sesh stays off. Cardo, Sena, and Aleck are not linked to each other, and they have not been tested here.
-            {!route?.speechOut ? " Replies stay on screen if the speaker can't talk." : ""}
-          </p>
-        </>
-      )}
+      {line !== "Hey Session" ? <p className="mt-2 text-center text-sm font-semibold text-accent">{line}</p> : null}
     </div>
   );
 }

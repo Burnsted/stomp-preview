@@ -1,0 +1,35 @@
+{
+  "face_sha256": "1b96222995092646c8f91e55d9f5025d9a318b002dcaa7e26108c183c8bc2ebf",
+  "body_sha256": "21a12aca8ac4f24f2e862e19b6eadb357e82e77d52a353a3a9c9c75516516671",
+  "face_bytes": 9838,
+  "body_bytes": 6808,
+  "face_roi_0_78_byte_identical_vs_prior_512": false,
+  "note_roi": "Franz claims 1024 rows 0-156 identical within their edit; prior staged 512 face was different pack so 0-78 vs prior webp may differ",
+  "face_alpha_changed_px_above_y78": 21,
+  "face_alpha_changed_px_below_y78": 771,
+  "face_opaque_y_ge_108_before": 111,
+  "face_opaque_y_ge_108_after": 0,
+  "braid_roi_opaque_before": 0,
+  "braid_roi_opaque_after": 0,
+  "head_verdicts": {
+    "chin_notch": "CLEARED_WITH_RESIDUAL_JAW_STEP",
+    "braid_wisp": "CLEARED",
+    "chest_slashes": "CLEARED"
+  },
+  "crotch": {
+    "B_mint": {
+      "body_alpha_in_gap_px": 1,
+      "composite_gained_opaque_from_body_px": 0
+    },
+    "C_ink": {
+      "body_alpha_in_gap_px": 1,
+      "composite_gained_opaque_from_body_px": 0
+    }
+  },
+  "crotch_T": "CLEARED",
+  "A_torso_above_waist_opaque_px": 7016,
+  "A_torso": "OK",
+  "owner_visual_acceptance_claimed": false,
+  "android_pass_claimed": false,
+  "status": "REGISTERED_VISUAL_PROTOTYPE_ONLY"
+}

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=390" />
+  <title>t1244u mock 03 — Sesh voice (static)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 390px;
+      height: 844px;
+      overflow: hidden;
+      font-family: Outfit, system-ui, sans-serif;
+      color: #f4f6f8;
+      background: #070b14;
+    }
+    .phone {
+      position: relative;
+      width: 390px;
+      height: 844px;
+      background:
+        radial-gradient(90% 60% at 50% 0%, rgba(154,166,184,0.12), transparent 55%),
+        linear-gradient(180deg, #0b1220 0%, #070b14 100%);
+    }
+    .badge {
+      position: absolute;
+      top: 14px; right: 14px;
+      z-index: 8;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: rgba(244,246,248,0.45);
+    }
+    .header {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 18px 16px 10px;
+    }
+    .mark {
+      width: 28px; height: 28px;
+      border-radius: 7px;
+      background: #fff;
+      color: #0a0a0a;
+      font: 900 20px/28px "Arial Black", Arial, sans-serif;
+      text-align: center;
+    }
+    .word {
+      font-family: Anton, sans-serif;
+      font-size: 26px;
+      letter-spacing: 0.04em;
+    }
+    /* Three elements only: mic, transcript, Confirm */
+    .center {
+      position: absolute;
+      left: 24px; right: 24px;
+      top: 200px;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+    }
+    .mic {
+      width: 96px; height: 96px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.28);
+      background: #152033;
+      color: #f4f6f8;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 0 10px rgba(244,246,248,0.04);
+    }
+    .transcript {
+      width: 100%;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.35;
+      color: #f4f6f8;
+      min-height: 48px;
+    }
+    .confirm {
+      width: 100%;
+      max-width: 280px;
+      height: 52px;
+      border: 0;
+      border-radius: 999px;
+      background: #f4f6f8;
+      color: #0a0a0a;
+      font: 700 15px Outfit, sans-serif;
+    }
+    .fab-wrap {
+      position: absolute;
+      right: 14px;
+      bottom: 88px;
+      z-index: 6;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+    .fab-cap {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      opacity: 0.75;
+    }
+    .fab {
+      width: 52px; height: 52px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: #0b1220;
+      color: #f4f6f8;
+      display: grid;
+      place-items: center;
+    }
+    .tabs {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: 64px;
+      z-index: 5;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding-bottom: 10px;
+      background: linear-gradient(180deg, transparent, rgba(7,11,20,0.95));
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(244,246,248,0.55);
+    }
+    .tabs span:nth-child(2) { color: #f4f6f8; }
+  </style>
+</head>
+<body>
+  <div class="phone" data-mock="t1244u-03-sesh-voice">
+    <p class="badge">STATIC MOCK · NOT APP</p>
+
+    <header class="header">
+      <div class="mark" aria-hidden="true">S</div>
+      <div class="word">STOMP</div>
+    </header>
+
+    <div class="center">
+      <button class="mic" type="button" aria-label="Microphone">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <rect x="9" y="2" width="6" height="12" rx="3"/>
+          <path d="M5 11a7 7 0 0 0 14 0"/>
+          <path d="M12 18v4M8 22h8"/>
+        </svg>
+      </button>
+      <p class="transcript">“Share with Powder Crew”</p>
+      <button class="confirm" type="button">Confirm</button>
+    </div>
+
+    <div class="fab-wrap">
+      <span class="fab-cap">HEY SESH</span>
+      <div class="fab" aria-label="Hey Sesh">
+        <svg width="26" height="26" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <path d="M8 34c6-3 12-4 16-4s10 1 16 4"/>
+          <circle cx="24" cy="16" r="4"/>
+          <path d="M24 20v8M18 24l6 2 6-4M24 28l-4 6M24 28l5 5"/>
+        </svg>
+      </div>
+    </div>
+
+    <nav class="tabs" aria-hidden="true">
+      <span>Home</span><span>Map</span><span>Music</span><span>Stats</span><span>Crew</span>
+    </nav>
+  </div>
+</body>
+</html>

@@ -27,7 +27,7 @@ const chip = btn + focus + "bg-snow ring-1 ring-line disabled:opacity-40";
 const primary = btn + focus + "bg-ink text-snow disabled:opacity-40";
 
 export function DemoBadge({ label = DEMO_LABEL.lab }: { label?: string }) {
-  return <span data-testid="demo-badge" className="rounded-full bg-lime px-2 py-0.5 text-xs font-bold">{label}</span>;
+  return <span data-testid="demo-badge" className="rounded-full bg-accent px-2 py-0.5 text-xs font-bold">{label}</span>;
 }
 
 export function WozLab() {
@@ -88,7 +88,7 @@ export function WozLab() {
 export function ErrorBanner({ message, onDismiss }: { message: string | null; onDismiss: () => void }) {
   if (!message) return null;
   return (
-    <div role="alert" data-testid="woz-error" className="mx-4 mt-2 flex items-center justify-between gap-2 rounded-2xl bg-snow px-3 py-2 text-sm text-pink ring-1 ring-line"
+    <div role="alert" data-testid="woz-error" className="mx-4 mt-2 flex items-center justify-between gap-2 rounded-2xl bg-snow px-3 py-2 text-sm text-accent ring-1 ring-line"
       onKeyDown={(e) => { if (e.key === "Escape") { e.preventDefault(); onDismiss(); } }}>
       <span>{plainError(message)}</span>
       <button type="button" className={chip} onClick={onDismiss} aria-label="dismiss error">Dismiss</button>
@@ -102,7 +102,7 @@ function RideBanner() {
   const next = ride.run ? R.nextHit(ride.run, ride.completedHits)?.label ?? null : null;
   const text = rideBanner(ride.phase, ride.run?.name, next);
   if (!text) return null;
-  return <div role="status" data-testid="ride-banner" data-phase={ride.phase} className={"rounded-2xl px-3 py-2 text-sm font-semibold ring-1 ring-line " + (ride.phase === "active" ? "bg-lime" : "bg-snow")}>{text}</div>;
+  return <div role="status" data-testid="ride-banner" data-phase={ride.phase} className={"rounded-2xl px-3 py-2 text-sm font-semibold ring-1 ring-line " + (ride.phase === "active" ? "bg-accent" : "bg-snow")}>{text}</div>;
 }
 
 function InviteActivity() {
@@ -289,12 +289,12 @@ function SessionPanel() {
           <input ref={inputRef} aria-label="session command" maxLength={MAX_UTTERANCE} value={text} onKeyDown={(e) => { if (e.key === "Escape" && router.pending) { e.preventDefault(); submit("cancel"); } }} onChange={(e) => setText(e.target.value)} placeholder="stomped it" className="h-10 flex-1 rounded-xl px-3 ring-1 ring-line" />
           <button type="submit" className={primary}>Send</button>
         </form>
-        {hint ? <p role="status" className="pt-1 text-sm text-pink" data-testid="session-hint">{hint}</p> : null}
+        {hint ? <p role="status" className="pt-1 text-sm text-accent" data-testid="session-hint">{hint}</p> : null}
         <div className="flex flex-wrap gap-1 pt-2" role="group" aria-label="quick phrases">
           {QUICK.map((q) => <button key={q} type="button" data-testid="quick-phrase" className={chip} onClick={() => submit(q)}>{q}</button>)}
         </div>
         {router.pending ? (
-          <div className="mt-2 rounded-2xl bg-lime/40 p-2 text-sm ring-1 ring-line" data-testid="pending" role="group" aria-label="Confirm command">
+          <div className="mt-2 rounded-2xl bg-accent/40 p-2 text-sm ring-1 ring-line" data-testid="pending" role="group" aria-label="Confirm command">
             <p>Confirm: <b>{router.pending.summary}</b>?</p>
             <p className="text-xs text-muted">Say or type “yes” to go ahead, “cancel” (or press Esc) to drop it. Nothing happens until you confirm.</p>
             <span className="mt-1 inline-flex gap-1"><button type="button" className={primary} onClick={() => submit("yes")}>Yes</button><button type="button" className={chip} onClick={() => submit("cancel")}>Cancel</button></span>
@@ -384,7 +384,7 @@ function RidePanel() {
           <button type="button" className={chip} onClick={() => rs(R.markStash(ride, { id: `st-${Date.now()}`, label: `Stash ${ride.stashes.length + 1}`, zoneLabel: ride.parkLabel, nowIso: t() }), undefined, "Stash saved — park label only.")}>Mark stash</button>
         </div>
         {note ? <p role="status" className="pt-1 text-sm" data-testid="ride-note">{note}</p> : null}
-        {endSummary && ride.phase === "ended" ? <p className="mt-2 rounded-2xl bg-lime/40 px-3 py-2 text-sm font-semibold ring-1 ring-line" data-testid="ride-end-summary">{endSummary}</p> : null}
+        {endSummary && ride.phase === "ended" ? <p className="mt-2 rounded-2xl bg-accent/40 px-3 py-2 text-sm font-semibold ring-1 ring-line" data-testid="ride-end-summary">{endSummary}</p> : null}
         {ride.phase === "idle" || ride.phase === "ended" ? <p className="pt-1 text-xs text-muted" data-testid="ride-idle">{ride.phase === "ended" ? "Ride ended. Press Start for a fresh ride on the same run." : ride.run ? "Ready — press Start when you drop in." : "Press Start for a free ride, or pick a run above and tap “Use for ride”."}</p> : null}
         {ride.run ? <p className="pt-1 text-sm">Next hit: {R.nextHit(ride.run, ride.completedHits)?.label ?? "done"}</p> : null}
         <p className="pt-1 text-xs text-muted">Stash pins save a park label only — no GPS.</p>
@@ -414,7 +414,7 @@ function CampfirePanel() {
     <div className="space-y-3">
       <div className="rounded-3xl bg-snow p-4 ring-1 ring-line" data-testid="campfire">
         <div className="flex items-center justify-between"><h2 className="font-semibold">Campfire {campfireOpen ? "· open" : "· closed"}</h2><DemoBadge label={DEMO_LABEL.campfire} /></div>
-        <p role="note" className="mt-1 rounded-2xl bg-lime/40 px-3 py-1 text-xs font-semibold" data-testid="campfire-demo-banner">{CAMPFIRE_DEMO_BANNER}</p>
+        <p role="note" className="mt-1 rounded-2xl bg-accent/40 px-3 py-1 text-xs font-semibold" data-testid="campfire-demo-banner">{CAMPFIRE_DEMO_BANNER}</p>
         <p className="pt-1 text-xs text-muted" data-testid="campfire-guards">{CAMPFIRE_GUARDS.upload ? "Upload on" : UPLOAD_OFF_MSG} Live share: off. Only your crew sees clips you share; new clips start as “Only me”.</p>
         {confirmClose ? (
           <ConfirmBar className="pt-2" testId="campfire-close-confirm" label="Confirm close Campfire" message={CAMPFIRE_CLOSE_CONFIRM}
@@ -495,9 +495,9 @@ function SmartIdPanel() {
               </form>
             ) : null}
             {tag.state === "unclaimed" ? <p id="claim-hint" className="pt-1 text-xs text-muted" data-testid="claim-hint">{CLAIM_HINT}</p> : null}
-            {tag.state === "revoked" ? <p role="status" className="pt-1 text-sm text-pink" data-testid="revoked-banner">{REVOKED_BANNER}</p> : null}
+            {tag.state === "revoked" ? <p role="status" className="pt-1 text-sm text-accent" data-testid="revoked-banner">{REVOKED_BANNER}</p> : null}
             {confirm && tag.state !== "revoked" && (confirm === "revoke" || acts.suspend) ? (
-              <ConfirmBar className="mt-2 rounded-2xl bg-snow p-2 ring-1 ring-pink" testId={confirm === "revoke" ? "revoke-confirm" : "suspend-confirm"} label={confirm === "revoke" ? "Confirm revoke" : "Confirm suspend"}
+              <ConfirmBar className="mt-2 rounded-2xl bg-snow p-2 ring-1 ring-accent" testId={confirm === "revoke" ? "revoke-confirm" : "suspend-confirm"} label={confirm === "revoke" ? "Confirm revoke" : "Confirm suspend"}
                 message={confirm === "revoke" ? REVOKE_CONFIRM : SUSPEND_CONFIRM} yesLabel={confirm === "revoke" ? "Yes, revoke" : "Yes, suspend"} keepLabel={confirm === "revoke" ? "Keep tag" : "Keep active"}
                 onYes={() => { if (confirm === "revoke") updTag(S.revokeTag(tag, me, nowIso()), SMARTID_DONE.revoked); else updTag(S.suspendTag(tag, me), SMARTID_DONE.suspended); setConfirm(null); }} onKeep={() => setConfirm(null)} />
             ) : (
@@ -536,7 +536,7 @@ function DataPanel() {
     <details className="mx-4 mt-4 rounded-3xl bg-snow p-4 ring-1 ring-line" data-testid="woz-data">
       <summary className={"cursor-pointer font-semibold " + focus}>This phone’s Crew Tools data</summary>
       <p className="pt-1 text-xs text-muted">{DATA_INTRO}</p>
-      {!storageOk ? <p role="alert" className="pt-1 text-xs text-pink" data-testid="storage-warn">Saving is unavailable (private mode?) — changes last until you close the app. Export first if you want to keep them.</p> : null}
+      {!storageOk ? <p role="alert" className="pt-1 text-xs text-accent" data-testid="storage-warn">Saving is unavailable (private mode?) — changes last until you close the app. Export first if you want to keep them.</p> : null}
       <div className="flex flex-wrap items-center gap-2 pt-2">
         <button type="button" className={chip} aria-label="Export Crew Tools data" onClick={() => { setDump(exportData()); setMsg(DATA_EXPORT_READY); const iso = nowIso(); setLastExport(iso); try { localStorage.setItem(LAST_EXPORT_KEY, iso); } catch { /* storage blocked: hint stays in memory */ } }}>Export</button>
         <span className="text-xs text-muted" data-testid="last-export">{lastExportHint(lastExport)}</span>

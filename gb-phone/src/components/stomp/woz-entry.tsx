@@ -20,8 +20,9 @@ export function WozEntry({ tab, label, className = "" }: { tab: WozTab; label: s
 export function GreetCrewToolsHint() {
   const setScreen = useStomp((s) => s.setScreen);
   const openFrom = useWoz((s) => s.openFrom);
+  // Bottom-left so it does not collide with t1224u Hey Session snowboarder FAB (bottom-right).
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 mx-auto flex w-full max-w-md justify-end p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 mx-auto flex w-full max-w-md justify-start p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
       <button type="button" data-testid="greet-crew-tools" aria-label="Open Crew tools (demo, stays on this phone)"
         onClick={() => { openFrom("crew", "greet"); setScreen("woz"); }}
         className="pointer-events-auto h-10 rounded-full bg-ink/90 px-4 text-xs font-semibold text-snow shadow-lg ring-1 ring-line focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">

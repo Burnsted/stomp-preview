@@ -38,13 +38,13 @@ export function Home() {
         <div className="absolute right-0 bottom-28 left-5">
           <Wordmark tone="snow" />
           <p className="mt-2 max-w-56 text-lg font-medium text-pretty text-snow">
-            The Hands-Free Snowboard Caddy & Trick Log
+            Ride. Clip. Crew. Relive.
           </p>
         </div>
         <button
           type="button"
           onClick={() => setScreen("map")}
-          className="absolute right-5 bottom-24 flex size-20 rotate-6 items-center justify-center rounded-3xl bg-pink text-center font-display text-xl leading-none text-snow"
+          className="absolute right-5 bottom-24 flex size-20 rotate-6 items-center justify-center rounded-3xl bg-cta text-center font-display text-xl leading-none text-cta-fg"
         >
           Hit
           <br />
@@ -64,7 +64,7 @@ export function Home() {
           <button
             type="button"
             onClick={() => setScreen("park")}
-            className="rounded-3xl bg-pink px-4 py-4 text-left font-semibold text-snow"
+            className="rounded-3xl bg-cta px-4 py-4 text-left font-semibold text-cta-fg"
           >
             Park
             <span className="mt-1 block text-xs font-medium text-snow/80">Laps & features</span>
@@ -72,7 +72,7 @@ export function Home() {
           <button
             type="button"
             onClick={() => setScreen("goals")}
-            className="rounded-3xl bg-teal px-4 py-4 text-left font-semibold text-ink"
+            className="rounded-3xl bg-accent px-4 py-4 text-left font-semibold text-ink"
           >
             Tricks
             <span className="mt-1 block text-xs font-medium text-ink/70">Library & status</span>
@@ -95,6 +95,14 @@ export function Home() {
             <span className="mt-1 block text-xs font-medium text-muted">Demo — stays on this phone</span>
           </button>
         </div>
+        <button
+          type="button"
+          data-testid="home-rider-hub"
+          onClick={() => setScreen("hub")}
+          className="mt-3 text-sm text-muted"
+        >
+          Rider
+        </button>
       </section>
     </div>
   );

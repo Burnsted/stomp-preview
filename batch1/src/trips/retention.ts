@@ -1,0 +1,217 @@
+import { addUtcDays, addUtcMonths, isAtOrAfter } from "./clock.js";
+import { getPolicyStub } from "./policy.js";
+import type {
+  RetentionClock,
+  RetentionKind,
+  StomperId,
+  Trip,
+  TripId,
+} from "./types.js";
+
+export const VIEWER_MEDIA_MAX_DAYS = 45;
+
+/**
+ * D2 (t1208u) — single policy constant for Pass export-only retention.
+ * SUPERSEDES prior RIDER_ARCHIVE_MONTHS=6 / pass_archive_6mo product meaning.
+ * G1 Day Sesh media ≤45d remains separate and unchanged.
+ */
+export const PASS_EXPORT_ONLY_MONTHS = 12;
+
+/**
+ * @deprecated SUPERSEDED by PASS_EXPORT_ONLY_MONTHS (owner D2, Nov 4 2026).
+ * Alias kept so older imports resolve; value equals the 12mo export-only policy.
+ */
+export const RIDER_ARCHIVE_MONTHS = PASS_EXPORT_ONLY_MONTHS;
+
+export const VIEWER_ONLY_MONTHS = 12;
+
+/**
+ * Viewer download + media delete from officialEndDate + ≤45d [LOCKED].
+ * Before finalize: projected from scheduledEndAt (non-authoritative).
+ * Cancelled: POLICY_UNRESOLVED (officialEndDate null — F1).
+ */
+export function mediaViewerDeadline(trip: Trip): RetentionClock {
+  if (trip.status === "cancelled") {
+    const stub = getPolicyStub("cancelled_trip_media_viewer_retention");
+    return {
+      tripId: trip.id,
+      kind: "media_45d",
+      anchorIso: trip.cancelledAt ?? trip.startIso,
+      deadlineIso: null,
+      policyUnresolved: stub.why,
+    };
+  }
+  if (trip.officialEndDate) {
+    return {
+      tripId: trip.id,
+      kind: "media_45d",
+      anchorIso: trip.officialEndDate,
+      deadlineIso: addUtcDays(trip.officialEndDate, VIEWER_MEDIA_MAX_DAYS),
+      projected: false,
+    };
+  }
+  return {
+    tripId: trip.id,
+    kind: "media_45d",
+    anchorIso: trip.scheduledEndAt,
+    deadlineIso: addUtcDays(trip.scheduledEndAt, VIEWER_MEDIA_MAX_DAYS),
+    projected: true,
+  };
+}
+
+export function viewerDownloadDeadline(trip: Trip): RetentionClock {
+  const base = mediaViewerDeadline(trip);
+  return { ...base, kind: "viewer_download_45d" };
+}
+
+/**
+ * Pass export-only clock — 12 calendar months from actual Pass end (D2).
+ * Never from trip end. Not a deletion job.
+ */
+export function passExportOnlyClock(
+  stomperId: StomperId,
+  passEndIso: string,
+): RetentionClock {
+  return {
+    stomperId,
+    kind: "pass_export_only_12mo",
+    anchorIso: passEndIso,
+    deadlineIso: addUtcMonths(passEndIso, PASS_EXPORT_ONLY_MONTHS),
+  };
+}
+
+/**
+ * @deprecated Prefer passExportOnlyClock — product meaning of 6mo archive SUPERSEDED (D2).
+ * Returns the 12mo export-only clock under the new kind.
+ */
+export function riderArchiveClock(
+  stomperId: StomperId,
+  passEndIso: string,
+): RetentionClock {
+  return passExportOnlyClock(stomperId, passEndIso);
+}
+
+/**
+ * On renewal: export-only clock for the *future* Pass end restarts.
+ * Does NOT silently restore content already purged under deletion lifecycle (D2).
+ * Prior purged history must stay purged — callers track purged ids separately
+ * (see renewPassAccess in pass-lifecycle.ts).
+ */
+export function restartArchiveOnRenewal(
+  stomperId: StomperId,
+  newPassEndIso: string,
+): RetentionClock & { silentRestoreOfPurgedHistory: false } {
+  return {
+    ...passExportOnlyClock(stomperId, newPassEndIso),
+    silentRestoreOfPurgedHistory: false,
+  };
+}
+
+/** Viewer-only account 12-month retention — independent of trip 45d download. */
+export function viewerOnlyAccountClock(
+  stomperId: StomperId,
+  anchorIso: string,
+): RetentionClock {
+  return {
+    stomperId,
+    kind: "viewer_only_12mo",
+    anchorIso,
+    deadlineIso: addUtcMonths(anchorIso, VIEWER_ONLY_MONTHS),
+  };
+}
+
+/** never-Rider clock stub — independent; no invented purge. */
+export function neverRiderClock(
+  stomperId: StomperId,
+  anchorIso: string,
+): RetentionClock {
+  return {
+    stomperId,
+    kind: "never_rider",
+    anchorIso,
+    deadlineIso: addUtcMonths(anchorIso, VIEWER_ONLY_MONTHS),
+  };
+}
+
+/** Founder clock stub — independent of other clocks. */
+export function founderClock(
+  stomperId: StomperId,
+  anchorIso: string,
+): RetentionClock {
+  return {
+    stomperId,
+    kind: "founder",
+    anchorIso,
+    // Founder retention policy not specified — stub with null deadline + marker
+    deadlineIso: null,
+    policyUnresolved: "Founder retention duration not owner-specified; stub only.",
+  };
+}
+
+/**
+ * Simulate "media deleted at deadline" without running a deletion job.
+ * Trip history (officialEndDate, extensions[]) remains readable.
+ */
+export function markMediaDeletedAtDeadline(
+  trip: Trip,
+  atIso: string,
+): {
+  mediaDeleted: boolean;
+  historyIntact: true;
+  officialEndDate: string | null;
+  extensions: Trip["extensions"];
+  deletionJob: { enabled: false; reason: "POLICY_UNRESOLVED" };
+} {
+  const clock = mediaViewerDeadline(trip);
+  const due =
+    clock.deadlineIso != null && isAtOrAfter(atIso, clock.deadlineIso);
+  return {
+    mediaDeleted: due,
+    historyIntact: true,
+    officialEndDate: trip.officialEndDate,
+    extensions: trip.extensions,
+    deletionJob: {
+      enabled: false,
+      reason: "POLICY_UNRESOLVED",
+    },
+  };
+}
+
+export function clocksIndependent(
+  clocks: RetentionClock[],
+): boolean {
+  // Sanity: each kind+subject pair has its own anchor; mutating one object
+  // must not share references — callers should structuredClone fixtures.
+  const keys = new Set<string>();
+  for (const c of clocks) {
+    const key = `${c.kind}:${c.stomperId ?? ""}:${c.tripId ?? ""}`;
+    if (keys.has(key)) return false;
+    keys.add(key);
+  }
+  return true;
+}
+
+export function retentionKinds(): RetentionKind[] {
+  return [
+    "media_45d",
+    "viewer_download_45d",
+    "viewer_only_12mo",
+    "pass_export_only_12mo",
+    "never_rider",
+    "founder",
+  ];
+}
+
+export function tripHistoryReadableAfterMediaDelete(trip: Trip): {
+  id: TripId;
+  officialEndDate: string | null;
+  extensions: Trip["extensions"];
+  status: Trip["status"];
+} {
+  return {
+    id: trip.id,
+    officialEndDate: trip.officialEndDate,
+    extensions: [...trip.extensions],
+    status: trip.status,
+  };
+}
