@@ -160,7 +160,7 @@ const AssetManifest = Object.assign({}, AssetPaths, buildGreenhousePaths(), buil
 /** First-scene (meadow/menu) — keep cold load small. No CBN/concept/all GH sizes. */
 const CORE_KEYS = [
   'plateMeadow', 'meadowDay',
-  'havenRun', 'havenJump', 'havenPick', 'havenChase', 'havenSkip', 'havenPlant',
+  'havenRun', 'havenJump', 'havenPick', 'havenChase', 'havenSkip', 'havenPlant', 'havenFront',
   'havenWalk01', 'havenWalk02', 'havenWalk03', 'havenWalk04',
   'bouquet0', 'bouquet1', 'bouquet2', 'bouquet3', 'bouquetFull',
   'flowerDaisy', 'flowerTulip', 'flowerSunflower', 'flowerBluebell', 'flowerPop',

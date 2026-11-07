@@ -244,21 +244,22 @@ const HavenAnim = (() => {
     const gait = meta.gait || (meta.walking ? 'walk' : 'idle');
     const img = pickBaseImage(Assets, gait, girl.walkFrame | 0, pose, meta.netSwing || 0);
     const face = (STATE.idleKind === 1 ? STATE.lookFace : girl.face) || 1;
-    const bob = STATE.bob + (meta.extraBob || 0);
     const lean = STATE.lean + (STATE.idleKind === 1 ? STATE.lookFace * 0.05 : 0);
     const squash = STATE.bodySquash != null ? STATE.bodySquash : (girl.squash != null ? girl.squash : 1);
     const stretchX = 1 + STATE.skirt + (1 - Math.min(1, squash)) * 0.35;
+    // Idle / plant: keep feet glued to ground (bob was lifting her off the path)
+    let bob = STATE.bob + (meta.extraBob || 0);
+    if (pose === 'idle' && !meta.walking) bob = Math.min(bob, 1.5);
+    if (pose === 'plant' || pose === 'pick' || pose === 'water') bob = Math.min(8, Math.max(0, bob));
+    // Franz sheets pad below the shoes — nudge idle front down onto the path
+    if (pose === 'idle' && !meta.walking) bob += h * 0.06;
 
     cx.save();
     cx.translate(x, y);
     cx.scale(face, 1);
-    cx.rotate(lean);
-    cx.scale(stretchX, squash);
-    // Plant/pick/water: feet stay planted — slight squat bob only, no lift
-    const drawBob = (pose === 'plant' || pose === 'pick' || pose === 'water')
-      ? Math.min(8, Math.max(0, bob))
-      : bob;
-    cx.translate(0, drawBob);
+    cx.rotate(lean * (pose === 'idle' && !meta.walking ? 0.35 : 1));
+    cx.scale(pose === 'idle' && !meta.walking ? 1 : stretchX, pose === 'idle' && !meta.walking ? 1 : squash);
+    cx.translate(0, bob);
 
     if (img) {
       const iw = img.width, ih = img.height;

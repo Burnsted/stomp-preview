@@ -28,6 +28,7 @@ const PRECACHE = [
   './assets/icon/app-icon-512.png',
   './assets/plates/meadow-day.webp',
   './assets/character/haven-run.png',
+  './assets/character/haven-front.png',
   './assets/character/haven-walk-01.png',
   './assets/character/haven-walk-02.png',
   './assets/character/haven-pick.png',
