@@ -179,35 +179,41 @@ test.describe('save / shop / harvest / reset / migration', () => {
   });
 
   test('migrate v1 + prior shapes → birthday.v2 without flower/coin/jar loss', async ({ page }) => {
-    await bootGame(page);
-    await page.evaluate(({ PK, PK_LEGACY }) => {
-      localStorage.removeItem(PK);
-      const legacy = {
-        v: 6,
-        beds: [
-          { mix: ['daisy', 'tulip'], watered: 1, grown: 2 },
-          { id: 'sunflower', watered: 1, grown: 3 },
-          null
-        ],
-        outdoorBeds: [{ mix: ['bluebell'], watered: 1, grown: 1 }],
-        bouquet: ['daisy'],
-        baskets: 2,
-        ghSize: 0,
-        flowerPoints: 77,
-        points: 77,
-        bees: 3,
-        honey: 5,
-        jarsFull: 2,
-        jarsEmpty: 6,
-        owned: { shovel: 1 }
-      };
-      localStorage.setItem(PK_LEGACY, JSON.stringify(legacy));
-    }, { PK, PK_LEGACY });
-    await page.reload({ waitUntil: 'networkidle' });
+    // Seed legacy BEFORE game scripts run so birthday.v2 cannot race-write empty first.
+    await page.addInitScript(({ PK_LEGACY }) => {
+      try { Object.defineProperty(navigator, 'serviceWorker', { get: () => undefined }); } catch (e) {}
+      try {
+        Object.keys(localStorage).forEach((k) => {
+          if (k.indexOf('havensGarden') === 0) localStorage.removeItem(k);
+        });
+        localStorage.setItem(PK_LEGACY, JSON.stringify({
+          v: 6,
+          beds: [
+            { mix: ['daisy', 'tulip'], watered: 1, grown: 2 },
+            { id: 'sunflower', watered: 1, grown: 3 },
+            null
+          ],
+          outdoorBeds: [{ mix: ['bluebell'], watered: 1, grown: 1 }],
+          bouquet: ['daisy'],
+          baskets: 2,
+          ghSize: 0,
+          flowerPoints: 77,
+          points: 77,
+          bees: 3,
+          honey: 5,
+          jarsFull: 2,
+          jarsEmpty: 6,
+          owned: { shovel: 1 }
+        }));
+      } catch (e) {}
+    }, { PK_LEGACY });
+    await page.goto('./?t=' + Date.now(), { waitUntil: 'networkidle' });
     await page.waitForFunction((ver) => window.HavensGarden && HavensGarden.VER === ver && HGNursery.ready(), VER, { timeout: 120000 });
     const mig = await page.evaluate(() => {
-      const flowers = (HavensGarden.SAVE.beds || []).reduce((n, b) => n + (b && b.mix ? b.mix.length : 0), 0)
-        + (HavensGarden.SAVE.outdoorBeds || []).reduce((n, b) => n + (b && b.mix ? b.mix.length : 0), 0);
+      const count = (beds) => (beds || []).reduce((n, b) => n + (b && b.mix ? b.mix.length : 0), 0);
+      const flowers = count(HavensGarden.SAVE.beds)
+        + count(HavensGarden.SAVE.outdoorBeds)
+        + count(HavensGarden.SAVE.plantReserve);
       return {
         flowers,
         pts: HavensGarden.SAVE.extras.flowerPoints | 0,
@@ -215,10 +221,14 @@ test.describe('save / shop / harvest / reset / migration', () => {
         honey: HavensGarden.SAVE.extras.honey | 0,
         bees: HavensGarden.SAVE.extras.bees | 0,
         shovel: !!HavensGarden.SAVE.extras.owned.shovel,
-        key: localStorage.getItem(HavensGarden.PK) ? 1 : 0
+        key: localStorage.getItem(HavensGarden.PK) ? 1 : 0,
+        legacyImported: HavensGarden.SAVE.legacyImported | 0,
+        schemaVersion: HavensGarden.SAVE.schemaVersion | 0
       };
     });
     expect(mig.flowers).toBeGreaterThanOrEqual(4); // daisy+tulip+sunflower+bluebell
+    expect(mig.legacyImported).toBe(1);
+    expect(mig.schemaVersion).toBeGreaterThanOrEqual(9);
     expect(mig.pts).toBe(77);
     expect(mig.jars).toBe(2);
     expect(mig.honey).toBe(5);

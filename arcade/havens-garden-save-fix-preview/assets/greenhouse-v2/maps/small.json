@@ -1,0 +1,273 @@
+{
+  "size": [
+    585,
+    1266
+  ],
+  "activeCount": 12,
+  "beds": [
+    {
+      "id": 0,
+      "soilPolygon": [
+        [
+          181,
+          772
+        ],
+        [
+          232,
+          772
+        ],
+        [
+          154,
+          1092
+        ],
+        [
+          38,
+          1092
+        ]
+      ],
+      "count": 6
+    },
+    {
+      "id": 1,
+      "soilPolygon": [
+        [
+          348,
+          772
+        ],
+        [
+          388,
+          772
+        ],
+        [
+          530,
+          1092
+        ],
+        [
+          415,
+          1092
+        ]
+      ],
+      "count": 6
+    }
+  ],
+  "slots": [
+    {
+      "id": 0,
+      "bedId": 0,
+      "rootX": 193,
+      "rootY": 810,
+      "hitBounds": {
+        "x": 160,
+        "y": 777,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 810
+    },
+    {
+      "id": 1,
+      "bedId": 0,
+      "rootX": 176,
+      "rootY": 859,
+      "hitBounds": {
+        "x": 143,
+        "y": 826,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 859
+    },
+    {
+      "id": 2,
+      "bedId": 0,
+      "rootX": 160,
+      "rootY": 908,
+      "hitBounds": {
+        "x": 127,
+        "y": 875,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 908
+    },
+    {
+      "id": 3,
+      "bedId": 0,
+      "rootX": 143,
+      "rootY": 956,
+      "hitBounds": {
+        "x": 110,
+        "y": 923,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 956
+    },
+    {
+      "id": 4,
+      "bedId": 0,
+      "rootX": 126,
+      "rootY": 1005,
+      "hitBounds": {
+        "x": 93,
+        "y": 972,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 1005
+    },
+    {
+      "id": 5,
+      "bedId": 0,
+      "rootX": 109,
+      "rootY": 1054,
+      "hitBounds": {
+        "x": 76,
+        "y": 1021,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 1054
+    },
+    {
+      "id": 6,
+      "bedId": 1,
+      "rootX": 381,
+      "rootY": 810,
+      "hitBounds": {
+        "x": 348,
+        "y": 777,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 810
+    },
+    {
+      "id": 7,
+      "bedId": 1,
+      "rootX": 396,
+      "rootY": 859,
+      "hitBounds": {
+        "x": 363,
+        "y": 826,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 859
+    },
+    {
+      "id": 8,
+      "bedId": 1,
+      "rootX": 412,
+      "rootY": 908,
+      "hitBounds": {
+        "x": 379,
+        "y": 875,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 908
+    },
+    {
+      "id": 9,
+      "bedId": 1,
+      "rootX": 428,
+      "rootY": 956,
+      "hitBounds": {
+        "x": 395,
+        "y": 923,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 956
+    },
+    {
+      "id": 10,
+      "bedId": 1,
+      "rootX": 444,
+      "rootY": 1005,
+      "hitBounds": {
+        "x": 411,
+        "y": 972,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 1005
+    },
+    {
+      "id": 11,
+      "bedId": 1,
+      "rootX": 460,
+      "rootY": 1054,
+      "hitBounds": {
+        "x": 427,
+        "y": 1021,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 1054
+    }
+  ],
+  "minimumHitNative": [
+    66,
+    66
+  ],
+  "minimumHitAt390": [
+    44,
+    44
+  ],
+  "overlapPairs": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      6,
+      7
+    ],
+    [
+      7,
+      8
+    ],
+    [
+      8,
+      9
+    ],
+    [
+      9,
+      10
+    ],
+    [
+      10,
+      11
+    ]
+  ],
+  "routing": "HitBounds are candidate zones, not painted soil boundaries. Among candidates pick smallest squared distance to rootX/rootY; exact tie lowest slot id. Do not first-match overlapping rectangles. Outside all bounds do not plant.",
+  "plate": "plates/small-empty.webp",
+  "plateNoLip": "plates/small-empty.webp",
+  "key": "small",
+  "kind": "greenhouse-interior",
+  "capacityTarget": 12,
+  "plateSize": [
+    585,
+    1266
+  ],
+  "phoneScale": 0.6666666666666666,
+  "pack": "greenhouse-redo-v2"
+}

@@ -1,5 +1,5 @@
-/* Haven's Garden v0.9-birthday-harden — hardening + evidence (save/shop/harvest/load) */
-const CACHE = 'havens-garden-birthday-preview-v0.9-birthday-harden';
+/* Haven's Garden v0.9-birthday-save-fix — versioned save + lossless migration */
+const CACHE = 'havens-garden-birthday-preview-v0.9-birthday-save-fix';
 const PRECACHE = [
   './',
   './index.html',
@@ -10,6 +10,7 @@ const PRECACHE = [
   './js/systems.js',
   './js/nursery.js',
   './js/haven-anim.js',
+  './js/save-store.js',
   './js/game.js',
   './assets/greenhouse-v2/maps/small.json',
   './assets/greenhouse-v2/maps/medium.json',

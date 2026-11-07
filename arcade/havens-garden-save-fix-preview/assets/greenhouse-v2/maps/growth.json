@@ -1,0 +1,227 @@
+{
+  "anchor": [
+    112,
+    208
+  ],
+  "canvas": [
+    224,
+    224
+  ],
+  "sprites": [
+    {
+      "species": "daisy",
+      "stage": 0,
+      "stageName": "seedling",
+      "file": "growth/daisy-0-seedling.png",
+      "canvas": [
+        224,
+        224
+      ],
+      "rootX": 112,
+      "rootY": 208,
+      "suggestedPlateScale": 0.48
+    },
+    {
+      "species": "daisy",
+      "stage": 1,
+      "stageName": "leaves",
+      "file": "growth/daisy-1-leaves.png",
+      "canvas": [
+        224,
+        224
+      ],
+      "rootX": 112,
+      "rootY": 208,
+      "suggestedPlateScale": 0.48
+    },
+    {
+      "species": "daisy",
+      "stage": 2,
+      "stageName": "bud",
+      "file": "growth/daisy-2-bud.png",
+      "canvas": [
+        224,
+        224
+      ],
+      "rootX": 112,
+      "rootY": 208,
+      "suggestedPlateScale": 0.48
+    },
+    {
+      "species": "daisy",
+      "stage": 3,
+      "stageName": "bloom",
+      "file": "growth/daisy-3-bloom.png",
+      "canvas": [
+        224,
+        224
+      ],
+      "rootX": 112,
+      "rootY": 208,
+      "suggestedPlateScale": 0.48
+    },
+    {
+      "species": "tulip",
+      "stage": 0,
+      "stageName": "seedling",
+      "file": "growth/tulip-0-seedling.png",
+      "canvas": [
+        224,
+        224
+      ],
+      "rootX": 112,
+      "rootY": 208,
+      "suggestedPlateScale": 0.48
+    },
+    {
+      "species": "tulip",
+      "stage": 1,
+      "stageName": "leaves",
+      "file": "growth/tulip-1-leaves.png",
+      "canvas": [
+        224,
+        224
+      ],
+      "rootX": 112,
+      "rootY": 208,
+      "suggestedPlateScale": 0.48
+    },
+    {
+      "species": "tulip",
+      "stage": 2,
+      "stageName": "bud",
+      "file": "growth/tulip-2-bud.png",
+      "canvas": [
+        224,
+        224
+      ],
+      "rootX": 112,
+      "rootY": 208,
+      "suggestedPlateScale": 0.48
+    },
+    {
+      "species": "tulip",
+      "stage": 3,
+      "stageName": "bloom",
+      "file": "growth/tulip-3-bloom.png",
+      "canvas": [
+        224,
+        224
+      ],
+      "rootX": 112,
+      "rootY": 208,
+      "suggestedPlateScale": 0.48
+    },
+    {
+      "species": "sunflower",
+      "stage": 0,
+      "stageName": "seedling",
+      "file": "growth/sunflower-0-seedling.png",
+      "canvas": [
+        224,
+        224
+      ],
+      "rootX": 112,
+      "rootY": 208,
+      "suggestedPlateScale": 0.48
+    },
+    {
+      "species": "sunflower",
+      "stage": 1,
+      "stageName": "leaves",
+      "file": "growth/sunflower-1-leaves.png",
+      "canvas": [
+        224,
+        224
+      ],
+      "rootX": 112,
+      "rootY": 208,
+      "suggestedPlateScale": 0.48
+    },
+    {
+      "species": "sunflower",
+      "stage": 2,
+      "stageName": "bud",
+      "file": "growth/sunflower-2-bud.png",
+      "canvas": [
+        224,
+        224
+      ],
+      "rootX": 112,
+      "rootY": 208,
+      "suggestedPlateScale": 0.48
+    },
+    {
+      "species": "sunflower",
+      "stage": 3,
+      "stageName": "bloom",
+      "file": "growth/sunflower-3-bloom.png",
+      "canvas": [
+        224,
+        224
+      ],
+      "rootX": 112,
+      "rootY": 208,
+      "suggestedPlateScale": 0.48
+    },
+    {
+      "species": "bluebell",
+      "stage": 0,
+      "stageName": "seedling",
+      "file": "growth/bluebell-0-seedling.png",
+      "canvas": [
+        224,
+        224
+      ],
+      "rootX": 112,
+      "rootY": 208,
+      "suggestedPlateScale": 0.48
+    },
+    {
+      "species": "bluebell",
+      "stage": 1,
+      "stageName": "leaves",
+      "file": "growth/bluebell-1-leaves.png",
+      "canvas": [
+        224,
+        224
+      ],
+      "rootX": 112,
+      "rootY": 208,
+      "suggestedPlateScale": 0.48
+    },
+    {
+      "species": "bluebell",
+      "stage": 2,
+      "stageName": "bud",
+      "file": "growth/bluebell-2-bud.png",
+      "canvas": [
+        224,
+        224
+      ],
+      "rootX": 112,
+      "rootY": 208,
+      "suggestedPlateScale": 0.48
+    },
+    {
+      "species": "bluebell",
+      "stage": 3,
+      "stageName": "bloom",
+      "file": "growth/bluebell-3-bloom.png",
+      "canvas": [
+        224,
+        224
+      ],
+      "rootX": 112,
+      "rootY": 208,
+      "suggestedPlateScale": 0.48
+    }
+  ],
+  "accents": {
+    "daisy": "#ffd23c",
+    "tulip": "#f05a6e",
+    "sunflower": "#ffb000",
+    "bluebell": "#6a8cff"
+  },
+  "pack": "greenhouse-redo-v2"
+}

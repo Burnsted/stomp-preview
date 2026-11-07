@@ -396,7 +396,11 @@ const HGNursery = (() => {
     };
   }
 
-  /** Remesh SAVE.beds into pack slots without losing flowers (1 plant / active slot). */
+  /**
+   * Lossless remesh: expand every mix[] flower into its own 1-plant slot.
+   * Never truncates. Overflow → reserve[] (same plant shape) for later planting.
+   * Returns { beds, reserve, totalIn, placed } — callers must keep reserve.
+   */
   function migrateBedsArray(oldBeds, ghSize) {
     const sz = ghSize < 0 ? outdoorDef() : sizeForGh(ghSize);
     const targetLen = sz ? sz.slotCount : [12, 20, 30][Math.min(2, Math.max(0, ghSize | 0))];
@@ -407,9 +411,11 @@ const HGNursery = (() => {
     const plants = [];
     (oldBeds || []).forEach((b) => {
       if (!b) return;
+      // Never truncate — keep every species with watered/grown state
       const mix = Array.isArray(b.mix) ? b.mix.slice() : (b.id ? [b.id] : []);
       if (!mix.length) return;
       mix.forEach((id) => {
+        if (!id) return;
         plants.push({
           mix: [id],
           watered: b.watered ? 1 : 0,
@@ -419,12 +425,14 @@ const HGNursery = (() => {
         });
       });
     });
+    const totalIn = plants.length;
 
     const next = Array.from({ length: targetLen }, () => null);
     let fi = 0;
     for (let a = 0; a < active.length && fi < plants.length; a++) {
       next[active[a]] = plants[fi++];
     }
+    // Fill any remaining empty active slots
     while (fi < plants.length) {
       let placed = false;
       for (let a = 0; a < active.length; a++) {
@@ -435,16 +443,25 @@ const HGNursery = (() => {
           break;
         }
       }
-      if (!placed) next.push(plants[fi++]);
+      if (!placed) break;
     }
-    return next;
+    const reserve = plants.slice(fi);
+    const placed = totalIn - reserve.length;
+    return { beds: next, reserve, totalIn, placed };
+  }
+
+  /** Back-compat: array-only view (reserve discarded — prefer migrateBedsLossless). */
+  function migrateBedsArrayLegacy(oldBeds, ghSize) {
+    const r = migrateBedsArray(oldBeds, ghSize);
+    return r.beds;
   }
 
   return {
     load, ready, getMap, getGrowth, sizeForGh, slotCount, activeSlotIndices, isSlotActive,
-    slotDef, planters, outdoorDef, ghInfo, migrateBedsArray, layerImages, growthStage,
+    slotDef, planters, outdoorDef, ghInfo, migrateBedsArray, migrateBedsArrayLegacy,
+    layerImages, growthStage,
     growthImg, warmImages, loadImg, nearestRootIndex, measureExclusiveHits,
-    GROWTH_ROOT, GROWTH_SIZE, SIZE_KEYS, BASE, PLATE_W, PLATE_H
+    GROWTH_ROOT, GROWTH_SIZE, SIZE_KEYS, BASE, PLATE_W, PLATE_H, LAYOUT_VERSION: 3
   };
 })();
 

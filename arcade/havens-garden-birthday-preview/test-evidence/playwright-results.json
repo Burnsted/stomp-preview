@@ -135,12 +135,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2286,
+                      "duration": 2795,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-06T23:50:34.670Z",
+                      "startTime": "2026-11-07T00:40:28.914Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -169,12 +169,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2298,
+                      "duration": 2349,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-06T23:50:37.030Z",
+                      "startTime": "2026-11-07T00:40:31.780Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -203,12 +203,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2443,
+                      "duration": 2447,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-06T23:50:39.342Z",
+                      "startTime": "2026-11-07T00:40:34.139Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -237,12 +237,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2241,
+                      "duration": 2354,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-06T23:50:41.796Z",
+                      "startTime": "2026-11-07T00:40:36.595Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -271,12 +271,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1922,
+                      "duration": 1250,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-06T23:50:44.043Z",
+                      "startTime": "2026-11-07T00:40:38.956Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -322,12 +322,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2171,
+                      "duration": 2252,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-06T23:50:45.978Z",
+                      "startTime": "2026-11-07T00:40:40.220Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -356,12 +356,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1261,
+                      "duration": 1275,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-06T23:50:48.156Z",
+                      "startTime": "2026-11-07T00:40:42.478Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -392,7 +392,7 @@
           "column": 6,
           "specs": [
             {
-              "title": "service worker registers unique harden cache",
+              "title": "service worker registers unique save-fix cache",
               "ok": true,
               "tags": [],
               "tests": [
@@ -407,12 +407,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1223,
+                      "duration": 1222,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-06T23:50:49.427Z",
+                      "startTime": "2026-11-07T00:40:43.767Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -420,7 +420,7 @@
                   "status": "expected"
                 }
               ],
-              "id": "fbb3b418e401c029f36a-1e9f0489c680a7bcf39f",
+              "id": "fbb3b418e401c029f36a-a79310c1ec5d6f463848",
               "file": "03-offline-resume.spec.js",
               "line": 5,
               "column": 3
@@ -441,12 +441,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2643,
+                      "duration": 2639,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-06T23:50:50.657Z",
+                      "startTime": "2026-11-07T00:40:44.997Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -475,12 +475,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2344,
+                      "duration": 2345,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-06T23:50:53.308Z",
+                      "startTime": "2026-11-07T00:40:47.646Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -526,12 +526,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 10147,
+                      "duration": 10146,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-06T23:50:55.666Z",
+                      "startTime": "2026-11-07T00:40:50.003Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -577,12 +577,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 3030,
+                      "duration": 2967,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-06T23:51:05.825Z",
+                      "startTime": "2026-11-07T00:41:00.160Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -611,12 +611,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 4019,
+                      "duration": 4049,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-06T23:51:08.863Z",
+                      "startTime": "2026-11-07T00:41:03.132Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -645,12 +645,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 4003,
+                      "duration": 3983,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-06T23:51:12.887Z",
+                      "startTime": "2026-11-07T00:41:07.186Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -679,12 +679,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 3073,
+                      "duration": 3099,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-06T23:51:16.901Z",
+                      "startTime": "2026-11-07T00:41:11.176Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -713,12 +713,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 4701,
+                      "duration": 4570,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-06T23:51:19.995Z",
+                      "startTime": "2026-11-07T00:41:14.281Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -747,12 +747,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2094,
+                      "duration": 1926,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-06T23:51:24.704Z",
+                      "startTime": "2026-11-07T00:41:18.859Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -768,13 +768,404 @@
           ]
         }
       ]
+    },
+    {
+      "title": "06-save-migration-integrity.spec.js",
+      "file": "06-save-migration-integrity.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "save integrity + lossless migration",
+          "file": "06-save-migration-integrity.spec.js",
+          "line": 9,
+          "column": 6,
+          "specs": [
+            {
+              "title": "buy survives full reload",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2239,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T00:41:20.796Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d8c7f17c63da49ed6ca2-f1b831ff8c33461f9c07",
+              "file": "06-save-migration-integrity.spec.js",
+              "line": 10,
+              "column": 3
+            },
+            {
+              "title": "harvest + undo survive reload; no resurrection after reset",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3190,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T00:41:23.042Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d8c7f17c63da49ed6ca2-98d175bb38cd907d0b9e",
+              "file": "06-save-migration-integrity.spec.js",
+              "line": 23,
+              "column": 3
+            },
+            {
+              "title": "restore from recovery backup (parent-gated)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1319,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T00:41:26.238Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d8c7f17c63da49ed6ca2-06195c9b4c699b1acb09",
+              "file": "06-save-migration-integrity.spec.js",
+              "line": 79,
+              "column": 3
+            },
+            {
+              "title": "interruption: plant / water / Growing then reload",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4221,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T00:41:27.565Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d8c7f17c63da49ed6ca2-08e068fffb5ca7a4282d",
+              "file": "06-save-migration-integrity.spec.js",
+              "line": 112,
+              "column": 3
+            },
+            {
+              "title": "two-tab stale write never overwrites newer revision",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2006,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T00:41:31.793Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d8c7f17c63da49ed6ca2-5e82a612ee64270bbf20",
+              "file": "06-save-migration-integrity.spec.js",
+              "line": 171,
+              "column": 3
+            },
+            {
+              "title": "old six-flower bed expands losslessly into reserve",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1260,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T00:41:33.806Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d8c7f17c63da49ed6ca2-859395c36113227a90cc",
+              "file": "06-save-migration-integrity.spec.js",
+              "line": 216,
+              "column": 3
+            },
+            {
+              "title": "full greenhouse + outdoor beds migrate without loss",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1250,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T00:41:35.074Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d8c7f17c63da49ed6ca2-7c8ade59620e61176d86",
+              "file": "06-save-migration-integrity.spec.js",
+              "line": 250,
+              "column": 3
+            },
+            {
+              "title": "migration run 3 times is idempotent",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1296,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T00:41:36.336Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d8c7f17c63da49ed6ca2-ac81cdd79e8caffeddcb",
+              "file": "06-save-migration-integrity.spec.js",
+              "line": 275,
+              "column": 3
+            },
+            {
+              "title": "forced migration failure restores backup; game stays playable",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1250,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T00:41:37.638Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d8c7f17c63da49ed6ca2-ff1ddfdec15a35e3f649",
+              "file": "06-save-migration-integrity.spec.js",
+              "line": 308,
+              "column": 3
+            },
+            {
+              "title": "flower-count invariant: before == placed + reserve",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1291,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T00:41:38.894Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d8c7f17c63da49ed6ca2-61dab9059271f9923c44",
+              "file": "06-save-migration-integrity.spec.js",
+              "line": 336,
+              "column": 3
+            },
+            {
+              "title": "reopen after plant/water persists revision + schema",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-phone",
+                  "projectName": "chromium-phone",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2242,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T00:41:40.190Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d8c7f17c63da49ed6ca2-9d702406323d0fb6777c",
+              "file": "06-save-migration-integrity.spec.js",
+              "line": 368,
+              "column": 3
+            }
+          ]
+        }
+      ]
     }
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-11-06T23:50:34.244Z",
-    "duration": 52617.115,
-    "expected": 17,
+    "startTime": "2026-11-07T00:40:28.394Z",
+    "duration": 74080.821,
+    "expected": 28,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

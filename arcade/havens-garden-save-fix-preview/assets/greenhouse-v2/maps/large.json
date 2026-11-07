@@ -1,0 +1,619 @@
+{
+  "size": [
+    585,
+    1266
+  ],
+  "activeCount": 30,
+  "beds": [
+    {
+      "id": 0,
+      "soilPolygon": [
+        [
+          169,
+          713
+        ],
+        [
+          197,
+          713
+        ],
+        [
+          43,
+          1102
+        ],
+        [
+          5,
+          1102
+        ]
+      ],
+      "count": 7
+    },
+    {
+      "id": 1,
+      "soilPolygon": [
+        [
+          227,
+          713
+        ],
+        [
+          262,
+          713
+        ],
+        [
+          218,
+          1102
+        ],
+        [
+          110,
+          1102
+        ]
+      ],
+      "count": 8
+    },
+    {
+      "id": 2,
+      "soilPolygon": [
+        [
+          324,
+          713
+        ],
+        [
+          355,
+          713
+        ],
+        [
+          472,
+          1102
+        ],
+        [
+          359,
+          1102
+        ]
+      ],
+      "count": 8
+    },
+    {
+      "id": 3,
+      "soilPolygon": [
+        [
+          398,
+          713
+        ],
+        [
+          425,
+          713
+        ],
+        [
+          578,
+          1102
+        ],
+        [
+          543,
+          1102
+        ]
+      ],
+      "count": 7
+    }
+  ],
+  "slots": [
+    {
+      "id": 0,
+      "bedId": 0,
+      "rootX": 164,
+      "rootY": 760,
+      "hitBounds": {
+        "x": 131,
+        "y": 727,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 760
+    },
+    {
+      "id": 1,
+      "bedId": 0,
+      "rootX": 144,
+      "rootY": 809,
+      "hitBounds": {
+        "x": 111,
+        "y": 776,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 809
+    },
+    {
+      "id": 2,
+      "bedId": 0,
+      "rootX": 124,
+      "rootY": 858,
+      "hitBounds": {
+        "x": 91,
+        "y": 825,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 858
+    },
+    {
+      "id": 3,
+      "bedId": 0,
+      "rootX": 104,
+      "rootY": 908,
+      "hitBounds": {
+        "x": 71,
+        "y": 875,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 908
+    },
+    {
+      "id": 4,
+      "bedId": 0,
+      "rootX": 83,
+      "rootY": 957,
+      "hitBounds": {
+        "x": 50,
+        "y": 924,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 957
+    },
+    {
+      "id": 5,
+      "bedId": 0,
+      "rootX": 63,
+      "rootY": 1006,
+      "hitBounds": {
+        "x": 30,
+        "y": 973,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 1006
+    },
+    {
+      "id": 6,
+      "bedId": 0,
+      "rootX": 43,
+      "rootY": 1055,
+      "hitBounds": {
+        "x": 10,
+        "y": 1022,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 1055
+    },
+    {
+      "id": 7,
+      "bedId": 1,
+      "rootX": 235,
+      "rootY": 760,
+      "hitBounds": {
+        "x": 202,
+        "y": 727,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 760
+    },
+    {
+      "id": 8,
+      "bedId": 1,
+      "rootX": 226,
+      "rootY": 802,
+      "hitBounds": {
+        "x": 193,
+        "y": 769,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 802
+    },
+    {
+      "id": 9,
+      "bedId": 1,
+      "rootX": 217,
+      "rootY": 844,
+      "hitBounds": {
+        "x": 184,
+        "y": 811,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 844
+    },
+    {
+      "id": 10,
+      "bedId": 1,
+      "rootX": 209,
+      "rootY": 886,
+      "hitBounds": {
+        "x": 176,
+        "y": 853,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 886
+    },
+    {
+      "id": 11,
+      "bedId": 1,
+      "rootX": 200,
+      "rootY": 929,
+      "hitBounds": {
+        "x": 167,
+        "y": 896,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 929
+    },
+    {
+      "id": 12,
+      "bedId": 1,
+      "rootX": 191,
+      "rootY": 971,
+      "hitBounds": {
+        "x": 158,
+        "y": 938,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 971
+    },
+    {
+      "id": 13,
+      "bedId": 1,
+      "rootX": 182,
+      "rootY": 1013,
+      "hitBounds": {
+        "x": 149,
+        "y": 980,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 1013
+    },
+    {
+      "id": 14,
+      "bedId": 1,
+      "rootX": 174,
+      "rootY": 1055,
+      "hitBounds": {
+        "x": 141,
+        "y": 1022,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 1055
+    },
+    {
+      "id": 15,
+      "bedId": 2,
+      "rootX": 349,
+      "rootY": 760,
+      "hitBounds": {
+        "x": 316,
+        "y": 727,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 760
+    },
+    {
+      "id": 16,
+      "bedId": 2,
+      "rootX": 357,
+      "rootY": 802,
+      "hitBounds": {
+        "x": 324,
+        "y": 769,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 802
+    },
+    {
+      "id": 17,
+      "bedId": 2,
+      "rootX": 365,
+      "rootY": 844,
+      "hitBounds": {
+        "x": 332,
+        "y": 811,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 844
+    },
+    {
+      "id": 18,
+      "bedId": 2,
+      "rootX": 373,
+      "rootY": 886,
+      "hitBounds": {
+        "x": 340,
+        "y": 853,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 886
+    },
+    {
+      "id": 19,
+      "bedId": 2,
+      "rootX": 382,
+      "rootY": 929,
+      "hitBounds": {
+        "x": 349,
+        "y": 896,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 929
+    },
+    {
+      "id": 20,
+      "bedId": 2,
+      "rootX": 390,
+      "rootY": 971,
+      "hitBounds": {
+        "x": 357,
+        "y": 938,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 971
+    },
+    {
+      "id": 21,
+      "bedId": 2,
+      "rootX": 398,
+      "rootY": 1013,
+      "hitBounds": {
+        "x": 365,
+        "y": 980,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 1013
+    },
+    {
+      "id": 22,
+      "bedId": 2,
+      "rootX": 406,
+      "rootY": 1055,
+      "hitBounds": {
+        "x": 373,
+        "y": 1022,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 1055
+    },
+    {
+      "id": 23,
+      "bedId": 3,
+      "rootX": 429,
+      "rootY": 760,
+      "hitBounds": {
+        "x": 396,
+        "y": 727,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 760
+    },
+    {
+      "id": 24,
+      "bedId": 3,
+      "rootX": 448,
+      "rootY": 809,
+      "hitBounds": {
+        "x": 415,
+        "y": 776,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 809
+    },
+    {
+      "id": 25,
+      "bedId": 3,
+      "rootX": 467,
+      "rootY": 858,
+      "hitBounds": {
+        "x": 434,
+        "y": 825,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 858
+    },
+    {
+      "id": 26,
+      "bedId": 3,
+      "rootX": 486,
+      "rootY": 908,
+      "hitBounds": {
+        "x": 453,
+        "y": 875,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 908
+    },
+    {
+      "id": 27,
+      "bedId": 3,
+      "rootX": 505,
+      "rootY": 957,
+      "hitBounds": {
+        "x": 472,
+        "y": 924,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 957
+    },
+    {
+      "id": 28,
+      "bedId": 3,
+      "rootX": 524,
+      "rootY": 1006,
+      "hitBounds": {
+        "x": 491,
+        "y": 973,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 1006
+    },
+    {
+      "id": 29,
+      "bedId": 3,
+      "rootX": 543,
+      "rootY": 1055,
+      "hitBounds": {
+        "x": 510,
+        "y": 1022,
+        "w": 66,
+        "h": 66
+      },
+      "drawOrder": 1055
+    }
+  ],
+  "minimumHitNative": [
+    66,
+    66
+  ],
+  "minimumHitAt390": [
+    44,
+    44
+  ],
+  "overlapPairs": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      8
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      5,
+      6
+    ],
+    [
+      7,
+      8
+    ],
+    [
+      8,
+      9
+    ],
+    [
+      9,
+      10
+    ],
+    [
+      10,
+      11
+    ],
+    [
+      11,
+      12
+    ],
+    [
+      12,
+      13
+    ],
+    [
+      13,
+      14
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      16,
+      17
+    ],
+    [
+      17,
+      18
+    ],
+    [
+      18,
+      19
+    ],
+    [
+      19,
+      20
+    ],
+    [
+      20,
+      21
+    ],
+    [
+      21,
+      22
+    ],
+    [
+      23,
+      24
+    ],
+    [
+      24,
+      25
+    ],
+    [
+      25,
+      26
+    ],
+    [
+      26,
+      27
+    ],
+    [
+      27,
+      28
+    ],
+    [
+      28,
+      29
+    ]
+  ],
+  "routing": "HitBounds are candidate zones, not painted soil boundaries. Among candidates pick smallest squared distance to rootX/rootY; exact tie lowest slot id. Do not first-match overlapping rectangles. Outside all bounds do not plant.",
+  "plate": "plates/large-empty.webp",
+  "plateNoLip": "plates/large-empty.webp",
+  "key": "large",
+  "kind": "greenhouse-interior",
+  "capacityTarget": 30,
+  "plateSize": [
+    585,
+    1266
+  ],
+  "phoneScale": 0.6666666666666666,
+  "pack": "greenhouse-redo-v2"
+}
