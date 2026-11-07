@@ -304,7 +304,7 @@ function SpotDetail() {
         data-testid="spot-info-sheet"
         data-open={infoOpen ? "true" : "false"}
         hidden={!infoOpen}
-        className="absolute inset-x-2 bottom-2 top-12 z-30 flex flex-col overflow-hidden rounded-3xl bg-snow text-ink shadow-xl ring-1 ring-line"
+        className="absolute inset-x-2 bottom-[4.5rem] top-12 z-30 flex flex-col overflow-hidden rounded-3xl bg-snow text-ink shadow-xl ring-1 ring-line"
       >
         <div className="flex shrink-0 items-center justify-between px-3 pt-3">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">Spot info</p>
