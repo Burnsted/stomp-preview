@@ -7,13 +7,11 @@ import {
   acceptKeeperTransfer,
   applyKeeperEdit,
   attachClip,
-  beginExport,
   capturePinOnce,
   createMockGeoProvider,
   createPin,
   discoverPublicSpots,
   emptyWorld,
-  finishExport,
   listVisibleStashes,
   manualPinFix,
   offerKeeperTransfer,
@@ -26,6 +24,8 @@ import {
   removePin,
   saveStateLabel,
   shareStashWithCrew,
+  createSpotRepository,
+  accessClipMedia,
   type CreatePinInput,
   type GeoFix,
   type GeoProvider,
@@ -106,10 +106,18 @@ type SpotClientState = {
   captureGps: () => Promise<void>;
   applyManualFix: (lat: number, lng: number) => void;
   commitDraft: () => void;
-  shareSelectedWithCrew: (crewId: string) => void;
+  /** Share only after explicit confirm (voice Confirm / UI Confirm). */
+  shareSelectedWithCrew: (crewId: string, opts?: { confirmed?: boolean }) => void;
   revokeCrew: (crewId: string) => void;
   attachDemoClip: (title?: string, receivedAt?: string) => void;
   exportClip: (clipId: string) => void;
+  /** Signed-URL-style media access — expired clips unreachable. */
+  accessMedia: (
+    pinId: string,
+    clipId: string,
+  ) => ReturnType<typeof accessClipMedia>;
+  /** Direct repository query helper (tests / service boundary). */
+  queryRepository: () => ReturnType<typeof createSpotRepository>;
   offerTransfer: (toId: string, toName: string) => void;
   acceptTransfer: () => void;
   renameSelected: (nickname: string) => void;
@@ -317,15 +325,28 @@ export const useSpotStash = create<SpotClientState>((set, get) => ({
       draftFix: null,
     });
   },
-  shareSelectedWithCrew: (crewId) => {
+  shareSelectedWithCrew: (crewId, opts) => {
     const s = get();
     const crew = FICTION_CREWS.find((c) => c.id === crewId);
     if (!crew || !s.selectedId) return;
-    const shared = shareStashWithCrew(
-      s.world,
+    // Explicit confirm required at the repository / API boundary.
+    if (!opts?.confirmed) {
+      set({
+        pendingShareCrew: crew.name,
+        voiceUi: "confirm_share",
+        notice: "Confirm to share with crew on this phone? Nothing is sent.",
+        flow: s.flow === "voice-demo" ? "voice-demo" : s.flow,
+      });
+      return;
+    }
+    const repo = createSpotRepository(s.world, s.clock(), {
+      actorId: s.actorId,
+      actorCrewIds: s.actorCrewIds,
+    });
+    const shared = repo.shareStash(
       s.selectedId,
       { crewId: crew.id, crewName: crew.name, permission: "contributor" },
-      s.actorId,
+      { confirmed: true },
     );
     if (!shared.ok) {
       set({ notice: shared.error });
@@ -334,7 +355,7 @@ export const useSpotStash = create<SpotClientState>((set, get) => ({
     set({
       world: shared.world,
       pendingShareCrew: null,
-      notice: `Shared with ${crew.name}.`,
+      notice: shared.notice,
       voiceUi: "parsed",
     });
   },
@@ -376,21 +397,50 @@ export const useSpotStash = create<SpotClientState>((set, get) => ({
   },
   exportClip: (clipId) => {
     const s = get();
-    const pin = s.world.pins.find((p) => p.id === s.selectedId);
-    if (!pin) return;
-    const clip = pin.clips.find((c) => c.id === clipId);
-    if (!clip) return;
-    const started = beginExport(clip, s.clock());
-    if (!started.ok) {
-      set({ notice: "Export denied — clip expired." });
+    if (!s.selectedId) return;
+    const repo = createSpotRepository(s.world, s.clock(), {
+      actorId: s.actorId,
+      actorCrewIds: s.actorCrewIds,
+    });
+    // Media guard first — expired clips are unreachable, not just UI-disabled.
+    const media = repo.accessMedia(s.selectedId, clipId);
+    if (!media.ok) {
+      set({
+        notice:
+          media.error === "expired_unreachable"
+            ? "Export denied — clip expired / media unreachable."
+            : `Export denied — ${media.error}.`,
+      });
       return;
     }
-    const finished = finishExport(started.clip, s.clock());
-    if (!finished.ok) {
-      set({ notice: "Export past deadline — denied." });
+    const exported = repo.exportClip(s.selectedId, clipId);
+    if (!exported.ok) {
+      set({
+        notice:
+          exported.error === "expired" || exported.error === "export_past_deadline"
+            ? "Export past deadline — denied."
+            : `Export denied — ${exported.error}.`,
+      });
       return;
     }
     set({ notice: "Export finished before expiry (local preview)." });
+  },
+  accessMedia: (pinId, clipId) => {
+    const s = get();
+    return accessClipMedia(
+      s.world,
+      pinId,
+      clipId,
+      { actorId: s.actorId, actorCrewIds: s.actorCrewIds },
+      s.clock(),
+    );
+  },
+  queryRepository: () => {
+    const s = get();
+    return createSpotRepository(s.world, s.clock(), {
+      actorId: s.actorId,
+      actorCrewIds: s.actorCrewIds,
+    });
   },
   offerTransfer: (toId, toName) => {
     const s = get();
@@ -518,7 +568,7 @@ export const useSpotStash = create<SpotClientState>((set, get) => ({
         ) || s.pendingShareCrew!.toLowerCase().includes(c.name.toLowerCase()),
       );
       if (crew && s.selectedId) {
-        get().shareSelectedWithCrew(crew.id);
+        get().shareSelectedWithCrew(crew.id, { confirmed: true });
       }
       set({
         voiceUi: "parsed",

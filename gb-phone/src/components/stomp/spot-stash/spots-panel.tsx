@@ -64,6 +64,7 @@ export function SpotsPanel() {
     <section
       className="relative z-0 mt-5 space-y-3 pb-2"
       data-testid="spots-panel"
+      data-trail-spots="map-tab-entry"
       data-surface="stomp-spots"
       data-mobile-safe="spots-below-map"
       data-simplify="t1246u"
@@ -87,7 +88,7 @@ export function SpotsPanel() {
           <button
             type="button"
             data-testid="spots-create-spot"
-            className="rounded-full bg-snow px-3 py-1.5 text-xs font-semibold text-ink ring-1 ring-line"
+            className="min-h-11 rounded-full bg-snow px-3 py-2 text-xs font-semibold text-ink ring-1 ring-line"
             onClick={() => {
               setDraftVisibility("public_spot");
               setFlow("gps");
@@ -98,7 +99,7 @@ export function SpotsPanel() {
           <button
             type="button"
             data-testid="spots-create-stash"
-            className="rounded-full bg-snow px-3 py-1.5 text-xs font-semibold text-ink ring-1 ring-line"
+            className="min-h-11 rounded-full bg-snow px-3 py-2 text-xs font-semibold text-ink ring-1 ring-line"
             onClick={() => {
               setDraftVisibility("private_stash");
               setFlow("create-stash");
@@ -109,7 +110,7 @@ export function SpotsPanel() {
           <button
             type="button"
             data-testid="spots-voice-demo"
-            className="rounded-full bg-snow px-3 py-1.5 text-xs font-semibold text-ink ring-1 ring-line"
+            className="min-h-11 rounded-full bg-snow px-3 py-2 text-xs font-semibold text-ink ring-1 ring-line"
             onClick={() => setFlow("voice-demo")}
           >
             Sesh voice

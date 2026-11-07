@@ -52,3 +52,7 @@ CLIP_PURGE_DESIGN = {
 ## Test coverage
 
 See `batch1/tests/spot-stash-t1238u.test.ts` (day-7 boundary, 20-day trip independence, export-before, playback deny, no live job) and `gb-phone/tests/woz/spot-stash-t1238u.test.tsx` (UI countdown + day-8 deny).
+
+## Related (t1250u)
+
+Expanded purge-worker / CDN / backup design (still design-only): `docs/t1250u-gb-integration/DELETION-ARCHITECTURE.md`. Signed-URL-style access guard: `batch1/src/spot-stash/media-access.ts`.

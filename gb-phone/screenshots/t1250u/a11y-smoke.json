@@ -1,0 +1,59 @@
+[
+  {
+    "width": 360,
+    "trailSpots": "map-tab-entry",
+    "fabCount": 1,
+    "create": null,
+    "close": {
+      "w": 57,
+      "h": 44,
+      "label": "Close spot"
+    },
+    "fab": {
+      "w": 56,
+      "h": 56,
+      "label": "Hey Sesh — hold to speak"
+    },
+    "bodyBg": "rgba(0, 0, 0, 0)",
+    "bodyColor": "rgb(244, 246, 248)",
+    "activeTag": "BODY"
+  },
+  {
+    "width": 390,
+    "trailSpots": "map-tab-entry",
+    "fabCount": 1,
+    "create": null,
+    "close": {
+      "w": 57,
+      "h": 44,
+      "label": "Close spot"
+    },
+    "fab": {
+      "w": 56,
+      "h": 56,
+      "label": "Hey Sesh — hold to speak"
+    },
+    "bodyBg": "rgba(0, 0, 0, 0)",
+    "bodyColor": "rgb(244, 246, 248)",
+    "activeTag": "BODY"
+  },
+  {
+    "width": 430,
+    "trailSpots": "map-tab-entry",
+    "fabCount": 1,
+    "create": null,
+    "close": {
+      "w": 57,
+      "h": 44,
+      "label": "Close spot"
+    },
+    "fab": {
+      "w": 56,
+      "h": 56,
+      "label": "Hey Sesh — hold to speak"
+    },
+    "bodyBg": "rgba(0, 0, 0, 0)",
+    "bodyColor": "rgb(244, 246, 248)",
+    "activeTag": "BODY"
+  }
+]
