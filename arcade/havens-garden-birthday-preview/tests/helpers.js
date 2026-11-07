@@ -1,6 +1,6 @@
 const { expect } = require('@playwright/test');
 
-const VER = 'v0.9-birthday-save-fix-touch';
+const VER = 'v0.9-play-fix-ted-ev2';
 const PK = 'havensGarden.birthday.v2';
 const PK_LEGACY = 'havensGarden.v1';
 

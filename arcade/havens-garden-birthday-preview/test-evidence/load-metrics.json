@@ -1,7 +1,7 @@
 {
-  "coldMs": 775,
-  "warmMs": 679,
-  "coldMB": 5.74,
-  "warmMB": 4.43,
+  "coldMs": 813,
+  "warmMs": 664,
+  "coldMB": 5.83,
+  "warmMB": 4.61,
   "note": "Lazy core load — expect cold << prior ~21MB full preload"
 }

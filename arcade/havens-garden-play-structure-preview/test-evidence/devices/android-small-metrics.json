@@ -1,0 +1,19 @@
+{
+  "device": {
+    "name": "android-small",
+    "viewport": {
+      "width": 360,
+      "height": 780
+    },
+    "dpr": 2
+  },
+  "metrics": {
+    "ver": "v0.9-play-fix-franz-scale2",
+    "w": 360,
+    "h": 780,
+    "hitsSmallExclusiveMin": 44,
+    "hitsSmallCandidate": 44,
+    "navBtnCss": 56
+  },
+  "note": "EMULATED Playwright profile — not a real device cloud run"
+}

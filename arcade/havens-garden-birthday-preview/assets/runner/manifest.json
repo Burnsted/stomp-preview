@@ -1,0 +1,335 @@
+{
+  "pack_id": "havens-garden-runner-v1",
+  "version": "1.1.1-texture-layout-fix",
+  "status": "integration_candidate_bounded_texture_layout_fix",
+  "qa_previous_fail_addressed": [
+    "replaced_trapezoid_guide_composite_with_illustrated_field",
+    "true_alternating_run_gait_sheet",
+    "red_shoe_recolor_pass",
+    "illustrated_horizon_hedge_dirt_grass_textures"
+  ],
+  "character": {
+    "shared_frame": {
+      "width": 256,
+      "height": 320,
+      "pivot": {
+        "x": 0.5,
+        "y": 1.0
+      },
+      "target_body_height_px": 230
+    },
+    "recommended_screen": {
+      "width": 585,
+      "height": 1266,
+      "haven_height_px": 230,
+      "haven_height_ratio": 0.1817,
+      "feet_y": 1080
+    },
+    "basket_hand": "viewer_left_in_rear_view",
+    "sprites": {
+      "run_01.png": {
+        "frame_w": 256,
+        "frame_h": 320,
+        "content_w": 123,
+        "content_h": 230,
+        "anchor_x": 128,
+        "anchor_y": 320,
+        "lift_px": 0,
+        "paste_xy": [
+          66,
+          90
+        ],
+        "action": "run",
+        "phase": "left_strike",
+        "frame_index": 1,
+        "loop_group": "run",
+        "construction": "generated_true_alternating_gait_sheet_not_global_wobble"
+      },
+      "run_02.png": {
+        "frame_w": 256,
+        "frame_h": 320,
+        "content_w": 123,
+        "content_h": 230,
+        "anchor_x": 128,
+        "anchor_y": 320,
+        "lift_px": 0,
+        "paste_xy": [
+          66,
+          90
+        ],
+        "action": "run",
+        "phase": "left_pass",
+        "frame_index": 2,
+        "loop_group": "run",
+        "construction": "generated_true_alternating_gait_sheet_not_global_wobble"
+      },
+      "run_03.png": {
+        "frame_w": 256,
+        "frame_h": 320,
+        "content_w": 122,
+        "content_h": 230,
+        "anchor_x": 128,
+        "anchor_y": 320,
+        "lift_px": 0,
+        "paste_xy": [
+          67,
+          90
+        ],
+        "action": "run",
+        "phase": "left_push",
+        "frame_index": 3,
+        "loop_group": "run",
+        "construction": "generated_true_alternating_gait_sheet_not_global_wobble"
+      },
+      "run_04.png": {
+        "frame_w": 256,
+        "frame_h": 320,
+        "content_w": 122,
+        "content_h": 229,
+        "anchor_x": 128,
+        "anchor_y": 320,
+        "lift_px": 0,
+        "paste_xy": [
+          67,
+          91
+        ],
+        "action": "run",
+        "phase": "right_strike",
+        "frame_index": 4,
+        "loop_group": "run",
+        "construction": "generated_true_alternating_gait_sheet_not_global_wobble"
+      },
+      "run_05.png": {
+        "frame_w": 256,
+        "frame_h": 320,
+        "content_w": 122,
+        "content_h": 230,
+        "anchor_x": 128,
+        "anchor_y": 320,
+        "lift_px": 0,
+        "paste_xy": [
+          67,
+          90
+        ],
+        "action": "run",
+        "phase": "right_pass",
+        "frame_index": 5,
+        "loop_group": "run",
+        "construction": "generated_true_alternating_gait_sheet_not_global_wobble"
+      },
+      "run_06.png": {
+        "frame_w": 256,
+        "frame_h": 320,
+        "content_w": 124,
+        "content_h": 230,
+        "anchor_x": 128,
+        "anchor_y": 320,
+        "lift_px": 0,
+        "paste_xy": [
+          66,
+          90
+        ],
+        "action": "run",
+        "phase": "right_push",
+        "frame_index": 6,
+        "loop_group": "run",
+        "construction": "generated_true_alternating_gait_sheet_not_global_wobble"
+      },
+      "canonical_rear_framed.png": {
+        "frame_w": 256,
+        "frame_h": 320,
+        "content_w": 127,
+        "content_h": 230,
+        "anchor_x": 128,
+        "anchor_y": 320,
+        "lift_px": 0,
+        "paste_xy": [
+          64,
+          90
+        ],
+        "action": "idle_ref"
+      },
+      "jump.png": {
+        "frame_w": 256,
+        "frame_h": 320,
+        "content_w": 162,
+        "content_h": 229,
+        "anchor_x": 128,
+        "anchor_y": 320,
+        "lift_px": 40,
+        "paste_xy": [
+          47,
+          51
+        ],
+        "action": "jump"
+      },
+      "duck.png": {
+        "frame_w": 256,
+        "frame_h": 320,
+        "content_w": 155,
+        "content_h": 229,
+        "anchor_x": 128,
+        "anchor_y": 320,
+        "lift_px": 0,
+        "paste_xy": [
+          50,
+          91
+        ],
+        "action": "duck"
+      },
+      "pick.png": {
+        "frame_w": 256,
+        "frame_h": 320,
+        "content_w": 188,
+        "content_h": 230,
+        "anchor_x": 128,
+        "anchor_y": 320,
+        "lift_px": 0,
+        "paste_xy": [
+          34,
+          90
+        ],
+        "action": "pick"
+      },
+      "stumble.png": {
+        "frame_w": 256,
+        "frame_h": 320,
+        "content_w": 156,
+        "content_h": 229,
+        "anchor_x": 128,
+        "anchor_y": 320,
+        "lift_px": 0,
+        "paste_xy": [
+          50,
+          91
+        ],
+        "action": "stumble"
+      },
+      "lean_left.png": {
+        "frame_w": 256,
+        "frame_h": 320,
+        "content_w": 117,
+        "content_h": 230,
+        "anchor_x": 128,
+        "anchor_y": 320,
+        "lift_px": 0,
+        "paste_xy": [
+          69,
+          90
+        ],
+        "action": "lean_left",
+        "note": "constrained shear from canonical; explicit technique"
+      },
+      "lean_right.png": {
+        "frame_w": 256,
+        "frame_h": 320,
+        "content_w": 141,
+        "content_h": 230,
+        "anchor_x": 128,
+        "anchor_y": 320,
+        "lift_px": 0,
+        "paste_xy": [
+          57,
+          90
+        ],
+        "action": "lean_right",
+        "note": "constrained shear from canonical; explicit technique"
+      }
+    }
+  },
+  "field": {
+    "skies": [
+      "field/skies/sky_day.png",
+      "field/skies/sky_sunset.png",
+      "field/skies/sky_dusk.png"
+    ],
+    "horizon": [
+      "field/horizon/horizon_hills_day.png",
+      "field/horizon/horizon_hills_sunset.png",
+      "field/horizon/horizon_hills_dusk.png"
+    ],
+    "textures": {
+      "ground_dirt_seamless.png": {
+        "width": 256,
+        "height": 256,
+        "mode": "RGB",
+        "space": "world_topdown_flat",
+        "contents": "illustrated soil only; no lanes/horizon/hedges/objects/perspective",
+        "seamless": true,
+        "edge_continuity": {
+          "left_right_rmse": 1.95,
+          "top_bottom_rmse": 0.0,
+          "width": 256,
+          "height": 256
+        },
+        "2xtile_preview": "ground_dirt_seamless_2xtile_preview.png"
+      },
+      "grass_seamless.png": {
+        "width": 256,
+        "height": 256,
+        "mode": "RGB",
+        "space": "world_topdown_flat",
+        "contents": "illustrated grass only; no lanes/perspective/horizon",
+        "seamless": true,
+        "edge_continuity": {
+          "left_right_rmse": 1.78,
+          "top_bottom_rmse": 0.0,
+          "width": 256,
+          "height": 256
+        },
+        "2xtile_preview": "grass_seamless_2xtile_preview.png"
+      },
+      "hedgerow_strip.png": {
+        "width": 512,
+        "height": 96,
+        "mode": "RGBA",
+        "seamless": "horizontal",
+        "space": "world_side_strip",
+        "contents": "isolated continuous grass ridge alpha; no converging lane context",
+        "2xtile_preview": "hedgerow_strip_2xtile_preview.png",
+        "note": "Runtime 3-lanes come from projection + layer separators; do not embed vanishing points in world textures."
+      }
+    },
+    "map": "field/reference/map_lanes_585x1266.json",
+    "phone_composite_reference": "field/reference/phone_composite_585x1266.png",
+    "phone_field_without_haven": "field/reference/phone_field_no_haven_585x1266.png",
+    "draw_order": [
+      "sky_*",
+      "horizon_hills_*",
+      "ground_projected",
+      "hedgerow_projected",
+      "roadside",
+      "obstacles",
+      "collectibles",
+      "haven_sprite",
+      "fx"
+    ],
+    "camera_constraints": {
+      "do_not_vertically_scroll_baked_perspective_plate": true,
+      "scroll_world_textures_then_project": true,
+      "haven_not_baked_into_field_layers": true,
+      "guide_trapezoids_are_not_final_art": true,
+      "world_textures_must_not_embed_vanishing_points_or_lane_geometry": true
+    },
+    "phone_composite_reference_note": "Showcase-only plate; baked obstacles/flowers for look reference. Runtime uses projection + separators + independent obstacle/collectible PNGs."
+  },
+  "proof": {
+    "proof_jpg": "proof.jpg",
+    "runloop_gif": "proof/runloop.gif"
+  },
+  "qc": {
+    "run_lower_half_min_hamming": 11,
+    "run_phases": [
+      "left_strike",
+      "left_pass",
+      "left_push",
+      "right_strike",
+      "right_pass",
+      "right_push"
+    ],
+    "corner_fail_count": 0,
+    "corner_fail": [],
+    "red_shoe_pixels_run01_lower": 1855,
+    "note": "Hamming is supporting only; visual gait inspection required"
+  }
+}

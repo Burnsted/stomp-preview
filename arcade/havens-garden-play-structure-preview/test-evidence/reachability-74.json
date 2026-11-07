@@ -1,0 +1,52 @@
+{
+  "out": {
+    "small": {
+      "count": 12,
+      "reachableOk": true,
+      "missing": [],
+      "uniqueHits": true
+    },
+    "medium": {
+      "count": 20,
+      "reachableOk": true,
+      "missing": [],
+      "uniqueHits": true
+    },
+    "large": {
+      "count": 30,
+      "reachableOk": true,
+      "missing": [],
+      "uniqueHits": true
+    },
+    "outdoor": {
+      "count": 12,
+      "reachableOk": true,
+      "missing": [],
+      "uniqueHits": true
+    }
+  },
+  "total": 74,
+  "ok": 74,
+  "api": {
+    "small": {
+      "ok": true,
+      "missing": [],
+      "count": 12
+    },
+    "medium": {
+      "ok": true,
+      "missing": [],
+      "count": 20
+    },
+    "large": {
+      "ok": true,
+      "missing": [],
+      "count": 30
+    },
+    "outdoor": {
+      "ok": true,
+      "missing": [],
+      "count": 12
+    }
+  }
+}

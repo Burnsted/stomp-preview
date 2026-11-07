@@ -4,7 +4,41 @@
 */
 'use strict';
 
-const ASSET_VER = 'birthday-harden';
+const ASSET_VER = 'play-fix-ted-ev2';
+
+/** Franz HAVENS-GARDEN-RUNNER-V1 finals under assets/runner/.
+ *  Placeholders/ remain as load fallback only. Phone reference plates are NOT listed. */
+const RUNNER_FILES = [
+  // Haven — shared 256×320 anchors
+  'haven-run-01.png', 'haven-run-02.png', 'haven-run-03.png',
+  'haven-run-04.png', 'haven-run-05.png', 'haven-run-06.png',
+  'haven-jump.png', 'haven-duck.png',
+  'haven-lean-left.png', 'haven-lean-right.png',
+  'haven-stumble.png', 'haven-pick.png',
+  // Collectibles (independent objects)
+  'flower-daisy.png', 'flower-tulip.png', 'flower-sunflower.png', 'flower-bluebell.png',
+  // Obstacles + sprinkler water
+  'obs-hay.png', 'obs-puddle.png', 'obs-fence.png', 'obs-rock.png',
+  'obs-wheelbarrow.png', 'obs-sprinkler.png', 'obs-sprinkler-water.png', 'obs-log.png',
+  // Skies + horizons (crossfade day → sunset → dusk)
+  'sky-day.png', 'sky-sunset.png', 'sky-dusk.png',
+  'horizon-day.png', 'horizon-sunset.png', 'horizon-dusk.png',
+  // Flat world textures (project in perspective — never scroll a baked plate)
+  'tex-dirt.png', 'tex-grass.png', 'tex-hedgerow.png', 'tex-roadside.png'
+];
+
+function runnerAssetKey(file) {
+  return 'runner_' + file.replace(/\.png$/i, '').replace(/-/g, '_');
+}
+
+function buildRunnerPaths() {
+  const out = {};
+  RUNNER_FILES.forEach((file) => {
+    // Manifest primary = Franz drop-in path; loader falls back to placeholders/
+    out[runnerAssetKey(file)] = 'assets/runner/' + file;
+  });
+  return out;
+}
 
 const CBN_PAGE_STEMS = [
   'page-13-one-daisy',
@@ -65,7 +99,9 @@ const AssetPaths = Object.assign({
   // production plates (empty — no Haven, no 2/20 UI)
   plateMeadow: 'assets/plates/meadow-day.webp',
   plateGreenhouse: 'assets/plates/greenhouse-color-rows.webp',
-  plateHive: 'assets/plates/hive-yard.webp',
+  // Clean plate: meadow + hive prop + empty shelf — no baked jars or bees
+  plateHive: 'assets/plates/hive-yard-clean.webp',
+  plateHiveLegacy: 'assets/plates/hive-yard.webp',
   plateShop: 'assets/plates/shop-stand.webp',
   // production character key poses
   havenRun: 'assets/character/haven-run.png',
@@ -155,12 +191,13 @@ function buildInteriorPaths() {
   return out;
 }
 
-const AssetManifest = Object.assign({}, AssetPaths, buildGreenhousePaths(), buildInteriorPaths());
+const AssetManifest = Object.assign({}, AssetPaths, buildGreenhousePaths(), buildInteriorPaths(), buildRunnerPaths());
 
 /** First-scene (meadow/menu) — keep cold load small. No CBN/concept/all GH sizes. */
 const CORE_KEYS = [
   'plateMeadow', 'meadowDay',
-  'havenRun', 'havenJump', 'havenPick', 'havenChase', 'havenSkip', 'havenPlant',
+  'havenRun', 'havenJump', 'havenPick', 'havenChase', 'havenSkip', 'havenPlant', 'havenFront',
+  'havenThreeQuarter', // nursery calm standing idle (not skip)
   'havenWalk01', 'havenWalk02', 'havenWalk03', 'havenWalk04',
   'bouquet0', 'bouquet1', 'bouquet2', 'bouquet3', 'bouquetFull',
   'flowerDaisy', 'flowerTulip', 'flowerSunflower', 'flowerBluebell', 'flowerPop',
@@ -173,7 +210,8 @@ const SCENE_KEYS = {
   meadow: CORE_KEYS.slice(),
   greenhouse: [
     'plateGreenhouse',
-    'havenPlant', 'wateringCan', 'basket', 'shovelBig',
+    'havenPlant', 'havenThreeQuarter', 'havenFront', 'havenWalk01',
+    'wateringCan', 'basket', 'shovelBig',
     'flowerDaisy', 'flowerTulip', 'flowerSunflower', 'flowerBluebell',
     // Prefer current size empty interiors; Franz may drop distinct S/L/outdoor later
     'gh_small_closed_day', 'gh_small_open_day',
@@ -184,7 +222,8 @@ const SCENE_KEYS = {
   ],
   hive: ['plateHive', 'hive', 'jarFull', 'jarEmpty', 'bugBee', 'bee01', 'bee02'],
   shop: ['plateShop', 'shovelBig', 'multiPickBasket', 'basket'],
-  cbn: ['cbnLadder']
+  cbn: ['cbnLadder'],
+  runner: RUNNER_FILES.map(runnerAssetKey)
 };
 
 const Assets = {
@@ -208,6 +247,12 @@ const Assets = {
         };
         img.src = url + (url.includes('?') ? '&' : '?') + 'v=' + ASSET_VER;
       };
+      // Runner: Franz final path first, then labeled placeholders/ (file-swap drop-in).
+      if (/^assets\/runner\/(?!placeholders\/)/.test(src)) {
+        const ph = src.replace('assets/runner/', 'assets/runner/placeholders/');
+        tryLoad(src, ph);
+        return;
+      }
       // Prefer sibling .webp when listed path is PNG (lossless-looking drop-ins).
       if (/\.png$/i.test(src)) tryLoad(src.replace(/\.png$/i, '.webp'), src);
       else tryLoad(src, null);
@@ -323,29 +368,63 @@ const Assets = {
     return this.get('plateMeadow') || this.get(({ day: 'meadowDay', sunset: 'meadowSunset', night: 'meadowNight', sunrise: 'meadowSunrise' }[time] || 'meadowDay'));
   },
 
-  /** Prefer Franz walk-01..04 cycle; fall back to run/skip if missing. */
+  /** Walk/run use production run↔skip only — never legacy walk-01..04. */
   walkFrame(i) {
-    const frames = ['havenWalk01', 'havenWalk02', 'havenWalk03', 'havenWalk04'];
-    const w = this.get(frames[((i % 4) + 4) % 4]);
-    if (w) return w;
     const alt = [this.get('havenRun'), this.get('havenSkip'), this.get('havenRun'), this.get('havenSkip')];
-    return alt[((i % 4) + 4) % 4] || this.get('havenRun');
+    return alt[((i % 4) + 4) % 4] || this.get('havenRun') || this.get('havenSkip');
   },
 
   pose(name) {
+    // ONE production look (1024 cartoon set). Legacy walk/front/water sheets
+    // mismatch hair/outfit/proportions — do not use them for on-screen Haven.
     const map = {
-      idle: 'havenSkip', run: 'havenRun', jump: 'havenJump', pick: 'havenPick',
-      chase: 'havenChase', skip: 'havenSkip', plant: 'havenPlant', water: 'havenPlant',
-      front: 'havenSkip', walk: 'havenRun'
+      idle: 'havenSkip', stand: 'havenSkip', run: 'havenRun', jump: 'havenJump',
+      pick: 'havenPick', chase: 'havenChase', skip: 'havenSkip', plant: 'havenPlant',
+      water: 'havenPlant', front: 'havenSkip', walk: 'havenRun'
     };
     const k = map[name] || 'havenSkip';
-    return this.get(k) || this.get('havenFront');
+    if (name === 'stand' || name === 'idleStand') {
+      // Prefer skip (planted feet) over run; never legacy front/walk
+      return this.get('havenSkip') || this.get('havenRun') || this.get('havenPlant');
+    }
+    return this.get(k) || this.get('havenSkip') || this.get('havenRun');
   },
+
+  /** Calm standing sprite for nursery — production skip sheet only. */
+  standPose() {
+    return this.pose('stand');
+  },
+
+  /** Runner sprites — basename without .png (e.g. 'haven-run-01', 'flower-daisy'). */
+  runner(basename) {
+    if (!basename) return null;
+    const key = runnerAssetKey(basename.endsWith('.png') ? basename : basename + '.png');
+    return this.get(key);
+  },
+  runnerPlate() { return null; }, // Franz: no scrolling phone plate — projected textures only
+  runnerHaven(pose) {
+    if (pose === 'jump') return this.runner('haven-jump');
+    if (pose === 'duck' || pose === 'plant') return this.runner('haven-duck');
+    if (pose === 'lean_left' || pose === 'lean-left') return this.runner('haven-lean-left');
+    if (pose === 'lean_right' || pose === 'lean-right') return this.runner('haven-lean-right');
+    if (pose === 'stumble') return this.runner('haven-stumble');
+    if (pose === 'pick') return this.runner('haven-pick');
+    return this.runner('haven-run-01');
+  },
+  runnerRunFrame(i) {
+    const n = ((i | 0) % 6) + 1;
+    return this.runner('haven-run-0' + n);
+  },
+  runnerFlower(id) { return this.runner('flower-' + (id || 'daisy')); },
+  runnerObs(kind) { return this.runner('obs-' + (kind || 'hay')); },
 
   cbnPage(stem) { return this.get(cbnAssetKey(stem, 'page')); },
   cbnInk(stem) { return this.get(cbnAssetKey(stem, 'ink')); },
   cbnMask(stem) { return this.get(cbnAssetKey(stem, 'mask')); }
 };
+
+window.RUNNER_FILES = RUNNER_FILES;
+window.runnerAssetKey = runnerAssetKey;
 
 window.Assets = Assets;
 window.AssetManifest = AssetManifest;

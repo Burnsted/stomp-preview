@@ -27,12 +27,22 @@ const HavenAnim = (() => {
     moving: 0
   };
 
-  /** Exact frames to request from Franz if a smoother cycle is desired later. */
+  /**
+   * Haven consistency — production 1024 set is the on-screen look for meadow /
+   * nursery / bugs / bees / watering / menus. Runner uses a separate rear-view
+   * 256×320 set (intentional camera). Franz redraw needed for mismatched frames:
+   */
   const FRANZ_REQUESTS = [
-    'haven-run-01.png … haven-run-04.png — dedicated run cycle (currently single haven-run pose)',
-    'haven-look-left.png / haven-look-right.png — idle look-around (code approximates with lean+flip)',
-    'haven-celebrate.png — arms-up cheer distinct from jump (jump pose reused for celebrate)',
-    'Optional: haven-walk-05.png, haven-walk-06.png — 6-frame walk for smoother gait'
+    'MISMATCH — do not ship as on-screen Haven until redrawn to match haven-run/skip/plant (1024 cartoon):',
+    '  assets/character/haven-front.png (289×768 legacy palette)',
+    '  assets/character/haven-three-quarter.png (295×768 legacy)',
+    '  assets/character/haven-walk-01.png … haven-walk-04.png (legacy walk; different proportions)',
+    '  assets/character/haven-water.png (legacy; use haven-plant.png until redrawn)',
+    'RUNNER rear set (assets/runner/haven-*.png 256×320) — keep rear camera, but match hair color,',
+    '  pink dress, basket, and body proportions to the 1024 production set so she does not look like',
+    '  a different child when entering the flower run.',
+    'NEW (optional polish): haven-look-left/right, haven-celebrate (distinct from jump),',
+    '  haven-water matching production style, dedicated 4–6 frame side walk matching production.'
   ];
 
   const MAX_SPEED = 230;
@@ -174,19 +184,24 @@ const HavenAnim = (() => {
     STATE.armSwing += (armTarget - STATE.armSwing) * Math.min(1, dt * 10);
     STATE.skirt += ((moving ? spdN * 0.04 : 0) - STATE.skirt) * Math.min(1, dt * 6);
 
-    // Idle look-around / hop when standing
-    if (!moving && !meta.busyPose) {
+    // Idle look-around when standing — soft bob only (no jump-pose hop = no float)
+    // Nursery stand pose: keep feet planted, no look-flip that reads as motion
+    if (meta.pose === 'stand' || meta.pose === 'idleStand') {
+      STATE.idleKind = 0;
+      STATE.hopT = 0;
+      STATE.bob = lerp(STATE.bob, 0, Math.min(1, dt * 10));
+      STATE.lean = lerp(STATE.lean, 0, Math.min(1, dt * 8));
+    } else if (!moving && !meta.busyPose && !meta.noHop) {
       STATE.idleT -= dt;
       if (STATE.idleKind === 0 && STATE.idleT <= 0) {
-        STATE.idleKind = Math.random() < 0.55 ? 1 : 2;
+        STATE.idleKind = 1; // look only — hop used jump art and read as floating
         STATE.idleAge = 0;
         STATE.lookFace = Math.random() < 0.5 ? -girl.face : girl.face;
         STATE.hopT = 0;
       }
       if (STATE.idleKind) {
         STATE.idleAge += dt;
-        if (STATE.idleKind === 2) STATE.hopT = Math.min(1, STATE.idleAge / 0.35);
-        if (STATE.idleAge > (STATE.idleKind === 1 ? 0.9 : 0.45)) {
+        if (STATE.idleAge > 0.9) {
           STATE.idleKind = 0;
           STATE.idleT = 2.2 + Math.random() * 3.5;
           STATE.hopT = 0;
@@ -196,6 +211,13 @@ const HavenAnim = (() => {
       STATE.idleKind = 0;
       STATE.idleT = 1.2 + Math.random();
       STATE.hopT = 0;
+    }
+    // Plant squat: lock feet, settle bob — no flicker / pop
+    if (meta.pose === 'plant' || meta.busyPose && meta.pose === 'plant') {
+      STATE.idleKind = 0;
+      STATE.hopT = 0;
+      STATE.bob = lerp(STATE.bob, 6, Math.min(1, dt * 10));
+      STATE.bodySquash = lerp(STATE.bodySquash != null ? STATE.bodySquash : 1, 0.96, Math.min(1, dt * 8));
     }
 
     // Action pose blend
@@ -211,22 +233,19 @@ const HavenAnim = (() => {
   }
 
   function pickBaseImage(Assets, gait, walkFrame, pose, netSwing) {
+    // Always the production 1024 set — never legacy front/walk/water sheets.
     if (netSwing > 0.2) return Assets.pose('chase') || Assets.get('havenChase');
     if (pose === 'pick') return Assets.pose('pick');
     if (pose === 'plant') return Assets.pose('plant');
-    if (pose === 'water') return Assets.get('havenWater') || Assets.pose('plant');
+    if (pose === 'water') return Assets.pose('plant') || Assets.get('havenPlant');
     if (pose === 'jump' || pose === 'celebrate') return Assets.pose('jump');
     if (pose === 'chase') return Assets.pose('chase');
-    if (gait === 'run') return Assets.get('havenRun') || Assets.walkFrame(walkFrame);
-    if (gait === 'walk') {
-      // Prefer true walk cycle frames when present
-      const w = Assets.get(['havenWalk01', 'havenWalk02', 'havenWalk03', 'havenWalk04'][walkFrame % 4]);
-      if (w) return w;
-      return Assets.walkFrame(walkFrame);
+    if (pose === 'stand' || pose === 'idleStand') {
+      return (Assets.standPose && Assets.standPose()) || Assets.get('havenSkip') || Assets.get('havenRun');
     }
-    // Idle: skip/front; occasional hop uses jump
-    if (STATE.idleKind === 2) return Assets.pose('jump') || Assets.pose('idle');
-    return Assets.pose('idle') || Assets.get('havenSkip') || Assets.get('havenFront');
+    if (gait === 'run') return Assets.get('havenRun') || Assets.walkFrame(walkFrame);
+    if (gait === 'walk') return Assets.walkFrame(walkFrame);
+    return Assets.pose('idle') || Assets.get('havenSkip') || Assets.get('havenRun');
   }
 
   /**
@@ -239,16 +258,21 @@ const HavenAnim = (() => {
     const gait = meta.gait || (meta.walking ? 'walk' : 'idle');
     const img = pickBaseImage(Assets, gait, girl.walkFrame | 0, pose, meta.netSwing || 0);
     const face = (STATE.idleKind === 1 ? STATE.lookFace : girl.face) || 1;
-    const bob = STATE.bob + (meta.extraBob || 0);
     const lean = STATE.lean + (STATE.idleKind === 1 ? STATE.lookFace * 0.05 : 0);
     const squash = STATE.bodySquash != null ? STATE.bodySquash : (girl.squash != null ? girl.squash : 1);
     const stretchX = 1 + STATE.skirt + (1 - Math.min(1, squash)) * 0.35;
+    // Idle / plant: keep feet glued to ground (bob was lifting her off the path)
+    let bob = STATE.bob + (meta.extraBob || 0);
+    if (pose === 'idle' && !meta.walking) bob = Math.min(bob, 1.5);
+    if (pose === 'plant' || pose === 'pick' || pose === 'water') bob = Math.min(8, Math.max(0, bob));
+    // Slight plant on idle so the skip sheet still reads as standing, not leaping
+    if (pose === 'idle' && !meta.walking) bob += h * 0.02;
 
     cx.save();
     cx.translate(x, y);
     cx.scale(face, 1);
-    cx.rotate(lean);
-    cx.scale(stretchX, squash);
+    cx.rotate(lean * (pose === 'idle' && !meta.walking ? 0.35 : 1));
+    cx.scale(pose === 'idle' && !meta.walking ? 1 : stretchX, pose === 'idle' && !meta.walking ? 1 : squash);
     cx.translate(0, bob);
 
     if (img) {
@@ -256,35 +280,8 @@ const HavenAnim = (() => {
       const dw = h * (iw / ih);
       const dx = -dw / 2;
       const dy = -h;
-
-      // Body (lower ~62%) — planted
-      cx.save();
-      cx.beginPath();
-      cx.rect(dx - 2, dy + h * 0.38, dw + 4, h * 0.65);
-      cx.clip();
+      // Always single-pass — split body/head caused flicker / popping between poses
       cx.drawImage(img, dx, dy, dw, h);
-      cx.restore();
-
-      // Head / pigtails (upper ~42%) with lag
-      cx.save();
-      cx.beginPath();
-      cx.rect(dx - 4, dy - 4, dw + 8, h * 0.46);
-      cx.clip();
-      cx.translate(STATE.hairLagX * 0.35 * face, STATE.hairLagY * 0.5);
-      cx.rotate(-lean * 0.25 + STATE.hairLagX * 0.008);
-      cx.drawImage(img, dx, dy, dw, h);
-      cx.restore();
-
-      // Soft ribbon accent bounce (reads lag without fighting painted ribbons)
-      const tipY = dy + h * 0.16;
-      const tipSpread = dw * 0.22;
-      cx.globalAlpha = 0.35;
-      cx.fillStyle = '#f078a0';
-      cx.beginPath();
-      cx.ellipse(-tipSpread + STATE.hairLagX * 0.2, tipY + STATE.hairLagY * 0.3, 3.2, 2.4, 0, 0, 7);
-      cx.ellipse(tipSpread + STATE.hairLagX * 0.2, tipY + STATE.hairLagY * 0.3, 3.2, 2.4, 0, 0, 7);
-      cx.fill();
-      cx.globalAlpha = 1;
     } else {
       cx.fillStyle = '#fad2b4';
       cx.beginPath(); cx.arc(0, -h * 0.72, h * 0.12, 0, 7); cx.fill();
@@ -294,10 +291,10 @@ const HavenAnim = (() => {
 
     cx.restore();
 
-    // Basket hip attachment with arm swing (caller draws contents)
+    // Basket hip/side attachment — low enough that blooms never cover the face
     const basket = {
-      x: x + face * (h * 0.14) + STATE.armSwing * 0.35 * face,
-      y: y - h * 0.38 + Math.abs(STATE.armSwing) * 0.08 + bob * 0.3,
+      x: x + face * (h * 0.34) + STATE.armSwing * 0.25 * face,
+      y: y - h * 0.24 + Math.abs(STATE.armSwing) * 0.05 + bob * 0.15,
       swing: STATE.armSwing,
       face
     };

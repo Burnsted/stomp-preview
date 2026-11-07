@@ -1,5 +1,5 @@
-/* Haven's Garden v0.9-birthday-save-fix-touch — save fix + touch-v3 planting camera */
-const CACHE = 'havens-garden-birthday-preview-v0.9-birthday-save-fix-touch';
+/* Haven's Garden v0.9-play-fix-ted-ev2 — cache bust + skipWaiting/clients.claim */
+const CACHE = 'havens-garden-play-fix-preview-v0.9-play-fix-ted-ev2';
 const PRECACHE = [
   './',
   './index.html',
@@ -11,6 +11,7 @@ const PRECACHE = [
   './js/nursery.js',
   './js/haven-anim.js',
   './js/save-store.js',
+  './js/runner.js',
   './js/game.js',
   './assets/greenhouse-v2/maps/small.json',
   './assets/greenhouse-v2/maps/medium.json',
@@ -26,8 +27,16 @@ const PRECACHE = [
   './assets/icon/app-icon.png',
   './assets/icon/app-icon-192.png',
   './assets/icon/app-icon-512.png',
-  './assets/plates/meadow-day.webp',
+  './assets/runner/haven-run-01.png',
+  './assets/runner/haven-jump.png',
+  './assets/runner/sky-day.png',
+  './assets/runner/tex-dirt.png',
+  './assets/runner/tex-grass.png',
+  './assets/runner/tex-hedgerow.png',
+  './assets/runner/flower-daisy.png',
+  './assets/runner/obs-hay.png',
   './assets/character/haven-run.png',
+  './assets/character/haven-front.png',
   './assets/character/haven-walk-01.png',
   './assets/character/haven-walk-02.png',
   './assets/character/haven-pick.png',

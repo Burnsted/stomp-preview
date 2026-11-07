@@ -1,0 +1,496 @@
+{
+  "scene": "medium",
+  "plate": "plates/medium-empty.png",
+  "plateSize": [
+    585,
+    1266
+  ],
+  "activeCount": 20,
+  "beds": [
+    {
+      "id": 0,
+      "soilPolygon": [
+        [
+          121,
+          717
+        ],
+        [
+          164,
+          717
+        ],
+        [
+          9,
+          1010
+        ],
+        [
+          0,
+          958
+        ]
+      ],
+      "count": 5
+    },
+    {
+      "id": 1,
+      "soilPolygon": [
+        [
+          199,
+          717
+        ],
+        [
+          251,
+          717
+        ],
+        [
+          190,
+          1090
+        ],
+        [
+          52,
+          1090
+        ]
+      ],
+      "count": 5
+    },
+    {
+      "id": 2,
+      "soilPolygon": [
+        [
+          329,
+          717
+        ],
+        [
+          377,
+          717
+        ],
+        [
+          517,
+          1090
+        ],
+        [
+          367,
+          1090
+        ]
+      ],
+      "count": 5
+    },
+    {
+      "id": 3,
+      "soilPolygon": [
+        [
+          420,
+          717
+        ],
+        [
+          451,
+          717
+        ],
+        [
+          580,
+          1010
+        ],
+        [
+          552,
+          1020
+        ]
+      ],
+      "count": 5
+    }
+  ],
+  "slots": [
+    {
+      "id": 0,
+      "bedId": 0,
+      "rootX": 126,
+      "rootY": 749,
+      "drawOrder": 749,
+      "hitBounds": {
+        "x": 110.0,
+        "y": 733.0,
+        "w": 32,
+        "h": 32
+      },
+      "revealPanScreenPx": {
+        "x": 0,
+        "y": 607.875
+      }
+    },
+    {
+      "id": 1,
+      "bedId": 0,
+      "rootX": 100,
+      "rootY": 800,
+      "drawOrder": 800,
+      "hitBounds": {
+        "x": 84.0,
+        "y": 784.0,
+        "w": 32,
+        "h": 32
+      },
+      "revealPanScreenPx": {
+        "x": 0,
+        "y": 678.0
+      }
+    },
+    {
+      "id": 2,
+      "bedId": 0,
+      "rootX": 74,
+      "rootY": 850,
+      "drawOrder": 850,
+      "hitBounds": {
+        "x": 58.0,
+        "y": 834.0,
+        "w": 32,
+        "h": 32
+      },
+      "revealPanScreenPx": {
+        "x": 0,
+        "y": 746.75
+      }
+    },
+    {
+      "id": 3,
+      "bedId": 0,
+      "rootX": 47,
+      "rootY": 901,
+      "drawOrder": 901,
+      "hitBounds": {
+        "x": 31.0,
+        "y": 885.0,
+        "w": 32,
+        "h": 32
+      },
+      "revealPanScreenPx": {
+        "x": 0,
+        "y": 816.875
+      }
+    },
+    {
+      "id": 4,
+      "bedId": 0,
+      "rootX": 21,
+      "rootY": 952,
+      "drawOrder": 952,
+      "hitBounds": {
+        "x": 5.0,
+        "y": 936.0,
+        "w": 32,
+        "h": 32
+      },
+      "revealPanScreenPx": {
+        "x": 0,
+        "y": 887.0
+      }
+    },
+    {
+      "id": 5,
+      "bedId": 1,
+      "rootX": 213,
+      "rootY": 762,
+      "drawOrder": 762,
+      "hitBounds": {
+        "x": 197.0,
+        "y": 746.0,
+        "w": 32,
+        "h": 32
+      },
+      "revealPanScreenPx": {
+        "x": 97.875,
+        "y": 625.75
+      }
+    },
+    {
+      "id": 6,
+      "bedId": 1,
+      "rootX": 193,
+      "rootY": 833,
+      "drawOrder": 833,
+      "hitBounds": {
+        "x": 177.0,
+        "y": 817.0,
+        "w": 32,
+        "h": 32
+      },
+      "revealPanScreenPx": {
+        "x": 70.375,
+        "y": 723.375
+      }
+    },
+    {
+      "id": 7,
+      "bedId": 1,
+      "rootX": 173,
+      "rootY": 904,
+      "drawOrder": 904,
+      "hitBounds": {
+        "x": 157.0,
+        "y": 888.0,
+        "w": 32,
+        "h": 32
+      },
+      "revealPanScreenPx": {
+        "x": 42.875,
+        "y": 821.0
+      }
+    },
+    {
+      "id": 8,
+      "bedId": 1,
+      "rootX": 153,
+      "rootY": 974,
+      "drawOrder": 974,
+      "hitBounds": {
+        "x": 137.0,
+        "y": 958.0,
+        "w": 32,
+        "h": 32
+      },
+      "revealPanScreenPx": {
+        "x": 15.375,
+        "y": 896.75
+      }
+    },
+    {
+      "id": 9,
+      "bedId": 1,
+      "rootX": 133,
+      "rootY": 1045,
+      "drawOrder": 1045,
+      "hitBounds": {
+        "x": 117.0,
+        "y": 1029.0,
+        "w": 32,
+        "h": 32
+      },
+      "revealPanScreenPx": {
+        "x": 0,
+        "y": 896.75
+      }
+    },
+    {
+      "id": 10,
+      "bedId": 2,
+      "rootX": 364,
+      "rootY": 762,
+      "drawOrder": 762,
+      "hitBounds": {
+        "x": 348.0,
+        "y": 746.0,
+        "w": 32,
+        "h": 32
+      },
+      "revealPanScreenPx": {
+        "x": 305.5,
+        "y": 625.75
+      }
+    },
+    {
+      "id": 11,
+      "bedId": 2,
+      "rootX": 381,
+      "rootY": 833,
+      "drawOrder": 833,
+      "hitBounds": {
+        "x": 365.0,
+        "y": 817.0,
+        "w": 32,
+        "h": 32
+      },
+      "revealPanScreenPx": {
+        "x": 328.875,
+        "y": 723.375
+      }
+    },
+    {
+      "id": 12,
+      "bedId": 2,
+      "rootX": 398,
+      "rootY": 904,
+      "drawOrder": 904,
+      "hitBounds": {
+        "x": 382.0,
+        "y": 888.0,
+        "w": 32,
+        "h": 32
+      },
+      "revealPanScreenPx": {
+        "x": 352.25,
+        "y": 821.0
+      }
+    },
+    {
+      "id": 13,
+      "bedId": 2,
+      "rootX": 414,
+      "rootY": 974,
+      "drawOrder": 974,
+      "hitBounds": {
+        "x": 398.0,
+        "y": 958.0,
+        "w": 32,
+        "h": 32
+      },
+      "revealPanScreenPx": {
+        "x": 374.25,
+        "y": 896.75
+      }
+    },
+    {
+      "id": 14,
+      "bedId": 2,
+      "rootX": 431,
+      "rootY": 1045,
+      "drawOrder": 1045,
+      "hitBounds": {
+        "x": 415.0,
+        "y": 1029.0,
+        "w": 32,
+        "h": 32
+      },
+      "revealPanScreenPx": {
+        "x": 397.625,
+        "y": 896.75
+      }
+    },
+    {
+      "id": 15,
+      "bedId": 3,
+      "rootX": 451,
+      "rootY": 753,
+      "drawOrder": 753,
+      "hitBounds": {
+        "x": 435.0,
+        "y": 737.0,
+        "w": 32,
+        "h": 32
+      },
+      "revealPanScreenPx": {
+        "x": 414.375,
+        "y": 613.375
+      }
+    },
+    {
+      "id": 16,
+      "bedId": 3,
+      "rootX": 476,
+      "rootY": 809,
+      "drawOrder": 809,
+      "hitBounds": {
+        "x": 460.0,
+        "y": 793.0,
+        "w": 32,
+        "h": 32
+      },
+      "revealPanScreenPx": {
+        "x": 414.375,
+        "y": 690.375
+      }
+    },
+    {
+      "id": 17,
+      "bedId": 3,
+      "rootX": 501,
+      "rootY": 866,
+      "drawOrder": 866,
+      "hitBounds": {
+        "x": 485.0,
+        "y": 850.0,
+        "w": 32,
+        "h": 32
+      },
+      "revealPanScreenPx": {
+        "x": 414.375,
+        "y": 768.75
+      }
+    },
+    {
+      "id": 18,
+      "bedId": 3,
+      "rootX": 526,
+      "rootY": 923,
+      "drawOrder": 923,
+      "hitBounds": {
+        "x": 510.0,
+        "y": 907.0,
+        "w": 32,
+        "h": 32
+      },
+      "revealPanScreenPx": {
+        "x": 414.375,
+        "y": 847.125
+      }
+    },
+    {
+      "id": 19,
+      "bedId": 3,
+      "rootX": 550,
+      "rootY": 979,
+      "drawOrder": 979,
+      "hitBounds": {
+        "x": 534.0,
+        "y": 963.0,
+        "w": 32,
+        "h": 32
+      },
+      "revealPanScreenPx": {
+        "x": 414.375,
+        "y": 896.75
+      }
+    }
+  ],
+  "view": {
+    "viewportScreenPx": [
+      390,
+      844
+    ],
+    "fitScale": 0.6666666666666666,
+    "uniformZoomOverFit": 2.0625,
+    "nativeToScreenScale": 1.375,
+    "renderedCanvasScreenPx": [
+      804.375,
+      1740.75
+    ],
+    "panScreenPxRange": {
+      "x": [
+        0,
+        414.375
+      ],
+      "y": [
+        0,
+        896.75
+      ]
+    },
+    "defaultPanScreenPx": {
+      "x": 207.1875,
+      "y": 896.75
+    },
+    "forwardTransform": "screenX = nativeX * nativeToScreenScale - panScreenPx.x; screenY = nativeY * nativeToScreenScale - panScreenPx.y",
+    "inverseTransform": "nativeX=(screenX+panScreenPx.x)/nativeToScreenScale; nativeY=(screenY+panScreenPx.y)/nativeToScreenScale",
+    "requiredEngineSupport": "Uniform zoom plus TWO-AXIS bounded pan/scroll. Vertical-only scaling is not sufficient. Whole garden is not visible at once."
+  },
+  "hitTesting": "Transform screen point to native, test half-open exclusive rect [x,x+w) \u00d7 [y,y+h). Zero intersection pairs. Outside every rect: no planting. NO nearest-root fallback.",
+  "rootConvention": {
+    "spriteCanvas": [
+      224,
+      224
+    ],
+    "spriteRoot": [
+      112,
+      208
+    ],
+    "recommendedNativeSpriteScale": 0.3
+  },
+  "qa": {
+    "minNativeBoxWH": [
+      32,
+      32
+    ],
+    "minPhoneBoxWH": [
+      44,
+      44
+    ],
+    "positiveAreaIntersectionPairs": [],
+    "rootsInsideMeasuredSoilPolygons": true,
+    "allBoxesFullyReachable": true
+  }
+}

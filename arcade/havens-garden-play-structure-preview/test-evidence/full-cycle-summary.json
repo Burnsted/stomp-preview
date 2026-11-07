@@ -1,0 +1,1099 @@
+{
+  "n": 30,
+  "left": 0,
+  "gh": 2,
+  "hits": {
+    "small": {
+      "key": "small",
+      "active": 12,
+      "overlapPairs": 0,
+      "nativeToScreenScale": 1,
+      "uniformZoomOverFit": 1.5,
+      "candidateCss": 44,
+      "exclusiveCssMin": 44,
+      "exclusiveCssMedian": 44,
+      "exclusiveCssMax": 44,
+      "below44": 0,
+      "cells": [
+        {
+          "i": 0,
+          "rootX": 193,
+          "rootY": 810,
+          "candidateNative": 44,
+          "candidateCss": 44,
+          "exclusiveNative": 44,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 388
+          }
+        },
+        {
+          "i": 1,
+          "rootX": 176,
+          "rootY": 859,
+          "candidateNative": 44,
+          "candidateCss": 44,
+          "exclusiveNative": 44,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 422
+          }
+        },
+        {
+          "i": 2,
+          "rootX": 160,
+          "rootY": 908,
+          "candidateNative": 44,
+          "candidateCss": 44,
+          "exclusiveNative": 44,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 422
+          }
+        },
+        {
+          "i": 3,
+          "rootX": 143,
+          "rootY": 956,
+          "candidateNative": 44,
+          "candidateCss": 44,
+          "exclusiveNative": 44,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 422
+          }
+        },
+        {
+          "i": 4,
+          "rootX": 126,
+          "rootY": 1005,
+          "candidateNative": 44,
+          "candidateCss": 44,
+          "exclusiveNative": 44,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 422
+          }
+        },
+        {
+          "i": 5,
+          "rootX": 109,
+          "rootY": 1054,
+          "candidateNative": 44,
+          "candidateCss": 44,
+          "exclusiveNative": 44,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 422
+          }
+        },
+        {
+          "i": 6,
+          "rootX": 381,
+          "rootY": 810,
+          "candidateNative": 44,
+          "candidateCss": 44,
+          "exclusiveNative": 44,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 186,
+            "y": 388
+          }
+        },
+        {
+          "i": 7,
+          "rootX": 396,
+          "rootY": 859,
+          "candidateNative": 44,
+          "candidateCss": 44,
+          "exclusiveNative": 44,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 195,
+            "y": 422
+          }
+        },
+        {
+          "i": 8,
+          "rootX": 412,
+          "rootY": 908,
+          "candidateNative": 44,
+          "candidateCss": 44,
+          "exclusiveNative": 44,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 195,
+            "y": 422
+          }
+        },
+        {
+          "i": 9,
+          "rootX": 428,
+          "rootY": 956,
+          "candidateNative": 44,
+          "candidateCss": 44,
+          "exclusiveNative": 44,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 195,
+            "y": 422
+          }
+        },
+        {
+          "i": 10,
+          "rootX": 444,
+          "rootY": 1005,
+          "candidateNative": 44,
+          "candidateCss": 44,
+          "exclusiveNative": 44,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 195,
+            "y": 422
+          }
+        },
+        {
+          "i": 11,
+          "rootX": 460,
+          "rootY": 1054,
+          "candidateNative": 44,
+          "candidateCss": 44,
+          "exclusiveNative": 44,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 195,
+            "y": 422
+          }
+        }
+      ]
+    },
+    "medium": {
+      "key": "medium",
+      "active": 20,
+      "overlapPairs": 0,
+      "nativeToScreenScale": 1.375,
+      "uniformZoomOverFit": 2.0625,
+      "candidateCss": 44,
+      "exclusiveCssMin": 44,
+      "exclusiveCssMedian": 44,
+      "exclusiveCssMax": 44,
+      "below44": 0,
+      "cells": [
+        {
+          "i": 0,
+          "rootX": 126,
+          "rootY": 749,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 607.875
+          }
+        },
+        {
+          "i": 1,
+          "rootX": 100,
+          "rootY": 800,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 678
+          }
+        },
+        {
+          "i": 2,
+          "rootX": 74,
+          "rootY": 850,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 746.75
+          }
+        },
+        {
+          "i": 3,
+          "rootX": 47,
+          "rootY": 901,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 816.875
+          }
+        },
+        {
+          "i": 4,
+          "rootX": 21,
+          "rootY": 952,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 887
+          }
+        },
+        {
+          "i": 5,
+          "rootX": 213,
+          "rootY": 762,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 97.875,
+            "y": 625.75
+          }
+        },
+        {
+          "i": 6,
+          "rootX": 193,
+          "rootY": 833,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 70.375,
+            "y": 723.375
+          }
+        },
+        {
+          "i": 7,
+          "rootX": 173,
+          "rootY": 904,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 42.875,
+            "y": 821
+          }
+        },
+        {
+          "i": 8,
+          "rootX": 153,
+          "rootY": 974,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 15.375,
+            "y": 896.75
+          }
+        },
+        {
+          "i": 9,
+          "rootX": 133,
+          "rootY": 1045,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 896.75
+          }
+        },
+        {
+          "i": 10,
+          "rootX": 364,
+          "rootY": 762,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 305.5,
+            "y": 625.75
+          }
+        },
+        {
+          "i": 11,
+          "rootX": 381,
+          "rootY": 833,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 328.875,
+            "y": 723.375
+          }
+        },
+        {
+          "i": 12,
+          "rootX": 398,
+          "rootY": 904,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 352.25,
+            "y": 821
+          }
+        },
+        {
+          "i": 13,
+          "rootX": 414,
+          "rootY": 974,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 374.25,
+            "y": 896.75
+          }
+        },
+        {
+          "i": 14,
+          "rootX": 431,
+          "rootY": 1045,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 397.625,
+            "y": 896.75
+          }
+        },
+        {
+          "i": 15,
+          "rootX": 451,
+          "rootY": 753,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 414.375,
+            "y": 613.375
+          }
+        },
+        {
+          "i": 16,
+          "rootX": 476,
+          "rootY": 809,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 414.375,
+            "y": 690.375
+          }
+        },
+        {
+          "i": 17,
+          "rootX": 501,
+          "rootY": 866,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 414.375,
+            "y": 768.75
+          }
+        },
+        {
+          "i": 18,
+          "rootX": 526,
+          "rootY": 923,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 414.375,
+            "y": 847.125
+          }
+        },
+        {
+          "i": 19,
+          "rootX": 550,
+          "rootY": 979,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 414.375,
+            "y": 896.75
+          }
+        }
+      ]
+    },
+    "large": {
+      "key": "large",
+      "active": 30,
+      "overlapPairs": 0,
+      "nativeToScreenScale": 1.375,
+      "uniformZoomOverFit": 2.0625,
+      "candidateCss": 44,
+      "exclusiveCssMin": 44,
+      "exclusiveCssMedian": 44,
+      "exclusiveCssMax": 44,
+      "below44": 0,
+      "cells": [
+        {
+          "i": 0,
+          "rootX": 111,
+          "rootY": 602,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 405.75
+          }
+        },
+        {
+          "i": 1,
+          "rootX": 88,
+          "rootY": 645,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 464.875
+          }
+        },
+        {
+          "i": 2,
+          "rootX": 65,
+          "rootY": 688,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 524
+          }
+        },
+        {
+          "i": 3,
+          "rootX": 42,
+          "rootY": 731,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 583.125
+          }
+        },
+        {
+          "i": 4,
+          "rootX": 19,
+          "rootY": 774,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 642.25
+          }
+        },
+        {
+          "i": 5,
+          "rootX": 170,
+          "rootY": 637,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 38.75,
+            "y": 453.875
+          }
+        },
+        {
+          "i": 6,
+          "rootX": 139,
+          "rootY": 735,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 588.625
+          }
+        },
+        {
+          "i": 7,
+          "rootX": 108,
+          "rootY": 832,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 722
+          }
+        },
+        {
+          "i": 8,
+          "rootX": 77,
+          "rootY": 930,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 856.75
+          }
+        },
+        {
+          "i": 9,
+          "rootX": 46,
+          "rootY": 1028,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 896.75
+          }
+        },
+        {
+          "i": 10,
+          "rootX": 237,
+          "rootY": 637,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 130.875,
+            "y": 453.875
+          }
+        },
+        {
+          "i": 11,
+          "rootX": 221,
+          "rootY": 735,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 108.875,
+            "y": 588.625
+          }
+        },
+        {
+          "i": 12,
+          "rootX": 204,
+          "rootY": 832,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 85.5,
+            "y": 722
+          }
+        },
+        {
+          "i": 13,
+          "rootX": 187,
+          "rootY": 930,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 62.125,
+            "y": 856.75
+          }
+        },
+        {
+          "i": 14,
+          "rootX": 171,
+          "rootY": 1028,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 40.125,
+            "y": 896.75
+          }
+        },
+        {
+          "i": 15,
+          "rootX": 348,
+          "rootY": 637,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 283.5,
+            "y": 453.875
+          }
+        },
+        {
+          "i": 16,
+          "rootX": 364,
+          "rootY": 735,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 305.5,
+            "y": 588.625
+          }
+        },
+        {
+          "i": 17,
+          "rootX": 381,
+          "rootY": 832,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 328.875,
+            "y": 722
+          }
+        },
+        {
+          "i": 18,
+          "rootX": 398,
+          "rootY": 930,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 352.25,
+            "y": 856.75
+          }
+        },
+        {
+          "i": 19,
+          "rootX": 414,
+          "rootY": 1028,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 374.25,
+            "y": 896.75
+          }
+        },
+        {
+          "i": 20,
+          "rootX": 415,
+          "rootY": 637,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 375.625,
+            "y": 453.875
+          }
+        },
+        {
+          "i": 21,
+          "rootX": 446,
+          "rootY": 735,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 414.375,
+            "y": 588.625
+          }
+        },
+        {
+          "i": 22,
+          "rootX": 477,
+          "rootY": 832,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 414.375,
+            "y": 722
+          }
+        },
+        {
+          "i": 23,
+          "rootX": 508,
+          "rootY": 930,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 414.375,
+            "y": 856.75
+          }
+        },
+        {
+          "i": 24,
+          "rootX": 539,
+          "rootY": 1028,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 414.375,
+            "y": 896.75
+          }
+        },
+        {
+          "i": 25,
+          "rootX": 474,
+          "rootY": 602,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 414.375,
+            "y": 405.75
+          }
+        },
+        {
+          "i": 26,
+          "rootX": 497,
+          "rootY": 645,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 414.375,
+            "y": 464.875
+          }
+        },
+        {
+          "i": 27,
+          "rootX": 520,
+          "rootY": 688,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 414.375,
+            "y": 524
+          }
+        },
+        {
+          "i": 28,
+          "rootX": 543,
+          "rootY": 731,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 414.375,
+            "y": 583.125
+          }
+        },
+        {
+          "i": 29,
+          "rootX": 566,
+          "rootY": 774,
+          "candidateNative": 32,
+          "candidateCss": 44,
+          "exclusiveNative": 32,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 414.375,
+            "y": 642.25
+          }
+        }
+      ]
+    },
+    "outdoor": {
+      "key": "outdoor",
+      "active": 12,
+      "overlapPairs": 0,
+      "nativeToScreenScale": 0.9166666666666666,
+      "uniformZoomOverFit": 1.375,
+      "candidateCss": 44,
+      "exclusiveCssMin": 44,
+      "exclusiveCssMedian": 44,
+      "exclusiveCssMax": 44,
+      "below44": 0,
+      "cells": [
+        {
+          "i": 0,
+          "rootX": 199,
+          "rootY": 783,
+          "candidateNative": 48,
+          "candidateCss": 44,
+          "exclusiveNative": 48,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 295.75
+          }
+        },
+        {
+          "i": 1,
+          "rootX": 180,
+          "rootY": 836,
+          "candidateNative": 48,
+          "candidateCss": 44,
+          "exclusiveNative": 48,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 316.5
+          }
+        },
+        {
+          "i": 2,
+          "rootX": 162,
+          "rootY": 889,
+          "candidateNative": 48,
+          "candidateCss": 44,
+          "exclusiveNative": 48,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 316.5
+          }
+        },
+        {
+          "i": 3,
+          "rootX": 144,
+          "rootY": 942,
+          "candidateNative": 48,
+          "candidateCss": 44,
+          "exclusiveNative": 48,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 316.5
+          }
+        },
+        {
+          "i": 4,
+          "rootX": 125,
+          "rootY": 995,
+          "candidateNative": 48,
+          "candidateCss": 44,
+          "exclusiveNative": 48,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 316.5
+          }
+        },
+        {
+          "i": 5,
+          "rootX": 107,
+          "rootY": 1048,
+          "candidateNative": 48,
+          "candidateCss": 44,
+          "exclusiveNative": 48,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 0,
+            "y": 316.5
+          }
+        },
+        {
+          "i": 6,
+          "rootX": 380,
+          "rootY": 783,
+          "candidateNative": 48,
+          "candidateCss": 44,
+          "exclusiveNative": 48,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 146.25,
+            "y": 295.75
+          }
+        },
+        {
+          "i": 7,
+          "rootX": 397,
+          "rootY": 836,
+          "candidateNative": 48,
+          "candidateCss": 44,
+          "exclusiveNative": 48,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 146.25,
+            "y": 316.5
+          }
+        },
+        {
+          "i": 8,
+          "rootX": 414,
+          "rootY": 889,
+          "candidateNative": 48,
+          "candidateCss": 44,
+          "exclusiveNative": 48,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 146.25,
+            "y": 316.5
+          }
+        },
+        {
+          "i": 9,
+          "rootX": 432,
+          "rootY": 942,
+          "candidateNative": 48,
+          "candidateCss": 44,
+          "exclusiveNative": 48,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 146.25,
+            "y": 316.5
+          }
+        },
+        {
+          "i": 10,
+          "rootX": 449,
+          "rootY": 995,
+          "candidateNative": 48,
+          "candidateCss": 44,
+          "exclusiveNative": 48,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 146.25,
+            "y": 316.5
+          }
+        },
+        {
+          "i": 11,
+          "rootX": 466,
+          "rootY": 1048,
+          "candidateNative": 48,
+          "candidateCss": 44,
+          "exclusiveNative": 48,
+          "exclusiveCss": 44,
+          "plantScale": 0.3,
+          "revealPanScreenPx": {
+            "x": 146.25,
+            "y": 316.5
+          }
+        }
+      ]
+    }
+  }
+}
