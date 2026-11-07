@@ -11,7 +11,7 @@
 | **Branch** | `cursor/t1238u-spot-stash-b983` |
 | **Draft PR** | [#90](https://github.com/Burnsted/stomp-preview/pull/90) |
 | **Green commit SHA (pre-t1243u tip)** | `d6b64990dcbb6d51e973e9696dc8ac52baf9183b` — [CI 42306128366](https://github.com/Burnsted/stomp-preview/actions/runs/42306128366) |
-| **t1243u tip** | _(filled after push / green CI)_ |
+| **t1243u tip (live green)** | `31aba7bc55857986ccda7095d24dc5f8d2d858a6` — [CI 42323686088](https://github.com/Burnsted/stomp-preview/actions/runs/42323686088) |
 | **Starting lineage** | `fdb7c04` (#82 tip) → t1238u Spot/Stash → this refine |
 
 ## Preview location
@@ -116,7 +116,7 @@ Via **existing** Hey Sesh snowboarder FAB (`holdListen`) + Trails “Sesh voice 
 | `gb-phone typecheck + woz tests + build` | ≥1155 woz (prior 1145 + 10 t1243u) |
 
 **Prior green on branch tip `d6b6499`:** [run 42306128366](https://github.com/Burnsted/stomp-preview/actions/runs/42306128366)  
-**t1243u CI run id:** _(filled when green)_
+**t1243u CI run id (tip `31aba7b`):** [42323686088](https://github.com/Burnsted/stomp-preview/actions/runs/42323686088) — batch1 **625** passed / 8 skipped; gb-phone woz **1155** passed + build
 
 ## Screenshots (completed screens)
 
