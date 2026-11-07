@@ -4,7 +4,7 @@
 */
 'use strict';
 
-const ASSET_VER = 'play-fix-ted-slow';
+const ASSET_VER = 'play-fix-ted-interact';
 
 /** Franz HAVENS-GARDEN-RUNNER-V1 finals under assets/runner/.
  *  Placeholders/ remain as load fallback only. Phone reference plates are NOT listed. */
@@ -366,33 +366,29 @@ const Assets = {
     return this.get('plateMeadow') || this.get(({ day: 'meadowDay', sunset: 'meadowSunset', night: 'meadowNight', sunrise: 'meadowSunrise' }[time] || 'meadowDay'));
   },
 
-  /** Prefer Franz walk-01..04 cycle; fall back to run/skip if missing. */
+  /** Walk/run use production run↔skip only — never legacy walk-01..04. */
   walkFrame(i) {
-    const frames = ['havenWalk01', 'havenWalk02', 'havenWalk03', 'havenWalk04'];
-    const w = this.get(frames[((i % 4) + 4) % 4]);
-    if (w) return w;
     const alt = [this.get('havenRun'), this.get('havenSkip'), this.get('havenRun'), this.get('havenSkip')];
-    return alt[((i % 4) + 4) % 4] || this.get('havenRun');
+    return alt[((i % 4) + 4) % 4] || this.get('havenRun') || this.get('havenSkip');
   },
 
   pose(name) {
+    // ONE production look (1024 cartoon set). Legacy walk/front/water sheets
+    // mismatch hair/outfit/proportions — do not use them for on-screen Haven.
     const map = {
-      // Field locomotion stays on cartoon skip/run. Nursery standing idle uses
-      // the calm three-quarter / front sheets (most neutral standing frames we have).
-      idle: 'havenSkip', stand: 'havenThreeQuarter', run: 'havenRun', jump: 'havenJump',
+      idle: 'havenSkip', stand: 'havenSkip', run: 'havenRun', jump: 'havenJump',
       pick: 'havenPick', chase: 'havenChase', skip: 'havenSkip', plant: 'havenPlant',
-      water: 'havenPlant', front: 'havenFront', walk: 'havenRun'
+      water: 'havenPlant', front: 'havenSkip', walk: 'havenRun'
     };
     const k = map[name] || 'havenSkip';
     if (name === 'stand' || name === 'idleStand') {
-      // Prefer front (feet together, arms down) over three-quarter (reads mid-step)
-      return this.get('havenFront') || this.get('havenThreeQuarter')
-        || this.get('havenWalk01') || this.get('havenSkip') || this.get('havenRun');
+      // Prefer skip (planted feet) over run; never legacy front/walk
+      return this.get('havenSkip') || this.get('havenRun') || this.get('havenPlant');
     }
-    return this.get(k) || this.get('havenRun');
+    return this.get(k) || this.get('havenSkip') || this.get('havenRun');
   },
 
-  /** Calm standing sprite for nursery entry (not skip/hop). */
+  /** Calm standing sprite for nursery — production skip sheet only. */
   standPose() {
     return this.pose('stand');
   },

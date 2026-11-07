@@ -6,7 +6,7 @@
    bugs+net, bees→hive→jars, color rows, CBN, shop.
    ============================================================ */
 
-const VER = 'v0.9-play-fix-ted-slow';
+const VER = 'v0.9-play-fix-ted-interact';
 const PK = 'havensGarden.birthday.v2';
 const PK_LEGACY = 'havensGarden.v1';
 /** Prior preview / prototype keys that may still hold progress. */
@@ -508,7 +508,7 @@ let toastCurrent = '';
 let toastT = 0;
 const TOAST_SEC = 1.65;
 let party = { t: 0, kind: '' };
-/** Hive-scene foraging bees (bee → flower → hive loop). */
+/** Hive-scene bees — player guides each trip (no auto forage). */
 let hiveBees = [];
 /** Hive mini-game: nectar pool, pour progress, shelf jars, celebrate. */
 let hiveNectar = 0;
@@ -517,8 +517,18 @@ let hiveJarFill = 0;
 let hiveShelf = []; // filled jars on shelf (0..HIVE_SHELF_MAX)
 let hiveCelebrateT = 0;
 let hivePourPtr = null;
+/** Player drag: bee index, or filled jar waiting for shelf. */
+let hiveDragBee = null;
+let hiveJarReady = 0; // 1 = jar filled, waiting for drag to shelf
+let hiveJarDrag = null; // { x, y } while dragging filled jar
 const HIVE_SHELF_MAX = 4;
 const HIVE_JAR_NEED = 1; // nectar units to fill one jar
+/** Bug-net chase — fill meter (caught bugs visible in mesh). */
+const NET_GOAL = 8;
+let netCaught = []; // [{ kind }]
+let bugNetDoneT = 0;
+/** Water FX — falling drops + bed splash (replaces plant/water confetti). */
+let waterDrops = [];
 let doorOpen = 0; // 0 closed / 1 open — dissolve via plate crossfade (panes differ)
 let ghEnterT = -1; // enter dissolve timer; -1 = idle
 let ghExitT = -1;
@@ -1064,24 +1074,80 @@ function burstConfetti(n, cx0, cy0, opts) {
   }
 }
 
-/** Short plant pop — stays near the bed, never drifts to the doors. */
-function burstPlantConfetti(x, y) {
-  burstConfetti(quiet ? 3 : 7, x, y - 12, {
-    local: 1,
-    spread: 1.1,
-    spMin: 28,
-    spRange: 55,
-    life: 0.35,
-    lifeJitter: 0.2,
-    rad: 18,
-    rMin: 2,
-    rRange: 2.5
+/** Soft water-drop burst at a bed (plant/water finish — never confetti). */
+function burstWaterDrops(x, y, n) {
+  n = quiet ? Math.min(n || 10, 6) : (n || 14);
+  for (let i = 0; i < n && waterDrops.length < 80; i++) {
+    const a = -Math.PI / 2 + (Math.random() - 0.5) * 1.4;
+    const sp = 40 + Math.random() * 90;
+    waterDrops.push({
+      x: x + (Math.random() - 0.5) * 18,
+      y: y - 6,
+      vx: Math.cos(a) * sp * 0.55,
+      vy: Math.sin(a) * sp - 20,
+      t: 0,
+      life: 0.45 + Math.random() * 0.35,
+      r: 2.2 + Math.random() * 2.8,
+      sparkle: Math.random() < 0.35 ? 1 : 0
+    });
+  }
+}
+/** Drops falling from the watering-can spout while held. */
+function emitCanWaterDrops(wx, wy, dt) {
+  if (Math.random() > Math.min(1, dt * 28)) return;
+  const spoutX = wx + X(10);
+  const spoutY = wy + Y(8);
+  waterDrops.push({
+    x: spoutX + (Math.random() - 0.5) * 6,
+    y: spoutY,
+    vx: (Math.random() - 0.5) * 18,
+    vy: 70 + Math.random() * 50,
+    t: 0,
+    life: 0.55 + Math.random() * 0.25,
+    r: 2 + Math.random() * 2.2,
+    sparkle: 0,
+    fromCan: 1
   });
+}
+function updateWaterDrops(dt) {
+  waterDrops.forEach((d) => {
+    d.t += dt;
+    d.x += d.vx * dt;
+    d.y += d.vy * dt;
+    d.vy += 220 * dt;
+  });
+  waterDrops = waterDrops.filter((d) => d.t < d.life);
+}
+function drawWaterDrops() {
+  waterDrops.forEach((d) => {
+    const u = 1 - d.t / d.life;
+    cx.globalAlpha = Math.max(0, u);
+    if (d.sparkle) {
+      cx.fillStyle = '#fff8d0';
+      cx.beginPath();
+      cx.arc(d.x, d.y, d.r * 0.7, 0, 7);
+      cx.fill();
+    }
+    cx.fillStyle = '#6ec8ff';
+    cx.beginPath();
+    cx.ellipse(d.x, d.y, d.r * 0.65, d.r, 0, 0, 7);
+    cx.fill();
+  });
+  cx.globalAlpha = 1;
+}
+/** @deprecated — plant/water use water drops now; kept as no-op alias. */
+function burstPlantConfetti(x, y) {
+  burstWaterDrops(x, y, quiet ? 6 : 12);
 }
 function startParty(kind) {
   const dur = { full: 1.8, door: 1.4, plant: 1.5, water: 1.2, grow: 1.6, upgrade: 2.8, bigger: 1.8 }[kind] || 1.4;
   party = { t: dur, kind };
-  burstConfetti(quiet ? 8 : (kind === 'upgrade' ? 36 : kind === 'bigger' ? 22 : 16), W / 2, H * 0.4);
+  // Plant/water: water-drop bursts only — no confetti ribbons
+  if (kind === 'plant' || kind === 'water') {
+    burstWaterDrops(W / 2, H * 0.55, quiet ? 8 : 16);
+  } else {
+    burstConfetti(quiet ? 8 : (kind === 'upgrade' ? 36 : kind === 'bigger' ? 22 : 16), W / 2, H * 0.4);
+  }
   const map = { full: 'bouquetFull', door: 'door', plant: 'plant', water: 'water', grow: 'grow', upgrade: 'upgrade', bigger: 'grow' };
   (AudioFX[map[kind]] || AudioFX.ui)();
   announce(kind);
@@ -1537,23 +1603,25 @@ function finishRunnerToNursery() {
   snapshotRuntime('runner');
 }
 
-/** Butterfly / ladybug chase — separate Places activity (net + bugs, no flower picking). */
+/** Bug chase — butterflies + ladybugs + hoppers; net fill → release to nursery. */
 function startButterflyChase() {
   flowers = []; particles = []; arcs = []; confetti = []; pollinators = []; flowerPops = [];
   meadowCritters = []; fieldBugs = []; hiveBees = [];
+  netCaught = [];
+  bugNetDoneT = 0;
   pendingPick = null;
   wateringHeld = 0; waterPtr = null; placesOpen = 0;
   dayNight = 0; dayNightT = 0; growAnim = 0; growT = 0;
   clearToasts();
-  setCue('Catch!');
-  showToast('Catch butterflies!');
+  setCue('Catch bugs!');
+  showToast('Catch bugs!');
   groundHavenInField();
   seedGrassTufts();
   spawnChaseBugs(12);
   state = ST.BUTTERFLY;
   nurseryMode = 'look';
   pushNav('butterflies');
-  announce('Butterfly chase');
+  announce('Bug catch');
   AudioFX.ui();
   snapshotRuntime();
 }
@@ -1819,9 +1887,8 @@ function finishPlant() {
       SAVE.pots.push({ mix: [flowerId], spot, outdoor: 0 });
     }
     const p = spotXY(spot, outdoor);
-    addPetals(p.x, p.y - 4, '#f078be', quiet ? 2 : 7);
-    // Short local pop at the planted pot — not a door-drift burst
-    burstPlantConfetti(p.x, p.y);
+    // Soft water/soil sparkle drops — never confetti ribbons
+    burstWaterDrops(p.x, p.y, quiet ? 6 : 12);
     AudioFX.plant();
   }
   plantAnim = 0;
@@ -1853,13 +1920,15 @@ function doWaterAt(spotIdx, outdoor) {
   const b = outdoor ? outdoorAt(spotIdx) : bedAt(spotIdx);
   if (nurseryMode !== 'water' || !b || b.watered) return;
   b.watered = 1;
+  b.soilWet = 1;
   b.squash = 0.78;
   const p = spotXY(spotIdx, outdoor);
-  addSpark(p.x, p.y - 4);
-  addPetals(p.x, p.y, '#96cdf0', quiet ? 3 : 8);
+  // Bed-done: splash + sparkle water drops (no confetti)
+  burstWaterDrops(p.x, p.y - 4, quiet ? 10 : 18);
   girlPose = 'water';
   girlPoseT = 0.7;
-  startParty('water');
+  party = { t: 0.9, kind: 'water' };
+  AudioFX.water();
   cue = 'Water!';
   snapshotRuntime('water');
   if (allUnwateredDone()) {
@@ -2151,21 +2220,23 @@ function choosePlace(id) {
 }
 
 /* ---------- Bugs / net / hive / shop / CBN ---------- */
-/** Chase activity only — butterflies + ladybugs (+ hoppers). Bees live at the hive. */
-const CHASE_BUG_KINDS = ['butterfly', 'ladybug', 'grasshopper', 'butterfly'];
+/** Chase activity — butterflies, ladybugs, grasshoppers. Bees live at the hive. */
+const CHASE_BUG_KINDS = ['butterfly', 'ladybug', 'grasshopper'];
 
 function spawnChaseBugs(n) {
   for (let i = 0; i < n; i++) {
-    const kind = CHASE_BUG_KINDS[i % CHASE_BUG_KINDS.length];
+    const kind = CHASE_BUG_KINDS[(fieldBugs.length + i) % CHASE_BUG_KINDS.length];
     const c = clampField(
       girl.x + (Math.random() - 0.5) * 900,
       girl.y + (Math.random() - 0.5) * 600
     );
     fieldBugs.push({
       kind, x: c.x, y: c.y,
-      vx: (Math.random() - 0.5) * 80,
-      vy: (Math.random() - 0.5) * 60,
+      vx: (Math.random() - 0.5) * (kind === 'ladybug' ? 36 : 80),
+      vy: (Math.random() - 0.5) * (kind === 'ladybug' ? 24 : 60),
       phase: Math.random() * 6,
+      hopT: Math.random() * 1.2,
+      groundY: c.y,
       caught: 0
     });
   }
@@ -2175,48 +2246,107 @@ function spawnFieldBugs(n) { spawnChaseBugs(n); }
 
 function updateFieldBugs(dt) {
   if (state !== ST.BUTTERFLY) return;
-  if (fieldBugs.length < 8 && Math.random() < dt * 0.35) spawnChaseBugs(1);
+  if (bugNetDoneT > 0) {
+    bugNetDoneT -= dt;
+    if (bugNetDoneT <= 0) {
+      bugNetDoneT = 0;
+      finishBugNetRelease();
+    }
+    return;
+  }
+  // Keep a mix of all three kinds on the field
+  if (fieldBugs.length < 9 && Math.random() < dt * 0.4) spawnChaseBugs(1);
   fieldBugs.forEach((b) => {
     if (b.caught) return;
-    b.phase += dt * 2.5;
-    b.x += b.vx * dt;
-    b.y += b.vy * dt + Math.sin(b.phase) * 12 * dt;
-    if (Math.random() < dt * 0.5) {
-      b.vx += (Math.random() - 0.5) * 40;
-      b.vy += (Math.random() - 0.5) * 30;
+    b.phase += dt * (b.kind === 'butterfly' ? 3.2 : 2.2);
+    if (b.kind === 'grasshopper') {
+      // Arc hops along the grass
+      b.hopT -= dt;
+      if (b.hopT <= 0) {
+        b.hopT = 0.55 + Math.random() * 0.7;
+        b.vx = (Math.random() - 0.5) * 140;
+        b.vy = -160 - Math.random() * 90;
+      }
+      b.vy += 420 * dt;
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+      if (b.y > b.groundY) {
+        b.y = b.groundY;
+        b.vy = 0;
+        b.vx *= 0.4;
+      }
+      b.groundY += (Math.random() - 0.5) * 8 * dt;
+    } else if (b.kind === 'ladybug') {
+      // Crawl on ground + occasional short fly hops
+      b.hopT -= dt;
+      if (b.hopT <= 0 && Math.random() < 0.35) {
+        b.hopT = 0.9 + Math.random();
+        b.vy = -70 - Math.random() * 40;
+        b.vx += (Math.random() - 0.5) * 50;
+      }
+      b.vy += 280 * dt;
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+      if (b.y > b.groundY) {
+        b.y = b.groundY;
+        b.vy = 0;
+        b.vx += (Math.random() - 0.5) * 18;
+        b.vx *= 0.92;
+      }
+      if (Math.random() < dt * 0.6) b.vx += (Math.random() - 0.5) * 28;
+    } else {
+      // Butterfly — soft float
+      b.x += b.vx * dt;
+      b.y += b.vy * dt + Math.sin(b.phase) * 18 * dt;
+      if (Math.random() < dt * 0.55) {
+        b.vx += (Math.random() - 0.5) * 50;
+        b.vy += (Math.random() - 0.5) * 36;
+      }
+      b.vx *= 0.995; b.vy *= 0.995;
     }
     const c = clampField(b.x, b.y); b.x = c.x; b.y = c.y;
+    if (b.kind !== 'butterfly') b.groundY = Math.min(b.groundY, c.y + 4);
   });
   fieldBugs = fieldBugs.filter((b) => !b.caught);
+}
+
+function bugArtKey(kind) {
+  if (kind === 'ladybug') return 'bugLadybug';
+  if (kind === 'grasshopper') return 'bugGrasshopper';
+  if (kind === 'bee') return 'bugBee';
+  return 'bugButterfly';
 }
 
 function drawFieldBugs() {
   fieldBugs.forEach((b) => {
     const s = worldToScreen(b.x, b.y);
     if (s.x < -40 || s.x > W + 40 || s.y < -40 || s.y > H + 40) return;
-    const bob = Math.sin(b.phase) * 4;
-    const key = b.kind === 'ladybug' ? 'bugLadybug'
-      : b.kind === 'grasshopper' ? 'bugGrasshopper'
-        : b.kind === 'bee' ? 'bugBee' : 'bugButterfly';
-    const img = Assets.get(key);
-    const box = b.kind === 'ladybug' ? X(22) : (b.kind === 'grasshopper' ? X(40) : X(32));
+    const bob = b.kind === 'butterfly' ? Math.sin(b.phase) * 5 : 0;
+    const img = Assets.get(bugArtKey(b.kind));
+    const box = b.kind === 'ladybug' ? X(24) : (b.kind === 'grasshopper' ? X(42) : X(34));
     if (img) {
       cx.drawImage(img, s.x - box / 2, s.y + bob - box / 2, box, box);
       return;
     }
-    cx.fillStyle = b.kind === 'bee' ? '#ffd23c' : (b.kind === 'ladybug' ? '#e23a3a' : (b.kind === 'grasshopper' ? '#6ecf4a' : '#f078be'));
+    cx.fillStyle = b.kind === 'ladybug' ? '#e23a3a' : (b.kind === 'grasshopper' ? '#6ecf4a' : '#f078be');
     cx.beginPath(); cx.ellipse(s.x, s.y + bob, 10, 8, 0, 0, 7); cx.fill();
   });
 }
 
-function drawBugNet(sx, sy) {
+function netTipScreen(sx, sy) {
   const face = girl.face || 1;
+  return { x: sx + face * X(58), y: sy - H * 0.22, face };
+}
+
+function drawBugNet(sx, sy) {
+  const tip = netTipScreen(sx, sy);
+  const tipX = tip.x, tipY = tip.y, face = tip.face;
   const net = Assets.get('bugNet');
-  const tipX = sx + face * X(58);
-  const tipY = sy - H * 0.22;
+  let meshR = X(22);
   if (net) {
     const nh = H * 0.16;
     const nw = nh * (net.width / net.height);
+    meshR = Math.max(X(18), nw * 0.28);
     cx.save();
     if (face < 0) {
       cx.translate(tipX, tipY);
@@ -2234,6 +2364,20 @@ function drawBugNet(sx, sy) {
     cx.lineWidth = 3;
     cx.beginPath(); cx.ellipse(tipX + face * 8, tipY, X(22), Y(16), 0, 0, 7); cx.stroke();
   }
+  // Caught bugs visibly sit inside the mesh
+  const show = netCaught.slice(-5);
+  show.forEach((c, i) => {
+    const ang = -0.6 + i * 0.35;
+    const bx = tipX + face * 6 + Math.cos(ang) * meshR * 0.45;
+    const by = tipY + 4 + Math.sin(ang) * meshR * 0.35 + (i % 2) * 3;
+    const img = Assets.get(bugArtKey(c.kind));
+    const sz = X(14 + (c.kind === 'grasshopper' ? 4 : 0));
+    if (img) cx.drawImage(img, bx - sz / 2, by - sz / 2, sz, sz);
+    else {
+      cx.fillStyle = c.kind === 'ladybug' ? '#e23a3a' : (c.kind === 'grasshopper' ? '#6ecf4a' : '#f078be');
+      cx.beginPath(); cx.arc(bx, by, 5, 0, 7); cx.fill();
+    }
+  });
   if (netSwing > 0) {
     cx.strokeStyle = 'rgba(255,230,120,0.7)';
     cx.lineWidth = 3;
@@ -2243,10 +2387,65 @@ function drawBugNet(sx, sy) {
   }
 }
 
+function drawBugNetMeter() {
+  const n = netCaught.length;
+  const chipW = Math.min(W - 32, 40 + NET_GOAL * 22);
+  const x0 = (W - chipW) / 2;
+  const y0 = padT + 56;
+  drawUiChrome(x0, y0, chipW, 40, 14, { fill: '#f4ebe0', alpha: 0.38 });
+  drawUiText(n + '/' + NET_GOAL, x0 + 28, y0 + 26, {
+    font: '800 14px Fredoka, system-ui, sans-serif', align: 'left', halo: 3
+  });
+  for (let i = 0; i < NET_GOAL; i++) {
+    const cx0 = x0 + 58 + i * 20;
+    const cy0 = y0 + 20;
+    if (i < n) {
+      const kind = netCaught[i].kind;
+      const img = Assets.get(bugArtKey(kind));
+      if (img) cx.drawImage(img, cx0 - 9, cy0 - 9, 18, 18);
+      else {
+        cx.fillStyle = kind === 'ladybug' ? '#e23a3a' : (kind === 'grasshopper' ? '#6ecf4a' : '#f078be');
+        cx.beginPath(); cx.arc(cx0, cy0, 7, 0, 7); cx.fill();
+      }
+    } else {
+      cx.strokeStyle = 'rgba(30,24,20,0.28)';
+      cx.lineWidth = 1.5;
+      cx.beginPath(); cx.arc(cx0, cy0, 7, 0, 7); cx.stroke();
+    }
+  }
+  if (bugNetDoneT > 0) {
+    drawUiChrome(W / 2 - 120, H * 0.38, 240, 88, 20, { fill: '#fff6e8', alpha: 0.44 });
+    drawUiText('Net full!', W / 2, H * 0.44, {
+      font: '800 24px Fredoka, system-ui, sans-serif', color: '#2a6a38', halo: 4
+    });
+    drawUiText('Bugs to the nursery', W / 2, H * 0.52, {
+      font: '700 13px Fredoka, system-ui, sans-serif', color: '#3a342c', halo: 3
+    });
+  }
+}
+
+function finishBugNetRelease() {
+  // Release caught bugs into greenhouse atrium as calm butterflies (+ count extras)
+  let released = EX().butterfliesReleased | 0;
+  released = Math.min(6, released + Math.min(4, netCaught.length));
+  EX().butterfliesReleased = released;
+  const kinds = netCaught.map((c) => c.kind);
+  kinds.forEach((k) => {
+    if (!EX().bugs) EX().bugs = {};
+    EX().bugs[k] = (EX().bugs[k] | 0);
+  });
+  addFlowerPoints(Math.min(8, netCaught.length));
+  netCaught = [];
+  showToast('Bugs home!');
+  enterGreenhouse('look');
+  syncReleasedGreenhouseButterflies();
+  snapshotRuntime('bug-net-done');
+}
+
 function tryCatchBugAt(wx, wy) {
-  // Catchable bugs only during the butterfly activity — never in the flower field
-  if (state !== ST.BUTTERFLY) return false;
-  let best = null, bd = 70;
+  if (state !== ST.BUTTERFLY || bugNetDoneT > 0) return false;
+  if (netCaught.length >= NET_GOAL) return false;
+  let best = null, bd = 78;
   fieldBugs.forEach((b) => {
     if (b.caught || b.kind === 'bee') return;
     const d = Math.hypot(b.x - wx, b.y - wy);
@@ -2256,13 +2455,20 @@ function tryCatchBugAt(wx, wy) {
   best.caught = 1;
   netSwing = 1;
   girlPose = 'chase'; girlPoseT = 0.4;
+  netCaught.push({ kind: best.kind });
   if (!EX().bugs) EX().bugs = {};
   EX().bugs[best.kind] = (EX().bugs[best.kind] | 0) + 1;
   const msg = best.kind === 'ladybug' ? 'Ladybug!' : (best.kind === 'grasshopper' ? 'Hopper!' : 'Butterfly!');
-  setCue('Catch!');
+  setCue(netCaught.length + '/' + NET_GOAL);
   showToast(msg);
   addFlowerPoints(1);
   AudioFX.pick(3);
+  if (netCaught.length >= NET_GOAL) {
+    bugNetDoneT = 2.2;
+    setCue('');
+    showToast('Net full!');
+    AudioFX.ui();
+  }
   snapshotRuntime();
   return true;
 }
@@ -2296,17 +2502,13 @@ function hiveShelfPos() {
 function spawnHiveBees(n) {
   hiveBees = [];
   const home = hiveHomePos();
-  const flowers = hiveFlowerSpots();
   for (let i = 0; i < n; i++) {
-    const f = flowers[i % flowers.length];
     hiveBees.push({
-      x: home.x + (Math.random() - 0.5) * 30,
-      y: home.y + (Math.random() - 0.5) * 20,
+      x: home.x + (Math.random() - 0.5) * 50 + (i % 3) * 12,
+      y: home.y + (Math.random() - 0.5) * 36 + ((i / 3) | 0) * 10,
       phase: Math.random() * 6,
-      mode: 'toFlower', // toFlower | atFlower | toHive | atHive
-      target: { x: f.x, y: f.y },
-      flower: i % flowers.length,
-      wait: 0.2 + Math.random() * 0.4,
+      mode: 'idle', // idle | held | pollen — player-driven only
+      pollen: 0,
       caught: 0
     });
   }
@@ -2329,11 +2531,14 @@ function enterHive() {
   hivePouring = 0;
   hivePourPtr = null;
   hiveCelebrateT = 0;
+  hiveDragBee = null;
+  hiveJarReady = 0;
+  hiveJarDrag = null;
   hiveShelf = [];
   for (let i = 0; i < (EX().jarsFull | 0) && i < HIVE_SHELF_MAX; i++) hiveShelf.push(1);
   if ((EX().jarsEmpty | 0) < 1) EX().jarsEmpty = HIVE_SHELF_MAX;
-  if (hiveBees.length < 5) spawnHiveBees(6);
-  setCue('Bees bring honey — pour!');
+  spawnHiveBees(5);
+  setCue('Guide a bee to a flower');
   showToast('Beehive!');
   announce('Hive');
   AudioFX.ui();
@@ -2439,8 +2644,11 @@ function hivePourJar() {
   finishHiveJar();
 }
 
-function finishHiveJar() {
+function placeJarOnShelf() {
+  if (hiveShelf.length >= HIVE_SHELF_MAX) return false;
   hiveJarFill = 0;
+  hiveJarReady = 0;
+  hiveJarDrag = null;
   hivePouring = 0;
   hiveShelf.push(1);
   EX().jarsFull = hiveShelf.length;
@@ -2452,14 +2660,27 @@ function finishHiveJar() {
   setCue(hiveShelf.length + '/' + HIVE_SHELF_MAX + ' jars');
   if (hiveShelf.length >= HIVE_SHELF_MAX) {
     hiveCelebrateT = 2.4;
-    startParty('full');
+    // Single clean finish — no confetti party overlay
+    party = { t: 0, kind: '' };
     addFlowerPoints(8);
     cue = '';
     toastCurrent = '';
     toastQueue = [];
-    showToast('★★★');
+    showToast('Honey done!');
+  } else {
+    setCue('Guide a bee to a flower');
   }
   snapshotRuntime();
+  return true;
+}
+
+/** @deprecated — jars now require a shelf drag after pour. */
+function finishHiveJar() {
+  hiveJarReady = 1;
+  hivePouring = 0;
+  setCue('Drag jar to shelf');
+  showToast('Jar full!');
+  AudioFX.ui();
 }
 
 function updateHive(dt) {
@@ -2471,56 +2692,70 @@ function updateHive(dt) {
       AudioFX.ui();
       snapshotRuntime('hive-done');
     }
+    return;
   }
 
-  const home = hiveHomePos();
-  const flowers = hiveFlowerSpots();
-  hiveBees.forEach((b) => {
+  // Idle bob only — never auto-forage / auto-fill nectar
+  hiveBees.forEach((b, i) => {
     b.phase += dt * 3;
-    if (b.mode === 'toFlower' || b.mode === 'toHive') {
-      const tx = b.target.x, ty = b.target.y;
-      const dx = tx - b.x, dy = ty - b.y;
-      const d = Math.hypot(dx, dy) || 1;
-      const spd = 90;
-      b.x += (dx / d) * spd * dt;
-      b.y += (dy / d) * spd * dt;
-      if (d < 10) {
-        if (b.mode === 'toFlower') { b.mode = 'atFlower'; b.wait = 0.55 + Math.random() * 0.35; }
-        else { b.mode = 'atHive'; b.wait = 0.35; }
-      }
-    } else if (b.mode === 'atFlower') {
-      b.wait -= dt;
-      b.x += Math.sin(b.phase) * 10 * dt;
-      b.y += Math.cos(b.phase * 1.2) * 6 * dt;
-      if (b.wait <= 0) {
-        b.mode = 'toHive';
-        b.target = { x: home.x, y: home.y };
-      }
-    } else if (b.mode === 'atHive') {
-      b.wait -= dt;
-      if (b.wait <= 0) {
-        // Drop nectar into the pool
-        hiveNectar = Math.min(12, hiveNectar + 0.35);
-        EX().honey = Math.floor(hiveNectar);
-        EX().bees = (EX().bees | 0) + 1;
-        b.flower = (b.flower + 1) % flowers.length;
-        const f = flowers[b.flower];
-        b.mode = 'toFlower';
-        b.target = { x: f.x + (Math.random() - 0.5) * 18, y: f.y + (Math.random() - 0.5) * 12 };
-      }
+    if (hiveDragBee === i) return;
+    if (b.mode === 'idle' || b.mode === 'pollen') {
+      b.x += Math.sin(b.phase + i) * 8 * dt;
+      b.y += Math.cos(b.phase * 1.1 + i) * 5 * dt;
     }
   });
 
-  // Pour while finger held on jar zone
-  if (hivePouring && hiveCelebrateT <= 0 && hiveShelf.length < HIVE_SHELF_MAX) {
+  // Pour while finger held on jar zone (player-driven)
+  if (hivePouring && !hiveJarReady && hiveShelf.length < HIVE_SHELF_MAX) {
     if (hiveNectar > 0.05) {
-      const rate = 0.55; // jar fills in ~1.8s
+      const rate = 0.55;
       const take = Math.min(hiveNectar, rate * dt);
       hiveNectar -= take;
       hiveJarFill = Math.min(1, hiveJarFill + take / HIVE_JAR_NEED);
       EX().honey = Math.floor(hiveNectar);
       if (hiveJarFill >= 1) finishHiveJar();
+    } else {
+      setCue('Need more honey — guide bees');
     }
+  }
+}
+
+function hiveDropBeeAt(x, y) {
+  if (hiveDragBee == null) return;
+  const b = hiveBees[hiveDragBee];
+  hiveDragBee = null;
+  if (!b) return;
+  b.mode = b.pollen ? 'pollen' : 'idle';
+  const flowers = hiveFlowerSpots();
+  const home = hiveHomePos();
+  // Drop on flower → collect pollen
+  for (let i = 0; i < flowers.length; i++) {
+    const f = flowers[i];
+    if (Math.hypot(x - f.x, y - f.y) < 48) {
+      b.pollen = 1;
+      b.mode = 'pollen';
+      b.x = f.x; b.y = f.y - 8;
+      setCue('Drag bee back to hive');
+      showToast('Pollen!');
+      AudioFX.pick(2);
+      snapshotRuntime();
+      return;
+    }
+  }
+  // Drop on hive with pollen → deposit honey
+  if (b.pollen && Math.hypot(x - home.x, y - home.y) < 56) {
+    b.pollen = 0;
+    b.mode = 'idle';
+    b.x = home.x + (Math.random() - 0.5) * 24;
+    b.y = home.y + (Math.random() - 0.5) * 16;
+    hiveNectar = Math.min(12, hiveNectar + 1);
+    EX().honey = Math.floor(hiveNectar);
+    EX().bees = (EX().bees | 0) + 1;
+    setCue(hiveNectar >= HIVE_JAR_NEED ? 'Hold jar to pour' : 'Guide a bee to a flower');
+    showToast('Honey!');
+    AudioFX.plant();
+    snapshotRuntime();
+    return;
   }
 }
 
@@ -2547,66 +2782,91 @@ function drawHiveScene() {
   // Bees return to the illustrated plate hive — do NOT draw a placeholder hive overlay
   const home = hiveHomePos();
 
-  // Flying bees (forage ground flowers ↔ real hive)
+  // Bees — player guides; pollen dots when loaded
   const now = performance.now();
   const flap = ((now / POLLINATOR_FLAP_MS) | 0) % 2;
   const box = X(40);
-  hiveBees.forEach((b) => {
-    const bob = Math.sin(b.phase) * 4;
+  hit.hiveBees = [];
+  hiveBees.forEach((b, i) => {
+    const bob = hiveDragBee === i ? 0 : Math.sin(b.phase) * 4;
     const img = Assets.get(flap ? 'bee02' : 'bee01') || Assets.get('bugBee');
     if (img) cx.drawImage(img, b.x - box / 2, b.y + bob - box / 2, box, box);
     else {
       cx.fillStyle = '#ffd23c';
       cx.beginPath(); cx.ellipse(b.x, b.y + bob, 12, 9, 0, 0, 7); cx.fill();
     }
+    if (b.pollen) {
+      cx.fillStyle = '#ffd24a';
+      cx.beginPath(); cx.arc(b.x + 10, b.y + bob - 8, 5, 0, 7); cx.fill();
+      cx.strokeStyle = '#c48820';
+      cx.lineWidth = 1;
+      cx.stroke();
+    }
+    hit.hiveBees.push({ i, x: b.x - box / 2, y: b.y + bob - box / 2, w: box, h: box });
   });
 
-  // Small counter chip (no big text panel buttons)
+  // Honey meter + jars
   const chipW = Math.min(W - 40, 280);
   drawUiChrome((W - chipW) / 2, padT + 56, chipW, 36, 14, { fill: '#f4ebe0', alpha: 0.34 });
   drawUiText(
-    '✿ ' + Math.floor(hiveNectar) + '  ·  jars ' + hiveShelf.length + '/' + HIVE_SHELF_MAX,
+    'Honey ' + Math.floor(hiveNectar) + '  ·  jars ' + hiveShelf.length + '/' + HIVE_SHELF_MAX,
     W / 2, padT + 80,
     { font: '800 15px Fredoka, system-ui, sans-serif', color: '#3a342c', halo: 3 }
   );
+  // Honey fill bar
+  const barX = (W - chipW) / 2 + 16, barY = padT + 98, barW = chipW - 32, barH = 10;
+  cx.fillStyle = 'rgba(30,24,20,0.15)';
+  rr(barX, barY, barW, barH, 5); cx.fill();
+  cx.fillStyle = '#f0b428';
+  rr(barX, barY, barW * Math.min(1, hiveNectar / Math.max(1, HIVE_JAR_NEED * HIVE_SHELF_MAX)), barH, 5); cx.fill();
 
-  // Pour jar — tap/hold to fill
+  // Pour jar — hold to fill, then drag to shelf
   const zone = hivePourZone();
-  hit.hivePour = zone;
+  hit.hivePour = (!hiveJarReady && hiveShelf.length < HIVE_SHELF_MAX) ? zone : null;
   hit.hiveHarvest = null;
+  hit.hiveJar = null;
+  hit.hiveShelf = null;
   const jarImg = Assets.get('jarEmpty');
   const jarFullImg = Assets.get('jarFull');
   const jh = 110;
   const jw = jarImg && jarImg.width ? jh * (jarImg.width / jarImg.height) : 70;
-  const jx = zone.x + zone.w / 2;
-  const jy = zone.y + zone.h - 8;
-  // Highlight when pouring
+  const jx = hiveJarDrag ? hiveJarDrag.x : (zone.x + zone.w / 2);
+  const jy = hiveJarDrag ? hiveJarDrag.y : (zone.y + zone.h - 8);
   if (hivePouring) {
     drawUiChrome(zone.x, zone.y, zone.w, zone.h, 18, { fill: '#ffd24a', alpha: 0.22 });
   }
-  if (jarImg) {
-    cx.drawImage(jarImg, jx - jw / 2, jy - jh, jw, jh);
-  } else {
-    cx.fillStyle = 'rgba(255,250,240,0.7)';
-    cx.fillRect(jx - 28, jy - 100, 56, 90);
-  }
-  // Honey fill level inside jar
-  if (hiveJarFill > 0) {
-    const fillH = 70 * hiveJarFill;
-    cx.fillStyle = 'rgba(240,180,40,0.75)';
-    cx.fillRect(jx - 22, jy - 18 - fillH, 44, fillH);
-    if (jarFullImg && hiveJarFill > 0.85) {
-      cx.globalAlpha = Math.min(1, (hiveJarFill - 0.85) / 0.15);
-      cx.drawImage(jarFullImg, jx - jw / 2, jy - jh, jw, jh);
-      cx.globalAlpha = 1;
+  if (!hiveJarDrag) {
+    if (jarImg) cx.drawImage(jarImg, jx - jw / 2, jy - jh, jw, jh);
+    else {
+      cx.fillStyle = 'rgba(255,250,240,0.7)';
+      cx.fillRect(jx - 28, jy - 100, 56, 90);
+    }
+    if (hiveJarFill > 0) {
+      const fillH = 70 * hiveJarFill;
+      cx.fillStyle = 'rgba(240,180,40,0.75)';
+      cx.fillRect(jx - 22, jy - 18 - fillH, 44, fillH);
+      if (jarFullImg && hiveJarFill > 0.85) {
+        cx.globalAlpha = Math.min(1, (hiveJarFill - 0.85) / 0.15);
+        cx.drawImage(jarFullImg, jx - jw / 2, jy - jh, jw, jh);
+        cx.globalAlpha = 1;
+      }
     }
   }
-  drawUiText(hivePouring ? 'Pouring…' : 'Hold to pour', jx, zone.y + 18, {
-    font: '800 13px Fredoka, system-ui, sans-serif', color: '#3a342c', halo: 3
-  });
+  drawUiText(
+    hiveJarReady ? 'Drag jar to shelf' : (hivePouring ? 'Pouring…' : 'Hold to pour'),
+    zone.x + zone.w / 2, zone.y + 18,
+    { font: '800 13px Fredoka, system-ui, sans-serif', color: '#3a342c', halo: 3 }
+  );
+  if (hiveJarReady && !hiveJarDrag) {
+    hit.hiveJar = { x: jx - jw / 2, y: jy - jh, w: jw, h: jh };
+  }
 
-  // Shelf of finished jars
+  // Shelf drop target
   const shelf = hiveShelfPos();
+  hit.hiveShelf = {
+    x: shelf.x0 - 8, y: shelf.y - 56,
+    w: shelf.n * (shelf.jw + shelf.gap) + 16, h: 64
+  };
   for (let i = 0; i < shelf.n; i++) {
     const sx = shelf.x0 + i * (shelf.jw + shelf.gap) + shelf.jw / 2;
     const full = i < hiveShelf.length;
@@ -2622,9 +2882,17 @@ function drawHiveScene() {
       cx.fillRect(sx - 14, shelf.y - 40, 28, 36);
     }
   }
+  // Dragging filled jar
+  if (hiveJarDrag && jarFullImg) {
+    const sh = 70;
+    const sw = sh * (jarFullImg.width / jarFullImg.height);
+    cx.drawImage(jarFullImg, hiveJarDrag.x - sw / 2, hiveJarDrag.y - sh / 2, sw, sh);
+  } else if (hiveJarDrag) {
+    cx.fillStyle = '#f0b428';
+    cx.fillRect(hiveJarDrag.x - 18, hiveJarDrag.y - 28, 36, 48);
+  }
 
   if (hiveCelebrateT > 0) {
-    // Single celebration (center) — no second cue/pill
     cue = '';
     cx.fillStyle = 'rgba(255,240,180,' + (0.18 + 0.12 * Math.sin(performance.now() / 120)) + ')';
     cx.fillRect(0, 0, W, H);
@@ -3510,7 +3778,7 @@ function drawNavDock() {}
 function drawPlacesMenu() {
   const items = [
     { id: 'meadow', label: 'Flower run', fill: '#9fe870', icon: 'run' },
-    { id: 'butterflies', label: 'Butterflies', fill: '#f078be', icon: 'butter' },
+    { id: 'butterflies', label: 'Bugs', fill: '#f078be', icon: 'butter' },
     { id: 'greenhouse', label: 'Nursery', fill: '#7ec8ff', icon: 'nursery' },
     { id: 'hive', label: 'Beehive', fill: '#ffd24a', icon: 'hive' },
     { id: 'color', label: 'Color', fill: '#c8a0ff', icon: 'color' },
@@ -3844,8 +4112,26 @@ function drawBedHighlight(s, highlight) {
 }
 
 /** Per-species growth (seedling→leaves→bud→bloom) at rootAnchor; depth-sorted by caller. */
+function drawBedSoilWet(s, b) {
+  if (!b || !(b.watered || b.soilWet)) return;
+  // Darkened soil ring after watering
+  cx.save();
+  cx.globalAlpha = 0.42;
+  cx.fillStyle = '#3a2414';
+  cx.beginPath();
+  cx.ellipse(s.x, s.y - 2, Math.max(16, (s.hitW || 44) * 0.38), Math.max(10, (s.hitH || 44) * 0.22), 0, 0, 7);
+  cx.fill();
+  cx.globalAlpha = 0.22;
+  cx.fillStyle = '#1e120a';
+  cx.beginPath();
+  cx.ellipse(s.x, s.y, Math.max(12, (s.hitW || 44) * 0.28), Math.max(7, (s.hitH || 44) * 0.14), 0, 0, 7);
+  cx.fill();
+  cx.restore();
+}
+
 function drawBedFlowers(s, b) {
   if (!b) return;
+  drawBedSoilWet(s, b);
   const grown = b.grown | 0;
   const mix = bedMix(b);
   if (!mix.length) return;
@@ -4077,6 +4363,7 @@ function drawInterior() {
       cx.beginPath(); cx.arc(wx, wy, 22, 0, 7); cx.fill();
     }
     cx.restore();
+    drawWaterDrops();
     hit.waterCan = null;
     let need = SAVE.beds.findIndex((b) => b && !b.watered);
     let outdoor = 0;
@@ -4233,7 +4520,7 @@ function drawRunnerScene() {
   HGRunner.draw(cx, Assets);
 }
 
-/** Butterfly chase activity — net + catchable bugs, no flower picking. */
+/** Bug catch — net + butterflies / ladybugs / hoppers. */
 function drawButterflyScene() {
   drawLivingField(skyMode(), {});
   drawFieldBugs();
@@ -4252,6 +4539,7 @@ function drawButterflyScene() {
     cx.arc(gs.x + (girl.face || 1) * X(70), gs.y - H * 0.18, X(36) * netSwing, 0, 7);
     cx.fill();
   }
+  drawBugNetMeter();
   drawCue();
 }
 
@@ -4287,6 +4575,7 @@ function drawGreenhouse() {
   }
 
   if (!growAnim) drawCue();
+  drawWaterDrops();
   drawParty();
 }
 
@@ -4618,6 +4907,10 @@ function update(dt) {
   if (state === ST.HIVE) {
     updateHive(dt);
   }
+  if (state === ST.GREENHOUSE && nurseryMode === 'water' && wateringHeld && waterPtr) {
+    emitCanWaterDrops(waterPtr.x, waterPtr.y, dt);
+  }
+  updateWaterDrops(dt);
 
   arcs.forEach((a) => {
     // Land in the hip basket, not on her face/chest
@@ -4824,7 +5117,24 @@ function onDown(e) {
 
   if (state === ST.HIVE) {
     if (hiveCelebrateT > 0) { placesOpen = 1; return; }
-    if (inRect(p, hit.hivePour)) {
+    // Drag filled jar to shelf
+    if (hiveJarReady && hit.hiveJar && inRect(p, hit.hiveJar)) {
+      hiveJarDrag = { x: p.x, y: p.y };
+      dragging = 1;
+      AudioFX.ui();
+      return;
+    }
+    // Grab a bee to guide
+    for (const hb of (hit.hiveBees || [])) {
+      if (inRect(p, hb)) {
+        hiveDragBee = hb.i;
+        dragging = 1;
+        setCue('Drag to a flower');
+        AudioFX.ui();
+        return;
+      }
+    }
+    if (hit.hivePour && inRect(p, hit.hivePour) && hiveNectar >= 0.05 && !hiveJarReady) {
       hivePouring = 1;
       hivePourPtr = p.id;
       AudioFX.ui();
@@ -4961,6 +5271,20 @@ function onMove(e) {
   const p = ptr(e);
   if (pointerId == null || p.id !== pointerId || !lastPtr) return;
 
+  if (state === ST.HIVE) {
+    if (hiveDragBee != null && hiveBees[hiveDragBee]) {
+      hiveBees[hiveDragBee].x = p.x;
+      hiveBees[hiveDragBee].y = p.y;
+      hiveBees[hiveDragBee].mode = 'held';
+    }
+    if (hiveJarDrag) {
+      hiveJarDrag.x = p.x;
+      hiveJarDrag.y = p.y;
+    }
+    lastPtr = p;
+    return;
+  }
+
   if (state === ST.GREENHOUSE && seedlingDrag) {
     seedlingDrag.x = p.x;
     seedlingDrag.y = p.y;
@@ -5023,6 +5347,16 @@ function onUp(e) {
   if (state === ST.HIVE) {
     hivePouring = 0;
     hivePourPtr = null;
+    if (hiveDragBee != null) {
+      hiveDropBeeAt(p.x, p.y);
+    }
+    if (hiveJarDrag) {
+      if (hit.hiveShelf && inRect(p, hit.hiveShelf)) placeJarOnShelf();
+      else {
+        hiveJarDrag = null;
+        setCue('Drag jar to shelf');
+      }
+    }
   }
   if (state === ST.RUNNER || state === ST.RUN_RESULTS) {
     if (window.HGRunner) {
@@ -5411,7 +5745,7 @@ async function boot() {
 
   try {
     if (navigator.serviceWorker && typeof navigator.serviceWorker.register === 'function') {
-      navigator.serviceWorker.register('./sw.js?v=0.9-play-fix-ted-slow').catch(() => {});
+      navigator.serviceWorker.register('./sw.js?v=0.9-play-fix-ted-interact').catch(() => {});
     }
   } catch (eSw) {}
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));
@@ -5580,6 +5914,26 @@ window.HavensGarden = {
   tryCatchBugAt, spawnFieldBugs, spawnChaseBugs, startButterflyChase, goTitleHome, choosePlace, flowerPoints,
   getRunner: () => (window.HGRunner ? HGRunner.getState() : null),
   getBugs: () => fieldBugs.map((b) => b.kind),
+  getBugsDetail: () => fieldBugs.map((b) => ({ kind: b.kind, x: b.x, y: b.y })),
+  getNetCaught: () => netCaught.map((c) => c.kind),
+  getNetGoal: () => NET_GOAL,
+  debugFillNet: () => {
+    while (netCaught.length < NET_GOAL) {
+      const kind = CHASE_BUG_KINDS[netCaught.length % CHASE_BUG_KINDS.length];
+      netCaught.push({ kind });
+      if (!EX().bugs) EX().bugs = {};
+      EX().bugs[kind] = (EX().bugs[kind] | 0) + 1;
+    }
+    bugNetDoneT = 2.2;
+  },
+  debugCatchOne: (kind) => {
+    const k = kind || 'butterfly';
+    const b = fieldBugs.find((x) => !x.caught && x.kind === k) || fieldBugs.find((x) => !x.caught);
+    if (!b) return false;
+    return tryCatchBugAt(b.x, b.y);
+  },
+  getWaterDrops: () => waterDrops.length,
+  getConfetti: () => confetti.length,
   getHiveBees: () => hiveBees.filter((b) => !b.caught).length,
   getHive: () => ({
     nectar: hiveNectar,
@@ -5588,17 +5942,43 @@ window.HavensGarden = {
     shelfMax: HIVE_SHELF_MAX,
     pouring: hivePouring,
     celebrateT: hiveCelebrateT,
-    bees: hiveBees.length
+    bees: hiveBees.length,
+    jarReady: hiveJarReady,
+    beesDetail: hiveBees.map((b) => ({ pollen: !!b.pollen, mode: b.mode, x: b.x, y: b.y }))
   }),
   debugHiveFillShelf: () => {
     while (hiveShelf.length < HIVE_SHELF_MAX) {
       hiveNectar = Math.max(hiveNectar, HIVE_JAR_NEED);
       hiveJarFill = 1;
-      finishHiveJar();
+      hiveJarReady = 1;
+      placeJarOnShelf();
     }
   },
   debugHiveSetNectar: (n) => { hiveNectar = Math.max(0, n); EX().honey = Math.floor(hiveNectar); },
   debugHivePour: (on) => { hivePouring = on ? 1 : 0; },
+  /** Test helper: give bee pollen at flower, then deposit at hive (player loop). */
+  debugHiveGuideTrip: () => {
+    if (!hiveBees.length) spawnHiveBees(3);
+    const b = hiveBees[0];
+    const f = hiveFlowerSpots()[0];
+    const home = hiveHomePos();
+    b.x = f.x; b.y = f.y; b.pollen = 0; b.mode = 'idle';
+    hiveDragBee = 0;
+    hiveDropBeeAt(f.x, f.y); // collect pollen
+    hiveDragBee = 0;
+    hiveDropBeeAt(home.x, home.y); // deposit
+    return HavensGarden.getHive();
+  },
+  /** Stage a bee on a flower with a visible pollen dot (screenshot / fail-test). */
+  debugHivePollenPose: () => {
+    if (!hiveBees.length) spawnHiveBees(3);
+    const f = hiveFlowerSpots()[0];
+    const b = hiveBees[0];
+    b.x = f.x; b.y = f.y - 10; b.pollen = 1; b.mode = 'pollen';
+    hiveDragBee = null;
+    return { x: b.x, y: b.y, pollen: b.pollen };
+  },
+  debugHivePlaceJar: () => { hiveJarReady = 1; hiveJarFill = 1; return placeJarOnShelf(); },
   openPlacesMenu,
   getNavHits: () => ({
     back: hit.navBack ? Object.assign({}, hit.navBack) : null,

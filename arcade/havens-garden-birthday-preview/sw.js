@@ -1,5 +1,5 @@
-/* Haven's Garden v0.9-play-fix-ted-slow — cache bust + skipWaiting/clients.claim */
-const CACHE = 'havens-garden-play-fix-preview-v0.9-play-fix-ted-slow';
+/* Haven's Garden v0.9-play-fix-ted-interact — cache bust + skipWaiting/clients.claim */
+const CACHE = 'havens-garden-play-fix-preview-v0.9-play-fix-ted-interact';
 const PRECACHE = [
   './',
   './index.html',

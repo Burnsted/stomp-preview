@@ -66,8 +66,8 @@
     },
     "face": {
       "ok": true,
-      "skinFrac": 0.801,
-      "brightFrac": 0.108,
+      "skinFrac": 0.8,
+      "brightFrac": 0.109,
       "samples": 15625,
       "h": 225,
       "girlFrac": 0.22,

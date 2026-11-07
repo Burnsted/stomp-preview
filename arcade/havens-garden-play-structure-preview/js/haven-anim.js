@@ -27,12 +27,22 @@ const HavenAnim = (() => {
     moving: 0
   };
 
-  /** Exact frames to request from Franz if a smoother cycle is desired later. */
+  /**
+   * Haven consistency — production 1024 set is the on-screen look for meadow /
+   * nursery / bugs / bees / watering / menus. Runner uses a separate rear-view
+   * 256×320 set (intentional camera). Franz redraw needed for mismatched frames:
+   */
   const FRANZ_REQUESTS = [
-    'haven-run-01.png … haven-run-04.png — dedicated run cycle (currently single haven-run pose)',
-    'haven-look-left.png / haven-look-right.png — idle look-around (code approximates with lean+flip)',
-    'haven-celebrate.png — arms-up cheer distinct from jump (jump pose reused for celebrate)',
-    'Optional: haven-walk-05.png, haven-walk-06.png — 6-frame walk for smoother gait'
+    'MISMATCH — do not ship as on-screen Haven until redrawn to match haven-run/skip/plant (1024 cartoon):',
+    '  assets/character/haven-front.png (289×768 legacy palette)',
+    '  assets/character/haven-three-quarter.png (295×768 legacy)',
+    '  assets/character/haven-walk-01.png … haven-walk-04.png (legacy walk; different proportions)',
+    '  assets/character/haven-water.png (legacy; use haven-plant.png until redrawn)',
+    'RUNNER rear set (assets/runner/haven-*.png 256×320) — keep rear camera, but match hair color,',
+    '  pink dress, basket, and body proportions to the 1024 production set so she does not look like',
+    '  a different child when entering the flower run.',
+    'NEW (optional polish): haven-look-left/right, haven-celebrate (distinct from jump),',
+    '  haven-water matching production style, dedicated 4–6 frame side walk matching production.'
   ];
 
   const MAX_SPEED = 230;
@@ -223,26 +233,18 @@ const HavenAnim = (() => {
   }
 
   function pickBaseImage(Assets, gait, walkFrame, pose, netSwing) {
+    // Always the production 1024 set — never legacy front/walk/water sheets.
     if (netSwing > 0.2) return Assets.pose('chase') || Assets.get('havenChase');
     if (pose === 'pick') return Assets.pose('pick');
     if (pose === 'plant') return Assets.pose('plant');
-    if (pose === 'water') return Assets.get('havenWater') || Assets.pose('plant');
+    if (pose === 'water') return Assets.pose('plant') || Assets.get('havenPlant');
     if (pose === 'jump' || pose === 'celebrate') return Assets.pose('jump');
     if (pose === 'chase') return Assets.pose('chase');
-    // Nursery calm standing — three-quarter / front (not skip hop)
     if (pose === 'stand' || pose === 'idleStand') {
-      return (Assets.standPose && Assets.standPose()) || Assets.pose('stand')
-        || Assets.get('havenFront') || Assets.get('havenThreeQuarter')
-        || Assets.get('havenWalk01') || Assets.get('havenSkip');
+      return (Assets.standPose && Assets.standPose()) || Assets.get('havenSkip') || Assets.get('havenRun');
     }
     if (gait === 'run') return Assets.get('havenRun') || Assets.walkFrame(walkFrame);
-    if (gait === 'walk') {
-      // Prefer true walk cycle frames when present
-      const w = Assets.get(['havenWalk01', 'havenWalk02', 'havenWalk03', 'havenWalk04'][walkFrame % 4]);
-      if (w) return w;
-      return Assets.walkFrame(walkFrame);
-    }
-    // Field idle stays on cartoon skip; callers wanting stand pass pose:'stand'
+    if (gait === 'walk') return Assets.walkFrame(walkFrame);
     return Assets.pose('idle') || Assets.get('havenSkip') || Assets.get('havenRun');
   }
 
@@ -278,41 +280,8 @@ const HavenAnim = (() => {
       const dw = h * (iw / ih);
       const dx = -dw / 2;
       const dy = -h;
-
-      // Action poses + standing sheets: single-pass draw (split body/head warps front/3q)
-      if (pose === 'plant' || pose === 'pick' || pose === 'water' || pose === 'chase'
-          || pose === 'stand' || pose === 'idleStand') {
-        cx.drawImage(img, dx, dy, dw, h);
-      } else {
-        // Body (lower ~62%) — planted
-        cx.save();
-        cx.beginPath();
-        cx.rect(dx - 2, dy + h * 0.38, dw + 4, h * 0.65);
-        cx.clip();
-        cx.drawImage(img, dx, dy, dw, h);
-        cx.restore();
-
-        // Head / pigtails (upper ~42%) with lag
-        cx.save();
-        cx.beginPath();
-        cx.rect(dx - 4, dy - 4, dw + 8, h * 0.46);
-        cx.clip();
-        cx.translate(STATE.hairLagX * 0.35 * face, STATE.hairLagY * 0.5);
-        cx.rotate(-lean * 0.25 + STATE.hairLagX * 0.008);
-        cx.drawImage(img, dx, dy, dw, h);
-        cx.restore();
-
-        // Soft ribbon accent bounce
-        const tipY = dy + h * 0.16;
-        const tipSpread = dw * 0.22;
-        cx.globalAlpha = 0.35;
-        cx.fillStyle = '#f078a0';
-        cx.beginPath();
-        cx.ellipse(-tipSpread + STATE.hairLagX * 0.2, tipY + STATE.hairLagY * 0.3, 3.2, 2.4, 0, 0, 7);
-        cx.ellipse(tipSpread + STATE.hairLagX * 0.2, tipY + STATE.hairLagY * 0.3, 3.2, 2.4, 0, 0, 7);
-        cx.fill();
-        cx.globalAlpha = 1;
-      }
+      // Always single-pass — split body/head caused flicker / popping between poses
+      cx.drawImage(img, dx, dy, dw, h);
     } else {
       cx.fillStyle = '#fad2b4';
       cx.beginPath(); cx.arc(0, -h * 0.72, h * 0.12, 0, 7); cx.fill();
