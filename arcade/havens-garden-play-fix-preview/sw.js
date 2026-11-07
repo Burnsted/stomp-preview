@@ -1,5 +1,5 @@
 /* Haven's Garden v0.9-play-fix-preview — play-structure fix */
-const CACHE = 'havens-garden-play-fix-preview-v0.9-play-fix-preview';
+const CACHE = 'havens-garden-play-fix-preview-v0.9-play-fix-preview-plate';
 const PRECACHE = [
   './',
   './index.html',

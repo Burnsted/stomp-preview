@@ -1079,7 +1079,74 @@ function seedGrassTufts() {
 
 /** Tuft clip line — keep green patches on the near field only (never on hills/sky). */
 function meadowHorizonY() {
-  return playfieldTop() + (playfieldBot() - playfieldTop()) * 0.48;
+  // ~38% down the playfield ≈ just below painted hill crests on meadow-day plate
+  return playfieldTop() + (playfieldBot() - playfieldTop()) * 0.38;
+}
+
+/**
+ * Pixel-compare the sky/hills band of the live canvas against a cover-fit of the
+ * approved meadow plate drawn with the SAME parallax as drawLivingField.
+ * Skips the header chrome and the center column (Haven). Proves we did not
+ * paint a flat sky wash over hills/trees/clouds.
+ */
+function proofMeadowPlateSky(opts) {
+  opts = opts || {};
+  const plate = Assets.get('plateMeadow') || Assets.meadow('day');
+  if (!plate || !plate.width) return { ok: false, reason: 'no-plate' };
+  const bandBot = Math.min(H, Math.floor((opts.bandBot != null ? opts.bandBot : meadowHorizonY() + 20)));
+  const dpr = cv.width / Math.max(1, W);
+
+  const tmp = document.createElement('canvas');
+  tmp.width = cv.width;
+  tmp.height = cv.height;
+  const tcx = tmp.getContext('2d');
+  tcx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const sky = '#8ec8f5';
+  tcx.fillStyle = sky;
+  tcx.fillRect(0, 0, W, H);
+  // Match drawLivingField parallax exactly
+  const rawOx = ((-cam.x * 0.16) % (W * 0.22));
+  const rawOy = ((-cam.y * 0.05) % (H * 0.04)) - H * 0.02;
+  const { dw, dh, dx, dy } = plateCoverMetrics(plate);
+  const maxOx = Math.max(0, (dw - W) * 0.5 - 1);
+  const maxOy = Math.max(0, (dh - H) * 0.5 - 1);
+  let sx = maxOx > 0 ? Math.max(-maxOx, Math.min(maxOx, rawOx)) : 0;
+  let sy = maxOy > 0 ? Math.max(-maxOy, Math.min(maxOy, rawOy)) : 0;
+  tcx.drawImage(plate, dx + sx, dy + sy, dw, dh);
+
+  const bandH = Math.max(1, Math.floor(bandBot * dpr));
+  const live = cx.getImageData(0, 0, cv.width, bandH);
+  const ref = tcx.getImageData(0, 0, cv.width, bandH);
+  const y0 = Math.floor((padT + 52) * dpr);
+  const xL1 = Math.floor(W * 0.04 * dpr);
+  const xL2 = Math.floor(W * 0.32 * dpr);
+  const xR1 = Math.floor(W * 0.68 * dpr);
+  const xR2 = Math.floor(W * 0.96 * dpr);
+  let sum = 0, max = 0, samples = 0;
+  for (let y = y0; y < bandH; y += 2) {
+    for (let x = 0; x < cv.width; x += 2) {
+      if (!((x >= xL1 && x < xL2) || (x >= xR1 && x < xR2))) continue;
+      const i = (y * cv.width + x) * 4;
+      const dr = Math.abs(live.data[i] - ref.data[i]);
+      const dg = Math.abs(live.data[i + 1] - ref.data[i + 1]);
+      const db = Math.abs(live.data[i + 2] - ref.data[i + 2]);
+      const d = (dr + dg + db) / 3;
+      sum += d;
+      if (d > max) max = d;
+      samples++;
+    }
+  }
+  const meanDiff = samples ? sum / samples : 999;
+  // Flat blue wash vs painted hills yields meanDiff ≫ 40; true plate match stays low
+  const ok = meanDiff < 22 && samples > 200;
+  return {
+    ok,
+    meanDiff: Math.round(meanDiff * 10) / 10,
+    maxDiff: max,
+    samples,
+    bandBot,
+    cam: { x: cam.x, y: cam.y }
+  };
 }
 
 /** Flower field: a few far, decorative butterflies only — never bees, never tappable. */
@@ -2625,46 +2692,64 @@ function drawPlateCoverFull(img, ox, oy, alpha) {
   cx.restore();
 }
 
-/** Living open field — Franz production plate (empty, no Haven) + camera parallax. */
+/** Living open field — Franz production plate (empty, no Haven) + camera parallax.
+ *  Never paint over the plate. Procedural grass tufts are clipped below the horizon
+ *  so they cannot appear as floating green ovals in the sky. */
 function drawLivingField(mode, opts) {
   opts = opts || {};
   mode = mode || 'day';
   const plate = Assets.get('plateMeadow') || Assets.meadow(mode);
-  // Underfill with grass/sky split — never a blank phone-edge strip
   const sky = mode === 'sunset' ? '#fa8c5a' : mode === 'sunrise' ? '#ffd6a0' : '#8ec8f5';
+  // Underfill only (shows if plate not yet loaded) — never drawn on top of the plate
   cx.fillStyle = sky;
-  cx.fillRect(0, 0, W, H * 0.42);
-  cx.fillStyle = mode === 'sunset' ? '#6a9a48' : '#78b85a';
-  cx.fillRect(0, H * 0.38, W, H * 0.62);
+  cx.fillRect(0, 0, W, H);
 
   if (plate) {
     const rawOx = ((-cam.x * 0.16 + (opts.drift || 0) * 0.1) % (W * 0.22));
-    const rawOy = ((-cam.y * 0.05) % (H * 0.04)) - H * 0.01;
+    const rawOy = ((-cam.y * 0.05) % (H * 0.04)) - H * 0.02;
+    // Cover-clamped parallax — plate stays intact (hills, trees, painted clouds)
     drawPlateCoverFull(plate, rawOx, rawOy, 1);
   }
 
-  // Repaint clean sky down to just above the hill crests — kills floating green ovals
-  const skyTop = 0;
-  const skyClip = playfieldTop() + (playfieldBot() - playfieldTop()) * 0.40;
-  cx.fillStyle = sky;
-  cx.fillRect(0, skyTop, W, Math.max(0, skyClip));
-  cx.fillStyle = 'rgba(255,255,255,0.7)';
-  cx.beginPath(); cx.ellipse(W * 0.18, playfieldTop() + 28, 40, 15, 0, 0, 7); cx.fill();
-  cx.beginPath(); cx.ellipse(W * 0.68, playfieldTop() + 40, 52, 17, 0, 0, 7); cx.fill();
-  cx.beginPath(); cx.ellipse(W * 0.44, playfieldTop() + 22, 30, 11, 0, 0, 7); cx.fill();
-
-  // Ground wash so world scrolls under her feet
-  const g0 = playfieldTop() + (playfieldBot() - playfieldTop()) * 0.42;
+  // Soft ground wash UNDER Haven's feet only — low alpha, below horizon, does not cover sky/hills
+  const horizon = meadowHorizonY();
+  const g0 = Math.max(horizon + 8, playfieldTop() + (playfieldBot() - playfieldTop()) * 0.55);
   const grd = cx.createLinearGradient(0, g0, 0, playfieldBot());
-  grd.addColorStop(0, 'rgba(110, 170, 70, 0.08)');
-  grd.addColorStop(0.45, 'rgba(90, 150, 55, 0.35)');
-  grd.addColorStop(1, 'rgba(70, 130, 45, 0.62)');
+  grd.addColorStop(0, 'rgba(110, 170, 70, 0.06)');
+  grd.addColorStop(0.5, 'rgba(90, 150, 55, 0.22)');
+  grd.addColorStop(1, 'rgba(70, 130, 45, 0.40)');
   cx.fillStyle = grd;
   cx.fillRect(0, g0, W, playfieldBot() - g0 + 4);
 
-  // No distant greenhouse landmark plate — its soft green blobs read as sky ovals on phones
+  // Distant greenhouse landmark (pre-regression living-field detail)
+  const ghImg = Assets.get('plateGreenhouse') || Assets.greenhouse(SAVE.ghSize | 0, false, 'day');
+  if (ghImg) {
+    const lx = FIELD_W * 0.78, ly = FIELD_H * 0.40;
+    const sx = (lx - cam.x) * 0.45 + W * 0.5;
+    const sy = (ly - cam.y) * 0.35 + (playfieldTop() + playfieldBot()) * 0.42;
+    if (sy + 4 >= horizon) {
+      const h = Y(200);
+      const w = h * (ghImg.width / ghImg.height);
+      if (sx > -w && sx < W + w) {
+        cx.save();
+        cx.globalAlpha = 0.85;
+        cx.drawImage(ghImg, sx - w / 2, sy - h, w, h);
+        cx.restore();
+      }
+    }
+  }
 
-  // Grass tuft ellipses removed — they read as floating green ovals on phone skies
+  // Procedural tufts: ONLY below the plate horizon — never in the sky
+  grassTufts.forEach((t) => {
+    const s = worldToScreen(t.x, t.y);
+    if (s.x < -40 || s.x > W + 40 || s.y < horizon || s.y > playfieldBot() + 20) return;
+    const bob = Math.sin(performance.now() / 420 + t.phase) * 2;
+    if (s.y + bob < horizon) return;
+    cx.fillStyle = `hsla(${t.hue}, 50%, 36%, 0.40)`;
+    cx.beginPath();
+    cx.ellipse(s.x, s.y + bob, t.w * 0.45, t.h * 0.45, 0, 0, 7);
+    cx.fill();
+  });
 }
 
 function drawMeadowBG(mode) {
@@ -4673,6 +4758,7 @@ window.HavensGarden = {
   getMeadowCritters: () => meadowCritters.map((p) => p.kind),
   getToast: () => ({ current: toastCurrent, cue, queue: toastQueue.slice() }),
   showToast, clearToasts, activeToastText,
+  proofMeadowPlateSky, meadowHorizonY,
   getGirl: () => ({ x: girl.x, y: girl.y, face: girl.face, pose: girlPose, gait: girlGait }),
   parentResetGarden, parentRestoreBackup, parentOpenBackups, armHarvestMode, undoHarvest,
   harvestBed, clearHarvestMode,

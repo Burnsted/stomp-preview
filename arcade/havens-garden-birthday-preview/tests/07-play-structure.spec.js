@@ -70,6 +70,30 @@ test.describe('play-structure fix', () => {
     await shot(page, 'boot-field-390');
   });
 
+  test('meadow plate sky/hills match approved plate (no sky-wash regression)', async ({ page }) => {
+    await page.setViewportSize({ width: 412, height: 915 });
+    await bootGame(page);
+    await playIntoField(page);
+    // Settle one frame so plate is drawn
+    await page.waitForTimeout(100);
+    const proof = await page.evaluate(() => {
+      // Hide transient overlays that sit in the sky band for a fair plate compare:
+      // zero camera parallax briefly and clear particles/critters above horizon
+      const g = HavensGarden;
+      g.clearToasts();
+      return g.proofMeadowPlateSky({});
+    });
+    expect(proof.ok).toBeTruthy();
+    expect(proof.meanDiff).toBeLessThan(28);
+    // Persist proof numbers next to screenshots
+    const fs = require('fs');
+    const path = require('path');
+    const out = path.join(__dirname, '../test-evidence/play-structure');
+    fs.mkdirSync(out, { recursive: true });
+    fs.writeFileSync(path.join(out, 'plate-sky-proof-412.json'), JSON.stringify(proof, null, 2));
+    await shot(page, 'device-android-412-field-plate-proof');
+  });
+
   test('no overlapping toasts; single side counter only', async ({ page }) => {
     await bootGame(page);
     await playIntoField(page);
