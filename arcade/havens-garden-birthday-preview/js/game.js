@@ -2645,7 +2645,7 @@ function drawLivingField(mode, opts) {
 
   // Repaint clean sky down to just above the hill crests — kills floating green ovals
   const skyTop = 0;
-  const skyClip = playfieldTop() + (playfieldBot() - playfieldTop()) * 0.34;
+  const skyClip = playfieldTop() + (playfieldBot() - playfieldTop()) * 0.40;
   cx.fillStyle = sky;
   cx.fillRect(0, skyTop, W, Math.max(0, skyClip));
   cx.fillStyle = 'rgba(255,255,255,0.7)';
@@ -2664,18 +2664,7 @@ function drawLivingField(mode, opts) {
 
   // No distant greenhouse landmark plate — its soft green blobs read as sky ovals on phones
 
-  const horizon = meadowHorizonY();
-  grassTufts.forEach((t) => {
-    const s = worldToScreen(t.x, t.y);
-    // Hard clip: nothing above the near-field line / in the sky
-    if (s.x < -40 || s.x > W + 40 || s.y < horizon || s.y > playfieldBot() + 20) return;
-    const bob = Math.sin(performance.now() / 420 + t.phase) * 2;
-    if (s.y + bob < horizon) return;
-    cx.fillStyle = `hsla(${t.hue}, 50%, 36%, 0.40)`;
-    cx.beginPath();
-    cx.ellipse(s.x, s.y + bob, t.w * 0.45, t.h * 0.45, 0, 0, 7);
-    cx.fill();
-  });
+  // Grass tuft ellipses removed — they read as floating green ovals on phone skies
 }
 
 function drawMeadowBG(mode) {
