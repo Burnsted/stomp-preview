@@ -6,7 +6,7 @@
    bugs+net, bees→hive→jars, color rows, CBN, shop.
    ============================================================ */
 
-const VER = 'v0.9-birthday-save-fix';
+const VER = 'v0.9-birthday-save-fix-touch';
 const PK = 'havensGarden.birthday.v2';
 const PK_LEGACY = 'havensGarden.v1';
 /** Prior preview / prototype keys that may still hold progress. */
@@ -19,7 +19,9 @@ const PK_PRIOR = [
 const MUTE_K = 'havensGarden.mute';
 const QUIET_K = 'havensGarden.quiet';
 const SCHEMA_VERSION = (window.HGSaveStore && HGSaveStore.SCHEMA_VERSION) || 9;
-const LAYOUT_VERSION = (window.HGSaveStore && HGSaveStore.LAYOUT_VERSION) || 3;
+const LAYOUT_VERSION = (window.HGSaveStore && HGSaveStore.LAYOUT_VERSION) || 4;
+/** Touch-v3: drag beyond this CSS px = pan (not plant/harvest). */
+const GARDEN_PAN_THRESHOLD = 12;
 
 const BOUQUET_GOAL = 20;
 /** Greenhouse v2: one plant per slot (66×66 hit → 44 CSS @390). Clusters explode on migrate. */
@@ -637,8 +639,100 @@ function plateToCanvas(nx, ny) {
   const r = plateCoverRect();
   return { x: r.dx + nx * r.dw, y: r.dy + ny * r.dh };
 }
-/** Screen canvas → plate pixels (585×1266). */
-function canvasToPlatePx(x, y) {
+
+/* ---------- Touch-v3 planting camera (uniform zoom + 2-axis pan) ---------- */
+let gardenCam = {
+  panX: 0,
+  panY: 0,
+  outdoor: 0,
+  dragging: 0,
+  panning: 0,
+  moved: 0,
+  startX: 0,
+  startY: 0,
+  startPanX: 0,
+  startPanY: 0
+};
+
+function activeGardenSize(outdoor) {
+  if (!(window.HGNursery && HGNursery.ready())) return null;
+  return outdoor ? HGNursery.outdoorDef() : HGNursery.sizeForGh(SAVE.ghSize | 0);
+}
+
+/** Declared native→screen scale from map.view (small 1.0 / med·large 1.375 / outdoor ~0.917). */
+function gardenScale(sz) {
+  if (sz && sz.view && sz.view.nativeToScreenScale != null) return +sz.view.nativeToScreenScale;
+  return W / DW;
+}
+
+function gardenPanLimits(sz) {
+  const scale = gardenScale(sz);
+  const pw = DW * scale;
+  const ph = DH * scale;
+  // Prefer map range at reference phone; recompute against live canvas so every spot stays reachable
+  let maxX = Math.max(0, pw - W);
+  let maxY = Math.max(0, ph - H);
+  if (sz && sz.view && sz.view.panScreenPxRange && Math.abs(W - 390) < 1 && Math.abs(H - 844) < 1) {
+    maxX = sz.view.panScreenPxRange.x[1];
+    maxY = sz.view.panScreenPxRange.y[1];
+  }
+  return { minX: 0, maxX, minY: 0, maxY, pw, ph, scale };
+}
+
+function clampGardenPan(sz, x, y) {
+  const lim = gardenPanLimits(sz);
+  return {
+    x: Math.max(lim.minX, Math.min(lim.maxX, x)),
+    y: Math.max(lim.minY, Math.min(lim.maxY, y))
+  };
+}
+
+function resetGardenCam(outdoor) {
+  const sz = activeGardenSize(outdoor);
+  gardenCam.outdoor = outdoor ? 1 : 0;
+  gardenCam.dragging = 0;
+  gardenCam.panning = 0;
+  gardenCam.moved = 0;
+  if (sz && sz.view && sz.view.defaultPanScreenPx) {
+    const c = clampGardenPan(sz, sz.view.defaultPanScreenPx.x, sz.view.defaultPanScreenPx.y);
+    gardenCam.panX = c.x;
+    gardenCam.panY = c.y;
+  } else {
+    const lim = gardenPanLimits(sz);
+    gardenCam.panX = lim.maxX / 2;
+    gardenCam.panY = lim.maxY;
+  }
+}
+
+function revealGardenSlot(slotIdx, outdoor) {
+  const sz = activeGardenSize(outdoor);
+  if (!sz) return;
+  const slot = sz.slots[slotIdx];
+  if (slot && slot.revealPanScreenPx) {
+    const c = clampGardenPan(sz, slot.revealPanScreenPx.x, slot.revealPanScreenPx.y);
+    gardenCam.panX = c.x;
+    gardenCam.panY = c.y;
+  }
+}
+
+/** Native plate px → screen via README forward transform. */
+function nativeToScreen(nx, ny, sz) {
+  const scale = gardenScale(sz);
+  return { x: nx * scale - gardenCam.panX, y: ny * scale - gardenCam.panY };
+}
+
+/** Screen → native via README inverse transform. */
+function screenToNative(sx, sy, sz) {
+  const scale = gardenScale(sz);
+  return { px: (sx + gardenCam.panX) / scale, py: (sy + gardenCam.panY) / scale };
+}
+
+/** Screen canvas → plate pixels (585×1266). Uses garden camera when zoomed. */
+function canvasToPlatePx(x, y, outdoor) {
+  const sz = activeGardenSize(outdoor != null ? outdoor : gardenCam.outdoor);
+  if (sz && sz.view && state === ST.GREENHOUSE && nurseryView === 'inside') {
+    return screenToNative(x, y, sz);
+  }
   const r = plateCoverRect();
   return {
     px: ((x - r.dx) / r.dw) * DW,
@@ -647,10 +741,9 @@ function canvasToPlatePx(x, y) {
 }
 
 /**
- * Resolve greenhouse tap to nearest root among overlapping hit candidates.
- * Never first-match. Optional emptyRadius expands to nearest empty slot.
+ * Exclusive-rect hit only (touch-v3). No nearest-root, no radius fallback.
  */
-function pickSpotNearestRoot(p, outdoor, opts) {
+function pickSpotExclusive(p, outdoor, opts) {
   opts = opts || {};
   if (!(window.HGNursery && HGNursery.ready())) {
     for (const s of (hit.spots || [])) {
@@ -661,14 +754,18 @@ function pickSpotNearestRoot(p, outdoor, opts) {
   }
   const sz = outdoor ? HGNursery.outdoorDef() : HGNursery.sizeForGh(SAVE.ghSize | 0);
   if (!sz) return -1;
-  const { px, py } = canvasToPlatePx(p.x, p.y);
+  const { px, py } = canvasToPlatePx(p.x, p.y, outdoor);
   const bedsArr = outdoor ? SAVE.outdoorBeds : SAVE.beds;
-  return HGNursery.nearestRootIndex(sz, px, py, {
+  return HGNursery.exclusiveHitIndex(sz, px, py, {
     emptyOnly: !!opts.emptyOnly,
     allowOccupied: !!opts.allowOccupied,
-    beds: bedsArr,
-    emptyRadius: opts.emptyRadius != null ? opts.emptyRadius : 48
+    beds: bedsArr
   });
+}
+
+/** Back-compat name used by older call sites / tests. */
+function pickSpotNearestRoot(p, outdoor, opts) {
+  return pickSpotExclusive(p, outdoor, opts);
 }
 
 function ensureBgCrossfade(desiredKey, plateImg) {
@@ -725,19 +822,19 @@ function drawAnchored(img, x, y, h, face, bobY) {
   return true;
 }
 
-/** Bed/slot positions from Franz bed-map.json (plate-normalized → canvas). */
-/** Franz slot → canvas spot (rootAnchor + hitBounds). hitW/H are screen px (66→44 @390). */
-function franzSlotToSpot(slot, outdoor) {
-  const root = plateToCanvas(slot.nx, slot.ny);
-  const r = plateCoverRect();
-  const hw = (slot.hitW || 66) * (r.dw / DW);
-  const hh = (slot.hitH || 66) * (r.dh / DH);
-  const hx = r.dx + (slot.hitNx != null ? slot.hitNx : (slot.hitX || 0) / DW) * r.dw;
-  const hy = r.dy + (slot.hitNy != null ? slot.hitNy : (slot.hitY || 0) / DH) * r.dh;
+/** Franz slot → screen spot via garden camera (native×scale − pan). Screen box = 44×44 at declared zoom. */
+function franzSlotToSpot(slot, outdoor, sz) {
+  sz = sz || activeGardenSize(outdoor);
+  const scale = gardenScale(sz);
+  const root = nativeToScreen(slot.rootX, slot.rootY, sz);
+  const hw = (slot.hitW || 44) * scale;
+  const hh = (slot.hitH || 44) * scale;
+  const hx = slot.hitX * scale - gardenCam.panX;
+  const hy = slot.hitY * scale - gardenCam.panY;
   return {
     x: root.x, y: root.y, r: Math.max(hw, hh) * 0.45,
     hitW: hw, hitH: hh, hitX: hx, hitY: hy,
-    plantScale: slot.plantScale || 0.28,
+    plantScale: slot.plantScale || 0.30,
     outdoor: outdoor ? 1 : 0, i: slot.i, planter: slot.planter, slot: slot.slot
   };
 }
@@ -746,7 +843,7 @@ function plantSpots() {
   const g = gh();
   if (window.HGNursery && HGNursery.ready()) {
     const sz = HGNursery.sizeForGh(SAVE.ghSize | 0);
-    return (sz.slots || []).filter((slot) => slot.active !== false).map((slot) => franzSlotToSpot(slot, 0));
+    return (sz.slots || []).filter((slot) => slot.active !== false).map((slot) => franzSlotToSpot(slot, 0, sz));
   }
   const layout = (BED_LAYOUTS_FALLBACK[g.id] || BED_LAYOUTS_FALLBACK.S);
   const r = X(g.id === 'L' ? 30 : g.id === 'M' ? 34 : 38);
@@ -760,7 +857,7 @@ function outdoorSpots() {
   if (!SAVE.outdoorUnlocked) return [];
   if (window.HGNursery && HGNursery.ready()) {
     const od = HGNursery.outdoorDef();
-    return (od.slots || []).filter((s) => s.active !== false).map((slot) => franzSlotToSpot(slot, 1));
+    return (od.slots || []).filter((s) => s.active !== false).map((slot) => franzSlotToSpot(slot, 1, od));
   }
   const layout = BED_LAYOUTS_FALLBACK.outdoor;
   const r = X(34);
@@ -1161,6 +1258,11 @@ function enterGreenhouse(mode) {
   state = ST.GREENHOUSE;
   pushNav('greenhouse');
   announce('Greenhouse');
+  {
+    const outdoor = !!(SAVE.outdoorUnlocked && freeIndoorSpot() < 0 && freeOutdoorSpot() >= 0
+      && nurseryMode === 'plant');
+    resetGardenCam(outdoor);
+  }
   snapshotRuntime();
 }
 
@@ -2775,12 +2877,16 @@ function drawBedFlowers(s, b) {
   let pop = 1;
   if (planting) pop = 0.35 + 0.65 * Math.min(1, plantAnimT / 0.7);
   const sway = Math.sin((performance.now() / 700) + (s.i || 0)) * (grown >= 2 ? 1.6 : 0.4);
-  const r = plateCoverRect();
+  const sz = activeGardenSize(s.outdoor);
+  const camScale = (state === ST.GREENHOUSE && nurseryView === 'inside' && sz)
+    ? gardenScale(sz)
+    : (plateCoverRect().dw / DW);
   const stage = window.HGNursery && HGNursery.ready() ? HGNursery.growthStage(grown, species) : null;
   const gimg = window.HGNursery && HGNursery.ready() ? HGNursery.growthImg(grown, species) : null;
   if (gimg && stage) {
     const size = stage.size || HGNursery.GROWTH_SIZE || [224, 224];
-    const sc = (s.plantScale || stage.suggestedPlateScale || 0.48) * squash * pop * (r.dw / DW);
+    // Native sprite scale (~0.30) × camera scale → screen px (README)
+    const sc = (s.plantScale || 0.30) * squash * pop * camScale;
     const dw = size[0] * sc;
     const dh = size[1] * sc;
     const ax = (stage.rootAnchor && stage.rootAnchor.x != null) ? stage.rootAnchor.x / size[0] : 0.5;
@@ -2798,17 +2904,32 @@ function drawNurserySoilFloor() {
   /* No opaque code soil — greenhouse-v2 empty plate already has wooden beds + soil. */
 }
 
-/** greenhouse-v2: empty plate → plants only (no soil/lip layers, no code soil masks). */
+/** touch-v3: empty plate under uniform zoom + pan; plants only; no soil masks. */
 function drawFranzComposite(sz, bedsArr, outdoorFlag) {
   if (!sz || !window.HGNursery) return false;
   HGNursery.warmImages(sz);
   const layers = HGNursery.layerImages(sz);
   const plate = layers.plateNoLip;
   if (!plate) return false;
-  const key = 'ghv2-' + sz.key;
-  ensureBgCrossfade(key, plate);
-  if (bgKey === key && bgBlend < 1 && !(bgFrom && bgFrom !== plate)) bgBlend = 1;
-  drawCrossfadedPlate(bgFrom, bgTo || plate, bgBlend);
+
+  // Keep gardenCam outdoor flag aligned with the drawn scene
+  if (!!gardenCam.outdoor !== !!outdoorFlag) resetGardenCam(outdoorFlag);
+
+  const lim = gardenPanLimits(sz);
+  const c = clampGardenPan(sz, gardenCam.panX, gardenCam.panY);
+  gardenCam.panX = c.x;
+  gardenCam.panY = c.y;
+
+  // Draw zoomed plate crop (NOT whole-scene cover fit)
+  cx.save();
+  cx.beginPath();
+  cx.rect(0, 0, W, H);
+  cx.clip();
+  cx.drawImage(plate, -gardenCam.panX, -gardenCam.panY, lim.pw, lim.ph);
+  cx.restore();
+  bgKey = 'ghv3-' + sz.key;
+  bgTo = plate;
+  bgBlend = 1;
 
   const spots = (outdoorFlag ? outdoorSpots() : plantSpots()).slice().sort((a, b) => a.y - b.y);
   spots.forEach((s) => {
@@ -2931,12 +3052,10 @@ function drawInterior() {
     });
   }
 
-  // Planter-level hit targets (easier planting for ~5yo) — plant into next open slot in that planter
-  hit.planters = nurseryPlanterRects().map((pr) => ({
-    x: pr.x, y: pr.y, w: pr.w, h: pr.h, planter: pr.id, outdoor: wantOutdoor ? 1 : 0
-  }));
+  // Touch-v3: exclusive 44×44 slot boxes only — no planter mega-targets (would overlap).
+  hit.planters = [];
 
-  // Haven on the center path (above bottom nav dock)
+  // Haven stays screen-anchored (UI layer) while the garden pans underneath
   drawGirl(W * 0.5, H * 0.72, false);
 
   if (nurseryMode === 'water') {
@@ -3609,60 +3728,64 @@ function onDown(e) {
       resumeOuting();
       return;
     }
-    if (nurseryMode === 'water') {
-      wateringHeld = 1;
-      waterPtr = { x: p.x, y: p.y };
-      // Prefer outdoor yard when indoor beds are all watered
-      let outdoor = 0;
-      if (SAVE.outdoorUnlocked && SAVE.beds.every((b) => !b || b.watered) &&
-          SAVE.outdoorBeds.some((b) => b && !b.watered)) outdoor = 1;
-      const idx = pickSpotNearestRoot(p, outdoor, { allowOccupied: 1, emptyRadius: 56 });
-      if (idx >= 0) { doWaterAt(idx, outdoor); return; }
-      const idx2 = pickSpotNearestRoot(p, 1 - outdoor, { allowOccupied: 1, emptyRadius: 56 });
-      if (idx2 >= 0) { doWaterAt(idx2, 1 - outdoor); return; }
-      return;
+    if (inRect(p, hit.harvestArm)) { armHarvestMode(); return; }
+    if (inRect(p, hit.harvestUndo) && harvestUndo) { undoHarvest(); return; }
+    // Defer plant/water/harvest to onUp — onMove may pan past threshold (drag ≠ tap)
+    if (nurseryMode === 'plant' || nurseryMode === 'water'
+        || nurseryMode === 'ready' || nurseryMode === 'look') {
+      gardenCam.dragging = 1;
+      gardenCam.panning = 0;
+      gardenCam.moved = 0;
+      gardenCam.startX = p.x;
+      gardenCam.startY = p.y;
+      gardenCam.startPanX = gardenCam.panX;
+      gardenCam.startPanY = gardenCam.panY;
+      if (nurseryMode === 'water') {
+        wateringHeld = 1;
+        waterPtr = { x: p.x, y: p.y };
+      }
     }
-    if (nurseryMode === 'plant' && nurseryView === 'inside') {
-      let outdoor = 0;
-      if (SAVE.outdoorUnlocked && freeIndoorSpot() < 0 && freeOutdoorSpot() >= 0) outdoor = 1;
-      const idx = pickSpotNearestRoot(p, outdoor, { emptyOnly: 1, emptyRadius: 56 });
-      if (idx >= 0) {
-        const bed = outdoor ? outdoorAt(idx) : bedAt(idx);
-        if (bed && bed.grown) { celebrateBed(idx, outdoor); return; }
-        if (bedHasRoom(bed)) { doPlantAt(idx, outdoor); return; }
-      }
-      // Fallback: nearest empty via other yard
-      const idx2 = pickSpotNearestRoot(p, 1 - outdoor, { emptyOnly: 1, emptyRadius: 56 });
-      if (idx2 >= 0 && bedHasRoom((1 - outdoor) ? outdoorAt(idx2) : bedAt(idx2))) {
-        doPlantAt(idx2, 1 - outdoor);
-        return;
-      }
-      AudioFX.rustle();
-      return;
+  }
+}
+
+/** Resolve a greenhouse tap (only when the gesture was NOT a pan). */
+function handleGreenhouseTap(p) {
+  if (plantAnim || growAnim || upgradeAnim) return;
+  if (nurseryMode === 'water') {
+    waterPtr = { x: p.x, y: p.y };
+    let outdoor = 0;
+    if (SAVE.outdoorUnlocked && SAVE.beds.every((b) => !b || b.watered) &&
+        SAVE.outdoorBeds.some((b) => b && !b.watered)) outdoor = 1;
+    if (!!gardenCam.outdoor !== !!outdoor) resetGardenCam(outdoor);
+    const idx = pickSpotExclusive(p, outdoor, { allowOccupied: 1 });
+    if (idx >= 0) { doWaterAt(idx, outdoor); return; }
+    return;
+  }
+  if (nurseryMode === 'plant' && nurseryView === 'inside') {
+    let outdoor = 0;
+    if (SAVE.outdoorUnlocked && freeIndoorSpot() < 0 && freeOutdoorSpot() >= 0) outdoor = 1;
+    if (!!gardenCam.outdoor !== !!outdoor) resetGardenCam(outdoor);
+    const idx = pickSpotExclusive(p, outdoor, { emptyOnly: 1 });
+    if (idx >= 0) {
+      const bed = outdoor ? outdoorAt(idx) : bedAt(idx);
+      if (bed && bed.grown) { celebrateBed(idx, outdoor); return; }
+      if (bedHasRoom(bed)) { doPlantAt(idx, outdoor); return; }
     }
-    // Ready/look: celebrate grown beds — harvest only if armed
-    if (nurseryMode === 'ready' || nurseryMode === 'look') {
-      for (const pol of (hit.pollinators || [])) {
-        if (inRect(p, pol)) { tapPollinator(pol); return; }
-      }
-      let outdoor = 0;
-      if (SAVE.outdoorUnlocked && SAVE.outdoorBeds.some((b) => b && b.grown)) outdoor = 1;
-      const idx = pickSpotNearestRoot(p, outdoor, { allowOccupied: 1, emptyRadius: 40 });
-      if (idx >= 0) {
-        const b = outdoor ? outdoorAt(idx) : bedAt(idx);
-        if (b && b.grown) { harvestBed(idx, outdoor); return; }
-        celebrateBed(idx, outdoor);
-        return;
-      }
-      const idx2 = pickSpotNearestRoot(p, 1 - outdoor, { allowOccupied: 1, emptyRadius: 40 });
-      if (idx2 >= 0) {
-        const b = (1 - outdoor) ? outdoorAt(idx2) : bedAt(idx2);
-        if (b && b.grown) { harvestBed(idx2, 1 - outdoor); return; }
-        celebrateBed(idx2, 1 - outdoor);
-        return;
-      }
-      if (inRect(p, hit.harvestArm)) { armHarvestMode(); return; }
-      if (inRect(p, hit.harvestUndo) && harvestUndo) { undoHarvest(); return; }
+    AudioFX.rustle();
+    return;
+  }
+  if (nurseryMode === 'ready' || nurseryMode === 'look') {
+    for (const pol of (hit.pollinators || [])) {
+      if (inRect(p, pol)) { tapPollinator(pol); return; }
+    }
+    let outdoor = 0;
+    if (SAVE.outdoorUnlocked && SAVE.outdoorBeds.some((b) => b && b.grown)) outdoor = 1;
+    if (!!gardenCam.outdoor !== !!outdoor) resetGardenCam(outdoor);
+    const idx = pickSpotExclusive(p, outdoor, { allowOccupied: 1 });
+    if (idx >= 0) {
+      const b = outdoor ? outdoorAt(idx) : bedAt(idx);
+      if (b && b.grown) { harvestBed(idx, outdoor); return; }
+      celebrateBed(idx, outdoor);
     }
   }
 }
@@ -3694,13 +3817,22 @@ function onMove(e) {
   const p = ptr(e);
   if (pointerId == null || p.id !== pointerId || !lastPtr) return;
 
-  if (state === ST.GREENHOUSE && nurseryMode === 'water' && wateringHeld) {
-    waterPtr = { x: p.x, y: p.y };
-    let outdoor = 0;
-    if (SAVE.outdoorUnlocked && SAVE.beds.every((b) => !b || b.watered) &&
-        SAVE.outdoorBeds.some((b) => b && !b.watered)) outdoor = 1;
-    const idx = pickSpotNearestRoot(p, outdoor, { allowOccupied: 1, emptyRadius: 56 });
-    if (idx >= 0) doWaterAt(idx, outdoor);
+  if (state === ST.GREENHOUSE && gardenCam.dragging) {
+    const dx = p.x - gardenCam.startX;
+    const dy = p.y - gardenCam.startY;
+    const dist = Math.hypot(dx, dy);
+    if (dist >= GARDEN_PAN_THRESHOLD) gardenCam.panning = 1;
+    if (gardenCam.panning) {
+      gardenCam.moved = 1;
+      wateringHeld = 0; // drag is pan, not water-paint
+      const sz = activeGardenSize(gardenCam.outdoor);
+      // Dragging the garden under the finger: pan moves opposite to finger
+      const next = clampGardenPan(sz, gardenCam.startPanX - dx, gardenCam.startPanY - dy);
+      gardenCam.panX = next.x;
+      gardenCam.panY = next.y;
+    } else if (nurseryMode === 'water' && wateringHeld) {
+      waterPtr = { x: p.x, y: p.y };
+    }
     lastPtr = p;
     return;
   }
@@ -3726,6 +3858,17 @@ function onUp(e) {
   const p = ptr(e);
   if (p.id !== pointerId) return;
   if (parentHoldT) { clearTimeout(parentHoldT); parentHoldT = null; }
+  // Greenhouse: tap acts only if we did not pan
+  if (state === ST.GREENHOUSE && gardenCam.dragging) {
+    const wasPan = !!gardenCam.moved || !!gardenCam.panning;
+    gardenCam.dragging = 0;
+    gardenCam.panning = 0;
+    wateringHeld = 0;
+    pointerId = null; lastPtr = null; dragging = 0;
+    if (!wasPan) handleGreenhouseTap(p);
+    gardenCam.moved = 0;
+    return;
+  }
   pointerId = null; lastPtr = null; dragging = 0; wateringHeld = 0;
 }
 
@@ -4043,7 +4186,7 @@ async function boot() {
 
   try {
     if (navigator.serviceWorker && typeof navigator.serviceWorker.register === 'function') {
-      navigator.serviceWorker.register('./sw.js?v=0.9-birthday-save-fix').catch(() => {});
+      navigator.serviceWorker.register('./sw.js?v=0.9-birthday-save-fix-touch').catch(() => {});
     }
   } catch (eSw) {}
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));
@@ -4218,7 +4361,11 @@ window.HavensGarden = {
   migrateSave, saveRichness, persist, readRawSave, freshSave,
   applyLayoutMigration, pullReserveIntoBouquet, countBedFlowers, countReserveFlowers,
   sparkleActive, shovelOwned,
-  pickSpotNearestRoot, canvasToPlatePx,
+  pickSpotNearestRoot, pickSpotExclusive, canvasToPlatePx,
+  gardenCam, resetGardenCam, revealGardenSlot, gardenScale, clampGardenPan,
+  nativeToScreen, screenToNative, handleGreenhouseTap,
+  forceNurseryInside: () => { nurseryView = 'inside'; doorOpen = 1; ghEnterT = -1; ghExitT = -1; },
+  getNurseryView: () => nurseryView,
   measureHits: (phoneW) => {
     if (!window.HGNursery || !HGNursery.ready()) return null;
     return {
@@ -4226,6 +4373,15 @@ window.HavensGarden = {
       medium: HGNursery.measureExclusiveHits(HGNursery.sizeForGh(1), phoneW),
       large: HGNursery.measureExclusiveHits(HGNursery.sizeForGh(2), phoneW),
       outdoor: HGNursery.measureExclusiveHits(HGNursery.outdoorDef(), phoneW)
+    };
+  },
+  reachabilityReport: () => {
+    if (!window.HGNursery || !HGNursery.ready()) return null;
+    return {
+      small: HGNursery.assertAllSlotsReachable(HGNursery.sizeForGh(0)),
+      medium: HGNursery.assertAllSlotsReachable(HGNursery.sizeForGh(1)),
+      large: HGNursery.assertAllSlotsReachable(HGNursery.sizeForGh(2)),
+      outdoor: HGNursery.assertAllSlotsReachable(HGNursery.outdoorDef())
     };
   },
   PK, PK_LEGACY, PK_PRIOR, SCHEMA_VERSION, LAYOUT_VERSION,

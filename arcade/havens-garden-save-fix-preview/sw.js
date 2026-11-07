@@ -1,4 +1,4 @@
-/* Haven's Garden v0.9-save-fix-preview — versioned save + lossless migration */
+/* Haven's Garden v0.9-save-fix-preview — save fix + touch-v3 planting camera */
 const CACHE = 'havens-garden-save-fix-preview-v0.9-save-fix-preview';
 const PRECACHE = [
   './',

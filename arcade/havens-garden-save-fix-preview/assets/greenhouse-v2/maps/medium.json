@@ -1,500 +1,496 @@
 {
-  "key": "medium",
-  "kind": "greenhouse-interior",
-  "capacityTarget": 20,
-  "slotsPerBed": 5,
+  "scene": "medium",
+  "plate": "plates/medium-empty.png",
   "plateSize": [
     585,
     1266
   ],
-  "phoneScale": 0.6666666666666666,
-  "plate": "plates/medium-empty.webp",
-  "plateNoLip": "plates/medium-empty.webp",
-  "layers": {},
+  "activeCount": 20,
   "beds": [
     {
-      "id": "bed0",
-      "index": 0,
-      "soilBounds": {
-        "x": 0,
-        "y": 718,
-        "w": 168,
-        "h": 246
-      }
+      "id": 0,
+      "soilPolygon": [
+        [
+          121,
+          717
+        ],
+        [
+          164,
+          717
+        ],
+        [
+          9,
+          1010
+        ],
+        [
+          0,
+          958
+        ]
+      ],
+      "count": 5
     },
     {
-      "id": "bed1",
-      "index": 1,
-      "soilBounds": {
-        "x": 52,
-        "y": 718,
-        "w": 202,
-        "h": 372
-      }
+      "id": 1,
+      "soilPolygon": [
+        [
+          199,
+          717
+        ],
+        [
+          251,
+          717
+        ],
+        [
+          190,
+          1090
+        ],
+        [
+          52,
+          1090
+        ]
+      ],
+      "count": 5
     },
     {
-      "id": "bed2",
-      "index": 2,
-      "soilBounds": {
-        "x": 329,
-        "y": 718,
-        "w": 181,
-        "h": 372
-      }
+      "id": 2,
+      "soilPolygon": [
+        [
+          329,
+          717
+        ],
+        [
+          377,
+          717
+        ],
+        [
+          517,
+          1090
+        ],
+        [
+          367,
+          1090
+        ]
+      ],
+      "count": 5
     },
     {
-      "id": "bed3",
-      "index": 3,
-      "soilBounds": {
-        "x": 422,
-        "y": 718,
-        "w": 163,
-        "h": 246
-      }
+      "id": 3,
+      "soilPolygon": [
+        [
+          420,
+          717
+        ],
+        [
+          451,
+          717
+        ],
+        [
+          580,
+          1010
+        ],
+        [
+          552,
+          1020
+        ]
+      ],
+      "count": 5
     }
   ],
   "slots": [
     {
-      "index": 0,
-      "id": "bed0_s0",
-      "bedId": "bed0",
-      "grid": {
-        "row": 0,
-        "col": 0
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 121.0,
-        "y": 742.0
-      },
+      "id": 0,
+      "bedId": 0,
+      "rootX": 126,
+      "rootY": 749,
+      "drawOrder": 749,
       "hitBounds": {
-        "x": 88.0,
-        "y": 694.5,
-        "w": 66,
-        "h": 66
+        "x": 110.0,
+        "y": 733.0,
+        "w": 32,
+        "h": 32
       },
-      "recommendedPlantScale": 0.215,
-      "drawOrder": 0
+      "revealPanScreenPx": {
+        "x": 0,
+        "y": 607.875
+      }
     },
     {
-      "index": 1,
-      "id": "bed0_s1",
-      "bedId": "bed0",
-      "grid": {
-        "row": 0,
-        "col": 1
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 85.0,
-        "y": 790.0
-      },
+      "id": 1,
+      "bedId": 0,
+      "rootX": 100,
+      "rootY": 800,
+      "drawOrder": 800,
       "hitBounds": {
-        "x": 52.0,
-        "y": 742.5,
-        "w": 66,
-        "h": 66
+        "x": 84.0,
+        "y": 784.0,
+        "w": 32,
+        "h": 32
       },
-      "recommendedPlantScale": 0.243,
-      "drawOrder": 4
+      "revealPanScreenPx": {
+        "x": 0,
+        "y": 678.0
+      }
     },
     {
-      "index": 2,
-      "id": "bed0_s2",
-      "bedId": "bed0",
-      "grid": {
-        "row": 0,
-        "col": 2
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 52.0,
-        "y": 838.0
-      },
+      "id": 2,
+      "bedId": 0,
+      "rootX": 74,
+      "rootY": 850,
+      "drawOrder": 850,
       "hitBounds": {
-        "x": 19.0,
-        "y": 790.5,
-        "w": 66,
-        "h": 66
+        "x": 58.0,
+        "y": 834.0,
+        "w": 32,
+        "h": 32
       },
-      "recommendedPlantScale": 0.27,
-      "drawOrder": 8
+      "revealPanScreenPx": {
+        "x": 0,
+        "y": 746.75
+      }
     },
     {
-      "index": 3,
-      "id": "bed0_s3",
-      "bedId": "bed0",
-      "grid": {
-        "row": 0,
-        "col": 3
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 35.0,
-        "y": 892.0
-      },
+      "id": 3,
+      "bedId": 0,
+      "rootX": 47,
+      "rootY": 901,
+      "drawOrder": 901,
       "hitBounds": {
-        "x": 2.0,
-        "y": 844.5,
-        "w": 66,
-        "h": 66
+        "x": 31.0,
+        "y": 885.0,
+        "w": 32,
+        "h": 32
       },
-      "recommendedPlantScale": 0.297,
-      "drawOrder": 10
+      "revealPanScreenPx": {
+        "x": 0,
+        "y": 816.875
+      }
     },
     {
-      "index": 4,
-      "id": "bed0_s4",
-      "bedId": "bed0",
-      "grid": {
-        "row": 0,
-        "col": 4
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 22.0,
-        "y": 940.0
-      },
+      "id": 4,
+      "bedId": 0,
+      "rootX": 21,
+      "rootY": 952,
+      "drawOrder": 952,
       "hitBounds": {
-        "x": -11.0,
-        "y": 892.5,
-        "w": 66,
-        "h": 66
+        "x": 5.0,
+        "y": 936.0,
+        "w": 32,
+        "h": 32
       },
-      "recommendedPlantScale": 0.325,
-      "drawOrder": 14
+      "revealPanScreenPx": {
+        "x": 0,
+        "y": 887.0
+      }
     },
     {
-      "index": 5,
-      "id": "bed1_s0",
-      "bedId": "bed1",
-      "grid": {
-        "row": 1,
-        "col": 0
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 215.0,
-        "y": 760.0
-      },
+      "id": 5,
+      "bedId": 1,
+      "rootX": 213,
+      "rootY": 762,
+      "drawOrder": 762,
       "hitBounds": {
-        "x": 182.0,
-        "y": 712.5,
-        "w": 66,
-        "h": 66
+        "x": 197.0,
+        "y": 746.0,
+        "w": 32,
+        "h": 32
       },
-      "recommendedPlantScale": 0.215,
-      "drawOrder": 2
+      "revealPanScreenPx": {
+        "x": 97.875,
+        "y": 625.75
+      }
     },
     {
-      "index": 6,
-      "id": "bed1_s1",
-      "bedId": "bed1",
-      "grid": {
-        "row": 1,
-        "col": 1
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 195.0,
-        "y": 832.0
-      },
+      "id": 6,
+      "bedId": 1,
+      "rootX": 193,
+      "rootY": 833,
+      "drawOrder": 833,
       "hitBounds": {
-        "x": 162.0,
-        "y": 784.5,
-        "w": 66,
-        "h": 66
+        "x": 177.0,
+        "y": 817.0,
+        "w": 32,
+        "h": 32
       },
-      "recommendedPlantScale": 0.243,
-      "drawOrder": 6
+      "revealPanScreenPx": {
+        "x": 70.375,
+        "y": 723.375
+      }
     },
     {
-      "index": 7,
-      "id": "bed1_s2",
-      "bedId": "bed1",
-      "grid": {
-        "row": 1,
-        "col": 2
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 175.0,
-        "y": 904.0
-      },
+      "id": 7,
+      "bedId": 1,
+      "rootX": 173,
+      "rootY": 904,
+      "drawOrder": 904,
       "hitBounds": {
-        "x": 142.0,
-        "y": 856.5,
-        "w": 66,
-        "h": 66
+        "x": 157.0,
+        "y": 888.0,
+        "w": 32,
+        "h": 32
       },
-      "recommendedPlantScale": 0.27,
-      "drawOrder": 12
+      "revealPanScreenPx": {
+        "x": 42.875,
+        "y": 821.0
+      }
     },
     {
-      "index": 8,
-      "id": "bed1_s3",
-      "bedId": "bed1",
-      "grid": {
-        "row": 1,
-        "col": 3
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 158.0,
-        "y": 964.0
-      },
+      "id": 8,
+      "bedId": 1,
+      "rootX": 153,
+      "rootY": 974,
+      "drawOrder": 974,
       "hitBounds": {
-        "x": 125.0,
-        "y": 916.5,
-        "w": 66,
-        "h": 66
+        "x": 137.0,
+        "y": 958.0,
+        "w": 32,
+        "h": 32
       },
-      "recommendedPlantScale": 0.297,
-      "drawOrder": 16
+      "revealPanScreenPx": {
+        "x": 15.375,
+        "y": 896.75
+      }
     },
     {
-      "index": 9,
-      "id": "bed1_s4",
-      "bedId": "bed1",
-      "grid": {
-        "row": 1,
-        "col": 4
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 134.0,
-        "y": 1048.0
-      },
+      "id": 9,
+      "bedId": 1,
+      "rootX": 133,
+      "rootY": 1045,
+      "drawOrder": 1045,
       "hitBounds": {
-        "x": 101.0,
-        "y": 1000.5,
-        "w": 66,
-        "h": 66
+        "x": 117.0,
+        "y": 1029.0,
+        "w": 32,
+        "h": 32
       },
-      "recommendedPlantScale": 0.325,
-      "drawOrder": 18
+      "revealPanScreenPx": {
+        "x": 0,
+        "y": 896.75
+      }
     },
     {
-      "index": 10,
-      "id": "bed2_s0",
-      "bedId": "bed2",
-      "grid": {
-        "row": 2,
-        "col": 0
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 367.0,
-        "y": 760.0
-      },
+      "id": 10,
+      "bedId": 2,
+      "rootX": 364,
+      "rootY": 762,
+      "drawOrder": 762,
       "hitBounds": {
-        "x": 334.0,
-        "y": 712.5,
-        "w": 66,
-        "h": 66
+        "x": 348.0,
+        "y": 746.0,
+        "w": 32,
+        "h": 32
       },
-      "recommendedPlantScale": 0.215,
-      "drawOrder": 3
+      "revealPanScreenPx": {
+        "x": 305.5,
+        "y": 625.75
+      }
     },
     {
-      "index": 11,
-      "id": "bed2_s1",
-      "bedId": "bed2",
-      "grid": {
-        "row": 2,
-        "col": 1
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 384.0,
-        "y": 832.0
-      },
+      "id": 11,
+      "bedId": 2,
+      "rootX": 381,
+      "rootY": 833,
+      "drawOrder": 833,
       "hitBounds": {
-        "x": 351.0,
-        "y": 784.5,
-        "w": 66,
-        "h": 66
+        "x": 365.0,
+        "y": 817.0,
+        "w": 32,
+        "h": 32
       },
-      "recommendedPlantScale": 0.243,
-      "drawOrder": 7
+      "revealPanScreenPx": {
+        "x": 328.875,
+        "y": 723.375
+      }
     },
     {
-      "index": 12,
-      "id": "bed2_s2",
-      "bedId": "bed2",
-      "grid": {
-        "row": 2,
-        "col": 2
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 400.0,
-        "y": 904.0
-      },
-      "hitBounds": {
-        "x": 367.0,
-        "y": 856.5,
-        "w": 66,
-        "h": 66
-      },
-      "recommendedPlantScale": 0.27,
-      "drawOrder": 13
-    },
-    {
-      "index": 13,
-      "id": "bed2_s3",
-      "bedId": "bed2",
-      "grid": {
-        "row": 2,
-        "col": 3
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 415.0,
-        "y": 964.0
-      },
+      "id": 12,
+      "bedId": 2,
+      "rootX": 398,
+      "rootY": 904,
+      "drawOrder": 904,
       "hitBounds": {
         "x": 382.0,
-        "y": 916.5,
-        "w": 66,
-        "h": 66
+        "y": 888.0,
+        "w": 32,
+        "h": 32
       },
-      "recommendedPlantScale": 0.297,
-      "drawOrder": 17
+      "revealPanScreenPx": {
+        "x": 352.25,
+        "y": 821.0
+      }
     },
     {
-      "index": 14,
-      "id": "bed2_s4",
-      "bedId": "bed2",
-      "grid": {
-        "row": 2,
-        "col": 4
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 433.0,
-        "y": 1048.0
-      },
+      "id": 13,
+      "bedId": 2,
+      "rootX": 414,
+      "rootY": 974,
+      "drawOrder": 974,
       "hitBounds": {
-        "x": 400.0,
-        "y": 1000.5,
-        "w": 66,
-        "h": 66
+        "x": 398.0,
+        "y": 958.0,
+        "w": 32,
+        "h": 32
       },
-      "recommendedPlantScale": 0.325,
-      "drawOrder": 19
+      "revealPanScreenPx": {
+        "x": 374.25,
+        "y": 896.75
+      }
     },
     {
-      "index": 15,
-      "id": "bed3_s0",
-      "bedId": "bed3",
-      "grid": {
-        "row": 3,
-        "col": 0
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 472.0,
-        "y": 742.0
-      },
+      "id": 14,
+      "bedId": 2,
+      "rootX": 431,
+      "rootY": 1045,
+      "drawOrder": 1045,
       "hitBounds": {
-        "x": 439.0,
-        "y": 694.5,
-        "w": 66,
-        "h": 66
+        "x": 415.0,
+        "y": 1029.0,
+        "w": 32,
+        "h": 32
       },
-      "recommendedPlantScale": 0.215,
-      "drawOrder": 1
+      "revealPanScreenPx": {
+        "x": 397.625,
+        "y": 896.75
+      }
     },
     {
-      "index": 16,
-      "id": "bed3_s1",
-      "bedId": "bed3",
-      "grid": {
-        "row": 3,
-        "col": 1
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 505.0,
-        "y": 790.0
-      },
+      "id": 15,
+      "bedId": 3,
+      "rootX": 451,
+      "rootY": 753,
+      "drawOrder": 753,
       "hitBounds": {
-        "x": 472.0,
-        "y": 742.5,
-        "w": 66,
-        "h": 66
+        "x": 435.0,
+        "y": 737.0,
+        "w": 32,
+        "h": 32
       },
-      "recommendedPlantScale": 0.243,
-      "drawOrder": 5
+      "revealPanScreenPx": {
+        "x": 414.375,
+        "y": 613.375
+      }
     },
     {
-      "index": 17,
-      "id": "bed3_s2",
-      "bedId": "bed3",
-      "grid": {
-        "row": 3,
-        "col": 2
+      "id": 16,
+      "bedId": 3,
+      "rootX": 476,
+      "rootY": 809,
+      "drawOrder": 809,
+      "hitBounds": {
+        "x": 460.0,
+        "y": 793.0,
+        "w": 32,
+        "h": 32
       },
-      "active": true,
-      "rootAnchor": {
+      "revealPanScreenPx": {
+        "x": 414.375,
+        "y": 690.375
+      }
+    },
+    {
+      "id": 17,
+      "bedId": 3,
+      "rootX": 501,
+      "rootY": 866,
+      "drawOrder": 866,
+      "hitBounds": {
+        "x": 485.0,
+        "y": 850.0,
+        "w": 32,
+        "h": 32
+      },
+      "revealPanScreenPx": {
+        "x": 414.375,
+        "y": 768.75
+      }
+    },
+    {
+      "id": 18,
+      "bedId": 3,
+      "rootX": 526,
+      "rootY": 923,
+      "drawOrder": 923,
+      "hitBounds": {
+        "x": 510.0,
+        "y": 907.0,
+        "w": 32,
+        "h": 32
+      },
+      "revealPanScreenPx": {
+        "x": 414.375,
+        "y": 847.125
+      }
+    },
+    {
+      "id": 19,
+      "bedId": 3,
+      "rootX": 550,
+      "rootY": 979,
+      "drawOrder": 979,
+      "hitBounds": {
         "x": 534.0,
-        "y": 838.0
+        "y": 963.0,
+        "w": 32,
+        "h": 32
       },
-      "hitBounds": {
-        "x": 501.0,
-        "y": 790.5,
-        "w": 66,
-        "h": 66
-      },
-      "recommendedPlantScale": 0.27,
-      "drawOrder": 9
-    },
-    {
-      "index": 18,
-      "id": "bed3_s3",
-      "bedId": "bed3",
-      "grid": {
-        "row": 3,
-        "col": 3
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 547.0,
-        "y": 892.0
-      },
-      "hitBounds": {
-        "x": 514.0,
-        "y": 844.5,
-        "w": 66,
-        "h": 66
-      },
-      "recommendedPlantScale": 0.297,
-      "drawOrder": 11
-    },
-    {
-      "index": 19,
-      "id": "bed3_s4",
-      "bedId": "bed3",
-      "grid": {
-        "row": 3,
-        "col": 4
-      },
-      "active": true,
-      "rootAnchor": {
-        "x": 559.0,
-        "y": 940.0
-      },
-      "hitBounds": {
-        "x": 526.0,
-        "y": 892.5,
-        "w": 66,
-        "h": 66
-      },
-      "recommendedPlantScale": 0.325,
-      "drawOrder": 15
+      "revealPanScreenPx": {
+        "x": 414.375,
+        "y": 896.75
+      }
     }
   ],
-  "pack": "greenhouse-v2",
-  "note": "Illustration master plate; slots hand-placed on soil rows. No lip/soil overlays."
+  "view": {
+    "viewportScreenPx": [
+      390,
+      844
+    ],
+    "fitScale": 0.6666666666666666,
+    "uniformZoomOverFit": 2.0625,
+    "nativeToScreenScale": 1.375,
+    "renderedCanvasScreenPx": [
+      804.375,
+      1740.75
+    ],
+    "panScreenPxRange": {
+      "x": [
+        0,
+        414.375
+      ],
+      "y": [
+        0,
+        896.75
+      ]
+    },
+    "defaultPanScreenPx": {
+      "x": 207.1875,
+      "y": 896.75
+    },
+    "forwardTransform": "screenX = nativeX * nativeToScreenScale - panScreenPx.x; screenY = nativeY * nativeToScreenScale - panScreenPx.y",
+    "inverseTransform": "nativeX=(screenX+panScreenPx.x)/nativeToScreenScale; nativeY=(screenY+panScreenPx.y)/nativeToScreenScale",
+    "requiredEngineSupport": "Uniform zoom plus TWO-AXIS bounded pan/scroll. Vertical-only scaling is not sufficient. Whole garden is not visible at once."
+  },
+  "hitTesting": "Transform screen point to native, test half-open exclusive rect [x,x+w) \u00d7 [y,y+h). Zero intersection pairs. Outside every rect: no planting. NO nearest-root fallback.",
+  "rootConvention": {
+    "spriteCanvas": [
+      224,
+      224
+    ],
+    "spriteRoot": [
+      112,
+      208
+    ],
+    "recommendedNativeSpriteScale": 0.3
+  },
+  "qa": {
+    "minNativeBoxWH": [
+      32,
+      32
+    ],
+    "minPhoneBoxWH": [
+      44,
+      44
+    ],
+    "positiveAreaIntersectionPairs": [],
+    "rootsInsideMeasuredSoilPolygons": true,
+    "allBoxesFullyReachable": true
+  }
 }

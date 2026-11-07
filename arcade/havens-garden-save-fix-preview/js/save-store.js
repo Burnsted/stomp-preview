@@ -3,7 +3,7 @@
    No saveRichness gate. Rotating recovery backups + tombstone after reset. */
 const HGSaveStore = (() => {
   const SCHEMA_VERSION = 9;
-  const LAYOUT_VERSION = 3;
+  const LAYOUT_VERSION = 4; // touch-v3 exclusive maps + planting camera
   const BACKUP_N = 5;
   const TAB_ID = (() => {
     try {
