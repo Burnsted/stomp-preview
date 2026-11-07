@@ -1,5 +1,5 @@
-/* Haven's Garden v0.9-play-fix-franz-v1 — Franz runner v1 art wired */
-const CACHE = 'havens-garden-play-fix-preview-v0.9-play-fix-franz-v1';
+/* Haven's Garden v0.9-play-fix-franz-ridges — Franz lanes+HUD polish */
+const CACHE = 'havens-garden-play-fix-preview-v0.9-play-fix-franz-ridges';
 const PRECACHE = [
   './',
   './index.html',

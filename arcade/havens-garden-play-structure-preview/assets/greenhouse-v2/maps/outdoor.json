@@ -1,0 +1,316 @@
+{
+  "scene": "outdoor",
+  "plate": "plates/outdoor-empty.png",
+  "plateSize": [
+    585,
+    1266
+  ],
+  "activeCount": 12,
+  "beds": [
+    {
+      "id": 0,
+      "soilPolygon": [
+        [
+          196,
+          741
+        ],
+        [
+          231,
+          741
+        ],
+        [
+          154,
+          1090
+        ],
+        [
+          30,
+          1090
+        ]
+      ],
+      "count": 6
+    },
+    {
+      "id": 1,
+      "soilPolygon": [
+        [
+          350,
+          741
+        ],
+        [
+          384,
+          741
+        ],
+        [
+          537,
+          1090
+        ],
+        [
+          421,
+          1090
+        ]
+      ],
+      "count": 6
+    }
+  ],
+  "slots": [
+    {
+      "id": 0,
+      "bedId": 0,
+      "rootX": 199,
+      "rootY": 783,
+      "hitBounds": {
+        "x": 175.0,
+        "y": 759.0,
+        "w": 48,
+        "h": 48
+      },
+      "drawOrder": 783,
+      "revealPanScreenPx": {
+        "x": 0,
+        "y": 295.75
+      }
+    },
+    {
+      "id": 1,
+      "bedId": 0,
+      "rootX": 180,
+      "rootY": 836,
+      "hitBounds": {
+        "x": 156.0,
+        "y": 812.0,
+        "w": 48,
+        "h": 48
+      },
+      "drawOrder": 836,
+      "revealPanScreenPx": {
+        "x": 0,
+        "y": 316.5
+      }
+    },
+    {
+      "id": 2,
+      "bedId": 0,
+      "rootX": 162,
+      "rootY": 889,
+      "hitBounds": {
+        "x": 138.0,
+        "y": 865.0,
+        "w": 48,
+        "h": 48
+      },
+      "drawOrder": 889,
+      "revealPanScreenPx": {
+        "x": 0,
+        "y": 316.5
+      }
+    },
+    {
+      "id": 3,
+      "bedId": 0,
+      "rootX": 144,
+      "rootY": 942,
+      "hitBounds": {
+        "x": 120.0,
+        "y": 918.0,
+        "w": 48,
+        "h": 48
+      },
+      "drawOrder": 942,
+      "revealPanScreenPx": {
+        "x": 0,
+        "y": 316.5
+      }
+    },
+    {
+      "id": 4,
+      "bedId": 0,
+      "rootX": 125,
+      "rootY": 995,
+      "hitBounds": {
+        "x": 101.0,
+        "y": 971.0,
+        "w": 48,
+        "h": 48
+      },
+      "drawOrder": 995,
+      "revealPanScreenPx": {
+        "x": 0,
+        "y": 316.5
+      }
+    },
+    {
+      "id": 5,
+      "bedId": 0,
+      "rootX": 107,
+      "rootY": 1048,
+      "hitBounds": {
+        "x": 83.0,
+        "y": 1024.0,
+        "w": 48,
+        "h": 48
+      },
+      "drawOrder": 1048,
+      "revealPanScreenPx": {
+        "x": 0,
+        "y": 316.5
+      }
+    },
+    {
+      "id": 6,
+      "bedId": 1,
+      "rootX": 380,
+      "rootY": 783,
+      "hitBounds": {
+        "x": 356.0,
+        "y": 759.0,
+        "w": 48,
+        "h": 48
+      },
+      "drawOrder": 783,
+      "revealPanScreenPx": {
+        "x": 146.25,
+        "y": 295.75
+      }
+    },
+    {
+      "id": 7,
+      "bedId": 1,
+      "rootX": 397,
+      "rootY": 836,
+      "hitBounds": {
+        "x": 373.0,
+        "y": 812.0,
+        "w": 48,
+        "h": 48
+      },
+      "drawOrder": 836,
+      "revealPanScreenPx": {
+        "x": 146.25,
+        "y": 316.5
+      }
+    },
+    {
+      "id": 8,
+      "bedId": 1,
+      "rootX": 414,
+      "rootY": 889,
+      "hitBounds": {
+        "x": 390.0,
+        "y": 865.0,
+        "w": 48,
+        "h": 48
+      },
+      "drawOrder": 889,
+      "revealPanScreenPx": {
+        "x": 146.25,
+        "y": 316.5
+      }
+    },
+    {
+      "id": 9,
+      "bedId": 1,
+      "rootX": 432,
+      "rootY": 942,
+      "hitBounds": {
+        "x": 408.0,
+        "y": 918.0,
+        "w": 48,
+        "h": 48
+      },
+      "drawOrder": 942,
+      "revealPanScreenPx": {
+        "x": 146.25,
+        "y": 316.5
+      }
+    },
+    {
+      "id": 10,
+      "bedId": 1,
+      "rootX": 449,
+      "rootY": 995,
+      "hitBounds": {
+        "x": 425.0,
+        "y": 971.0,
+        "w": 48,
+        "h": 48
+      },
+      "drawOrder": 995,
+      "revealPanScreenPx": {
+        "x": 146.25,
+        "y": 316.5
+      }
+    },
+    {
+      "id": 11,
+      "bedId": 1,
+      "rootX": 466,
+      "rootY": 1048,
+      "hitBounds": {
+        "x": 442.0,
+        "y": 1024.0,
+        "w": 48,
+        "h": 48
+      },
+      "drawOrder": 1048,
+      "revealPanScreenPx": {
+        "x": 146.25,
+        "y": 316.5
+      }
+    }
+  ],
+  "view": {
+    "viewportScreenPx": [
+      390,
+      844
+    ],
+    "fitScale": 0.6666666666666666,
+    "uniformZoomOverFit": 1.375,
+    "nativeToScreenScale": 0.9166666666666666,
+    "renderedCanvasScreenPx": [
+      536.25,
+      1160.5
+    ],
+    "panScreenPxRange": {
+      "x": [
+        0,
+        146.25
+      ],
+      "y": [
+        0,
+        316.5
+      ]
+    },
+    "defaultPanScreenPx": {
+      "x": 73.125,
+      "y": 316.5
+    },
+    "forwardTransform": "screenX = nativeX * nativeToScreenScale - panScreenPx.x; screenY = nativeY * nativeToScreenScale - panScreenPx.y",
+    "inverseTransform": "nativeX=(screenX+panScreenPx.x)/nativeToScreenScale; nativeY=(screenY+panScreenPx.y)/nativeToScreenScale",
+    "requiredEngineSupport": "Uniform zoom plus TWO-AXIS bounded pan/scroll. Vertical-only scaling is not sufficient. Whole garden is not visible at once."
+  },
+  "hitTesting": "Transform screen point to native, test half-open exclusive rect [x,x+w) \u00d7 [y,y+h). Zero intersection pairs. Outside every rect: no planting. NO nearest-root fallback.",
+  "rootConvention": {
+    "spriteCanvas": [
+      224,
+      224
+    ],
+    "spriteRoot": [
+      112,
+      208
+    ],
+    "recommendedNativeSpriteScale": 0.3
+  },
+  "qa": {
+    "minNativeBoxWH": [
+      48,
+      48
+    ],
+    "minPhoneBoxWH": [
+      44,
+      44
+    ],
+    "positiveAreaIntersectionPairs": [],
+    "rootsInsideMeasuredSoilPolygons": true,
+    "allBoxesFullyReachable": true
+  }
+}

@@ -6,7 +6,7 @@
    bugs+net, bees→hive→jars, color rows, CBN, shop.
    ============================================================ */
 
-const VER = 'v0.9-play-fix-franz-v1';
+const VER = 'v0.9-play-fix-franz-ridges';
 const PK = 'havensGarden.birthday.v2';
 const PK_LEGACY = 'havensGarden.v1';
 /** Prior preview / prototype keys that may still hold progress. */
@@ -600,7 +600,16 @@ function pickSp() {
   return sp;
 }
 function playfieldTop() { return padT + 56; }
-function playfieldBot() { return contentBottom(); }
+function isRunnerChrome() {
+  return state === ST.RUNNER || state === ST.RUN_RESULTS
+    || (state === ST.PAUSED && prevState === ST.RUNNER);
+}
+/** During a run the nav dock hides — playfield uses the full lower screen. */
+function playfieldBot() {
+  // Runner uses the full canvas height so no sky-blue page seam peeks underfoot
+  if (isRunnerChrome()) return H;
+  return contentBottom();
+}
 /** Legacy screen-band helpers (menu/howto); meadow uses world coords. */
 function fieldTop() { return playfieldTop() + (playfieldBot() - playfieldTop()) * 0.35; }
 function fieldBot() { return playfieldBot() - 8; }
@@ -3254,6 +3263,11 @@ function drawNavDock() {
     hit.navBack = hit.navPlaces = hit.navHome = null;
     return;
   }
+  // Flower run: hide Back/Places/Home — pause only (dock steals lane space)
+  if (isRunnerChrome()) {
+    hit.navBack = hit.navPlaces = hit.navHome = null;
+    return;
+  }
   const barTop = contentBottom();
   cx.fillStyle = uiRgba('#f4ebe0', 0.28);
   cx.fillRect(0, barTop, W, H - barTop);
@@ -4840,8 +4854,14 @@ function frame(now) {
   last = now;
   hit = {};
   update(dt);
-  cx.fillStyle = '#96cdf0';
+  // Runner fills to the bottom; avoid sky-blue clear / page-bg flashing as a seam
+  const runnerChrome = isRunnerChrome();
+  cx.fillStyle = runnerChrome ? '#5faa45' : '#96cdf0';
   cx.fillRect(0, 0, W, H);
+  if (document.body) {
+    const bg = runnerChrome ? '#5faa45' : '#96cdf0';
+    if (document.body.style.background !== bg) document.body.style.background = bg;
+  }
   if (state === ST.BOOT) drawBoot();
   else if (state === ST.MENU) drawMenu();
   else if (state === ST.HOWTO) drawHowTo();
@@ -5092,7 +5112,7 @@ async function boot() {
 
   try {
     if (navigator.serviceWorker && typeof navigator.serviceWorker.register === 'function') {
-      navigator.serviceWorker.register('./sw.js?v=0.9-play-fix-franz-v1').catch(() => {});
+      navigator.serviceWorker.register('./sw.js?v=0.9-play-fix-franz-ridges').catch(() => {});
     }
   } catch (eSw) {}
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));

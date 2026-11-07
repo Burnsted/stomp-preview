@@ -1,0 +1,196 @@
+{
+  "characterCanvas": [
+    1024,
+    1024
+  ],
+  "anchorPx": [
+    512,
+    976
+  ],
+  "standingVisibleHeight": 768,
+  "recommendedCommonScaleOn585x1266": 0.412,
+  "notes": "Each pose uses same canvas and baseline; crouching poses are shorter. Jump may be translated upward in engine. Single key poses, not animation cycles.",
+  "files": {
+    "character/haven-run.png": {
+      "size": [
+        1024,
+        1024
+      ],
+      "alphaBounds": [
+        313,
+        208,
+        711,
+        976
+      ],
+      "visibleHeight": 768
+    },
+    "character/haven-jump.png": {
+      "size": [
+        1024,
+        1024
+      ],
+      "alphaBounds": [
+        283,
+        208,
+        740,
+        976
+      ],
+      "visibleHeight": 768
+    },
+    "character/haven-pick.png": {
+      "size": [
+        1024,
+        1024
+      ],
+      "alphaBounds": [
+        220,
+        326,
+        804,
+        976
+      ],
+      "visibleHeight": 650
+    },
+    "character/haven-chase.png": {
+      "size": [
+        1024,
+        1024
+      ],
+      "alphaBounds": [
+        277,
+        208,
+        746,
+        976
+      ],
+      "visibleHeight": 768
+    },
+    "character/haven-skip.png": {
+      "size": [
+        1024,
+        1024
+      ],
+      "alphaBounds": [
+        265,
+        208,
+        759,
+        976
+      ],
+      "visibleHeight": 768
+    },
+    "character/haven-plant.png": {
+      "size": [
+        1024,
+        1024
+      ],
+      "alphaBounds": [
+        270,
+        336,
+        754,
+        976
+      ],
+      "visibleHeight": 640
+    },
+    "props/bug-net.png": {
+      "size": [
+        299,
+        466
+      ],
+      "visibleHeight": 450
+    },
+    "props/basket.png": {
+      "size": [
+        221,
+        246
+      ],
+      "visibleHeight": 230
+    },
+    "props/watering-can.png": {
+      "size": [
+        281,
+        276
+      ],
+      "visibleHeight": 260
+    },
+    "props/shovel-big.png": {
+      "size": [
+        335,
+        636
+      ],
+      "visibleHeight": 620
+    },
+    "props/multi-pick-basket.png": {
+      "size": [
+        215,
+        296
+      ],
+      "visibleHeight": 280
+    },
+    "bugs/ladybug.png": {
+      "size": [
+        61,
+        52
+      ],
+      "visibleHeight": 44
+    },
+    "bugs/grasshopper.png": {
+      "size": [
+        118,
+        120
+      ],
+      "visibleHeight": 112
+    },
+    "bugs/bee.png": {
+      "size": [
+        78,
+        80
+      ],
+      "visibleHeight": 72
+    },
+    "bugs/butterfly.png": {
+      "size": [
+        115,
+        104
+      ],
+      "visibleHeight": 96
+    },
+    "hive/hive.png": {
+      "size": [
+        412,
+        496
+      ],
+      "visibleHeight": 480
+    },
+    "hive/jar-full.png": {
+      "size": [
+        105,
+        141
+      ],
+      "visibleHeight": 125
+    },
+    "hive/jar-empty.png": {
+      "size": [
+        104,
+        141
+      ],
+      "visibleHeight": 125
+    }
+  },
+  "handAnchorsPxApprox": {
+    "chase": [
+      322,
+      403
+    ],
+    "pick": [
+      644,
+      910
+    ],
+    "plant": [
+      674,
+      852
+    ],
+    "run": [
+      678,
+      548
+    ]
+  },
+  "spriteUse": "PNG canvases have padding; do not scale each alpha bbox independently. At common scale .412, run/jump/chase/skip visible height is about316px =25% of1266. Kneel/pick shorter at same scale."
+}

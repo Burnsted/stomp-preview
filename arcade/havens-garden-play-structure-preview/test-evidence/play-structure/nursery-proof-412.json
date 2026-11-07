@@ -1,0 +1,110 @@
+{
+  "empty": {
+    "spots": {
+      "ok": true,
+      "maxAlpha": 0.003,
+      "meanAlpha": 0.003,
+      "spots": 11,
+      "worst": 11,
+      "plateKey": "small",
+      "plateSrc": "small-empty.webp?v=v0.9-play-fix-franz-ridges",
+      "layoutVersion": 4,
+      "routing": "exclusive-rect",
+      "slotCount": 12,
+      "activeCount": 12,
+      "potsExpected": 1,
+      "per": [
+        {
+          "i": 0,
+          "alpha": 0.003,
+          "x": 239,
+          "y": 1148
+        },
+        {
+          "i": 1,
+          "alpha": 0.003,
+          "x": 196,
+          "y": 1270
+        },
+        {
+          "i": 2,
+          "alpha": 0.003,
+          "x": 156,
+          "y": 1393
+        },
+        {
+          "i": 3,
+          "alpha": 0.003,
+          "x": 114,
+          "y": 1513
+        },
+        {
+          "i": 4,
+          "alpha": 0.003,
+          "x": 71,
+          "y": 1635
+        },
+        {
+          "i": 6,
+          "alpha": 0.003,
+          "x": 709,
+          "y": 1148
+        },
+        {
+          "i": 7,
+          "alpha": 0.003,
+          "x": 746,
+          "y": 1270
+        },
+        {
+          "i": 8,
+          "alpha": 0.003,
+          "x": 786,
+          "y": 1393
+        }
+      ]
+    },
+    "face": {
+      "ok": true,
+      "skinFrac": 0.801,
+      "brightFrac": 0.108,
+      "samples": 15625,
+      "h": 225,
+      "girlFrac": 0.22,
+      "mean": [
+        222,
+        169,
+        125
+      ]
+    },
+    "frac": 0.22,
+    "girl": {
+      "x": 206,
+      "y": 658.8,
+      "face": 1,
+      "pose": "stand",
+      "gait": "idle"
+    },
+    "party": {
+      "confettiGone": true
+    }
+  },
+  "squat": {
+    "pose": "plant",
+    "face": {
+      "ok": true,
+      "skinFrac": 1,
+      "brightFrac": 0,
+      "samples": 15625,
+      "h": 225,
+      "girlFrac": 0.22,
+      "mean": [
+        200,
+        141,
+        72
+      ]
+    },
+    "frac": 0.22,
+    "pots": 1
+  }
+}
