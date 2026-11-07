@@ -54,8 +54,14 @@ const WALK_BOB_PX = 6; // ±6 on walk 02/04
 const GROWING_SEC = 1.45;
 const WATER_CAN_CSS = 52; // ~44–60 CSS px finger-follow can
 const GIRL_FRAME_FRAC = 0.135; // Small vs field (Ted: too big at 25%; review still large at 16%)
+/** Nursery / greenhouse — larger so Haven reads against the beds (not microscopic). */
+const NURSERY_GIRL_FRAC = 0.22;
 const SPARKLE_MS = 30000;
 const PLANT_FAST_SEC = 0.32; // shovel upgrade
+
+function girlFrameFrac() {
+  return (state === ST.GREENHOUSE) ? NURSERY_GIRL_FRAC : GIRL_FRAME_FRAC;
+}
 
 /* Drawn size (drawFlowerSprite s). Hit targets stay generous (PICK_RADIUS). */
 const MEADOW_FLOWER_DRAW = 0.34;   // little wildflowers / cuttings in the field
@@ -1149,6 +1155,128 @@ function proofMeadowPlateSky(opts) {
   };
 }
 
+/**
+ * Nursery empty-spot overlay check: at each unplanted root, compare live canvas
+ * vs the greenhouse plate alone. Effective overlay alpha must stay ≤ 0.15
+ * (Ted: no opaque soil masks). Also returns plate identity + layout version.
+ */
+function proofNurseryEmptySpots(opts) {
+  opts = opts || {};
+  if (!(window.HGNursery && HGNursery.ready())) return { ok: false, reason: 'nursery-not-ready' };
+  if (state !== ST.GREENHOUSE) return { ok: false, reason: 'not-greenhouse' };
+  const outdoor = !!opts.outdoor;
+  const sz = outdoor ? HGNursery.outdoorDef() : HGNursery.sizeForGh(SAVE.ghSize | 0);
+  if (!sz) return { ok: false, reason: 'no-size' };
+  const layers = HGNursery.layerImages(sz);
+  const plate = layers && layers.plateNoLip;
+  if (!plate || !plate.width) return { ok: false, reason: 'no-plate' };
+
+  const dpr = cv.width / Math.max(1, W);
+  const tmp = document.createElement('canvas');
+  tmp.width = cv.width;
+  tmp.height = cv.height;
+  const tcx = tmp.getContext('2d');
+  tcx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const lim = gardenPanLimits(sz);
+  tcx.drawImage(plate, -gardenCam.panX, -gardenCam.panY, lim.pw, lim.ph);
+
+  const live = cx.getImageData(0, 0, cv.width, cv.height);
+  const ref = tcx.getImageData(0, 0, cv.width, cv.height);
+  const bedsArr = outdoor ? SAVE.outdoorBeds : SAVE.beds;
+  const scale = gardenScale(sz);
+  const rad = Math.max(6, Math.floor(14 * dpr));
+  let maxAlpha = 0, sumAlpha = 0, spots = 0, worst = null;
+  const per = [];
+
+  (sz.slots || []).forEach((slot) => {
+    if (slot.active === false) return;
+    const b = bedsArr && bedsArr[slot.i];
+    if (b && ((b.grown | 0) > 0 || (bedMix(b) || []).length)) return; // planted — skip
+    const sx = Math.round((slot.rootX * scale - gardenCam.panX) * dpr);
+    const sy = Math.round((slot.rootY * scale - gardenCam.panY) * dpr);
+    if (sx < rad || sy < rad || sx >= cv.width - rad || sy >= cv.height - rad) return;
+    let sum = 0, n = 0;
+    for (let dy = -rad; dy <= rad; dy += 2) {
+      for (let dx = -rad; dx <= rad; dx += 2) {
+        if (dx * dx + dy * dy > rad * rad) continue;
+        const i = ((sy + dy) * cv.width + (sx + dx)) * 4;
+        const dr = Math.abs(live.data[i] - ref.data[i]);
+        const dg = Math.abs(live.data[i + 1] - ref.data[i + 1]);
+        const db = Math.abs(live.data[i + 2] - ref.data[i + 2]);
+        // Overlay alpha proxy vs plate (255 = fully opaque foreign fill)
+        sum += (dr + dg + db) / (3 * 255);
+        n++;
+      }
+    }
+    const alpha = n ? sum / n : 0;
+    per.push({ i: slot.i, alpha: Math.round(alpha * 1000) / 1000, x: sx, y: sy });
+    sumAlpha += alpha;
+    if (alpha > maxAlpha) { maxAlpha = alpha; worst = slot.i; }
+    spots++;
+  });
+
+  const meanAlpha = spots ? sumAlpha / spots : 0;
+  const ok = spots > 0 && maxAlpha <= 0.15;
+  return {
+    ok,
+    maxAlpha: Math.round(maxAlpha * 1000) / 1000,
+    meanAlpha: Math.round(meanAlpha * 1000) / 1000,
+    spots,
+    worst,
+    plateKey: sz.key,
+    plateSrc: (plate.currentSrc || plate.src || '').split('/').pop(),
+    layoutVersion: HGNursery.LAYOUT_VERSION,
+    routing: sz.routing || 'exclusive-rect',
+    slotCount: sz.slotCount,
+    activeCount: sz.activeCount,
+    per: per.slice(0, 8)
+  };
+}
+
+/**
+ * Haven head region must not be occluded by basket/bouquet props.
+ * Samples a head disc and rejects if mostly bright flower/wicker fill.
+ */
+function proofHavenFaceClear(opts) {
+  opts = opts || {};
+  const dpr = cv.width / Math.max(1, W);
+  const gx = (opts.x != null ? opts.x : (state === ST.GREENHOUSE ? W * 0.5 : girl.x));
+  const gy = (opts.y != null ? opts.y : (state === ST.GREENHOUSE ? H * 0.72 : girl.y));
+  const h = H * girlFrameFrac() * (Assets.get('havenRun') ? 1.12 : 1);
+  // Head center ~ 78% up from feet
+  const hx = Math.round(gx * dpr);
+  const hy = Math.round((gy - h * 0.78) * dpr);
+  const rad = Math.max(8, Math.floor(h * 0.11 * dpr));
+  if (hx < rad || hy < rad || hx >= cv.width - rad || hy >= cv.height - rad) {
+    return { ok: false, reason: 'head-offscreen', h };
+  }
+  const live = cx.getImageData(hx - rad, hy - rad, rad * 2 + 1, rad * 2 + 1);
+  let skin = 0, bright = 0, n = 0, sumR = 0, sumG = 0, sumB = 0;
+  for (let i = 0; i < live.data.length; i += 4) {
+    const r = live.data[i], g = live.data[i + 1], b = live.data[i + 2], a = live.data[i + 3];
+    if (a < 20) continue;
+    n++;
+    sumR += r; sumG += g; sumB += b;
+    // Skin-ish peach / hair gold
+    if (r > 160 && g > 110 && g < 210 && b < 180 && r > b + 20) skin++;
+    // Bouquet / wicker blob: very bright near-white petals OR flat beige disc
+    if ((r > 220 && g > 220 && b > 200) || (r > 190 && g > 160 && b > 120 && Math.abs(r - g) < 35 && b < r - 20)) bright++;
+  }
+  const skinFrac = n ? skin / n : 0;
+  const brightFrac = n ? bright / n : 0;
+  // Face clear when we still see skin/hair and aren't flooded with petal/wicker bright
+  const ok = n > 30 && brightFrac < 0.42 && skinFrac > 0.08;
+  return {
+    ok,
+    skinFrac: Math.round(skinFrac * 1000) / 1000,
+    brightFrac: Math.round(brightFrac * 1000) / 1000,
+    samples: n,
+    h: Math.round(h),
+    girlFrac: girlFrameFrac(),
+    mean: n ? [Math.round(sumR / n), Math.round(sumG / n), Math.round(sumB / n)] : null
+  };
+}
+
 /** Flower field: a few far, decorative butterflies only — never bees, never tappable. */
 function ensureMeadowCritters() {
   meadowCritters = meadowCritters.filter((p) => p.kind === 'butterfly' && p.decorative);
@@ -1473,7 +1601,9 @@ function goPlantHome() {
 
 /** Greenhouse Haven stand position (screen) — matches drawInterior. */
 function greenhouseGirlScreen() {
-  return { x: W * 0.5, y: H * 0.72, h: Y(320) * girl.squash };
+  const prod = !!Assets.get('havenRun');
+  const h = H * girlFrameFrac() * (prod ? 1.12 : 1) * (girl.squash || 1);
+  return { x: W * 0.5, y: H * 0.72, h };
 }
 
 /** Plant ONE small flower: tap bed → flower flies from basket into that dirt. */
@@ -2788,23 +2918,24 @@ function drawHouseFull(open, time) {
   }
 }
 
-/** Hip / front-carry basket anchor (screen space). Haven stays fully readable. */
+/** Hip basket anchor — side of hip, never over the face. */
 function basketPos(gx, gy, girlH) {
+  const face = girl.face || 1;
   return {
-    x: gx + girl.face * X(34),
-    y: gy - girlH * 0.20
+    x: gx + face * (girlH * 0.32),
+    y: gy - girlH * 0.22
   };
 }
 
-/** Hip basket — production prop; sparkle multi-pick when upgrade is active. */
+/** Hip basket — scales with Haven so it never swallows her head. */
 function drawWickerBasket(bx, by, scale) {
   scale = scale == null ? 1 : scale;
   const sparkle = sparkleActive();
   const img = sparkle ? (Assets.get('multiPickBasket') || Assets.get('basket')) : Assets.get('basket');
   if (img) {
-    const h = Y(48) * scale * (sparkle ? 1.15 : 1);
+    const h = Y(48) * scale * (sparkle ? 1.08 : 1);
     const w = h * (img.width / img.height);
-    cx.drawImage(img, bx - w / 2, by - h * 0.72, w, h);
+    cx.drawImage(img, bx - w / 2, by - h * 0.55, w, h);
     return;
   }
   const w = X(58) * scale;
@@ -2813,48 +2944,49 @@ function drawWickerBasket(bx, by, scale) {
   cx.beginPath(); cx.ellipse(bx, by + hh * 0.06, w * 0.48, hh * 0.40, 0, 0, 7); cx.fill();
 }
 
-/** Small flowers laid horizontally in the basket — same scale as meadow pick flowers. */
-function drawBasketFlowers(bx, by, ids, flyingId) {
+/** Compact blooms in the hip basket — few, small, never a face-covering mound. */
+function drawBasketFlowers(bx, by, ids, flyingId, flowerScale) {
   if (!ids || !ids.length) return;
-  // Show up to 12 recent blooms; skip one currently flying out to a bed
   const list = ids.slice();
   if (flyingId) {
     const ix = list.lastIndexOf(flyingId);
     if (ix >= 0) list.splice(ix, 1);
   }
-  const show = list.slice(Math.max(0, list.length - 12));
+  const show = list.slice(Math.max(0, list.length - 5));
+  const fs = (flowerScale != null ? flowerScale : MEADOW_FLOWER_DRAW * 0.55);
   const n = show.length;
   for (let i = 0; i < n; i++) {
-    const col = i % 4;
-    const row = (i / 4) | 0;
-    const ox = (col - 1.5) * X(13);
-    const oy = -Y(10) + row * Y(7);
+    const col = i % 3;
+    const row = (i / 3) | 0;
+    const ox = (col - 1) * X(9);
+    const oy = -Y(6) + row * Y(5);
     const sp = spById(show[i]);
     cx.save();
     cx.translate(bx + ox, by + oy);
-    cx.rotate(-1.05 + (i % 5) * 0.12); // laid sideways in the basket
-    drawFlowerSprite(sp, 0, 0, MEADOW_FLOWER_DRAW * 0.92);
+    cx.rotate(-1.05 + (i % 5) * 0.12);
+    drawFlowerSprite(sp, 0, 0, fs);
     cx.restore();
   }
 }
 
 function drawGirl(x, y, walking) {
-  // Cartoon production sprites — mild pad compensate; keep Haven small vs the field
+  // Cartoon production sprites — field stays small; nursery uses NURSERY_GIRL_FRAC
   const prod = !!Assets.get('havenRun');
   const visFrac = prod ? 1.12 : 1;
-  const h = H * GIRL_FRAME_FRAC * visFrac;
+  const h = H * girlFrameFrac() * visFrac;
   let pose = girlPoseT > 0 ? girlPose : (walking ? 'walk' : 'idle');
   if (netSwing > 0.2) pose = 'chase';
   if (pose === 'jump' && girlPoseT > 0) pose = 'celebrate';
 
   const gait = girlGait || (walking ? 'walk' : 'idle');
+  // Basket scale tied to Haven height (field ~0.7, nursery ~1.0 of base prop)
+  const basketScale = Math.max(0.55, Math.min(1.15, h / Y(200)));
   let basketAttach = null;
   if (window.HavenAnim) {
     basketAttach = HavenAnim.draw(cx, Assets, x, y, h, girl, {
       pose, walking, gait, netSwing, poseT: girlPoseT
     });
   } else {
-    // Fallback: legacy anchored sprite
     let img = Assets.pose(pose === 'walk' ? 'run' : (pose === 'celebrate' ? 'jump' : pose));
     if (pose === 'walk' || walking) img = Assets.walkFrame(girl.walkFrame | 0);
     cx.save();
@@ -2865,21 +2997,24 @@ function drawGirl(x, y, walking) {
     cx.restore();
   }
 
-  // Basket at her hip — swings with arm phase from HavenAnim
+  // Basket at her hip/side only — never drawn over the face
   if (bouquet.length > 0 || (plantFly && plantFly.id) || sparkleActive()) {
-    const ba = basketAttach
-      ? { x: basketAttach.x, y: basketAttach.y }
-      : basketPos(x, y, h);
-    cx.save();
+    const face = (basketAttach && basketAttach.face) || girl.face || 1;
+    // Prefer side-hip from HavenAnim, then nudge further out/down away from head
+    let ba;
     if (basketAttach) {
-      cx.translate(ba.x, ba.y);
-      cx.rotate((basketAttach.swing || 0) * 0.03);
-      drawWickerBasket(0, 0, 1);
-      drawBasketFlowers(0, 0, bouquet, plantFly ? plantFly.id : null);
+      ba = {
+        x: x + face * (h * 0.34) + (basketAttach.swing || 0) * 0.2 * face,
+        y: y - h * 0.24
+      };
     } else {
-      drawWickerBasket(ba.x, ba.y, 1);
-      drawBasketFlowers(ba.x, ba.y, bouquet, plantFly ? plantFly.id : null);
+      ba = basketPos(x, y, h);
     }
+    cx.save();
+    cx.translate(ba.x, ba.y);
+    cx.rotate(((basketAttach && basketAttach.swing) || 0) * 0.02);
+    drawWickerBasket(0, 0, basketScale);
+    drawBasketFlowers(0, -Y(4) * basketScale, bouquet, plantFly ? plantFly.id : null, MEADOW_FLOWER_DRAW * 0.5 * basketScale);
     cx.restore();
   }
 }
@@ -3161,15 +3296,25 @@ function nurseryPlanterRects() {
   return rects;
 }
 
+/** Empty-spot hint only — faint outline / sparkle. Never opaque soil masks (alpha ≤ 0.12). */
 function drawBedHighlight(s, highlight) {
   if (!highlight) return;
-  const pulse = 0.55 + 0.45 * Math.sin(performance.now() / 220);
-  cx.fillStyle = `rgba(255,220,90,${0.22 * pulse})`;
-  const hw = (s.hitW || s.r * 2) * 0.55;
-  const hh = (s.hitH || s.r) * 0.55;
+  const pulse = 0.55 + 0.45 * Math.sin(performance.now() / 260);
+  const a = 0.10 * pulse; // hard cap well under Ted's 0.15 ban
+  const hw = Math.min(18, (s.hitW || s.r * 2) * 0.28);
+  const hh = Math.min(10, (s.hitH || s.r) * 0.22);
+  cx.save();
+  cx.globalAlpha = a;
+  cx.strokeStyle = '#ffe08a';
+  cx.lineWidth = 1.5;
   cx.beginPath();
-  cx.ellipse(s.x, s.y - 4, hw, hh, 0, 0, 7);
-  cx.fill();
+  cx.ellipse(s.x, s.y - 2, hw, hh, 0, 0, 7);
+  cx.stroke();
+  // Tiny sparkle dots — no filled soil disc
+  cx.fillStyle = '#fff6c8';
+  cx.beginPath(); cx.arc(s.x - hw * 0.35, s.y - hh * 0.8, 1.4, 0, 7); cx.fill();
+  cx.beginPath(); cx.arc(s.x + hw * 0.4, s.y - hh * 0.3, 1.1, 0, 7); cx.fill();
+  cx.restore();
 }
 
 /** Per-species growth (seedling→leaves→bud→bloom) at rootAnchor; depth-sorted by caller. */
@@ -4759,6 +4904,7 @@ window.HavensGarden = {
   getToast: () => ({ current: toastCurrent, cue, queue: toastQueue.slice() }),
   showToast, clearToasts, activeToastText,
   proofMeadowPlateSky, meadowHorizonY,
+  proofNurseryEmptySpots, proofHavenFaceClear, girlFrameFrac,
   getGirl: () => ({ x: girl.x, y: girl.y, face: girl.face, pose: girlPose, gait: girlGait }),
   parentResetGarden, parentRestoreBackup, parentOpenBackups, armHarvestMode, undoHarvest,
   harvestBed, clearHarvestMode,

@@ -309,10 +309,10 @@ const HavenAnim = (() => {
 
     cx.restore();
 
-    // Basket hip attachment with arm swing (caller draws contents)
+    // Basket hip/side attachment — low enough that blooms never cover the face
     const basket = {
-      x: x + face * (h * 0.14) + STATE.armSwing * 0.35 * face,
-      y: y - h * 0.38 + Math.abs(STATE.armSwing) * 0.08 + bob * 0.3,
+      x: x + face * (h * 0.34) + STATE.armSwing * 0.25 * face,
+      y: y - h * 0.24 + Math.abs(STATE.armSwing) * 0.05 + bob * 0.15,
       swing: STATE.armSwing,
       face
     };

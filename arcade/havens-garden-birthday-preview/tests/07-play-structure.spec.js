@@ -94,6 +94,92 @@ test.describe('play-structure fix', () => {
     await shot(page, 'device-android-412-field-plate-proof');
   });
 
+  test('nursery: no opaque soil masks; Haven face clear; touch-v3 plate', async ({ page }) => {
+    await page.setViewportSize({ width: 412, height: 915 });
+    await bootGame(page);
+    await playIntoField(page);
+
+    // Empty nursery — clean beds, no bouquet occlusion
+    await page.evaluate(() => {
+      HavensGarden.setBouquet([]);
+      HavensGarden.SAVE.beds = [];
+      HavensGarden.SAVE.outdoorBeds = [];
+      HavensGarden.SAVE.plantReserve = [];
+      HavensGarden.enterGreenhouse('look');
+      HavensGarden.forceNurseryInside();
+    });
+    await page.waitForFunction(() => HavensGarden.getState() === 'GREENHOUSE');
+    await page.waitForTimeout(200);
+    await shot(page, 'device-android-412-nursery-empty');
+
+    const emptyProof = await page.evaluate(() => {
+      const spots = HavensGarden.proofNurseryEmptySpots({});
+      const face = HavensGarden.proofHavenFaceClear({});
+      return {
+        spots,
+        face,
+        frac: HavensGarden.girlFrameFrac(),
+        girl: HavensGarden.getGirl()
+      };
+    });
+    expect(emptyProof.spots.ok).toBeTruthy();
+    expect(emptyProof.spots.maxAlpha).toBeLessThanOrEqual(0.15);
+    expect(emptyProof.spots.layoutVersion).toBe(4);
+    expect(emptyProof.spots.routing).toBe('exclusive-rect');
+    expect(String(emptyProof.spots.plateSrc || '')).toMatch(/small-empty/);
+    expect(emptyProof.frac).toBeGreaterThanOrEqual(0.20);
+    expect(emptyProof.face.ok).toBeTruthy();
+    expect(emptyProof.face.brightFrac).toBeLessThan(0.42);
+
+    // Mid-planting squat with bouquet — face still clear, basket at side
+    await page.evaluate(() => {
+      HavensGarden.setBouquet(new Array(20).fill('daisy'));
+      HavensGarden.enterGreenhouse('plant');
+      HavensGarden.forceNurseryInside();
+      const spots = HGNursery.activeSlotIndices(0);
+      HavensGarden.doPlantAt(spots[0] != null ? spots[0] : 0, 0);
+    });
+    await page.waitForTimeout(180);
+    await shot(page, 'device-android-412-nursery-squat');
+    const squatProof = await page.evaluate(() => ({
+      pose: HavensGarden.getGirl().pose,
+      face: HavensGarden.proofHavenFaceClear({}),
+      frac: HavensGarden.girlFrameFrac()
+    }));
+    expect(squatProof.pose).toBe('plant');
+    expect(squatProof.face.ok).toBeTruthy();
+    expect(squatProof.frac).toBeGreaterThanOrEqual(0.20);
+
+    // Partly planted beds — still no soil masks on empty spots
+    await page.evaluate(() => {
+      // Finish current plant flight if any
+      HavensGarden.SAVE.beds = HavensGarden.SAVE.beds || [];
+      HavensGarden.SAVE.beds[0] = { mix: ['daisy'], watered: 0, grown: 0, squash: 1 };
+      HavensGarden.SAVE.beds[1] = { mix: ['tulip'], watered: 0, grown: 1, squash: 1 };
+      HavensGarden.SAVE.beds[6] = { mix: ['sunflower'], watered: 0, grown: 2, squash: 1 };
+      HavensGarden.setBouquet(['daisy', 'daisy']);
+      HavensGarden.enterGreenhouse('plant');
+      HavensGarden.forceNurseryInside();
+    });
+    await page.waitForTimeout(200);
+    await shot(page, 'device-android-412-nursery-planted');
+    const plantedProof = await page.evaluate(() => ({
+      spots: HavensGarden.proofNurseryEmptySpots({}),
+      face: HavensGarden.proofHavenFaceClear({})
+    }));
+    expect(plantedProof.spots.ok).toBeTruthy();
+    expect(plantedProof.spots.maxAlpha).toBeLessThanOrEqual(0.15);
+    expect(plantedProof.face.ok).toBeTruthy();
+
+    const fs = require('fs');
+    const path = require('path');
+    const out = path.join(__dirname, '../test-evidence/play-structure');
+    fs.mkdirSync(out, { recursive: true });
+    fs.writeFileSync(path.join(out, 'nursery-proof-412.json'), JSON.stringify({
+      empty: emptyProof, squat: squatProof, planted: plantedProof
+    }, null, 2));
+  });
+
   test('no overlapping toasts; single side counter only', async ({ page }) => {
     await bootGame(page);
     await playIntoField(page);

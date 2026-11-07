@@ -1,0 +1,183 @@
+{
+  "empty": {
+    "spots": {
+      "ok": true,
+      "maxAlpha": 0,
+      "meanAlpha": 0,
+      "spots": 11,
+      "worst": null,
+      "plateKey": "small",
+      "plateSrc": "small-empty.webp?v=v0.9-play-fix-preview",
+      "layoutVersion": 4,
+      "routing": "exclusive-rect",
+      "slotCount": 12,
+      "activeCount": 12,
+      "per": [
+        {
+          "i": 0,
+          "alpha": 0,
+          "x": 239,
+          "y": 1148
+        },
+        {
+          "i": 1,
+          "alpha": 0,
+          "x": 196,
+          "y": 1270
+        },
+        {
+          "i": 2,
+          "alpha": 0,
+          "x": 156,
+          "y": 1393
+        },
+        {
+          "i": 3,
+          "alpha": 0,
+          "x": 114,
+          "y": 1513
+        },
+        {
+          "i": 4,
+          "alpha": 0,
+          "x": 71,
+          "y": 1635
+        },
+        {
+          "i": 6,
+          "alpha": 0,
+          "x": 709,
+          "y": 1148
+        },
+        {
+          "i": 7,
+          "alpha": 0,
+          "x": 746,
+          "y": 1270
+        },
+        {
+          "i": 8,
+          "alpha": 0,
+          "x": 786,
+          "y": 1393
+        }
+      ]
+    },
+    "face": {
+      "ok": true,
+      "skinFrac": 0.935,
+      "brightFrac": 0,
+      "samples": 15625,
+      "h": 225,
+      "girlFrac": 0.22,
+      "mean": [
+        202,
+        139,
+        74
+      ]
+    },
+    "frac": 0.22,
+    "girl": {
+      "x": 206,
+      "y": 658.8,
+      "face": 1,
+      "pose": "idle",
+      "gait": "idle"
+    }
+  },
+  "squat": {
+    "pose": "plant",
+    "face": {
+      "ok": true,
+      "skinFrac": 1,
+      "brightFrac": 0,
+      "samples": 15625,
+      "h": 225,
+      "girlFrac": 0.22,
+      "mean": [
+        200,
+        141,
+        72
+      ]
+    },
+    "frac": 0.22
+  },
+  "planted": {
+    "spots": {
+      "ok": true,
+      "maxAlpha": 0.038,
+      "meanAlpha": 0.009,
+      "spots": 8,
+      "worst": 2,
+      "plateKey": "small",
+      "plateSrc": "small-empty.webp?v=v0.9-play-fix-preview",
+      "layoutVersion": 4,
+      "routing": "exclusive-rect",
+      "slotCount": 12,
+      "activeCount": 12,
+      "per": [
+        {
+          "i": 2,
+          "alpha": 0.038,
+          "x": 156,
+          "y": 1393
+        },
+        {
+          "i": 3,
+          "alpha": 0.004,
+          "x": 114,
+          "y": 1513
+        },
+        {
+          "i": 4,
+          "alpha": 0.004,
+          "x": 71,
+          "y": 1635
+        },
+        {
+          "i": 7,
+          "alpha": 0.004,
+          "x": 746,
+          "y": 1270
+        },
+        {
+          "i": 8,
+          "alpha": 0.004,
+          "x": 786,
+          "y": 1393
+        },
+        {
+          "i": 9,
+          "alpha": 0.004,
+          "x": 826,
+          "y": 1513
+        },
+        {
+          "i": 10,
+          "alpha": 0.004,
+          "x": 866,
+          "y": 1635
+        },
+        {
+          "i": 11,
+          "alpha": 0.004,
+          "x": 906,
+          "y": 1758
+        }
+      ]
+    },
+    "face": {
+      "ok": true,
+      "skinFrac": 0.935,
+      "brightFrac": 0,
+      "samples": 15625,
+      "h": 225,
+      "girlFrac": 0.22,
+      "mean": [
+        202,
+        139,
+        74
+      ]
+    }
+  }
+}
