@@ -270,7 +270,9 @@ function SpotDetail() {
 
       <button
         type="button"
-        className="absolute left-3 top-3 z-20 text-xs font-semibold text-snow/80"
+        data-testid="spot-detail-close"
+        aria-label="Close spot"
+        className="absolute left-3 top-3 z-20 grid h-11 min-w-11 place-items-center rounded-full border border-white/35 bg-black/55 px-3 text-xs font-bold text-white"
         onClick={() => selectPin(null)}
       >
         Close
@@ -297,25 +299,29 @@ function SpotDetail() {
         </button>
       </div>
 
-      {/* Info sheet — founder/keeper/confirmed/expiry/transfer (always mounted for tests) */}
+      {/* Info sheet — scroll body + sticky keeper footer (FAB-safe). Always mounted for tests. */}
       <div
         data-testid="spot-info-sheet"
         data-open={infoOpen ? "true" : "false"}
         hidden={!infoOpen}
-        className="absolute inset-x-2 bottom-2 top-12 z-30 overflow-y-auto rounded-3xl bg-snow p-3 text-ink shadow-xl ring-1 ring-line"
+        className="absolute inset-x-2 bottom-2 top-12 z-30 flex flex-col overflow-hidden rounded-3xl bg-snow text-ink shadow-xl ring-1 ring-line"
       >
-        <div className="mb-2 flex items-center justify-between">
+        <div className="flex shrink-0 items-center justify-between px-3 pt-3">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">Spot info</p>
           <button
             type="button"
             data-testid="spot-info-close"
-            className="text-xs font-semibold text-muted"
+            className="grid h-11 min-w-11 place-items-center text-xs font-semibold text-muted"
             onClick={() => setInfoOpen(false)}
           >
             Done
           </button>
         </div>
 
+        <div
+          data-testid="spot-info-scroll"
+          className="min-h-0 flex-1 overflow-y-auto px-3 pb-3 pt-1"
+        >
         <p className="text-xs text-muted">
           {pin.visibility === "private_stash" ? "STOMP Stash · private" : "STOMP Spot · discoverable"}
         </p>
@@ -448,63 +454,6 @@ function SpotDetail() {
           <p className="text-[10px] text-muted">Clock now: {clockIso}</p>
         </div>
 
-        <div className="mt-3 flex flex-wrap gap-2 border-t border-line pt-2">
-          <button
-            type="button"
-            data-testid="spot-keeper-edit"
-            className="rounded-full bg-navy px-3 py-1.5 text-xs font-semibold text-snow"
-            onClick={() => setFlow("keeper-edit")}
-          >
-            Keeper edit
-          </button>
-          <button
-            type="button"
-            data-testid="spot-keeper-transfer"
-            className="rounded-full bg-snow px-3 py-1.5 text-xs font-semibold ring-1 ring-line"
-            onClick={() => offerTransfer("jax", "Jax")}
-          >
-            Transfer Keeper → Jax
-          </button>
-          <button
-            type="button"
-            data-testid="spot-archive-request"
-            className="rounded-full bg-snow px-3 py-1.5 text-xs font-semibold ring-1 ring-line"
-            onClick={() => setArchiveConfirm(true)}
-          >
-            Archive pin
-          </button>
-        </div>
-
-        {archiveConfirm ? (
-          <div
-            data-testid="spot-archive-confirm"
-            className="mt-2 space-y-2 rounded-2xl bg-navy/15 p-2 text-xs ring-1 ring-line"
-          >
-            <p>Archive “{pin.nickname}”? Confirm required — not automatic.</p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                data-testid="spot-archive-cancel"
-                className="rounded-full bg-snow px-3 py-1.5 font-semibold ring-1 ring-line"
-                onClick={() => setArchiveConfirm(false)}
-              >
-                Keep pin
-              </button>
-              <button
-                type="button"
-                data-testid="spot-archive-yes"
-                className="rounded-full bg-navy px-3 py-1.5 font-semibold text-snow"
-                onClick={() => {
-                  setArchiveConfirm(false);
-                  archiveSelected();
-                }}
-              >
-                Yes, archive
-              </button>
-            </div>
-          </div>
-        ) : null}
-
         {useSpotStash.getState().flow === "keeper-edit" ? (
           <div data-testid="keeper-edit-panel" className="mt-2 space-y-2 rounded-2xl bg-snow/60 p-2">
             <input
@@ -552,6 +501,69 @@ function SpotDetail() {
             </button>
           </div>
         ) : null}
+        </div>
+
+        <div
+          data-testid="spot-info-actions"
+          className="shrink-0 border-t border-line bg-snow px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2"
+        >
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              data-testid="spot-keeper-edit"
+              className="rounded-full bg-navy px-3 py-2 text-xs font-semibold text-snow"
+              onClick={() => setFlow("keeper-edit")}
+            >
+              Keeper edit
+            </button>
+            <button
+              type="button"
+              data-testid="spot-keeper-transfer"
+              className="rounded-full bg-snow px-3 py-2 text-xs font-semibold ring-1 ring-line"
+              onClick={() => offerTransfer("jax", "Jax")}
+            >
+              Transfer Keeper → Jax
+            </button>
+            <button
+              type="button"
+              data-testid="spot-archive-request"
+              className="rounded-full bg-snow px-3 py-2 text-xs font-semibold ring-1 ring-line"
+              onClick={() => setArchiveConfirm(true)}
+            >
+              Archive pin
+            </button>
+          </div>
+
+          {archiveConfirm ? (
+            <div
+              data-testid="spot-archive-confirm"
+              className="mt-2 space-y-2 rounded-2xl bg-navy/15 p-2 text-xs ring-1 ring-line"
+            >
+              <p>Archive “{pin.nickname}”? Confirm required — not automatic.</p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  data-testid="spot-archive-cancel"
+                  className="rounded-full bg-snow px-3 py-1.5 font-semibold ring-1 ring-line"
+                  onClick={() => setArchiveConfirm(false)}
+                >
+                  Keep pin
+                </button>
+                <button
+                  type="button"
+                  data-testid="spot-archive-yes"
+                  className="rounded-full bg-navy px-3 py-1.5 font-semibold text-snow"
+                  onClick={() => {
+                    setArchiveConfirm(false);
+                    archiveSelected();
+                  }}
+                >
+                  Yes, archive
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </div>
       </div>
     </article>
   );
