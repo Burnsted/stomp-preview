@@ -1,0 +1,5 @@
+EXTRACTED_REGISTERED — mint jacket/pants from master in-place masks + asm diffs
+foot-aligned to master landmarks; common 1024→512 export only.
+B-mint-identity-swap-REGISTERED.png = master with jacket/pants plates swapped in-place.
+Underlayer still provisional (AWAITING_FRANZ_BODY); jacket-on covers most gaps.
+Visual registration checks: see evidence/ + scripts/validate-look2-registration.py

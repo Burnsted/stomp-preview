@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 48" fill="none" role="img" aria-label="STOMP">
+  <g fill="#0A0A0A">
+    <path d="M8 6h12.2l10.3 29.5L41 6h12.6L36 49H25L8 6zm55.8 0H75v43h-11.2V6zm25.4 0H92v33.7h20.1V49H89.2V6zm46 0h33v9.8H146.6v7.6h19.8v9.3h-19.8V39H169V49h-33.4V6zm48.2 0H146v43h-11.2V6z"/>
+  </g>
+  <!-- simplified: use text for crisp wordmark in browsers that support it as fallback via component -->
+  <text x="0" y="38" font-family="Arial Black, Helvetica Neue, Arial, sans-serif" font-size="40" font-weight="900" letter-spacing="0.04em" fill="#0A0A0A">STOMP</text>
+</svg>

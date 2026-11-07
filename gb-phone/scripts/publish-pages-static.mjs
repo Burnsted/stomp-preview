@@ -59,7 +59,32 @@ function rewriteHtmlBase(html) {
     .replaceAll(`href="${pagesBase}${pagesBase}`, `href="${pagesBase}`);
 }
 
-const rewritten = rewriteHtmlBase(readFileSync(indexPath, "utf8"));
+/**
+ * Static Pages builds have no public host at Vite bake time, so grokOgHeadTags
+ * skips og:image. Stamp absolute share URLs that honor GITHUB_PAGES_BASE.
+ * Outside thumbnail = Form #7 lockup at /og.jpg — never a tagline in the image.
+ */
+function injectShareImageMeta(html) {
+  if (!existsSync(join(outDir, "og.jpg"))) return html;
+  const origin = (process.env.PAGES_PUBLIC_ORIGIN || "https://burnsted.github.io").replace(/\/$/, "");
+  const imageUrl = `${origin}${pagesBase}og.jpg`;
+  const snippet = [
+    `<meta property="og:image" content="${imageUrl}">`,
+    `<meta property="og:image:width" content="1200">`,
+    `<meta property="og:image:height" content="630">`,
+    `<meta name="twitter:image" content="${imageUrl}">`,
+  ].join("");
+  let next = html.replace(
+    /<meta\b[^>]*(?:property|name)=["'](?:og:image(?::width|:height)?|twitter:image)["'][^>]*>/gi,
+    "",
+  );
+  if (/<head\b[^>]*>/i.test(next)) {
+    return next.replace(/<head\b[^>]*>/i, (open) => `${open}${snippet}`);
+  }
+  return snippet + next;
+}
+
+const rewritten = injectShareImageMeta(rewriteHtmlBase(readFileSync(indexPath, "utf8")));
 writeFileSync(indexPath, rewritten);
 copyFileSync(indexPath, join(outDir, "404.html"));
 writeFileSync(join(outDir, ".nojekyll"), "");

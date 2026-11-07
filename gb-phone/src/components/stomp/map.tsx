@@ -63,34 +63,32 @@ export function ClipMap() {
           className="absolute inset-0 h-full w-full object-cover"
         />
         <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 140" aria-hidden="true">
+          <defs>
+            <filter id="map-ice-glow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="1.4" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          {/* Concept A ice-blue trail — no fabricated rainbow heat */}
           <path
             d="M30 18 C 48 40, 36 62, 58 88 C 72 104, 64 122, 80 140"
             fill="none"
-            stroke="var(--color-teal)"
-            strokeWidth="3"
+            stroke="#9aa6b8"
+            strokeWidth="3.2"
+            className="trail-dash trail-ice"
+            filter="url(#map-ice-glow)"
             vectorEffect="non-scaling-stroke"
           />
-          <path
-            d="M38 12 C 70 36, 78 28, 90 70 C 96 96, 70 110, 84 140"
-            className="trail-dash"
-            fill="none"
-            stroke="var(--color-lime)"
-            strokeWidth="2"
-            vectorEffect="non-scaling-stroke"
-          />
-          <path
-            d="M18 28 C 34 48, 30 70, 46 92"
-            fill="none"
-            stroke="var(--color-pink)"
-            strokeWidth="2.5"
-            vectorEffect="non-scaling-stroke"
-          />
+          <circle cx="58" cy="88" r="2.4" fill="#e8ecf2" stroke="#9aa6b8" strokeWidth="1" />
         </svg>
         <div className="absolute top-3 right-3 left-3 flex items-center gap-3 rounded-2xl bg-snow p-2">
           <img src={PHOTOS.line} alt="" className="size-14 rounded-xl object-cover" />
           <div>
             <p className="font-semibold">Filming a hit</p>
-            <p className="text-sm font-medium text-pink">Live clip · phone capture</p>
+            <p className="text-sm font-medium text-accent">Live clip · phone capture</p>
           </div>
         </div>
         <Pin x="28%" y="42%" label="Hit clip" tone="pink" />
@@ -126,14 +124,14 @@ export function ClipMap() {
           <input
             value={title}
             onChange={(event) => setTitle(event.target.value)}
-            className="mt-1 h-12 w-full rounded-2xl bg-paper px-4 text-ink outline-none ring-1 ring-line focus-visible:ring-2 focus-visible:ring-pink"
+            className="mt-1 h-12 w-full rounded-2xl bg-paper px-4 text-ink outline-none ring-1 ring-line focus-visible:ring-2 focus-visible:ring-accent"
           />
         </label>
         <div className="mt-3 flex gap-2">
           <button
             type="button"
             onClick={capture}
-            className="h-12 flex-1 rounded-full bg-pink font-semibold text-snow"
+            className="h-12 flex-1 rounded-full bg-cta font-semibold text-cta-fg"
           >
             {recording > 0 ? `Recording ${recording}` : "Record"}
           </button>
@@ -155,7 +153,7 @@ export function ClipMap() {
             }}
           />
         </div>
-        {note ? <p className="mt-3 text-sm text-teal">{note}</p> : null}
+        {note ? <p className="mt-3 text-sm text-accent">{note}</p> : null}
         <div className="mt-4 grid grid-cols-2 gap-3">
           {gallery.map((clip) => (
             <figure key={clip.id} className="overflow-hidden rounded-2xl">

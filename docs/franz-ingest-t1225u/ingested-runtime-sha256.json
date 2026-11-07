@@ -1,0 +1,384 @@
+{
+  "task": "t1225u",
+  "status": "PARTIAL_INGEST_EIGHT_PACKAGES",
+  "androidAccepted": false,
+  "ownerVisualPassClaimed": false,
+  "man2OwnerVisualPass": false,
+  "zipSha256Verified": {
+    "Woman 1": "8c24cafa76b5491f648d4d423ad5df9837c1d61a95642e6580c2332f80a78b52",
+    "Woman 2": "c006bcc25b8370defab935a8702b10b5579991d1ba99c1bbf8d509dd6081d5dd",
+    "Woman 3": "b8d9fee95a9d12234bf178d43914cb86fcf6ef9716b51f4c21caf118d8330a6d",
+    "Man 1 / Rider 1": "5105bcea04ab2b27eb0708e3aaa207b5d17ba1b8c72e1300416db654b93d534e",
+    "Man 2 / Look 4": "7f11f205db0b673f5918fbae7cd7d8161471d19b75b10fa74c0269dc7f6aaf04",
+    "Man 3": "2ba7e982c9fad9dd6926cf57ce34b5d6206fb65dec1278bbe58f66ec7ae576c3",
+    "Grom 1": "563d711bb648e703c40591545a743e9ab53464502889ef58ca42942ec1ea1e5a",
+    "Grom 2": "f65affe08999558ed07e885df860a8a52d081e1927cb9be0f4dc4f734161943a",
+    "Audit proofs": "c9d12f2814738cf107367d899c3ce9a7881ea02b5124f2b7a20ad664f5b0104e"
+  },
+  "copied": [
+    {
+      "package": "Man-1-Rider-1",
+      "source": "Man-1-Rider-1/webp-512/body_underjacket@512.webp",
+      "dest": "stomper/adult/body/body-look1-male@512.webp",
+      "sha256": "6aa97bdd18907861b03a8f3bbf6bf5ce2c6f1312c6430f4a7ab665db08463b49",
+      "bytes": 10638,
+      "changed": true
+    },
+    {
+      "package": "Man-1-Rider-1",
+      "source": "Man-1-Rider-1/webp-512/head_locked@512.webp",
+      "dest": "stomper/adult/face/face-m-samir-locked-composite@512.webp",
+      "sha256": "4449cd3953489820d38a1569e616975b1b210e8d1e3170c284a22cbecfea247c",
+      "bytes": 11056,
+      "changed": false
+    },
+    {
+      "package": "Man-1-Rider-1",
+      "source": "Man-1-Rider-1/webp-512/jacket_tan@512.webp",
+      "dest": "stomper/adult/jacket/jacket-look1-tan@512.webp",
+      "sha256": "a43385e4cc7ecbe1723aed72d262cac11b5a25c2645875924e9352348e9b341f",
+      "bytes": 32178,
+      "changed": true
+    },
+    {
+      "package": "Man-1-Rider-1",
+      "source": "Man-1-Rider-1/webp-512/jacket_orange@512.webp",
+      "dest": "stomper/adult/jacket/jacket-look1-orange@512.webp",
+      "sha256": "b546c9dd5987db2e006bf26f0b36f6fddb80d3930092fb2ec61758e86f3f5a8a",
+      "bytes": 32020,
+      "changed": true
+    },
+    {
+      "package": "Man-1-Rider-1",
+      "source": "Man-1-Rider-1/webp-512/pants_black@512.webp",
+      "dest": "stomper/adult/pants/pants-look1-black@512.webp",
+      "sha256": "7efdbb5d3dcb4e924e0bbc336bff1f1a1834b8190fcbfe096771b7ed297dffbb",
+      "bytes": 34244,
+      "changed": true
+    },
+    {
+      "package": "Man-1-Rider-1",
+      "source": "Man-1-Rider-1/webp-512/pants_charcoal@512.webp",
+      "dest": "stomper/adult/pants/pants-look1-charcoal@512.webp",
+      "sha256": "3099400a67aba537bab16ee76fc1b757271b9d722db9b54d03e1454e4a720e82",
+      "bytes": 34232,
+      "changed": true
+    },
+    {
+      "package": "Man-1-Rider-1",
+      "source": "Man-1-Rider-1/webp-512/gloves@512.webp",
+      "dest": "stomper/adult/gloves/gloves-look1-photo@512.webp",
+      "sha256": "1f0f9bac5bfcd247c8182ee2d527f3c9e7270b17138fc65e8a042b5636d617c7",
+      "bytes": 5076,
+      "changed": true
+    },
+    {
+      "package": "Man-1-Rider-1",
+      "source": "Man-1-Rider-1/webp-512/boots@512.webp",
+      "dest": "stomper/adult/boots/boots-look1-photo@512.webp",
+      "sha256": "11401dc8c99047ea210081c508ae669f5cbaa5cac685850a3c01da873df12f99",
+      "bytes": 8276,
+      "changed": true
+    },
+    {
+      "package": "Man-1-Rider-1",
+      "source": "Man-1-Rider-1/proofs/B-jacket-on@512.webp",
+      "dest": "stomper/adult/starter/m-samir/preview@512.webp",
+      "sha256": "fba3d85e90de04cf6e72aa171c461ccfdba34f572b3689c8ea98f1a59043db91",
+      "bytes": 82862,
+      "changed": true
+    },
+    {
+      "package": "Woman-2",
+      "source": "Woman-2/webp-512/body@512.webp",
+      "dest": "stomper/adult/body/body-athletic@512.webp",
+      "sha256": "85ecf3646890a4e4a730f7045a34b8284fbea8aa5dbeb4b0d26614873d26d37a",
+      "bytes": 6930,
+      "changed": false
+    },
+    {
+      "package": "Woman-2",
+      "source": "Woman-2/webp-512/head_locked@512.webp",
+      "dest": "stomper/adult/face/face-f-hana-locked-composite@512.webp",
+      "sha256": "888f40f14d7795dd23385bc6a5b3012ea7545a83e64ae7a44b39c40b302bc1b5",
+      "bytes": 9812,
+      "changed": true
+    },
+    {
+      "package": "Woman-2",
+      "source": "Woman-2/webp-512/jacket_mint@512.webp",
+      "dest": "stomper/adult/jacket/jacket-look2-mint@512.webp",
+      "sha256": "d783753010abbc36856a20374112da0e183fad7722b073bfa0f638c58e606965",
+      "bytes": 32716,
+      "changed": true
+    },
+    {
+      "package": "Woman-2",
+      "source": "Woman-2/webp-512/jacket_ink@512.webp",
+      "dest": "stomper/adult/jacket/jacket-look2-ink@512.webp",
+      "sha256": "84652bd35647c9d89118a73d4217e339e4b227550529e6b7b7d7014a41b9e626",
+      "bytes": 14908,
+      "changed": true
+    },
+    {
+      "package": "Woman-2",
+      "source": "Woman-2/webp-512/pants_mint@512.webp",
+      "dest": "stomper/adult/pants/pants-look2-mint@512.webp",
+      "sha256": "ffda6e6aae86f0db19d5b690c28345796bf7b5e18760aeb86e37cfad68eb8b93",
+      "bytes": 32812,
+      "changed": true
+    },
+    {
+      "package": "Woman-2",
+      "source": "Woman-2/webp-512/pants_ink@512.webp",
+      "dest": "stomper/adult/pants/pants-look2-ink@512.webp",
+      "sha256": "b45741b9f73dbe24b88385da849557a008791444728ea0903eb073a1d86510eb",
+      "bytes": 18078,
+      "changed": true
+    },
+    {
+      "package": "Woman-2",
+      "source": "Woman-2/webp-512/gloves@512.webp",
+      "dest": "stomper/adult/gloves/gloves-look2-photo@512.webp",
+      "sha256": "31d66eedba2a285b66ef976c061576b160854d72526f1863fc31cb1cb6d509f9",
+      "bytes": 3944,
+      "changed": true
+    },
+    {
+      "package": "Woman-2",
+      "source": "Woman-2/webp-512/boots@512.webp",
+      "dest": "stomper/adult/boots/boots-look2-photo@512.webp",
+      "sha256": "291cb229b5fefbb1d01184ed9eab0e45919344a6fdffb7785021499f56c42ff1",
+      "bytes": 6824,
+      "changed": true
+    },
+    {
+      "package": "Woman-2",
+      "source": "Woman-2/proofs/B-jacket-on@512.webp",
+      "dest": "stomper/adult/starter/f-hana/preview@512.webp",
+      "sha256": "63d5a9f2aa94d6b68d1615beb402a9a6bc8d631c9c582ef74389dbb260c2ffe5",
+      "bytes": 77888,
+      "changed": true
+    },
+    {
+      "package": "Woman-3",
+      "source": "Woman-3/webp-512/body_underjacket@512.webp",
+      "dest": "stomper/adult/body/body-look3-solid@512.webp",
+      "sha256": "2d1643f28059a27c41f2ad7b3aec65873c4da1e08b7960da6661056e34a65279",
+      "bytes": 10048,
+      "changed": false
+    },
+    {
+      "package": "Woman-3",
+      "source": "Woman-3/webp-512/head_locked@512.webp",
+      "dest": "stomper/adult/face/face-f-priya-locked-composite@512.webp",
+      "sha256": "5314d38bc77dc85c841485383c9d7194516870d3715d704af7b5b09f9a25f3e2",
+      "bytes": 14414,
+      "changed": false
+    },
+    {
+      "package": "Woman-3",
+      "source": "Woman-3/webp-512/jacket_purple@512.webp",
+      "dest": "stomper/adult/jacket/jacket-look3-purple@512.webp",
+      "sha256": "183550b5c59e4b71071a563df878184dfd7804b7b580131d192c4fa6651e7788",
+      "bytes": 37838,
+      "changed": true
+    },
+    {
+      "package": "Woman-3",
+      "source": "Woman-3/webp-512/jacket_fuchsia_test@512.webp",
+      "dest": "stomper/adult/jacket/jacket-look3-fuchsia@512.webp",
+      "sha256": "858efefbffae7d0f3adedbed41913b9fcd2feebdf6f6d96d802d4f1b8685597c",
+      "bytes": 38778,
+      "changed": true
+    },
+    {
+      "package": "Woman-3",
+      "source": "Woman-3/webp-512/pants_purple@512.webp",
+      "dest": "stomper/adult/pants/pants-look3-purple@512.webp",
+      "sha256": "a6363cf8cbe68303f626f3cf3f3a5db7351757b525b3cdd119d14b247325fdb6",
+      "bytes": 38058,
+      "changed": true
+    },
+    {
+      "package": "Woman-3",
+      "source": "Woman-3/webp-512/pants_charcoal_test@512.webp",
+      "dest": "stomper/adult/pants/pants-look3-charcoal@512.webp",
+      "sha256": "b271af7271637d3f8797dd196034c7e21ab0e1607fb847c8edc213ab9741be1f",
+      "bytes": 24974,
+      "changed": true
+    },
+    {
+      "package": "Woman-3",
+      "source": "Woman-3/webp-512/gloves@512.webp",
+      "dest": "stomper/adult/gloves/gloves-look3-photo@512.webp",
+      "sha256": "0c52319d4996db87e4f34c102245c72a6bce6bc42d3e0d265de456ebbd6bcce5",
+      "bytes": 4644,
+      "changed": true
+    },
+    {
+      "package": "Woman-3",
+      "source": "Woman-3/webp-512/boots@512.webp",
+      "dest": "stomper/adult/boots/boots-look3-photo@512.webp",
+      "sha256": "0e9b7fd21ee3c1cfa69908d58a063ecc30be61eda71e0bd2dd1eeb8946f16881",
+      "bytes": 8900,
+      "changed": true
+    },
+    {
+      "package": "Woman-3",
+      "source": "Woman-3/proofs/B-jacket-on@512.webp",
+      "dest": "stomper/adult/starter/f-priya/preview@512.webp",
+      "sha256": "1f0fcea4d4127cdc73ff974adfadedf891f3698f677d2b893809e3f9448393c3",
+      "bytes": 95452,
+      "changed": true
+    },
+    {
+      "package": "Man-2-Look-4",
+      "source": "Man-2-Look-4/webp-512/body_underjacket@512.webp",
+      "dest": "stomper/adult/body/body-look4-lean@512.webp",
+      "sha256": "1e4153a1fb2274436b2cb6fc31617090b474c400972498e12892de467c4fdffe",
+      "bytes": 11854,
+      "changed": false
+    },
+    {
+      "package": "Man-2-Look-4",
+      "source": "Man-2-Look-4/webp-512/head_locked@512.webp",
+      "dest": "stomper/adult/face/face-m-devon-locked-composite@512.webp",
+      "sha256": "9c24379508c93b31422ce6b589b5189d384d3c049a4269f7a0f394666ac2f38e",
+      "bytes": 9998,
+      "changed": false
+    },
+    {
+      "package": "Man-2-Look-4",
+      "source": "Man-2-Look-4/webp-512/jacket_orange@512.webp",
+      "dest": "stomper/adult/jacket/jacket-look4-orange@512.webp",
+      "sha256": "9716614db8cec0fc50dfe171f43d4daef45b707faee0fc135f66a3b3e50a46a4",
+      "bytes": 44320,
+      "changed": true
+    },
+    {
+      "package": "Man-2-Look-4",
+      "source": "Man-2-Look-4/webp-512/jacket_white_fit_test@512.webp",
+      "dest": "stomper/adult/jacket/jacket-look4-white@512.webp",
+      "sha256": "5202690e715bba90851869d131ab7a3391063fc624cbcbdf526e50247e48ad0d",
+      "bytes": 31210,
+      "changed": true
+    },
+    {
+      "package": "Man-2-Look-4",
+      "source": "Man-2-Look-4/webp-512/pants_charcoal@512.webp",
+      "dest": "stomper/adult/pants/pants-look4-charcoal@512.webp",
+      "sha256": "a02c6b0fa7667db19f96c8380e992753a3066e057de6b68b8514055adf44fb7f",
+      "bytes": 41158,
+      "changed": true
+    },
+    {
+      "package": "Man-2-Look-4",
+      "source": "Man-2-Look-4/webp-512/pants_charcoal_silver_fit_test@512.webp",
+      "dest": "stomper/adult/pants/pants-look4-charcoal-silver@512.webp",
+      "sha256": "029b77c05aedd137102c98c814e5f8e0a3ba2247d1f24b4d10e27122e5f74d99",
+      "bytes": 37446,
+      "changed": true
+    },
+    {
+      "package": "Man-2-Look-4",
+      "source": "Man-2-Look-4/webp-512/gloves@512.webp",
+      "dest": "stomper/adult/gloves/gloves-look4-photo@512.webp",
+      "sha256": "3de5c68632420712bcbca58f0f6ec093bcfca31481e0754096970c12e06e533f",
+      "bytes": 6482,
+      "changed": true
+    },
+    {
+      "package": "Man-2-Look-4",
+      "source": "Man-2-Look-4/webp-512/boots@512.webp",
+      "dest": "stomper/adult/boots/boots-look4-photo@512.webp",
+      "sha256": "b1f440f1bb6bcb139c83b42b8c7ab06a74c90d1ed8ed09849645c30e12c86fe2",
+      "bytes": 8556,
+      "changed": true
+    },
+    {
+      "package": "Man-2-Look-4",
+      "source": "Man-2-Look-4/proofs/B-jacket-on@512.webp",
+      "dest": "stomper/adult/starter/m-devon/preview@512.webp",
+      "sha256": "ab3467d569e9fb94a324b48e631155cca06406df8615c38703df234116127cee",
+      "bytes": 99076,
+      "changed": true
+    }
+  ],
+  "appearancePreviews": [
+    {
+      "package": "Woman-1",
+      "starterId": "f-nova",
+      "slotLabel": "Woman 1",
+      "status": "SOURCE_APPEARANCE_PREVIEW_ONLY",
+      "modular": false,
+      "jacketOffSupported": false,
+      "independentEquipmentSupported": false,
+      "path": "gb-phone/public/stomper/adult/starter/f-nova/preview@512.webp",
+      "url": "/stomper/adult/starter/f-nova/preview@512.webp",
+      "sha256": "9a34ec6f7cb85a6f8d1bf3cc4ddbe6364a64f82407757cacc0610c0e736ed4aa",
+      "bytes": 87820,
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "package": "Man-3",
+      "starterId": "m-leo",
+      "slotLabel": "Man 3",
+      "status": "SOURCE_APPEARANCE_PREVIEW_ONLY",
+      "modular": false,
+      "jacketOffSupported": false,
+      "independentEquipmentSupported": false,
+      "path": "gb-phone/public/stomper/adult/starter/m-leo/preview@512.webp",
+      "url": "/stomper/adult/starter/m-leo/preview@512.webp",
+      "sha256": "cd879e3854ec7fd039870f72713773ecf25a70c3034ec1a395d1dce66abf0f2a",
+      "bytes": 90480,
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "package": "Grom-1",
+      "starterId": "g-milo",
+      "slotLabel": "Grom 1",
+      "status": "SOURCE_APPEARANCE_PREVIEW_ONLY",
+      "modular": false,
+      "jacketOffSupported": false,
+      "independentEquipmentSupported": false,
+      "path": "gb-phone/public/stomper/grom/starter/g-milo/preview@512.webp",
+      "url": "/stomper/grom/starter/g-milo/preview@512.webp",
+      "sha256": "c9cc69fbdde462d906d062e218d8a288bd36d49adc179aed1d12ef44a9db00eb",
+      "bytes": 66926,
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "package": "Grom-2",
+      "starterId": "g-aria",
+      "slotLabel": "Grom 2",
+      "status": "SOURCE_APPEARANCE_PREVIEW_ONLY",
+      "modular": false,
+      "jacketOffSupported": false,
+      "independentEquipmentSupported": false,
+      "path": "gb-phone/public/stomper/grom/starter/g-aria/preview@512.webp",
+      "url": "/stomper/grom/starter/g-aria/preview@512.webp",
+      "sha256": "efa86b1e1778f95325b6c197116e497d921006adb7ab4b7dca9d31ff4c4bb22b",
+      "bytes": 68764,
+      "size": [
+        512,
+        512
+      ]
+    }
+  ],
+  "notInvented": [
+    "independent hair/helmet/goggles/board/bindings/backpack",
+    "jacket-off approved anatomy",
+    "ten missing roster slots artwork",
+    "Woz character"
+  ]
+}

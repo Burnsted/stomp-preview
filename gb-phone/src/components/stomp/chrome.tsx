@@ -1,4 +1,5 @@
 import { ChevronLeft } from "lucide-react";
+import { Form7Brand } from "@/components/stomp/brand/form7-brand";
 import { PlaylistLink } from "@/components/stomp/playlist-chrome";
 import { useStomp } from "@/lib/stomp/store";
 import { useWoz } from "@/lib/stomp/woz-bridge/woz-store";
@@ -17,7 +18,7 @@ export function HexBadge({ className = "size-16" }: { className?: string }) {
     <svg viewBox="0 0 64 64" className={className} aria-hidden="true">
       <rect x="3" y="3" width="58" height="58" rx="16" fill="#ffffff" stroke="#141821" strokeWidth="4" />
       <path d="M32 12 48 21v18L32 48 16 39V21z" fill="none" stroke="#141821" strokeWidth="3" />
-      <circle cx="32" cy="32" r="6" fill="#2ad4c2" />
+      <circle cx="32" cy="32" r="6" fill="#0a0a0a" />
     </svg>
   );
 }
@@ -26,7 +27,7 @@ export function TriBadge({ className = "size-16" }: { className?: string }) {
   return (
     <svg viewBox="0 0 64 64" className={className} aria-hidden="true">
       <rect x="3" y="3" width="58" height="58" rx="16" fill="#ffffff" stroke="#141821" strokeWidth="4" />
-      <path d="M32 14 50 48H14z" fill="#ff3b78" />
+      <path d="M32 14 50 48H14z" fill="#0a0a0a" />
     </svg>
   );
 }
@@ -38,12 +39,13 @@ export function Wordmark({
   tone?: "ink" | "snow";
   onClick?: () => void;
 }) {
-  const color = tone === "snow" ? "text-snow" : "text-ink";
+  /** Form #7 monochrome lockup — snow tone = onDark hero; ink = theme auto. */
   const mark = (
-    <span className={"inline-flex items-center gap-2 " + color}>
-      <span className="font-display text-6xl leading-none tracking-tight">STOMP</span>
-      <BoltBadge className="size-11" />
-    </span>
+    <Form7Brand
+      testId="chrome-wordmark"
+      tone={tone === "snow" ? "onDark" : "auto"}
+      size="lg"
+    />
   );
   if (!onClick) return <p className="leading-none">{mark}</p>;
   return (
@@ -61,7 +63,7 @@ export function LivePill({
   onClick?: () => void;
 }) {
   const className =
-    "inline-flex items-center h-9 rounded-full bg-lime px-4 text-xs font-bold tracking-widest text-ink";
+    "inline-flex items-center h-9 rounded-full bg-cta px-4 text-xs font-bold tracking-widest text-cta-fg";
   if (!onClick) return <span className={className}>{children}</span>;
   return (
     <button type="button" onClick={onClick} className={className}>
@@ -71,10 +73,10 @@ export function LivePill({
 }
 
 const chipTones = {
-  pink: "bg-pink text-snow",
-  teal: "bg-teal text-ink",
+  pink: "bg-cta text-cta-fg",
+  teal: "bg-accent text-ink",
   snow: "bg-snow text-ink ring-1 ring-line",
-  lime: "bg-lime text-ink",
+  lime: "bg-cta text-cta-fg",
 } as const;
 
 export function Chip({
@@ -111,6 +113,7 @@ export function HomeButton() {
 
 export function BackBar({ title }: { title: string }) {
   const setScreen = useStomp((state) => state.setScreen);
+  const screen = useStomp((state) => state.screen);
   return (
     <header className="flex items-center gap-2 px-4 pt-5">
       <button
@@ -124,6 +127,7 @@ export function BackBar({ title }: { title: string }) {
       </button>
       <h1 className="font-display text-4xl tracking-wide">{title}</h1>
       <div className="ml-auto flex items-center gap-2">
+        {/* t1224u: Hey Session primary is bottom-right snowboarder FAB — not a header chip */}
         <PlaylistLink />
         <CrewToolsLink />
       </div>
@@ -142,7 +146,7 @@ export function Pin({
   label: string;
   tone: "pink" | "teal" | "ink";
 }) {
-  const dot = tone === "pink" ? "bg-pink" : tone === "teal" ? "bg-teal" : "bg-ink";
+  const dot = tone === "pink" ? "bg-cta" : tone === "teal" ? "bg-accent" : "bg-ink";
   return (
     <div className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: x, top: y }}>
       <span className={"mx-auto block size-3 rounded-full ring-2 ring-snow " + dot} />

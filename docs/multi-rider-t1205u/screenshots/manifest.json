@@ -1,0 +1,132 @@
+{
+  "task": "t1205u",
+  "status": "REGISTERED_VISUAL_PROTOTYPE_ONLY",
+  "androidPassClaimed": false,
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "shots": [
+    {
+      "starterId": "m-samir",
+      "slotLabel": "Man1",
+      "variant": "A",
+      "file": "docs/multi-rider-t1205u/screenshots/Man1_A@390x844.png",
+      "sha256": "b7531596bfc4c852c62de5428c20a033db85313f30164c9d648835d4a0f22dcc",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "browser phone-viewport only — NOT Android PASS"
+    },
+    {
+      "starterId": "m-samir",
+      "slotLabel": "Man1",
+      "variant": "B",
+      "file": "docs/multi-rider-t1205u/screenshots/Man1_B@390x844.png",
+      "sha256": "fd7842522c7482c2f77d6c8d8ee1f75d6e4127057989d2c678e5ceee93963777",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "browser phone-viewport only — NOT Android PASS"
+    },
+    {
+      "starterId": "m-samir",
+      "slotLabel": "Man1",
+      "variant": "C",
+      "file": "docs/multi-rider-t1205u/screenshots/Man1_C@390x844.png",
+      "sha256": "cfd47d6eed2e495290ba364e7e91aea953a6f929ebc576a544f430938043e72d",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "browser phone-viewport only — NOT Android PASS"
+    },
+    {
+      "starterId": "f-hana",
+      "slotLabel": "Woman2",
+      "variant": "A",
+      "file": "docs/multi-rider-t1205u/screenshots/Woman2_A@390x844.png",
+      "sha256": "f7c81f0a7053ffbef8e9e75f1ffdd5f491cf4164e02bcddf6711c64080afecbe",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "browser phone-viewport only — NOT Android PASS"
+    },
+    {
+      "starterId": "f-hana",
+      "slotLabel": "Woman2",
+      "variant": "B",
+      "file": "docs/multi-rider-t1205u/screenshots/Woman2_B@390x844.png",
+      "sha256": "871ad18840c5eeca747bce4eccb858277661411bf49f26900020fe3f0afc482f",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "browser phone-viewport only — NOT Android PASS"
+    },
+    {
+      "starterId": "f-hana",
+      "slotLabel": "Woman2",
+      "variant": "C",
+      "file": "docs/multi-rider-t1205u/screenshots/Woman2_C@390x844.png",
+      "sha256": "a2a4f40fcd039de5d6864e98e32ce38a7f17d008b181b9cd8bccebbe5cd29c81",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "browser phone-viewport only — NOT Android PASS"
+    },
+    {
+      "starterId": "f-priya",
+      "slotLabel": "Woman3",
+      "variant": "A",
+      "file": "docs/multi-rider-t1205u/screenshots/Woman3_A@390x844.png",
+      "sha256": "a3b16b03b00bf5ce51a1bc932658a525d66a9eabe9c7a7e92791721fafbfb623",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "browser phone-viewport only — NOT Android PASS"
+    },
+    {
+      "starterId": "f-priya",
+      "slotLabel": "Woman3",
+      "variant": "B",
+      "file": "docs/multi-rider-t1205u/screenshots/Woman3_B@390x844.png",
+      "sha256": "f41f75b979c5a2952db68b023211944445adcfe281e5696b62765ddadcabe606",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "browser phone-viewport only — NOT Android PASS"
+    },
+    {
+      "starterId": "f-priya",
+      "slotLabel": "Woman3",
+      "variant": "C",
+      "file": "docs/multi-rider-t1205u/screenshots/Woman3_C@390x844.png",
+      "sha256": "8818d582862b2b1ec2d554353c0452a755cda06415031737dcbc607f07fc1c7d",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "browser phone-viewport only — NOT Android PASS"
+    },
+    {
+      "starterId": "m-devon",
+      "slotLabel": "Man2",
+      "variant": "A",
+      "file": "docs/multi-rider-t1205u/screenshots/Man2_A@390x844.png",
+      "sha256": "c58bbb8506a21ea1fe6606bd719585e3194bef7c55df4142fddaa634aff6f122",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "browser phone-viewport only — NOT Android PASS"
+    },
+    {
+      "starterId": "m-devon",
+      "slotLabel": "Man2",
+      "variant": "B",
+      "file": "docs/multi-rider-t1205u/screenshots/Man2_B@390x844.png",
+      "sha256": "dfe136c22d40c65f234049b75064ce0cd88e702bed0e943c1597636ad76d30f5",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "browser phone-viewport only — NOT Android PASS"
+    },
+    {
+      "starterId": "m-devon",
+      "slotLabel": "Man2",
+      "variant": "C",
+      "file": "docs/multi-rider-t1205u/screenshots/Man2_C@390x844.png",
+      "sha256": "b02e8b8e97ba261b1b5d1abde5a97a0ae1d3fa5c0e9cb2322bd8678d1777b1a7",
+      "acceptanceEligible": false,
+      "androidPass": false,
+      "note": "browser phone-viewport only — NOT Android PASS"
+    }
+  ],
+  "generatedAtIso": "2026-11-04T17:05:51.645Z"
+}

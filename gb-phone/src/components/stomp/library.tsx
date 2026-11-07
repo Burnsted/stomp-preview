@@ -96,7 +96,7 @@ export function TrickPrompt() {
           aria-label="Trick"
           className="h-12 min-w-0 flex-1 rounded-full bg-snow px-4 ring-1 ring-line outline-none"
         />
-        <button type="submit" className="h-12 shrink-0 rounded-full bg-pink px-4 font-semibold text-snow">
+        <button type="submit" className="h-12 shrink-0 rounded-full bg-cta px-4 font-semibold text-cta-fg">
           Look up
         </button>
       </form>
@@ -110,10 +110,10 @@ export function TrickPrompt() {
       >
         {holding ? "Listening" : "Hold to speak a trick"}
       </button>
-      {note ? <p className="mt-2 text-sm font-semibold text-teal">{note}</p> : null}
+      {note ? <p className="mt-2 text-sm font-semibold text-accent">{note}</p> : null}
       {card ? (
         <article className="mt-3 rounded-3xl bg-snow p-4 ring-1 ring-line">
-          <p className="text-xs font-bold tracking-widest text-pink">
+          <p className="text-xs font-bold tracking-widest text-accent">
             {BAND_LABEL[card.band]} · {card.kind} · {card.feature}
           </p>
           <h2 className="font-display text-4xl tracking-wide">{card.name}</h2>
@@ -141,7 +141,7 @@ export function TrickPrompt() {
                 type="button"
                 disabled={stomped.includes(card.id)}
                 onClick={() => stompTrick(card.id)}
-                className="h-11 rounded-full bg-pink font-semibold text-snow disabled:bg-paper disabled:text-teal"
+                className="h-11 rounded-full bg-cta font-semibold text-cta-fg disabled:bg-paper disabled:text-accent"
               >
                 {stomped.includes(card.id) ? "Landed" : "Mark landed"}
               </button>

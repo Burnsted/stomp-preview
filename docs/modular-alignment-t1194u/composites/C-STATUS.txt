@@ -1,0 +1,4 @@
+BLOCKED — ink ABSENT
+IDs jacket-look2-ink / pants-look2-ink not on owner sheet; Franz will NOT invent ink C.
+exists_jacket_ink=False
+exists_pants_ink=False

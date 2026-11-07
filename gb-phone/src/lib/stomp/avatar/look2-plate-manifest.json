@@ -1,0 +1,292 @@
+{
+  "task": "t1225u",
+  "status": "REGISTERED_VISUAL_PROTOTYPE_ONLY",
+  "artPass": "2026-11-04",
+  "bodyClip": "2026-11-04",
+  "sourceZipSha256": "c006bcc25b8370defab935a8702b10b5579991d1ba99c1bbf8d509dd6081d5dd",
+  "priorArtPassZipSha256": "75d1dd0377bd9f4223631e25661e97831e23a563f8735ecaa3829a991b326762",
+  "priorMorningZipSha256": "62b7bdcefec632a31e8f95c0c8e298d78a85fd7c2cf132bc950e90aed8ea3f89",
+  "preferredPack": "franz-finishing",
+  "sourceSheet": "docs/character-production-t1173u/masters/look2-f-hana-MODULAR-SHEET.png",
+  "sourceSha256": "e273e6c13142cf068d25fc1c18503d1d59e947e8af52fee54b9c8e2abda93322",
+  "sourceSize": [
+    1024,
+    1024
+  ],
+  "approvedMaster": "docs/character-production-t1173u/masters/look2-f-hana-APPROVED.png",
+  "registrationContract": "docs/modular-alignment-t1194u/REGISTRATION-CONTRACT.md",
+  "productionCanvas": 1024,
+  "runtimeCanvas": 512,
+  "commonScale": 0.5,
+  "inkVariants": "PRESENT",
+  "inkColorway": "charcoal-black",
+  "underJacketBody": "PROTOTYPE_PRESENT",
+  "visualRegistrationGate": "PROTOTYPE_AWAITING_ACCEPTANCE",
+  "compositeA": "PROTOTYPE_RENDERED",
+  "compositeB": "PROTOTYPE_RENDERED",
+  "compositeC": "PROTOTYPE_RENDERED",
+  "androidAccepted": false,
+  "look2MintRequiredPresent": true,
+  "look2InkRequiredPresent": true,
+  "prototypePlateCount": 8,
+  "productionSlotCount": 11,
+  "missingProductionSlots": [
+    "face (separated)",
+    "hair (separated)",
+    "headwear (separated)",
+    "goggles (separated)",
+    "board (real bindings)"
+  ],
+  "openArtRepairs": [
+    "owner visual acceptance of finishing pack not claimed",
+    "body painted graphic not photo anatomy; shoulder line approximate",
+    "ink green-excess edge pass deferred",
+    "Android device proof not run",
+    "production 11-slot separated face/hair/helmet/goggles + real board still missing"
+  ],
+  "crotchClip": {
+    "status": "DONE",
+    "rule": "body truncated below pants_top+40; tuck only where pants alpha>40; crotch gap fill 0",
+    "paintOrder": "pants -> body -> jacket"
+  },
+  "editableMasterOra": "docs/modular-prototype-t1197u/art-pass/look2-f-hana-REGISTERED-PROTOTYPE.ora",
+  "plates": [
+    {
+      "path": "gb-phone/public/stomper/adult/jacket/jacket-look2-mint@512.webp",
+      "url": "/stomper/adult/jacket/jacket-look2-mint@512.webp",
+      "sha256": "d783753010abbc36856a20374112da0e183fad7722b073bfa0f638c58e606965",
+      "bytes": 32716,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "jacket_mint"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/pants/pants-look2-mint@512.webp",
+      "url": "/stomper/adult/pants/pants-look2-mint@512.webp",
+      "sha256": "274c1368e1e21b5fe08bafc993b62473bdad5411c8601867625adaa58123bb72",
+      "bytes": 34226,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "pants_mint"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/body/body-athletic@512.webp",
+      "url": "/stomper/adult/body/body-athletic@512.webp",
+      "sha256": "85ecf3646890a4e4a730f7045a34b8284fbea8aa5dbeb4b0d26614873d26d37a",
+      "bytes": 6930,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "body"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/face/face-female@512.webp",
+      "url": "/stomper/adult/face/face-female@512.webp",
+      "sha256": "7a5ec54a01b6fa30a22785b111aa608290d9f61d11e32bd161d8b0a5e505c55f",
+      "bytes": 8696,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "face_production_scaffold"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/hair/hair-straight@512.webp",
+      "url": "/stomper/adult/hair/hair-straight@512.webp",
+      "sha256": "77f0e70ef8af69407514d8272a78faec5775298b2cd9221d3f3d76b2168e0db3",
+      "bytes": 11070,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "hair_production_scaffold"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/headwear/helmet-basic@512.webp",
+      "url": "/stomper/adult/headwear/helmet-basic@512.webp",
+      "sha256": "88912939f88508c9bb7915fe1adf5339ff686e5e90ef551d9953fb0c1cb9a84c",
+      "bytes": 7480,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "headwear_production_scaffold"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/goggles/goggles-basic@512.webp",
+      "url": "/stomper/adult/goggles/goggles-basic@512.webp",
+      "sha256": "b6e7a9c50bc416ce331d85c9361ef15ab8cf260afc153bca08b507923cce7394",
+      "bytes": 5108,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "goggles_production_scaffold"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/gloves/gloves-basic@512.webp",
+      "url": "/stomper/adult/gloves/gloves-basic@512.webp",
+      "sha256": "3c60f9c418f8ec4ac40590f82f8253aefce509a2e2752bfcee4739013be31bf9",
+      "bytes": 11852,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "gloves_production_scaffold"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/boots/boots-basic@512.webp",
+      "url": "/stomper/adult/boots/boots-basic@512.webp",
+      "sha256": "571067d00f84a5a8a6a3fe8e0ec0e9feaa5ea072700a2474f848c17fcf91988d",
+      "bytes": 11212,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "boots_production_scaffold"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/board/board-basic@512.webp",
+      "url": "/stomper/adult/board/board-basic@512.webp",
+      "sha256": "326652882e2dfe68a0d1259c43f6086fece0315803206fe4ee534752f104b6e5",
+      "bytes": 48596,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "board_production_scaffold"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/starter/f-hana/preview@512.webp",
+      "url": "/stomper/adult/starter/f-hana/preview@512.webp",
+      "sha256": "63d5a9f2aa94d6b68d1615beb402a9a6bc8d631c9c582ef74389dbb260c2ffe5",
+      "bytes": 77888,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "preview"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/jacket/jacket-look2-ink@512.webp",
+      "url": "/stomper/adult/jacket/jacket-look2-ink@512.webp",
+      "sha256": "84652bd35647c9d89118a73d4217e339e4b227550529e6b7b7d7014a41b9e626",
+      "bytes": 14908,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "jacket_ink"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/pants/pants-look2-ink@512.webp",
+      "url": "/stomper/adult/pants/pants-look2-ink@512.webp",
+      "sha256": "b45741b9f73dbe24b88385da849557a008791444728ea0903eb073a1d86510eb",
+      "bytes": 18078,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "pants_ink"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/face/face-f-hana-locked-composite@512.webp",
+      "url": "/stomper/adult/face/face-f-hana-locked-composite@512.webp",
+      "sha256": "888f40f14d7795dd23385bc6a5b3012ea7545a83e64ae7a44b39c40b302bc1b5",
+      "bytes": 9812,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "head_locked"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/gloves/gloves-look2-photo@512.webp",
+      "url": "/stomper/adult/gloves/gloves-look2-photo@512.webp",
+      "sha256": "31d66eedba2a285b66ef976c061576b160854d72526f1863fc31cb1cb6d509f9",
+      "bytes": 3944,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "gloves_photo"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/boots/boots-look2-photo@512.webp",
+      "url": "/stomper/adult/boots/boots-look2-photo@512.webp",
+      "sha256": "291cb229b5fefbb1d01184ed9eab0e45919344a6fdffb7785021499f56c42ff1",
+      "bytes": 6824,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "boots_photo"
+    },
+    {
+      "path": "gb-phone/public/stomper/adult/backpack/backpack-daypack@512.webp",
+      "url": "/stomper/adult/backpack/backpack-daypack@512.webp",
+      "sha256": "200f23ed9bd75df73e3e101f081428ea4e5f02e0d336b4632e33c2297bddcf95",
+      "bytes": 22566,
+      "size": [
+        512,
+        512
+      ],
+      "slot": "backpack"
+    }
+  ],
+  "requiredUrls": [
+    "/stomper/adult/jacket/jacket-look2-mint@512.webp",
+    "/stomper/adult/pants/pants-look2-mint@512.webp",
+    "/stomper/adult/body/body-athletic@512.webp",
+    "/stomper/adult/face/face-female@512.webp",
+    "/stomper/adult/hair/hair-straight@512.webp",
+    "/stomper/adult/headwear/helmet-basic@512.webp",
+    "/stomper/adult/goggles/goggles-basic@512.webp",
+    "/stomper/adult/gloves/gloves-basic@512.webp",
+    "/stomper/adult/boots/boots-basic@512.webp",
+    "/stomper/adult/board/board-basic@512.webp",
+    "/stomper/adult/starter/f-hana/preview@512.webp"
+  ],
+  "prototypeRequiredUrls": [
+    "/stomper/adult/body/body-athletic@512.webp",
+    "/stomper/adult/jacket/jacket-look2-mint@512.webp",
+    "/stomper/adult/jacket/jacket-look2-ink@512.webp",
+    "/stomper/adult/pants/pants-look2-mint@512.webp",
+    "/stomper/adult/pants/pants-look2-ink@512.webp",
+    "/stomper/adult/face/face-f-hana-locked-composite@512.webp",
+    "/stomper/adult/gloves/gloves-look2-photo@512.webp",
+    "/stomper/adult/boots/boots-look2-photo@512.webp"
+  ],
+  "optionalBackpackPresent": true,
+  "headCleanup": "2026-11-04",
+  "priorBodyClipZipSha256": "b713687909462d4e91efcd19032a2b0ebd575d1e44628bdc58564815377f7f86",
+  "headCleanupNotes": {
+    "status": "SUPERSEDED_BY_FINISHING",
+    "chin_notch": "finishing soft collar + alpha feather y>=157",
+    "braid_wisp": "CLEARED (prior)",
+    "chest_slashes": "CLEARED (prior)",
+    "residual": "re-check jaw on finishing phone closeups; no owner PASS",
+    "owner_visual_acceptance_claimed": false,
+    "android_pass_claimed": false
+  },
+  "priorHeadCleanupZipSha256": "6be4a58b610493c18d8be4ae85e22259b59f0b96b1048ef562b5710e37d9bff6",
+  "finishing": "2026-11-04",
+  "finishingNotes": {
+    "status": "STAGED",
+    "sleeve_wrist_gaps": "Franz claim closed (7781\u21920) \u2014 verify on AvatarRenderer phone proofs",
+    "neck_jaw": "soft collar + head alpha feather y>=157; no face redesign",
+    "waist": "body-over-pants clipped (5451\u2192866 seam-only); dark band targeted",
+    "crotch": "CLEARED retained",
+    "owner_visual_acceptance_claimed": false,
+    "android_pass_claimed": false
+  },
+  "franzAlphaRepairZipSha256": "c006bcc25b8370defab935a8702b10b5579991d1ba99c1bbf8d509dd6081d5dd",
+  "priorT1202uZipSha256": "2118bdc84855f2aae526fdaf6111d014e5d990dd0705a1354113988b67bdbd84",
+  "franzAlphaFillV2": "t228u-promoted-4",
+  "man1GloveFillQuarantined": true
+}

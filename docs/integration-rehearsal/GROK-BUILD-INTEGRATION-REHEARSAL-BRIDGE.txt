@@ -1,0 +1,28 @@
+================================================================================
+GROK BUILD INTERFACE BRIDGE — Integration Rehearsal (t1152u)
+Branch: cursor/integration-rehearsal-t1152u
+STATUS: HELD — copy-ready text only; NO GB shell / gb-phone implementation.
+================================================================================
+
+1. SCOPE OF THIS REHEARSAL
+   - Combine #12+#13 tip with cherry-picked #14 CF-2 on an isolated branch.
+   - Thin adapters A1–A6 in batch1/src/shared/* (+ A3 trip-shim rewire).
+   - A7 SPEC ONLY (ageBand↔AccountStatus / CrewMate view) — no GB edits.
+   - AF-XINT-01..14 fictional cross-feature tests; 11/12 expected-fail (SV-0).
+
+2. DO NOT IMPLEMENT IN GB
+   - No gb-phone shell changes beyond what PR #12 already has.
+   - No Sesh Voice / SV-0 CONFLICT-1/2 fixes.
+   - No live auth, PII, payments, youth enrollment, Capture Studio.
+   - No production deletion / erasure jobs; G1–G4 stay gated.
+
+3. A7 HANDOFF (when Ted Go's GB later)
+   - ageBand "grom" → AccountStatus "youth" (Campfire disabled while youth gate off)
+   - ageBand "adult" → AccountStatus "active"
+   - erased preserved; grom label ≠ authorized youth account
+   - crewMateToMembership is a view adapter only
+
+4. NEXT BATCH OPTIONS (owner pick)
+   A) SV-0 fictional on #14 tip (CONFLICT-1/2)
+   B) Real merge order: #12 → main, #13 auto-retarget → main, rebase #14, then adapters
+================================================================================

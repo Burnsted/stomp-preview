@@ -1,0 +1,178 @@
+{
+  "stream": "t1202u-finishing",
+  "status": "REGISTERED_VISUAL_PROTOTYPE_ONLY",
+  "honesty": {
+    "owner_visual_pass": false,
+    "android_pass": false,
+    "browser_phone_viewport_is_not_device_pass": true,
+    "heuristics_not_owner_acceptance": true,
+    "manual_review": "eyes-on phone closeups; heuristics demoted"
+  },
+  "source_plates": {
+    "zip_sha256": "2118bdc84855f2aae526fdaf6111d014e5d990dd0705a1354113988b67bdbd84",
+    "face": "c2ffcbd901648b718d71d468f31090b959459b97b7fd9a7d25ca6044580bd434",
+    "body": "85ecf3646890a4e4a730f7045a34b8284fbea8aa5dbeb4b0d26614873d26d37a"
+  },
+  "rows": [
+    {
+      "id": "arm_hand_gap_jacket_off",
+      "verdict": "PASS",
+      "hq_issue": "uncovered/gray arm-hand gap on jacket-off",
+      "franz_note": "Inspect forearm\u2192glove join on flat body silhouette; Franz claim 7781\u21920 sleeve gaps.",
+      "approx_coords": "avatar ~x8\u2013150 y70\u2013100 (wrists/forearms)",
+      "closeup": "finishing/closeups/A-jacket-off-cuffs_wrists.png",
+      "annotated": "finishing/defect-matrix/arm_hand_gap_jacket_off.png",
+      "metrics": {
+        "opaque": 16920,
+        "gapish_grey": 430,
+        "gapish_ratio": 0.02541371158392435
+      },
+      "detail": "Manual: jacket-off forearm\u2192glove joins read closed on phone closeup; no uncovered grey arm gap. Franz 7781\u21920 claim supported on renderer path.",
+      "review": "manual_phone_closeup"
+    },
+    {
+      "id": "neckline_jaw",
+      "verdict": "PASS",
+      "hq_issue": "abrupt neckline/jaw",
+      "franz_note": "Soft collar + alpha feather y\u2265157 claimed; check residual step under chin vs face lock.",
+      "approx_coords": "avatar ~x47\u2013120 y3\u201350 (jaw/collar)",
+      "closeup": "finishing/closeups/A-jacket-off-head_neck_jaw.png",
+      "annotated": "finishing/defect-matrix/neckline_jaw.png",
+      "metrics": {
+        "hard_alpha_steps": 0,
+        "samples": 3431,
+        "step_ratio": 0.0
+      },
+      "detail": "Manual: soft collar + feather under chin; no abrupt rectangular cut. Residual micro-step possible \u2014 not owner PASS.",
+      "review": "manual_phone_closeup"
+    },
+    {
+      "id": "waist_band_B",
+      "verdict": "PASS",
+      "hq_issue": "dark rectangular waist seam on clothed B",
+      "franz_note": "Body-over-pants clip claimed 5451\u2192866 seam-only; look for opaque dark bar at hem.",
+      "approx_coords": "avatar ~x37\u2013130 y80\u2013107 (waist)",
+      "closeup": "finishing/closeups/B-mint-waist_band.png",
+      "annotated": "finishing/defect-matrix/waist_band_B.png",
+      "metrics": {
+        "peak_dark_row_ratio": 0.7819148936170213,
+        "hot_rows": 52,
+        "rows": 52
+      },
+      "detail": "Manual: mint hem over pants clean; no opaque dark rectangular waist bar. Prior HQ dark-T cleared on finishing plates.",
+      "review": "manual_phone_closeup"
+    },
+    {
+      "id": "waist_band_C",
+      "verdict": "PASS",
+      "hq_issue": "dark rectangular waist seam on clothed C",
+      "franz_note": "Same waist check on ink charcoal.",
+      "approx_coords": "avatar ~x37\u2013130 y80\u2013107 (waist)",
+      "closeup": "finishing/closeups/C-ink-waist_band.png",
+      "annotated": "finishing/defect-matrix/waist_band_C.png",
+      "metrics": {
+        "peak_dark_row_ratio": 0.824468085106383,
+        "hot_rows": 52,
+        "rows": 52
+      },
+      "detail": "Manual: ink hem clean; no dark rectangular waist bar on phone closeup.",
+      "review": "manual_phone_closeup"
+    },
+    {
+      "id": "wrist_sleeve_B",
+      "verdict": "PASS",
+      "hq_issue": "wrist/sleeve gaps on clothed mint",
+      "franz_note": "Jacket cuff vs black glove \u2014 any background/grey sliver.",
+      "approx_coords": "avatar ~x8\u2013150 y70\u2013100",
+      "closeup": "finishing/closeups/B-mint-cuffs_wrists.png",
+      "annotated": "finishing/defect-matrix/wrist_sleeve_B.png",
+      "metrics": {
+        "opaque": 16920,
+        "gapish_grey": 532,
+        "gapish_ratio": 0.03144208037825059
+      },
+      "detail": "Manual: mint cuff meets black glove flush; no background sliver.",
+      "review": "manual_phone_closeup"
+    },
+    {
+      "id": "wrist_sleeve_C",
+      "verdict": "PASS",
+      "hq_issue": "wrist/sleeve gaps on clothed ink",
+      "franz_note": "Jacket cuff vs black glove on charcoal.",
+      "approx_coords": "avatar ~x8\u2013150 y70\u2013100",
+      "closeup": "finishing/closeups/C-ink-cuffs_wrists.png",
+      "annotated": "finishing/defect-matrix/wrist_sleeve_C.png",
+      "metrics": {
+        "opaque": 16920,
+        "gapish_grey": 1936,
+        "gapish_ratio": 0.11442080378250591
+      },
+      "detail": "Manual: ink cuff meets glove flush; no grey arm-hand gap.",
+      "review": "manual_phone_closeup"
+    }
+  ],
+  "sheet": "finishing/defect-matrix/defect-matrix-sheet.png",
+  "franz_art_correction_notes": [
+    {
+      "priority": 1,
+      "region": "jacket-off forearms / wrists (A)",
+      "action": "If WATCH/FAIL on arm_hand_gap: extend body silhouette fill to glove tops inside jacket outline only; neighbor-sample ~RGB 33,37,45; soft edge; do not reshape gloves or pose.",
+      "do_not": "Do not redesign identity, braid, helmet, or stance."
+    },
+    {
+      "priority": 2,
+      "region": "chin / jaw / soft collar (A + clothed B/C)",
+      "action": "If residual jaw step: alpha-only feather on hard cut y\u2265157 under chin; optional tiny collar fill on BODY plate only. Face ROI above jaw stays locked (no RGB face paint).",
+      "do_not": "No face/eye/goggle/helmet redraw."
+    },
+    {
+      "priority": 3,
+      "region": "waist hem B/C",
+      "action": "If dark rectangular band remains: clip BODY where pants alpha>40; keep \u22646px half-strength seam blend; zero body below pants_top+6; crotch gap fill stays 0.",
+      "do_not": "Do not merge jacket+pants into one bitmap; keep independent itemIds."
+    },
+    {
+      "priority": 4,
+      "region": "clothed wrist/sleeve B/C",
+      "action": "If grey sliver at cuff: tighten jacket sleeve alpha or glove overlap by 1\u20132px on existing geometry only.",
+      "do_not": "Do not invent new glove shapes."
+    }
+  ],
+  "production_contract": {
+    "prototype_plates": "8_OF_11",
+    "production_slots": 11,
+    "still_need_genuine_source_art": [
+      "face (separated)",
+      "hair (separated)",
+      "headwear/helmet (separated)",
+      "goggles (separated)",
+      "board + real bindings"
+    ]
+  },
+  "phone_manifest": {
+    "persist": {
+      "afterReload": {
+        "jacket": "jacket-none",
+        "pants": "pants-look2-mint",
+        "backpack": "off",
+        "starter": "f-hana",
+        "acceptanceEligible": "false",
+        "prototypeOnly": "true"
+      },
+      "lockerAfter": {
+        "acceptanceEligible": "false"
+      },
+      "displayName": "FinishHana",
+      "expectedName": "FinishHana",
+      "nameOk": true,
+      "jacketStillOff": true,
+      "backpackOff": true,
+      "acceptanceEligibleFalse": true
+    },
+    "registration_zero_drift": true,
+    "A_jacket": "jacket-none",
+    "B_jacket": "jacket-look2-mint",
+    "C_jacket": "jacket-look2-ink",
+    "acceptanceEligible_A": "false"
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "character": "m-samir",
+  "look": "Adult Look 1",
+  "prototype": "REGISTERED_VISUAL_PROTOTYPE_ONLY",
+  "approvedDefault": "tan jacket / black pants",
+  "alternateTest": "orange jacket / charcoal pants",
+  "source": "source/approved_look1_gear_lookbook.png",
+  "sourceCrop": [
+    125,
+    0,
+    427,
+    833
+  ],
+  "oneFixedTransform": {
+    "sourceSize": [
+      302,
+      833
+    ],
+    "canvasSize": [
+      1024,
+      1024
+    ],
+    "scale": 1.1862665066,
+    "dx": 332.873758,
+    "dy": 16
+  },
+  "files": [
+    {
+      "path": "plates-1024/head_locked@1024.png",
+      "sha256": "28eb3926c71dad92c63ce48b2c95f79d473977b80dbcc5ebb58cba45dca0ca85",
+      "size": 52486,
+      "format": ".png"
+    },
+    {
+      "path": "webp-512/head_locked@512.webp",
+      "sha256": "4449cd3953489820d38a1569e616975b1b210e8d1e3170c284a22cbecfea247c",
+      "size": 11056,
+      "format": ".webp"
+    },
+    {
+      "path": "plates-1024/jacket_tan@1024.png",
+      "sha256": "f6320da05154a24cd8f4a3df0e4e854caac4c003bfb7688c900d815df2289f97",
+      "size": 166076,
+      "format": ".png"
+    },
+    {
+      "path": "webp-512/jacket_tan@512.webp",
+      "sha256": "54c8c35fadf9cc01d626d1f77d45dfa8f3926442766cae311b8261b0576ba067",
+      "size": 31420,
+      "format": ".webp"
+    },
+    {
+      "path": "plates-1024/pants_black@1024.png",
+      "sha256": "8b8c1487d06c915513f43bd2d447e73140b0841567fbff9d294ef634e09eab38",
+      "size": 184606,
+      "format": ".png"
+    },
+    {
+      "path": "webp-512/pants_black@512.webp",
+      "sha256": "a64b3640568ec376b98a26f8c6b0b09c99a25437ad36d43682ceb1bf4a36ff4e",
+      "size": 33838,
+      "format": ".webp"
+    },
+    {
+      "path": "plates-1024/gloves@1024.png",
+      "sha256": "651d55ab23fb0e77da64d138e28e46e7dfa1ee50601ad4e1c90056862b1eaf37",
+      "size": 26748,
+      "format": ".png"
+    },
+    {
+      "path": "webp-512/gloves@512.webp",
+      "sha256": "ef2cee5f4026d626b0e2ab235b8e3f738c598835c2524aef77ec4083a7d87621",
+      "size": 5118,
+      "format": ".webp"
+    },
+    {
+      "path": "plates-1024/boots@1024.png",
+      "sha256": "43d1228e287120810b2308a095f89ffc588baae71d8d899709c435736ad650b1",
+      "size": 45545,
+      "format": ".png"
+    },
+    {
+      "path": "webp-512/boots@512.webp",
+      "sha256": "9f72f77189cf9beded83364e8eb29e5f984cdf72818a9bcd401f4f9c779cc22b",
+      "size": 8324,
+      "format": ".webp"
+    },
+    {
+      "path": "plates-1024/body_underjacket@1024.png",
+      "sha256": "886619665eabc94229018395ffe800d4f33f9ad0dd3844dc266be673d2ff6e6d",
+      "size": 24437,
+      "format": ".png"
+    },
+    {
+      "path": "webp-512/body_underjacket@512.webp",
+      "sha256": "e123ee03a16501eb3f366b168bf4a8a864fae7c385f51723332b9b05e8993278",
+      "size": 5954,
+      "format": ".webp"
+    },
+    {
+      "path": "plates-1024/jacket_orange@1024.png",
+      "sha256": "eb522decd6db43ee7062495e7d6b3a43f8f79e69a530661b331e709104cce2a2",
+      "size": 153238,
+      "format": ".png"
+    },
+    {
+      "path": "webp-512/jacket_orange@512.webp",
+      "sha256": "c3f2d1810ca7da08de897ec76c96cd4b23488019717a67cfbb8ac24d9c65fc69",
+      "size": 31440,
+      "format": ".webp"
+    },
+    {
+      "path": "plates-1024/pants_charcoal@1024.png",
+      "sha256": "8b8c1487d06c915513f43bd2d447e73140b0841567fbff9d294ef634e09eab38",
+      "size": 184606,
+      "format": ".png"
+    },
+    {
+      "path": "webp-512/pants_charcoal@512.webp",
+      "sha256": "a64b3640568ec376b98a26f8c6b0b09c99a25437ad36d43682ceb1bf4a36ff4e",
+      "size": 33838,
+      "format": ".webp"
+    }
+  ],
+  "limitations": [
+    "Approved main male appearance retained from existing original lookbook; no face repaint",
+    "Original source is poster/card; silhouette mask is provisional and can have edge artifacts",
+    "Dark body is constructed base-layer art, not physically inferred hidden photo anatomy",
+    "No independent helmet/goggles/hair/board; locked combined head is provisional",
+    "Orange recolor is a registered test, owner visual approval required",
+    "Physical Android acceptance not run"
+  ],
+  "compositeProof": "proofs/A_B_C_registered_proof.jpg",
+  "sourceSha256": "d51aa5263c8621c57b929f85dc753b7c97710f7d92533edc1ae8975cef87c992",
+  "candidateItemIds": {
+    "starterId": "m-samir",
+    "baseBody": "body-look1-male",
+    "headCombined": "head-look1-locked",
+    "defaultJacket": "jacket-look1-tan",
+    "defaultPants": "pants-look1-black",
+    "alternateJacket": "jacket-look1-orange",
+    "alternatePants": "pants-look1-charcoal"
+  },
+  "reviewStatus": {
+    "visualAccuracy": "OWNER_REVIEW_REQUIRED",
+    "assetRegistration": "SAME_FIXED_CANVAS",
+    "artworkLayers": "8 PROTOTYPE LAYERS",
+    "actualAndroid": "NOT_TESTED",
+    "fullModular": "NOT_COMPLETE"
+  },
+  "verified": {
+    "8_aligned_rgba_png": true,
+    "8_aligned_rgba_webp": true,
+    "ora_layer_source_valid": true,
+    "locked_head_opaque_pixels_unaltered_A_B_C": true,
+    "single_transform_across_layers": true,
+    "physical_android": "NOT_RUN",
+    "jacket_off_artist_approval": "OPEN",
+    "separate_eyewear_and_board": "ABSENT"
+  }
+}
