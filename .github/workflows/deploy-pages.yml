@@ -64,7 +64,7 @@ jobs:
             mkdir -p site-pages/arcade
             cp -a arcade/. site-pages/arcade/
             echo "Bundled arcade/ into site-pages"
-            find site-pages/arcade -type f | head
+            find site-pages/arcade -type f | head || true
           fi
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
