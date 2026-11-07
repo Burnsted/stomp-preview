@@ -1,5 +1,5 @@
-/* Haven's Garden v0.9-play-fix-preview — play-structure fix */
-const CACHE = 'havens-garden-play-fix-preview-v0.9-play-fix-preview-nursery';
+/* Haven's Garden v0.9-play-fix-runner — 3-lane runner + Franz-ready placeholders */
+const CACHE = 'havens-garden-play-fix-preview-v0.9-play-fix-runner';
 const PRECACHE = [
   './',
   './index.html',
@@ -11,6 +11,7 @@ const PRECACHE = [
   './js/nursery.js',
   './js/haven-anim.js',
   './js/save-store.js',
+  './js/runner.js',
   './js/game.js',
   './assets/greenhouse-v2/maps/small.json',
   './assets/greenhouse-v2/maps/medium.json',
@@ -26,7 +27,12 @@ const PRECACHE = [
   './assets/icon/app-icon.png',
   './assets/icon/app-icon-192.png',
   './assets/icon/app-icon-512.png',
-  './assets/plates/meadow-day.webp',
+  './assets/runner/placeholders/lane-field.png',
+  './assets/runner/placeholders/haven-back-run.png',
+  './assets/runner/placeholders/haven-back-jump.png',
+  './assets/runner/placeholders/haven-back-duck.png',
+  './assets/runner/placeholders/flower-daisy.png',
+  './assets/runner/placeholders/obs-hay.png',
   './assets/character/haven-run.png',
   './assets/character/haven-front.png',
   './assets/character/haven-walk-01.png',

@@ -4,7 +4,40 @@
 */
 'use strict';
 
-const ASSET_VER = 'birthday-harden';
+const ASSET_VER = 'play-fix-runner';
+
+/** Runner art: Franz drops final files into assets/runner/ (same names).
+ *  Until then, clearly-labeled placeholders/ load automatically. */
+const RUNNER_FILES = [
+  'lane-field.png',
+  'haven-back-run.png',
+  'haven-back-jump.png',
+  'haven-back-duck.png',
+  'flower-daisy.png',
+  'flower-tulip.png',
+  'flower-sunflower.png',
+  'flower-bluebell.png',
+  'obs-hay.png',
+  'obs-puddle.png',
+  'obs-fence.png',
+  'obs-rock.png',
+  'obs-wheelbarrow.png',
+  'obs-sprinkler.png',
+  'obs-log.png'
+];
+
+function runnerAssetKey(file) {
+  return 'runner_' + file.replace(/\.png$/i, '').replace(/-/g, '_');
+}
+
+function buildRunnerPaths() {
+  const out = {};
+  RUNNER_FILES.forEach((file) => {
+    // Manifest primary = Franz drop-in path; loader falls back to placeholders/
+    out[runnerAssetKey(file)] = 'assets/runner/' + file;
+  });
+  return out;
+}
 
 const CBN_PAGE_STEMS = [
   'page-13-one-daisy',
@@ -155,7 +188,7 @@ function buildInteriorPaths() {
   return out;
 }
 
-const AssetManifest = Object.assign({}, AssetPaths, buildGreenhousePaths(), buildInteriorPaths());
+const AssetManifest = Object.assign({}, AssetPaths, buildGreenhousePaths(), buildInteriorPaths(), buildRunnerPaths());
 
 /** First-scene (meadow/menu) — keep cold load small. No CBN/concept/all GH sizes. */
 const CORE_KEYS = [
@@ -184,7 +217,8 @@ const SCENE_KEYS = {
   ],
   hive: ['plateHive', 'hive', 'jarFull', 'jarEmpty', 'bugBee', 'bee01', 'bee02'],
   shop: ['plateShop', 'shovelBig', 'multiPickBasket', 'basket'],
-  cbn: ['cbnLadder']
+  cbn: ['cbnLadder'],
+  runner: RUNNER_FILES.map(runnerAssetKey)
 };
 
 const Assets = {
@@ -208,6 +242,12 @@ const Assets = {
         };
         img.src = url + (url.includes('?') ? '&' : '?') + 'v=' + ASSET_VER;
       };
+      // Runner: Franz final path first, then labeled placeholders/ (file-swap drop-in).
+      if (/^assets\/runner\/(?!placeholders\/)/.test(src)) {
+        const ph = src.replace('assets/runner/', 'assets/runner/placeholders/');
+        tryLoad(src, ph);
+        return;
+      }
       // Prefer sibling .webp when listed path is PNG (lossless-looking drop-ins).
       if (/\.png$/i.test(src)) tryLoad(src.replace(/\.png$/i, '.webp'), src);
       else tryLoad(src, null);
@@ -343,10 +383,28 @@ const Assets = {
     return this.get(k) || this.get('havenRun');
   },
 
+  /** Runner sprites — basename without .png (e.g. 'haven-back-run', 'flower-daisy'). */
+  runner(basename) {
+    if (!basename) return null;
+    const key = runnerAssetKey(basename.endsWith('.png') ? basename : basename + '.png');
+    return this.get(key);
+  },
+  runnerPlate() { return this.runner('lane-field'); },
+  runnerHaven(pose) {
+    if (pose === 'jump') return this.runner('haven-back-jump');
+    if (pose === 'duck' || pose === 'plant') return this.runner('haven-back-duck');
+    return this.runner('haven-back-run');
+  },
+  runnerFlower(id) { return this.runner('flower-' + (id || 'daisy')); },
+  runnerObs(kind) { return this.runner('obs-' + (kind || 'hay')); },
+
   cbnPage(stem) { return this.get(cbnAssetKey(stem, 'page')); },
   cbnInk(stem) { return this.get(cbnAssetKey(stem, 'ink')); },
   cbnMask(stem) { return this.get(cbnAssetKey(stem, 'mask')); }
 };
+
+window.RUNNER_FILES = RUNNER_FILES;
+window.runnerAssetKey = runnerAssetKey;
 
 window.Assets = Assets;
 window.AssetManifest = AssetManifest;

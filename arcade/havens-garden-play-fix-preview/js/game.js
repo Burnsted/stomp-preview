@@ -6,7 +6,7 @@
    bugs+net, bees→hive→jars, color rows, CBN, shop.
    ============================================================ */
 
-const VER = 'v0.9-play-fix-preview';
+const VER = 'v0.9-play-fix-runner';
 const PK = 'havensGarden.birthday.v2';
 const PK_LEGACY = 'havensGarden.v1';
 /** Prior preview / prototype keys that may still hold progress. */
@@ -90,7 +90,8 @@ const SPECIES_ALIAS = {
 };
 
 const ST = {
-  BOOT: 'BOOT', MENU: 'MENU', HOWTO: 'HOWTO', MEADOW: 'MEADOW', BUTTERFLY: 'BUTTERFLY',
+  BOOT: 'BOOT', MENU: 'MENU', HOWTO: 'HOWTO', MEADOW: 'MEADOW', RUNNER: 'RUNNER',
+  RUN_RESULTS: 'RUN_RESULTS', BUTTERFLY: 'BUTTERFLY',
   GREENHOUSE: 'GREENHOUSE',
   HIVE: 'HIVE', SHOP: 'SHOP', CBN: 'CBN', CBNMAP: 'CBNMAP', PAUSED: 'PAUSED', BACKUPS: 'BACKUPS'
 };
@@ -653,9 +654,9 @@ function freeOutdoorSpot() {
 /** Any bed with an open slot (null or mix.length < FLOWERS_PER_BED). */
 function emptyBedsWaiting() { return freeIndoorSpot() >= 0 || freeOutdoorSpot() >= 0; }
 function hasPlantRoom() { return emptyBedsWaiting(); }
-/** Full armful (~20) AND room in beds — required before plant mode. */
+/** Basket has flowers AND room in beds — plant after a dusk run (no pick-20 gate). */
 function canStartPlant() {
-  return (bouquet.length >= BOUQUET_GOAL) && hasPlantRoom();
+  return bouquet.length > 0 && hasPlantRoom();
 }
 /** Already planting this outing (may be mid-bouquet after first flower). */
 function plantingInProgress() {
@@ -967,7 +968,8 @@ function snapshotRuntime(reason) {
   SAVE.bouquet = bouquet.slice();
   SAVE.plantReserve = Array.isArray(SAVE.plantReserve) ? SAVE.plantReserve : [];
   SAVE.scene = state === ST.GREENHOUSE ? 'greenhouse'
-    : state === ST.MEADOW || state === ST.PAUSED || state === ST.BUTTERFLY ? 'meadow'
+    : state === ST.MEADOW || state === ST.PAUSED || state === ST.BUTTERFLY
+      || state === ST.RUNNER || state === ST.RUN_RESULTS ? 'meadow'
       : state === ST.HIVE ? 'hive'
         : state === ST.SHOP ? 'shop'
           : state === ST.CBN || state === ST.CBNMAP ? 'color'
@@ -1404,7 +1406,13 @@ function groundHavenInField() {
   if (window.HavenAnim) HavenAnim.reset();
 }
 
+/** Legacy meadow wander kept for butterfly backdrop helpers; flower outing is the runner. */
 function startMeadow(resetBouquet) {
+  return startRunner(resetBouquet);
+}
+
+/** 3-lane endless runner — Places “Flower field”. Placeholder art until Franz drop-in. */
+function startRunner(resetBouquet, opts) {
   flowers = []; particles = []; arcs = []; confetti = []; pollinators = []; flowerPops = [];
   meadowCritters = []; fieldBugs = []; hiveBees = [];
   pendingPick = null;
@@ -1412,29 +1420,52 @@ function startMeadow(resetBouquet) {
   if (resetBouquet) bouquet = [];
   spawnTypeIdx = 0; spawnT = 0;
   dayNight = 0; dayNightT = 0; growAnim = 0; growT = 0;
+  girlPose = 'run'; girlPoseT = 0; girlGait = 'run';
   clearToasts();
-  setCue(bouquet.length >= BOUQUET_GOAL ? 'Go plant!' : 'Pick!');
-  groundHavenInField();
-  seedGrassTufts();
-  ensureMeadowCritters();
-  // Flower field: picking only — no catchable bugs / no net chase here
-  const pool = outingTypes();
-  for (let i = 0; i < Math.min(9, pool.length + 5); i++) {
-    const ang = (i / 9) * Math.PI * 2;
-    spawnFlower({
-      force: 1,
-      sp: pool[i % pool.length],
-      x: girl.x + Math.cos(ang) * (160 + (i % 3) * 90),
-      y: girl.y + Math.sin(ang) * (110 + (i % 3) * 70)
-    });
+  setCue('Swipe!');
+  try { Assets.ensureScene('runner'); } catch (e) {}
+  if (window.HGRunner) {
+    HGRunner.setViewport(W, H, playfieldTop(), playfieldBot());
+    HGRunner.reset(opts || {});
   }
-  state = ST.MEADOW;
+  state = ST.RUNNER;
   nurseryMode = 'look';
   if (SAVE.awaitingReturnGrowth) SAVE.leftForOuting = 1;
   pushNav('meadow');
-  announce('Flower field');
+  announce('Flower run');
   AudioFX.ui();
   snapshotRuntime();
+}
+
+/** Apply dusk results into basket, then open nursery (plant if any flowers + room). */
+function applyRunnerResultsToBasket(res) {
+  res = res || (window.HGRunner && HGRunner.getState().results);
+  if (!res || !res.byColor) return 0;
+  let added = 0;
+  Object.keys(res.byColor).forEach((id) => {
+    const n = res.byColor[id] | 0;
+    for (let i = 0; i < n; i++) {
+      bouquet.push(id);
+      added++;
+    }
+  });
+  SAVE.bouquet = bouquet.slice();
+  return added;
+}
+
+function finishRunnerToNursery() {
+  const res = window.HGRunner ? HGRunner.finish() : null;
+  applyRunnerResultsToBasket(res);
+  clearToasts();
+  if (bouquet.length && hasPlantRoom()) {
+    SAVE.step = 'plant';
+    enterGreenhouse('plant');
+  } else {
+    enterGreenhouse('look');
+    if (!bouquet.length) setCue('Run again for flowers!');
+    else if (!hasPlantRoom()) setCue('Beds are full');
+  }
+  snapshotRuntime('runner');
 }
 
 /** Butterfly / ladybug chase — separate Places activity (net + bugs, no flower picking). */
@@ -1542,24 +1573,22 @@ function enterGreenhouse(mode) {
   beginGhEnter(); // dissolve closed → open (do not animate mismatched panes)
 
   clearToasts();
+  // No door confetti — standing idle entry only
   if (nurseryMode === 'plant') {
     setCue('Tap a bed');
     SAVE.step = 'plant';
     if (!SAVE.taughtPlant) teach = 1;
-    startParty('door');
   } else if (nurseryMode === 'water') {
     setCue('Water!');
     teach = 0;
     waterPtr = { x: W * 0.5, y: H * 0.58 };
-    startParty('door');
   } else if (nurseryMode === 'growing') {
     setCue('Growing…');
     teach = 0;
     beginGrowing();
   } else {
-    setCue(cue === 'Bigger!' ? cue : (bouquet.length >= BOUQUET_GOAL ? 'Go plant!' : (hasPlantRoom() ? 'Pick more!' : 'Look!')));
+    setCue(cue === 'Bigger!' ? cue : (bouquet.length ? 'Go plant!' : (hasPlantRoom() ? 'Run for flowers!' : 'Look!')));
     teach = 0;
-    if (mode !== 'look') startParty('door');
   }
   // Release caught butterflies into nursery (calm, few) — planting-only scene
   syncReleasedGreenhouseButterflies();
@@ -1574,7 +1603,7 @@ function enterGreenhouse(mode) {
   snapshotRuntime();
 }
 
-/** Meadow “go plant” — locked until bouquet hits ~20 (peek still allowed). */
+/** Nursery from Places/Home — plant when basket has flowers + bed room. */
 function goPlantHome() {
   if (SAVE.step === 'water' || SAVE.step === 'growing') {
     enterGreenhouse(SAVE.step);
@@ -1590,11 +1619,10 @@ function goPlantHome() {
     if (EX().colorRows) cue = 'Match colors in rows!';
     return;
   }
-  // Places/Home may peek the greenhouse, but planting must not start early
   enterGreenhouse('look');
-  if (bouquet.length > 0 && bouquet.length < BOUQUET_GOAL) {
-    cue = 'Pick about ' + BOUQUET_GOAL + ' first!';
-  } else if (bouquet.length >= BOUQUET_GOAL && !hasPlantRoom()) {
+  if (!bouquet.length) {
+    cue = 'Run for flowers first!';
+  } else if (!hasPlantRoom()) {
     cue = 'Beds full — harvest grown ones!';
   }
 }
@@ -1955,7 +1983,7 @@ function goBackNav() {
         resumeOuting();
         return;
       }
-      startMeadow(false);
+      startRunner(false);
       return;
     }
     if (prev === 'butterflies') {
@@ -1985,7 +2013,8 @@ function goBackNav() {
     goTitleHome();
     return;
   }
-  if (state === ST.MEADOW || state === ST.BUTTERFLY || state === ST.PAUSED) { goTitleHome(); return; }
+  if (state === ST.MEADOW || state === ST.RUNNER || state === ST.RUN_RESULTS
+      || state === ST.BUTTERFLY || state === ST.PAUSED) { goTitleHome(); return; }
   goTitleHome();
 }
 
@@ -2005,7 +2034,7 @@ function choosePlace(id) {
       return;
     }
     if (state === ST.GREENHOUSE) resumeOuting();
-    else startMeadow(false);
+    else startRunner(false);
     return;
   }
   if (id === 'butterflies') {
@@ -3050,6 +3079,7 @@ function drawFinger(x, y, a) {
 
 /** Compact bordered flower counter — top-right only (06b). No duplicate mid-screen meter. */
 function drawFlowerCounter() {
+  // Runner uses its own dusk HUD; skip duplicate counter there
   if (state !== ST.MEADOW && state !== ST.PAUSED && state !== ST.GREENHOUSE) return;
   const full = bouquet.length >= BOUQUET_GOAL;
   const label = bouquet.length + '/' + BOUQUET_GOAL;
@@ -3089,7 +3119,8 @@ function drawGoPlantBtn() {
 
 function drawChrome() {
   // Header: [pause?][title …… points ✿][mute] — VER on its own line under mute (no collisions)
-  const hasPause = state === ST.MEADOW || state === ST.PAUSED || state === ST.BUTTERFLY;
+  const hasPause = state === ST.MEADOW || state === ST.PAUSED || state === ST.BUTTERFLY
+    || state === ST.RUNNER;
   drawUiChrome(10, padT, W - 20, 48, 16, { fill: '#f4ebe0', alpha: 0.32 });
 
   const mx = W - 58, my = padT + 4;
@@ -3183,9 +3214,9 @@ function drawNavDock() {
 function drawPlacesMenu() {
   const panelW = Math.min(W - 28, 340);
   const items = [
-    { id: 'meadow', label: 'Flower field', sub: 'Pick into the basket', fill: '#9fe870' },
+    { id: 'meadow', label: 'Flower run', sub: 'Lane run until dusk', fill: '#9fe870' },
     { id: 'butterflies', label: 'Butterflies', sub: 'Net chase & catch', fill: '#f078be' },
-    { id: 'greenhouse', label: 'Nursery', sub: 'Plant & water only', fill: '#7ec8ff' },
+    { id: 'greenhouse', label: 'Nursery', sub: 'Pots, plant & grow', fill: '#7ec8ff' },
     { id: 'hive', label: 'Beehive', sub: 'Bees, honey & jars', fill: '#ffd24a' },
     { id: 'color', label: 'Color', sub: 'Color-by-number', fill: '#c8a0ff' },
     { id: 'shop', label: 'Shop', sub: '3 upgrades', fill: '#ffb4c8' },
@@ -3296,6 +3327,29 @@ function nurseryPlanterRects() {
   return rects;
 }
 
+/** Visible empty pot on a bed spot waiting for a plant (nursery pot→plant→grow). */
+function drawEmptyPot(s) {
+  const hw = Math.min(16, (s.hitW || 44) * 0.32);
+  const hh = Math.min(14, (s.hitH || 44) * 0.28);
+  cx.save();
+  cx.translate(s.x, s.y - 2);
+  // Terracotta pot — rim + body (no opaque soil disc)
+  cx.fillStyle = 'rgba(196, 110, 68, 0.88)';
+  cx.beginPath();
+  cx.moveTo(-hw * 0.85, -hh * 0.15);
+  cx.lineTo(hw * 0.85, -hh * 0.15);
+  cx.lineTo(hw * 0.55, hh * 0.95);
+  cx.lineTo(-hw * 0.55, hh * 0.95);
+  cx.closePath();
+  cx.fill();
+  cx.fillStyle = 'rgba(220, 140, 90, 0.92)';
+  cx.fillRect(-hw * 0.95, -hh * 0.35, hw * 1.9, hh * 0.28);
+  cx.strokeStyle = 'rgba(90, 48, 28, 0.55)';
+  cx.lineWidth = 1.2;
+  cx.strokeRect(-hw * 0.95, -hh * 0.35, hw * 1.9, hh * 0.28);
+  cx.restore();
+}
+
 /** Empty-spot hint only — faint outline / sparkle. Never opaque soil masks (alpha ≤ 0.12). */
 function drawBedHighlight(s, highlight) {
   if (!highlight) return;
@@ -3386,6 +3440,11 @@ function drawFranzComposite(sz, bedsArr, outdoorFlag) {
   const spots = (outdoorFlag ? outdoorSpots() : plantSpots()).slice().sort((a, b) => a.y - b.y);
   spots.forEach((s) => {
     const b = outdoorFlag ? outdoorAt(s.i) : bedAt(s.i);
+    const empty = !b || (!(b.grown | 0) && !bedMix(b).length);
+    // Visible pots on empty bed spots (pot → plant → grow)
+    if (empty && (nurseryMode === 'plant' || nurseryMode === 'look' || nurseryMode === 'ready')) {
+      drawEmptyPot(s);
+    }
     let hl = (nurseryMode === 'plant' && bouquet.length && bedHasRoom(b) && !(b && b.grown)) ||
       (nurseryMode === 'water' && b && !b.watered) ||
       ((nurseryMode === 'ready' || nurseryMode === 'look') && b && b.grown);
@@ -3690,6 +3749,18 @@ function drawMeadow() {
   }
 }
 
+/** 3-lane runner — placeholder / Franz lane-field art only (no meadow plate, no front Haven). */
+function drawRunnerScene() {
+  if (!window.HGRunner) {
+    cx.fillStyle = '#7eb85a';
+    cx.fillRect(0, 0, W, H);
+    drawUiText('Runner loading…', W / 2, H * 0.45, { font: '800 18px Fredoka, system-ui, sans-serif' });
+    return;
+  }
+  HGRunner.setViewport(W, H, playfieldTop(), playfieldBot());
+  HGRunner.draw(cx, Assets);
+}
+
 /** Butterfly chase activity — net + catchable bugs, no flower picking. */
 function drawButterflyScene() {
   drawLivingField(skyMode(), {});
@@ -3786,12 +3857,12 @@ function drawHowTo() {
   drawMeadowBG('day');
   drawUiChrome(18, padT + 60, W - 36, contentBottom() - padT - 80, 20, { fill: '#f4ebe0', alpha: 0.32 });
   const steps = [
-    { t: 'Tap a flower', d: 'Haven walks there, then picks it.' },
-    { t: 'Pick ~20', d: 'Fill a mixed armful — about twenty flowers.' },
-    { t: 'Go plant', d: 'When the bouquet is full, tap Home.' },
-    { t: 'Fill the beds', d: 'Tap beds — about six flowers each.' },
+    { t: 'Swipe to run', d: 'Swipe left/right — hop up, duck down.' },
+    { t: 'Collect flowers', d: 'Grab blooms before sunset ends the run.' },
+    { t: 'Watch for bumps', d: 'Hay & rocks stumble — never game over.' },
+    { t: 'Plant in pots', d: 'At dusk, take your basket to the nursery.' },
     { t: 'Water', d: 'Drag the watering can onto each bed.' },
-    { t: 'Growing…', d: 'Then pick more — flowers get bigger!' }
+    { t: 'Growing…', d: 'Then run again — flowers get bigger!' }
   ];
   const s = steps[howtoPage % steps.length];
   drawUiText(s.t, W / 2, padT + 110, { font: '800 24px Fredoka, system-ui, sans-serif' });
@@ -3894,9 +3965,9 @@ function update(dt) {
     if (ghExitT >= 0.08 && doorOpen) doorOpen = 0;
     if (ghExitT >= CROSSFADE_SEC + 0.15) {
       ghExitT = -1;
-      startMeadow(false);
+      startRunner(false);
       nurseryView = 'inside';
-      setCue(bouquet.length >= BOUQUET_GOAL ? 'Go plant!' : 'Pick!');
+      setCue(bouquet.length ? 'Go plant!' : 'Swipe!');
     }
   }
   updateToasts(dt);
@@ -3918,6 +3989,20 @@ function update(dt) {
   confetti = confetti.filter((c) => c.t < c.life);
   flowerPops.forEach((p) => { p.t += dt; });
   flowerPops = flowerPops.filter((p) => p.t < p.life);
+
+  if (state === ST.RUNNER || state === ST.RUN_RESULTS) {
+    if (window.HGRunner) {
+      HGRunner.setViewport(W, H, playfieldTop(), playfieldBot());
+      const done = HGRunner.update(dt);
+      if (done && state === ST.RUNNER) {
+        state = ST.RUN_RESULTS;
+        setCue('Dusk!');
+        AudioFX.ui();
+        snapshotRuntime('runner-dusk');
+      }
+    }
+    return;
+  }
 
   if (state === ST.MEADOW || state === ST.BUTTERFLY) {
     if (window.HavenAnim) {
@@ -4192,7 +4277,25 @@ function onDown(e) {
   }
 
   if (state === ST.PAUSED) {
-    if (inRect(p, hit.pause)) { state = ST.MEADOW; AudioFX.ui(); snapshotRuntime(); }
+    if (inRect(p, hit.pause)) {
+      state = prevState === ST.RUNNER ? ST.RUNNER : ST.MEADOW;
+      AudioFX.ui(); snapshotRuntime();
+    }
+    return;
+  }
+
+  if (state === ST.RUNNER || state === ST.RUN_RESULTS) {
+    if (state === ST.RUNNER && inRect(p, hit.pause)) {
+      prevState = state; state = ST.PAUSED; snapshotRuntime(); AudioFX.ui(); return;
+    }
+    if (window.HGRunner) {
+      const act = HGRunner.onPointerDown(p.x, p.y);
+      if (act === 'continue') {
+        finishRunnerToNursery();
+        return;
+      }
+    }
+    dragging = 1;
     return;
   }
 
@@ -4203,7 +4306,6 @@ function onDown(e) {
     const wpt = screenToWorld(p.x, p.y);
     const f = nearestFlower(wpt.x, wpt.y, PICK_RADIUS);
     if (f) { requestPick(f); dragging = 1; return; }
-    // Flower field: pick only — bug chase is Places → Butterflies
     if (p.y > playfieldTop() && p.y < playfieldBot()) {
       pendingPick = null;
       const c = clampField(wpt.x, wpt.y);
@@ -4370,6 +4472,12 @@ function onMove(e) {
     return;
   }
 
+  if (state === ST.RUNNER || state === ST.RUN_RESULTS) {
+    if (window.HGRunner) HGRunner.onPointerMove(p.x, p.y);
+    lastPtr = p;
+    return;
+  }
+
   if (state !== ST.MEADOW && state !== ST.BUTTERFLY) { lastPtr = p; return; }
   if (p.y >= contentBottom()) { lastPtr = p; return; }
   const wpt = screenToWorld(p.x, p.y);
@@ -4396,6 +4504,14 @@ function onUp(e) {
   const p = ptr(e);
   if (p.id !== pointerId) return;
   if (parentHoldT) { clearTimeout(parentHoldT); parentHoldT = null; }
+  if (state === ST.RUNNER || state === ST.RUN_RESULTS) {
+    if (window.HGRunner) {
+      const act = HGRunner.onPointerUp(p.x, p.y);
+      if (act === 'continue') finishRunnerToNursery();
+    }
+    pointerId = null; lastPtr = null; dragging = 0; wateringHeld = 0;
+    return;
+  }
   // Greenhouse: tap acts only if we did not pan
   if (state === ST.GREENHOUSE && gardenCam.dragging) {
     const wasPan = !!gardenCam.moved || !!gardenCam.panning;
@@ -4476,7 +4592,7 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     AudioFX.suspend();
     snapshotRuntime();
-    if (state === ST.MEADOW) { prevState = state; state = ST.PAUSED; }
+    if (state === ST.MEADOW || state === ST.RUNNER) { prevState = state; state = ST.PAUSED; }
   } else {
     AudioFX.resume();
   }
@@ -4503,6 +4619,18 @@ function frame(now) {
   else if (state === ST.CBN) drawCbnPage();
   else if (state === ST.BACKUPS) drawBackups();
   else if (state === ST.BUTTERFLY) drawButterflyScene();
+  else if (state === ST.RUNNER || state === ST.RUN_RESULTS
+      || (state === ST.PAUSED && prevState === ST.RUNNER)) {
+    drawRunnerScene();
+    if (state === ST.PAUSED) {
+      cx.fillStyle = 'rgba(30,24,20,.35)'; cx.fillRect(0, 0, W, H);
+      drawUiChrome(W / 2 - 100, H * 0.4, 200, 100, 20, { fill: '#f4ebe0', alpha: 0.36 });
+      drawUiText('Paused', W / 2, H * 0.4 + 44, { font: '800 20px Fredoka, system-ui, sans-serif' });
+      drawUiText('Tap ▶ to play', W / 2, H * 0.4 + 72, {
+        font: '700 13px system-ui', color: '#3a342c', halo: 3.5
+      });
+    }
+  }
   else drawMeadow();
   if (state !== ST.BOOT && state !== ST.BACKUPS) drawChrome();
   requestAnimationFrame(frame);
@@ -4731,7 +4859,7 @@ async function boot() {
 
   try {
     if (navigator.serviceWorker && typeof navigator.serviceWorker.register === 'function') {
-      navigator.serviceWorker.register('./sw.js?v=0.9-play-fix-preview').catch(() => {});
+      navigator.serviceWorker.register('./sw.js?v=0.9-play-fix-runner').catch(() => {});
     }
   } catch (eSw) {}
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));
@@ -4894,9 +5022,11 @@ window.HavensGarden = {
   getBouquet: () => bouquet.slice(),
   setBouquet: (arr) => { bouquet = Array.isArray(arr) ? arr.slice() : []; SAVE.bouquet = bouquet.slice(); },
   getExtras: () => EX(),
-  startMeadow, enterGreenhouse, enterHive, enterShop, enterCbnMap, openCbnPage,
+  startMeadow, startRunner, finishRunnerToNursery, applyRunnerResultsToBasket,
+  enterGreenhouse, enterHive, enterShop, enterCbnMap, openCbnPage,
   buyUpgrade, hiveHarvest, hivePourJar, doPlantAt, doWaterAt, doPick,
   tryCatchBugAt, spawnFieldBugs, spawnChaseBugs, startButterflyChase, goTitleHome, choosePlace, flowerPoints,
+  getRunner: () => (window.HGRunner ? HGRunner.getState() : null),
   getBugs: () => fieldBugs.map((b) => b.kind),
   getHiveBees: () => hiveBees.filter((b) => !b.caught).length,
   getPollinators: () => pollinators.map((p) => p.kind),
