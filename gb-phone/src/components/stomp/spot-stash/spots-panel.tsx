@@ -48,9 +48,10 @@ export function SpotsPanel() {
 
   return (
     <section
-      className="mt-5 space-y-3"
+      className="relative z-0 mt-5 space-y-3 pb-2"
       data-testid="spots-panel"
       data-surface="stomp-spots"
+      data-mobile-safe="spots-below-map"
     >
       <header className="px-1">
         <h2 className="font-display text-2xl tracking-wide text-ink">STOMP Spots</h2>
@@ -186,9 +187,11 @@ function SpotDetail() {
   const acceptTransfer = useSpotStash((s) => s.acceptTransfer);
   const renameSelected = useSpotStash((s) => s.renameSelected);
   const updateStatus = useSpotStash((s) => s.updateStatus);
+  const archiveSelected = useSpotStash((s) => s.archiveSelected);
   const revokeCrew = useSpotStash((s) => s.revokeCrew);
   const selectPin = useSpotStash((s) => s.selectPin);
   const [rename, setRename] = useState("");
+  const [archiveConfirm, setArchiveConfirm] = useState(false);
 
   if (!pin) return null;
 
@@ -280,7 +283,7 @@ function SpotDetail() {
       <div data-testid="spot-clips" className="space-y-2">
         <div className="flex items-center justify-between">
           <p className="text-[11px] font-semibold uppercase text-muted">
-            Clips · 7-day TTL
+            Clips · 7-day TTL (per clip)
           </p>
           <button
             type="button"
@@ -291,35 +294,57 @@ function SpotDetail() {
             Add clip
           </button>
         </div>
+        <p
+          data-testid="spot-clip-sample-disclaimer"
+          className="text-[10px] text-muted"
+        >
+          Sample preview behavior · not live media deletion. Each clip’s own
+          receivedAt+7d clock · Trip Drop length does not extend it.
+        </p>
         {allClips.length === 0 ? (
           <p className="text-xs text-muted">No clips attached.</p>
         ) : (
           allClips.map((c) => {
             const play = assertPlayback(c, clock());
+            const expired = !play.ok;
             return (
               <div
                 key={c.id}
                 data-testid={`spot-clip-${c.id}`}
                 data-delivery={c.delivery}
+                data-expired={expired ? "true" : "false"}
                 className="rounded-2xl bg-snow/70 px-2.5 py-2 text-xs ring-1 ring-line"
               >
                 <p className="font-semibold">{c.title}</p>
                 <p data-testid={`spot-clip-countdown-${c.id}`} className="text-muted">
-                  {countdownLabel(c, clock())} · expires {c.expiresAt.slice(0, 10)}
+                  {countdownLabel(c, clock())} · expires {c.expiresAt.slice(0, 10)}{" "}
+                  (own deadline)
                 </p>
-                <div className="mt-1 flex gap-2">
+                <div className="mt-1 flex flex-wrap items-center gap-2">
                   <button
                     type="button"
                     data-testid={`spot-clip-export-${c.id}`}
-                    className="font-semibold"
+                    className="font-semibold disabled:opacity-40"
+                    disabled={expired}
                     onClick={() => exportClip(c.id)}
                   >
                     Save / Export
                   </button>
                   <span data-testid={`spot-clip-play-${c.id}`}>
-                    {play.ok ? "Playable" : "Playback denied · expired"}
+                    {play.ok
+                      ? "Playable"
+                      : "Playback denied · expired (sample · not deleted live)"}
                   </span>
                 </div>
+                {expired ? (
+                  <p
+                    data-testid={`spot-clip-expired-sample-${c.id}`}
+                    className="mt-1 text-[10px] text-muted"
+                  >
+                    Non-playable · non-exportable in this prototype. Labels sample
+                    revoke only — no live CDN/storage deletion job.
+                  </p>
+                ) : null}
               </div>
             );
           })
@@ -356,7 +381,45 @@ function SpotDetail() {
         >
           Transfer Keeper → Jax
         </button>
+        <button
+          type="button"
+          data-testid="spot-archive-request"
+          className="rounded-full bg-snow px-3 py-1.5 text-xs font-semibold ring-1 ring-line"
+          onClick={() => setArchiveConfirm(true)}
+        >
+          Archive pin
+        </button>
       </div>
+
+      {archiveConfirm ? (
+        <div
+          data-testid="spot-archive-confirm"
+          className="space-y-2 rounded-2xl bg-navy/15 p-2 text-xs ring-1 ring-line"
+        >
+          <p>Archive “{pin.nickname}”? Confirm required — not automatic.</p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              data-testid="spot-archive-cancel"
+              className="rounded-full bg-snow px-3 py-1.5 font-semibold ring-1 ring-line"
+              onClick={() => setArchiveConfirm(false)}
+            >
+              Keep pin
+            </button>
+            <button
+              type="button"
+              data-testid="spot-archive-yes"
+              className="rounded-full bg-navy px-3 py-1.5 font-semibold text-snow"
+              onClick={() => {
+                setArchiveConfirm(false);
+                archiveSelected();
+              }}
+            >
+              Yes, archive
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {useSpotStash.getState().flow === "keeper-edit" ? (
         <div data-testid="keeper-edit-panel" className="space-y-2 rounded-2xl bg-snow/60 p-2">

@@ -399,6 +399,32 @@ describe("BATCH 5 — simple GPS one-shot", () => {
     expect(assertCoordsStayOnDevice().networkExportOfCoords).toBe(false);
   });
 
+  it("browser adapter uses getCurrentPosition only — never watchPosition", async () => {
+    const { createBrowserGeoProvider } = await import("../src/spot-stash/gps.js");
+    let watches = 0;
+    let gets = 0;
+    const provider = createBrowserGeoProvider({
+      geolocation: {
+        getCurrentPosition: (ok) => {
+          gets += 1;
+          ok({
+            coords: { latitude: 39.6, longitude: -106.3, accuracy: 4 },
+            timestamp: Date.parse(DAY1),
+          });
+        },
+        watchPosition: () => {
+          watches += 1;
+          return 1;
+        },
+        clearWatch: () => {},
+      },
+    });
+    await capturePinOnce(provider, { nowIso: DAY1 });
+    expect(gets).toBe(1);
+    expect(watches).toBe(0);
+    expect(provider.activeWatchCount()).toBe(0);
+  });
+
   it("denied / inaccurate → manual placement", async () => {
     const denied = await capturePinOnce(
       createMockGeoProvider({ fail: "denied" }),
