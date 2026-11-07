@@ -48,11 +48,12 @@ export function SocialHome() {
 
   return (
     <div
-      className="relative overflow-hidden pb-28"
+      className="relative overflow-hidden pb-[max(9rem,calc(env(safe-area-inset-bottom)+7.5rem))]"
       data-testid="home-look-board"
       data-home-layout="t1236u"
       data-stomper-stage={stomperReady ? "on" : "off"}
       data-social-home="true"
+      data-fab-clearance="home-squad"
     >
       <section data-testid="home-zone-ride" className="relative" aria-label="Home hero">
         <div className={`relative overflow-hidden ${stomperReady ? "min-h-[26rem]" : "min-h-[20rem]"}`}>
@@ -106,10 +107,10 @@ export function SocialHome() {
                   type="button"
                   data-testid={`home-squad-${squad.id}`}
                   onClick={() => setScreen("hub")}
-                  className="flex min-h-11 w-full items-center justify-between text-left"
+                  className="flex min-h-11 w-full items-center justify-between gap-3 pr-16 text-left"
                 >
                   <span className="font-semibold text-ink">{squad.name}</span>
-                  <span className="text-xs text-muted">
+                  <span className="max-w-[9rem] truncate text-right text-xs text-muted">
                     {squad.joined ? "Joined" : "Preview"} · {squad.members.length} riders
                   </span>
                 </button>
