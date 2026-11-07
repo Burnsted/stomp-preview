@@ -86,14 +86,16 @@ export function visualItemIdForBoard(boardId: string): string | null {
   return boardId;
 }
 
+/** Unique owned board ids — FAMILY_BOARDS already includes board-powder (t1249u). */
 const DEFAULT_OWNED = [
-  BOARD_OFF_ITEM_ID,
-  GENERIC_BOARD_VISUAL_ITEM_ID,
-  ...FAMILY_BOARDS.map((b) => b.id),
-  "board-park-graphic",
-  "board-powder",
-  "board-stomp-graphic",
-] as const;
+  ...new Set([
+    BOARD_OFF_ITEM_ID,
+    GENERIC_BOARD_VISUAL_ITEM_ID,
+    ...FAMILY_BOARDS.map((b) => b.id),
+    "board-park-graphic",
+    "board-stomp-graphic",
+  ]),
+];
 
 export function describeBoardEntry(boardId: string): BoardCollectionEntry {
   const family = FAMILY_BOARDS.find((b) => b.id === boardId);

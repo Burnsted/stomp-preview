@@ -127,10 +127,11 @@ export function RiderHub({ initial = "Profile" }: { initial?: Panel }) {
   const activeBoardId = useBoardsCollection((s) => s.activeBoardId);
   const visuallyEquippedItemId = useBoardsCollection((s) => s.visuallyEquippedItemId);
   const setActiveBoard = useBoardsCollection((s) => s.setActiveBoard);
-  const boardEntries = useMemo(
-    () => ownedBoardIds.map((id) => describeBoardEntry(id)),
-    [ownedBoardIds],
-  );
+  const boardEntries = useMemo(() => {
+    // Dedupe ids so React keys stay unique (t1249u board-powder collision).
+    const unique = [...new Set(ownedBoardIds)];
+    return unique.map((id) => describeBoardEntry(id));
+  }, [ownedBoardIds]);
 
   const squad = social.squads.find((row) => row.joined) ?? social.squads[0];
   const notes = social.notes.filter((note) => note.squadId === squad?.id);
