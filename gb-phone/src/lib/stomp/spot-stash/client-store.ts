@@ -29,12 +29,14 @@ import {
   type CreatePinInput,
   type GeoFix,
   type GeoProvider,
+  type SpotFeatureType,
   type SpotPin,
   type SpotVoiceReply,
   type SpotWorld,
   type VoiceUiState,
   fixedClock,
   type Clock,
+  isSpotFeatureType,
 } from "@woz/spot-stash/index.js";
 
 export type SpotFlow =
@@ -47,7 +49,8 @@ export type SpotFlow =
   | "keeper-edit"
   | "keeper-transfer"
   | "voice-demo"
-  | "clip-expiry";
+  | "clip-expiry"
+  | "clip-upload";
 
 export type FictionCrew = {
   id: string;
@@ -73,6 +76,9 @@ type SpotClientState = {
   pendingShareCrew: string | null;
   draftNickname: string;
   draftDescription: string;
+  draftFeatureType: SpotFeatureType;
+  draftClipTag: string;
+  draftClipRecorded: boolean;
   draftVisibility: "public_spot" | "private_stash";
   draftCrewId: string | null;
   draftFix: GeoFix | null;
@@ -85,6 +91,11 @@ type SpotClientState = {
   selectPin: (id: string | null) => void;
   setDraftNickname: (v: string) => void;
   setDraftDescription: (v: string) => void;
+  setDraftFeatureType: (v: SpotFeatureType) => void;
+  setDraftClipTag: (v: string) => void;
+  setDraftClipRecorded: (v: boolean) => void;
+  openClipUpload: () => void;
+  postClipUpload: () => void;
   setDraftVisibility: (v: "public_spot" | "private_stash") => void;
   setDraftCrewId: (id: string | null) => void;
   setOffline: (v: boolean) => void;
@@ -129,6 +140,9 @@ export const useSpotStash = create<SpotClientState>((set, get) => ({
   pendingShareCrew: null,
   draftNickname: "",
   draftDescription: "",
+  draftFeatureType: "kicker",
+  draftClipTag: "",
+  draftClipRecorded: false,
   draftVisibility: "public_spot",
   draftCrewId: "powder",
   draftFix: null,
@@ -146,6 +160,55 @@ export const useSpotStash = create<SpotClientState>((set, get) => ({
     set({ selectedId, flow: selectedId ? "detail" : "list", notice: "" }),
   setDraftNickname: (draftNickname) => set({ draftNickname }),
   setDraftDescription: (draftDescription) => set({ draftDescription }),
+  setDraftFeatureType: (draftFeatureType) => set({ draftFeatureType }),
+  setDraftClipTag: (draftClipTag) => set({ draftClipTag }),
+  setDraftClipRecorded: (draftClipRecorded) => set({ draftClipRecorded }),
+  openClipUpload: () => {
+    const pin = get().selected();
+    const tag = pin ? `#${pin.featureType}` : "";
+    set({
+      flow: "clip-upload",
+      draftClipTag: tag,
+      draftClipRecorded: false,
+      notice: "",
+    });
+  },
+  postClipUpload: () => {
+    const s = get();
+    if (!s.selectedId) {
+      set({ notice: "Open a Spot first.", flow: "list" });
+      return;
+    }
+    if (!s.draftClipRecorded) {
+      set({ notice: "Record or pick a clip first." });
+      return;
+    }
+    const raw = s.draftClipTag.trim().replace(/^#/, "");
+    const featureHint = isSpotFeatureType(raw) ? raw : undefined;
+    const title = s.draftClipTag.trim()
+      ? `Clip ${s.draftClipTag.trim().startsWith("#") ? s.draftClipTag.trim() : `#${s.draftClipTag.trim()}`}`
+      : "Session clip";
+    get().attachDemoClip(title);
+    if (featureHint) {
+      const pin = get().selected();
+      if (pin && pin.featureType !== featureHint) {
+        set({
+          world: {
+            ...get().world,
+            pins: get().world.pins.map((p) =>
+              p.id === pin.id ? { ...p, featureType: featureHint } : p,
+            ),
+          },
+        });
+      }
+    }
+    set({
+      flow: "detail",
+      draftClipTag: "",
+      draftClipRecorded: false,
+      notice: "Clip staged · 7-day TTL starts on receive.",
+    });
+  },
   setDraftVisibility: (draftVisibility) => set({ draftVisibility }),
   setDraftCrewId: (draftCrewId) => set({ draftCrewId }),
   setOffline: (offline) => set({ offline }),
@@ -199,10 +262,11 @@ export const useSpotStash = create<SpotClientState>((set, get) => ({
       visibility: s.draftVisibility,
       nickname,
       description: s.draftDescription,
+      featureType: s.draftFeatureType,
       founderId: s.actorId,
       founderName: s.actorName,
       resortId: "vail",
-      resortName: "Vail (fiction)",
+      resortName: "Vail",
       pin: s.draftFix,
       offline: s.offline,
       crewAcl:
@@ -284,7 +348,7 @@ export const useSpotStash = create<SpotClientState>((set, get) => ({
     }
     set({ world: next.world, notice: "Crew access revoked for future views." });
   },
-  attachDemoClip: (title = "Session clip (fiction)", receivedAt) => {
+  attachDemoClip: (title = "Session clip", receivedAt) => {
     const s = get();
     if (!s.selectedId) return;
     const result = attachClip(
@@ -549,11 +613,12 @@ export const useSpotStash = create<SpotClientState>((set, get) => ({
         id: "demo-spot-launcher",
         visibility: "public_spot",
         nickname: "Little Launcher",
-        description: "Fiction side hit · preview only",
+        description: "Short hit off the cat track",
+        featureType: "kicker",
         founderId: "ria",
         founderName: "Ria",
         resortId: "vail",
-        resortName: "Vail (fiction)",
+        resortName: "Vail",
         pin: {
           lat: 39.6061,
           lng: -106.355,
@@ -574,7 +639,7 @@ export const useSpotStash = create<SpotClientState>((set, get) => ({
             title: "Day-1 trip clip",
             receivedAt: "2026-11-01T12:00:00Z",
             uploaderId: "ria",
-            tripId: "trip-20d-fiction",
+            tripId: "trip-20d",
           },
           "ria",
         )
@@ -587,11 +652,12 @@ export const useSpotStash = create<SpotClientState>((set, get) => ({
         id: "demo-stash-pillow",
         visibility: "private_stash",
         nickname: "Secret Pillow",
-        description: "Crew-only fiction stash",
+        description: "Crew-only tree stash",
+        featureType: "trees",
         founderId: "ria",
         founderName: "Ria",
         resortId: "vail",
-        resortName: "Vail (fiction)",
+        resortName: "Vail",
         pin: {
           lat: 39.61,
           lng: -106.36,
@@ -623,7 +689,7 @@ export const useSpotStash = create<SpotClientState>((set, get) => ({
       selectedId: "demo-spot-launcher",
       flow: "list",
       clockIso: "2026-11-06T18:00:00Z",
-      notice: "Fiction demo Spots + Stash loaded.",
+      notice: "Demo Spots + Stash loaded.",
     });
   },
   publicSpots: () =>

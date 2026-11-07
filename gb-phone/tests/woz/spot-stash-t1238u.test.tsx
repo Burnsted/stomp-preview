@@ -45,6 +45,9 @@ beforeEach(() => {
     pendingShareCrew: null,
     draftNickname: "",
     draftDescription: "",
+    draftFeatureType: "kicker",
+    draftClipTag: "",
+    draftClipRecorded: false,
     draftVisibility: "public_spot",
     draftCrewId: "powder",
     draftFix: null,
@@ -199,15 +202,15 @@ describe("t1238u Sesh voice + FAB", () => {
     await showTrails();
     fireEvent.click(screen.getByTestId("spots-voice-demo"));
     const panel = screen.getByTestId("sesh-voice-demo");
-    fireEvent.click(within(panel).getByText("Sesh, spot this."));
+    fireEvent.click(within(panel).getByTestId("sesh-voice-demo-Sesh-spot-t"));
     expect(screen.getByTestId("sesh-voice-state").textContent).toMatch(/parsed|listening|gps/i);
 
-    fireEvent.click(within(panel).getByText("Share it with Powder Crew."));
+    fireEvent.click(within(panel).getByTestId("sesh-voice-demo-Share-it-wit"));
     expect(screen.getByTestId("sesh-confirm-share")).toBeTruthy();
 
     fireEvent.click(screen.getByTestId("sesh-speech-available"));
     expect(useSpotStash.getState().speechAvailable).toBe(false);
-    fireEvent.click(within(panel).getByText("Sesh, spot this."));
+    fireEvent.click(within(panel).getByTestId("sesh-voice-demo-Sesh-spot-t"));
     expect(screen.getByTestId("sesh-typed-fallback")).toBeTruthy();
   });
 

@@ -58,6 +58,9 @@ beforeEach(() => {
     pendingShareCrew: null,
     draftNickname: "",
     draftDescription: "",
+    draftFeatureType: "kicker",
+    draftClipTag: "",
+    draftClipRecorded: false,
     draftVisibility: "public_spot",
     draftCrewId: "powder",
     draftFix: null,
@@ -194,15 +197,15 @@ describe("t1243u Sesh voice states + touch fallback", () => {
     );
     expect(screen.getByTestId("sesh-voice-state").textContent).toMatch(/listening/i);
 
-    fireEvent.click(within(panel).getByText("Sesh, spot this."));
+    fireEvent.click(within(panel).getByTestId("sesh-voice-demo-Sesh-spot-t"));
     expect(useSpotStash.getState().voiceUi).toBe("parsed");
 
-    fireEvent.click(within(panel).getByText("Share it with Powder Crew."));
+    fireEvent.click(within(panel).getByTestId("sesh-voice-demo-Share-it-wit"));
     expect(screen.getByTestId("sesh-confirm-share")).toBeTruthy();
     expect(useSpotStash.getState().voiceUi).toBe("confirm_share");
 
     fireEvent.click(screen.getByTestId("sesh-speech-available"));
-    fireEvent.click(within(panel).getByText("Sesh, spot this."));
+    fireEvent.click(within(panel).getByTestId("sesh-voice-demo-Sesh-spot-t"));
     expect(screen.getByTestId("sesh-typed-fallback")).toBeTruthy();
     expect(useSpotStash.getState().voiceUi).toBe("typed_fallback");
 
@@ -272,7 +275,7 @@ describe("t1243u explicit confirm before share and archive", () => {
   it("share requires confirm; archive requires confirm before mutating", async () => {
     await showTrails();
     fireEvent.click(screen.getByTestId("spots-voice-demo"));
-    fireEvent.click(screen.getByText("Share it with Powder Crew."));
+    fireEvent.click(screen.getByTestId("sesh-voice-demo-Share-it-wit"));
     expect(screen.getByTestId("sesh-confirm-share")).toBeTruthy();
     // Cancel keeps local — no false shared
     fireEvent.click(screen.getByTestId("sesh-confirm-cancel"));

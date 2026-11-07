@@ -11,6 +11,7 @@ import type {
   PinSaveState,
   PinVisibility,
   SpotClip,
+  SpotFeatureType,
   SpotPin,
   SpotReaction,
   StomperId,
@@ -33,6 +34,8 @@ export type CreatePinInput = {
   visibility: PinVisibility;
   nickname: string;
   description?: string;
+  /** Defaults to kicker when omitted (t1246u single-tag surface). */
+  featureType?: SpotFeatureType;
   founderId: StomperId;
   founderName: string;
   resortId?: string | null;
@@ -67,6 +70,7 @@ export function createPin(
     visibility: input.visibility,
     nickname,
     description: (input.description ?? "").trim(),
+    featureType: input.featureType ?? "kicker",
     founderId: input.founderId,
     founderName: input.founderName,
     keeperId: input.founderId,

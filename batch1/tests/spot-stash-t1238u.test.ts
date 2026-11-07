@@ -69,6 +69,7 @@ function seedPublicSpot(overrides: Partial<SpotPin> = {}): SpotPin {
     visibility: "public_spot",
     nickname: "Little Launcher",
     description: "Fiction kicker",
+    featureType: "kicker",
     founderId: "ria",
     founderName: "Ria",
     keeperId: "ria",

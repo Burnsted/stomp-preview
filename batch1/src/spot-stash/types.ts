@@ -17,6 +17,24 @@ export type SpotStatus =
   | "closed"
   | "archived";
 
+/** Feature under the pin — drives ONE #tag + hero photo slot (t1246u). */
+export type SpotFeatureType = "kicker" | "trees" | "rail" | "jump";
+
+export const SPOT_FEATURE_TYPES: readonly SpotFeatureType[] = [
+  "kicker",
+  "trees",
+  "rail",
+  "jump",
+] as const;
+
+export function featureTag(featureType: SpotFeatureType): `#${SpotFeatureType}` {
+  return `#${featureType}`;
+}
+
+export function isSpotFeatureType(value: string): value is SpotFeatureType {
+  return (SPOT_FEATURE_TYPES as readonly string[]).includes(value);
+}
+
 export type PinSaveState =
   | "draft_local"
   | "saved_local"
@@ -96,6 +114,8 @@ export type SpotPin = {
   visibility: PinVisibility;
   nickname: string;
   description: string;
+  /** Single feature tag for simplify UI (t1246u) — e.g. kicker → #kicker. */
+  featureType: SpotFeatureType;
   /** Founder attribution — never overwritten by Keeper transfer. */
   founderId: StomperId;
   founderName: string;
