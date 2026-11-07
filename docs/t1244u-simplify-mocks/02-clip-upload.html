@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=390" />
+  <title>t1244u mock 02 — Clip upload (static)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 390px;
+      height: 844px;
+      overflow: hidden;
+      font-family: Outfit, system-ui, sans-serif;
+      color: #f4f6f8;
+      background: #070b14;
+    }
+    .phone {
+      position: relative;
+      width: 390px;
+      height: 844px;
+      background: #070b14;
+    }
+    .badge {
+      position: absolute;
+      top: 14px; right: 14px;
+      z-index: 8;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: rgba(244,246,248,0.45);
+    }
+    .header {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 18px 16px 10px;
+    }
+    .mark {
+      width: 28px; height: 28px;
+      border-radius: 7px;
+      background: #fff;
+      color: #0a0a0a;
+      font: 900 20px/28px "Arial Black", Arial, sans-serif;
+      text-align: center;
+    }
+    .word {
+      font-family: Anton, sans-serif;
+      font-size: 26px;
+      letter-spacing: 0.04em;
+    }
+    /* Full-bleed finder / preview plane */
+    .stage {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(70% 45% at 50% 35%, rgba(154,166,184,0.18), transparent 60%),
+        linear-gradient(180deg, #121a2c 0%, #070b14 70%);
+    }
+    .stage svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.9;
+    }
+    .frame {
+      position: absolute;
+      left: 28px; right: 28px;
+      top: 120px; bottom: 220px;
+      border: 1.5px solid rgba(255,255,255,0.22);
+      border-radius: 20px;
+      pointer-events: none;
+    }
+    /* Exactly three actions: Record, Tag, Post */
+    .dock {
+      position: absolute;
+      left: 16px; right: 72px;
+      bottom: 108px;
+      z-index: 4;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: stretch;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .record {
+      width: 64px; height: 64px;
+      border-radius: 999px;
+      border: 3px solid #f4f6f8;
+      background: transparent;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .record span {
+      width: 28px; height: 28px;
+      border-radius: 999px;
+      background: #f4f6f8;
+    }
+    .tag {
+      flex: 1;
+      height: 48px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(21,32,51,0.75);
+      color: #f4f6f8;
+      padding: 0 18px;
+      font: 600 14px Outfit, sans-serif;
+      display: flex;
+      align-items: center;
+    }
+    .tag em { font-style: normal; opacity: 0.45; font-weight: 500; }
+    .post {
+      height: 52px;
+      border: 0;
+      border-radius: 999px;
+      background: #f4f6f8;
+      color: #0a0a0a;
+      font: 700 15px Outfit, sans-serif;
+    }
+    .fab-wrap {
+      position: absolute;
+      right: 14px;
+      bottom: 88px;
+      z-index: 6;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+    .fab-cap {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      opacity: 0.75;
+    }
+    .fab {
+      width: 52px; height: 52px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: #0b1220;
+      color: #f4f6f8;
+      display: grid;
+      place-items: center;
+    }
+    .tabs {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: 64px;
+      z-index: 5;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding-bottom: 10px;
+      background: linear-gradient(180deg, transparent, rgba(7,11,20,0.95));
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(244,246,248,0.55);
+    }
+    .tabs span:nth-child(2) { color: #f4f6f8; }
+  </style>
+</head>
+<body>
+  <div class="phone" data-mock="t1244u-02-clip-upload">
+    <p class="badge">STATIC MOCK · NOT APP</p>
+    <div class="stage" aria-hidden="true">
+      <!-- Original generic rail / feature illustration -->
+      <svg viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg">
+        <rect width="390" height="844" fill="#0b1220"/>
+        <path d="M0 520 C140 460 250 580 390 500 L390 844 L0 844 Z" fill="#1a2438"/>
+        <path d="M0 600 C160 560 240 640 390 580 L390 844 L0 844 Z" fill="#243044" opacity="0.7"/>
+        <!-- box / rail -->
+        <rect x="90" y="560" width="210" height="28" rx="4" fill="#9aa6b8"/>
+        <rect x="90" y="588" width="210" height="10" fill="#5b677a"/>
+        <!-- boarder on rail -->
+        <g transform="translate(195 520)" fill="none" stroke="#f4f6f8" stroke-width="3" stroke-linecap="round">
+          <circle cx="0" cy="-26" r="8"/>
+          <path d="M0 -16 L0 10"/>
+          <path d="M-12 0 L0 6 L14 -4"/>
+          <path d="M0 10 L-10 30 M0 10 L12 28"/>
+          <path d="M-24 36 H24" stroke-width="4"/>
+        </g>
+        <circle cx="60" cy="200" r="2" fill="#f4f6f8" opacity="0.5"/>
+        <circle cx="320" cy="160" r="1.5" fill="#f4f6f8" opacity="0.4"/>
+        <circle cx="280" cy="240" r="2" fill="#f4f6f8" opacity="0.35"/>
+      </svg>
+      <div class="frame"></div>
+    </div>
+
+    <header class="header">
+      <div class="mark" aria-hidden="true">S</div>
+      <div class="word">STOMP</div>
+    </header>
+
+    <div class="dock">
+      <div class="row">
+        <button class="record" type="button" aria-label="Record or pick clip"><span></span></button>
+        <div class="tag"><em>#tag</em>&nbsp; · add a tag</div>
+      </div>
+      <button class="post" type="button">Post</button>
+    </div>
+
+    <div class="fab-wrap">
+      <span class="fab-cap">HEY SESH</span>
+      <div class="fab" aria-label="Hey Sesh">
+        <svg width="26" height="26" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <path d="M8 34c6-3 12-4 16-4s10 1 16 4"/>
+          <circle cx="24" cy="16" r="4"/>
+          <path d="M24 20v8M18 24l6 2 6-4M24 28l-4 6M24 28l5 5"/>
+        </svg>
+      </div>
+    </div>
+
+    <nav class="tabs" aria-hidden="true">
+      <span>Home</span><span>Map</span><span>Music</span><span>Stats</span><span>Crew</span>
+    </nav>
+  </div>
+</body>
+</html>
