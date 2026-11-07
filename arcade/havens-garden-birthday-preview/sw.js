@@ -1,5 +1,5 @@
-/* Haven's Garden v0.9-play-fix-runner-idle — standing idle + pot seedlings */
-const CACHE = 'havens-garden-play-fix-preview-v0.9-play-fix-runner-idle';
+/* Haven's Garden v0.9-play-fix-runner-idle2 — bigger tray blooms + local plant confetti */
+const CACHE = 'havens-garden-play-fix-preview-v0.9-play-fix-runner-idle2';
 const PRECACHE = [
   './',
   './index.html',

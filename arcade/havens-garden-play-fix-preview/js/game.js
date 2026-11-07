@@ -6,7 +6,7 @@
    bugs+net, bees→hive→jars, color rows, CBN, shop.
    ============================================================ */
 
-const VER = 'v0.9-play-fix-runner-idle';
+const VER = 'v0.9-play-fix-runner-idle2';
 const PK = 'havensGarden.birthday.v2';
 const PK_LEGACY = 'havensGarden.v1';
 /** Prior preview / prototype keys that may still hold progress. */
@@ -1017,13 +1017,47 @@ function addSpark(x, y) {
     particles.push({ x, y, vx: (Math.random() - 0.5) * 90, vy: -50 - Math.random() * 70, t: 0, life: 0.4, col: '#fff6a0', r: 1.5 + Math.random() * 2.5, spark: 1 });
   }
 }
-function burstConfetti(n, cx0, cy0) {
+function burstConfetti(n, cx0, cy0, opts) {
+  opts = opts || {};
   if (quiet) n = Math.min(n, 8);
   const cols = SPECIES.map((s) => s.c).concat(['#fff']);
+  const spread = opts.spread != null ? opts.spread : 2.2;
+  const spMin = opts.spMin != null ? opts.spMin : 120;
+  const spRange = opts.spRange != null ? opts.spRange : 200;
+  const life0 = opts.life != null ? opts.life : 1;
+  const lifeJ = opts.lifeJitter != null ? opts.lifeJitter : 0.6;
+  const rad = opts.rad != null ? opts.rad : 40;
   for (let i = 0; i < n && confetti.length < 70; i++) {
-    const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.2, sp = 120 + Math.random() * 200;
-    confetti.push({ x: cx0 + (Math.random() - 0.5) * 40, y: cy0, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, t: 0, life: 1 + Math.random() * 0.6, col: cols[i % cols.length], r: 3 + Math.random() * 4, rot: Math.random() * 6 });
+    const a = -Math.PI / 2 + (Math.random() - 0.5) * spread;
+    const sp = spMin + Math.random() * spRange;
+    confetti.push({
+      x: cx0 + (Math.random() - 0.5) * rad,
+      y: cy0,
+      vx: Math.cos(a) * sp,
+      vy: Math.sin(a) * sp,
+      t: 0,
+      life: life0 + Math.random() * lifeJ,
+      col: cols[i % cols.length],
+      r: (opts.rMin != null ? opts.rMin : 3) + Math.random() * (opts.rRange != null ? opts.rRange : 4),
+      rot: Math.random() * 6,
+      local: !!opts.local
+    });
   }
+}
+
+/** Short plant pop — stays near the bed, never drifts to the doors. */
+function burstPlantConfetti(x, y) {
+  burstConfetti(quiet ? 3 : 7, x, y - 12, {
+    local: 1,
+    spread: 1.1,
+    spMin: 28,
+    spRange: 55,
+    life: 0.35,
+    lifeJitter: 0.2,
+    rad: 18,
+    rMin: 2,
+    rRange: 2.5
+  });
 }
 function startParty(kind) {
   const dur = { full: 1.8, door: 1.4, plant: 1.5, water: 1.2, grow: 1.6, upgrade: 2.8, bigger: 1.8 }[kind] || 1.4;
@@ -1764,8 +1798,8 @@ function finishPlant() {
     }
     const p = spotXY(spot, outdoor);
     addPetals(p.x, p.y - 4, '#f078be', quiet ? 2 : 7);
-    // Soft celebrate — no modal banner over Haven/beds
-    burstConfetti(quiet ? 4 : 10, p.x, p.y - 20);
+    // Short local pop at the planted pot — not a door-drift burst
+    burstPlantConfetti(p.x, p.y);
     AudioFX.plant();
   }
   plantAnim = 0;
@@ -3444,9 +3478,9 @@ function drawPottedSeedling(x, y, speciesId, scale, selected) {
   cx.beginPath(); cx.ellipse(0, 0, hw * 0.78, hh * 0.22, 0, 0, 7); cx.fill();
   cx.fillStyle = '#d88a5a';
   cx.beginPath(); cx.ellipse(0, -hh * 0.12, hw * 0.9, hh * 0.2, 0, 0, 7); cx.fill();
-  // Sprout / bloom
+  // Bloom ~2× prior size so a preschooler can read the color
   const sp = spById(speciesId);
-  drawFlowerSprite(sp, 0, -hh * 0.85, MEADOW_FLOWER_DRAW * 0.42 * scale);
+  drawFlowerSprite(sp, 0, -hh * 1.35, MEADOW_FLOWER_DRAW * 0.84 * scale);
   cx.restore();
 }
 
@@ -3455,9 +3489,9 @@ function drawSeedlingTray() {
   hit.seedlings = [];
   if (state !== ST.GREENHOUSE || nurseryMode !== 'plant' || !bouquet.length || plantAnim) return;
   const n = Math.min(6, bouquet.length);
-  const cell = Math.min(56, (W - 48) / Math.max(3, n));
+  const cell = Math.min(72, (W - 40) / Math.max(3, n));
   const trayW = cell * n + 16;
-  const trayH = 70;
+  const trayH = 96;
   const tx = (W - trayW) / 2;
   const ty = contentBottom() - trayH - 58;
   drawUiChrome(tx, ty, trayW, trayH, 16, { fill: '#f4ebe0', alpha: 0.32, line: 1.8 });
@@ -3467,18 +3501,18 @@ function drawSeedlingTray() {
   for (let i = 0; i < n; i++) {
     const id = bouquet[bouquet.length - n + i];
     const sx = tx + 8 + cell * i + cell / 2;
-    const sy = ty + trayH - 18;
+    const sy = ty + trayH - 20;
     const draggingThis = seedlingDrag && seedlingDrag.idx === (bouquet.length - n + i);
     if (!draggingThis) {
-      drawPottedSeedling(sx, sy, id, 1.05, seedlingSel === (bouquet.length - n + i));
+      drawPottedSeedling(sx, sy, id, 1.15, seedlingSel === (bouquet.length - n + i));
     }
     hit.seedlings.push({
-      x: sx - cell / 2 + 4, y: ty + 20, w: cell - 8, h: trayH - 24,
+      x: sx - cell / 2 + 4, y: ty + 18, w: cell - 8, h: trayH - 22,
       idx: bouquet.length - n + i, id
     });
   }
   if (seedlingDrag) {
-    drawPottedSeedling(seedlingDrag.x, seedlingDrag.y, seedlingDrag.id, 1.2, 1);
+    drawPottedSeedling(seedlingDrag.x, seedlingDrag.y, seedlingDrag.id, 1.35, 1);
   }
 }
 
@@ -4120,7 +4154,20 @@ function update(dt) {
     girlPoseT = Math.max(0, girlPoseT - dt);
     if (girlPoseT <= 0) girlPose = 'idle';
   }
-  confetti.forEach((c) => { c.t += dt; c.x += c.vx * dt; c.y += c.vy * dt; c.vy += 280 * dt; c.rot += dt * 3; });
+  confetti.forEach((c) => {
+    c.t += dt;
+    c.x += c.vx * dt;
+    c.y += c.vy * dt;
+    // Local plant pops: light gravity + strong drag so they die near the bed
+    if (c.local) {
+      c.vy += 420 * dt;
+      c.vx *= Math.max(0, 1 - 6 * dt);
+      c.vy *= Math.max(0, 1 - 2.5 * dt);
+    } else {
+      c.vy += 280 * dt;
+    }
+    c.rot += dt * 3;
+  });
   confetti = confetti.filter((c) => c.t < c.life);
   flowerPops.forEach((p) => { p.t += dt; });
   flowerPops = flowerPops.filter((p) => p.t < p.life);
@@ -5045,7 +5092,7 @@ async function boot() {
 
   try {
     if (navigator.serviceWorker && typeof navigator.serviceWorker.register === 'function') {
-      navigator.serviceWorker.register('./sw.js?v=0.9-play-fix-runner-idle').catch(() => {});
+      navigator.serviceWorker.register('./sw.js?v=0.9-play-fix-runner-idle2').catch(() => {});
     }
   } catch (eSw) {}
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));

@@ -341,7 +341,7 @@ test.describe('play-structure runner', () => {
       expect(m.state).toBe('RUNNER');
       expect(m.cssW).toBe(phone.w);
       expect(m.active).toBeTruthy();
-      expect(m.verBoot).toContain('v0.9-play-fix-runner-idle');
+      expect(m.verBoot).toContain('v0.9-play-fix-runner-idle2');
       await shot(page, 'device-' + phone.name + '-runner');
 
       await page.evaluate(() => {
