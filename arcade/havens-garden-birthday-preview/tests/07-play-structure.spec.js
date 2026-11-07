@@ -22,14 +22,18 @@ async function playIntoRunner(page) {
     HavensGarden.startRunner(true, { seed: 42 });
   });
   await page.waitForFunction(() => HavensGarden.getState() === 'RUNNER', null, { timeout: 20000 });
-  // Wait for runner placeholder assets
+  // Wait for Franz runner finals (projected world — no phone plate)
   await page.waitForFunction(() => {
-    return Assets.runner && Assets.runner('haven-back-run') && Assets.runner('lane-field');
-  }, null, { timeout: 30000 });
+    return Assets.runner
+      && Assets.runner('haven-run-01')
+      && Assets.runner('sky-day')
+      && Assets.runner('tex-dirt')
+      && Assets.runner('tex-hedgerow');
+  }, null, { timeout: 45000 });
 }
 
 test.describe('play-structure runner', () => {
-  test('boot: 3-lane runner with placeholder back-view Haven, sparse field', async ({ page }) => {
+  test('boot: 3-lane Franz runner, projected world, sparse field', async ({ page }) => {
     await bootGame(page);
     await playIntoRunner(page);
 
@@ -40,31 +44,40 @@ test.describe('play-structure runner', () => {
         state: HavensGarden.getState(),
         ver: HavensGarden.VER,
         runner: r,
-        hasBackHaven: !!(Assets.runner && Assets.runner('haven-back-run')),
-        hasLaneField: !!(Assets.runner && Assets.runner('lane-field')),
-        hasFrontHavenInRunnerMap: !!(Assets.map && Assets.map.havenFront && Assets.runner('haven-front')),
-        meadowPlateNotUsedAsRunner: Assets.runner('lane-field') !== Assets.get('plateMeadow'),
-        canvasW: cv ? cv.getBoundingClientRect().width : 0,
+        hasRunFrames: !!(Assets.runner && Assets.runner('haven-run-01') && Assets.runner('haven-run-06')),
+        hasJumpDuckLean: !!(Assets.runner('haven-jump') && Assets.runner('haven-duck')
+          && Assets.runner('haven-lean-left') && Assets.runner('haven-lean-right')
+          && Assets.runner('haven-stumble') && Assets.runner('haven-pick')),
+        hasSkies: !!(Assets.runner('sky-day') && Assets.runner('sky-sunset') && Assets.runner('sky-dusk')),
+        hasTextures: !!(Assets.runner('tex-dirt') && Assets.runner('tex-grass') && Assets.runner('tex-hedgerow')),
+        hasSprinklerWater: !!Assets.runner('obs-sprinkler-water'),
+        noPhonePlateLoaded: !Assets.runner('phone-composite') && !Assets.runner('lane-field'),
+        havenHRatio: window.HGRunner ? HGRunner.HAVEN_H_RATIO : 0,
         flowerChance: window.HGRunner ? HGRunner.FLOWER_CHANCE : 0,
-        spawnEvery: window.HGRunner ? HGRunner.SPAWN_EVERY : 0
+        spawnEvery: window.HGRunner ? HGRunner.SPAWN_EVERY : 0,
+        canvasW: cv ? cv.getBoundingClientRect().width : 0
       };
     });
 
     expect(info.ver).toBe(VER);
     expect(info.state).toBe('RUNNER');
-    expect(info.hasBackHaven).toBeTruthy();
-    expect(info.hasLaneField).toBeTruthy();
-    expect(info.hasFrontHavenInRunnerMap).toBeFalsy();
-    expect(info.meadowPlateNotUsedAsRunner).toBeTruthy();
+    expect(info.hasRunFrames).toBeTruthy();
+    expect(info.hasJumpDuckLean).toBeTruthy();
+    expect(info.hasSkies).toBeTruthy();
+    expect(info.hasTextures).toBeTruthy();
+    expect(info.hasSprinklerWater).toBeTruthy();
+    expect(info.noPhonePlateLoaded).toBeTruthy();
+    expect(info.havenHRatio).toBeCloseTo(230 / 1266, 3);
     expect(info.runner.active).toBeTruthy();
     expect(info.runner.ended).toBeFalsy();
     expect(info.runner.lane).toBe(1);
-    // Sparse: flower chance under 0.55 and spawn slower than old dense field
+    expect(info.runner.usingProjectedWorld).toBeTruthy();
     expect(info.flowerChance).toBeLessThanOrEqual(0.55);
     expect(info.spawnEvery).toBeGreaterThanOrEqual(0.8);
     expect(info.runner.flowerCount).toBeLessThanOrEqual(6);
 
     await shot(page, 'boot-runner-390');
+    await shot(page, 'franz-mid-run-day');
   });
 
   test('runner: swipe lanes, jump, duck, stumble never kills; dusk → results → nursery', async ({ page }) => {
@@ -72,11 +85,21 @@ test.describe('play-structure runner', () => {
     await bootGame(page);
     await playIntoRunner(page);
 
-    // Lane change left/right
+    // Mid-run day frame
+    await page.evaluate(() => { HGRunner.debugSetDusk(0.15); for (let i = 0; i < 8; i++) HGRunner.update(0.05); });
+    await page.waitForTimeout(80);
+    await shot(page, 'franz-mid-run-day-412');
+
+    // Lane change left/right — capture mid-lerp lean (not pick flash)
     await page.evaluate(() => {
-      HGRunner.changeLane(-1);
+      const s = HGRunner.getState();
+      // Clear pick flash so lean pose reads
+      for (let i = 0; i < 20; i++) HGRunner.update(0.05);
       HGRunner.changeLane(-1);
     });
+    await page.waitForTimeout(30);
+    await shot(page, 'franz-lane-switch');
+    await page.evaluate(() => { HGRunner.changeLane(-1); });
     let st = await page.evaluate(() => HavensGarden.getRunner());
     expect(st.lane).toBe(0);
 
@@ -91,20 +114,23 @@ test.describe('play-structure runner', () => {
     await page.evaluate(() => HGRunner.tryJump());
     st = await page.evaluate(() => HavensGarden.getRunner());
     expect(st.jumpT).toBeGreaterThan(0);
+    await page.waitForTimeout(40);
+    await shot(page, 'franz-jump-over');
 
     await page.evaluate(() => {
-      // clear jump then duck
-      const s = HGRunner.getState();
       for (let i = 0; i < 30; i++) HGRunner.update(0.05);
       HGRunner.tryDuck();
     });
     st = await page.evaluate(() => HavensGarden.getRunner());
     expect(st.duckT).toBeGreaterThan(0);
 
+    // Sunset crossfade
+    await page.evaluate(() => { HGRunner.debugSetDusk(0.55); for (let i = 0; i < 6; i++) HGRunner.update(0.04); });
+    await page.waitForTimeout(60);
+    await shot(page, 'franz-sunset');
+
     // Force dusk end
     await page.evaluate(() => {
-      const r = HGRunner.getState();
-      // Advance past RUN_SEC
       for (let i = 0; i < 60; i++) HGRunner.update(1);
     });
     await page.waitForFunction(() => {
@@ -118,10 +144,10 @@ test.describe('play-structure runner', () => {
     });
     expect(afterDusk.ended).toBeTruthy();
     expect(afterDusk.results).toBeTruthy();
-    // Obstacles never kill — still have results card
     expect(afterDusk.results.dusk).toBe(1);
 
     await shot(page, 'device-android-412-runner-dusk');
+    await shot(page, 'franz-dusk-results');
 
     // Continue to nursery
     await page.evaluate(() => {
@@ -288,14 +314,14 @@ test.describe('play-structure runner', () => {
     await shot(page, 'hive-bees-390');
   });
 
-  test('Franz drop-in: runner assets resolve placeholder until final file swap', async ({ page }) => {
+  test('Franz v1: finals load from assets/runner (not placeholders); no phone plate', async ({ page }) => {
     await bootGame(page);
     await playIntoRunner(page);
     await page.evaluate(async () => { await Assets.ensureScene('runner'); });
     await page.waitForFunction(() => {
       const keys = (window.RUNNER_FILES || []).map(runnerAssetKey);
       return keys.length > 0 && keys.every((k) => !!Assets.get(k));
-    }, null, { timeout: 30000 });
+    }, null, { timeout: 45000 });
     const paths = await page.evaluate(() => {
       const keys = (window.RUNNER_FILES || []).map(runnerAssetKey);
       return keys.map((k) => {
@@ -303,18 +329,29 @@ test.describe('play-structure runner', () => {
         return {
           key: k,
           loaded: !!img,
+          w: img ? img.naturalWidth : 0,
+          h: img ? img.naturalHeight : 0,
           src: img ? (img.currentSrc || img.src || '') : '',
           manifest: AssetManifest[k]
         };
       });
     });
-    expect(paths.length).toBeGreaterThan(5);
+    expect(paths.length).toBeGreaterThan(20);
     paths.forEach((p) => {
       expect(p.manifest).toMatch(/^assets\/runner\//);
       expect(p.loaded).toBeTruthy();
-      // Until Franz drops finals, images come from placeholders/
-      expect(p.src).toMatch(/placeholders\//);
+      expect(p.src).not.toMatch(/placeholders\//);
+      expect(p.src).not.toMatch(/phone_/);
     });
+    const run01 = paths.find((p) => /haven_run_01/.test(p.key));
+    expect(run01.w).toBe(256);
+    expect(run01.h).toBe(320);
+    const dirt = paths.find((p) => /tex_dirt/.test(p.key));
+    expect(dirt.w).toBe(256);
+    expect(dirt.h).toBe(256);
+    const hedge = paths.find((p) => /tex_hedgerow/.test(p.key));
+    expect(hedge.w).toBe(512);
+    expect(hedge.h).toBe(96);
     fs.mkdirSync(OUT, { recursive: true });
     fs.writeFileSync(path.join(OUT, 'franz-drop-in-paths.json'), JSON.stringify(paths, null, 2));
   });
@@ -341,7 +378,7 @@ test.describe('play-structure runner', () => {
       expect(m.state).toBe('RUNNER');
       expect(m.cssW).toBe(phone.w);
       expect(m.active).toBeTruthy();
-      expect(m.verBoot).toContain('v0.9-play-fix-runner-idle2');
+      expect(m.verBoot).toContain('v0.9-play-fix-franz-v1');
       await shot(page, 'device-' + phone.name + '-runner');
 
       await page.evaluate(() => {

@@ -6,7 +6,7 @@
    bugs+net, bees→hive→jars, color rows, CBN, shop.
    ============================================================ */
 
-const VER = 'v0.9-play-fix-runner-idle2';
+const VER = 'v0.9-play-fix-franz-v1';
 const PK = 'havensGarden.birthday.v2';
 const PK_LEGACY = 'havensGarden.v1';
 /** Prior preview / prototype keys that may still hold progress. */
@@ -1458,7 +1458,7 @@ function startMeadow(resetBouquet) {
   return startRunner(resetBouquet);
 }
 
-/** 3-lane endless runner — Places “Flower field”. Placeholder art until Franz drop-in. */
+/** 3-lane endless runner — Places “Flower field”. Franz HAVENS-GARDEN-RUNNER-V1 art. */
 function startRunner(resetBouquet, opts) {
   flowers = []; particles = []; arcs = []; confetti = []; pollinators = []; flowerPops = [];
   meadowCritters = []; fieldBugs = []; hiveBees = [];
@@ -5092,7 +5092,7 @@ async function boot() {
 
   try {
     if (navigator.serviceWorker && typeof navigator.serviceWorker.register === 'function') {
-      navigator.serviceWorker.register('./sw.js?v=0.9-play-fix-runner-idle2').catch(() => {});
+      navigator.serviceWorker.register('./sw.js?v=0.9-play-fix-franz-v1').catch(() => {});
     }
   } catch (eSw) {}
   if (!shot) pushNav(state === ST.MENU ? 'home' : (state === ST.MEADOW ? 'meadow' : 'greenhouse'));

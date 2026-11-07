@@ -1,9 +1,9 @@
 'use strict';
 /* Haven's Garden — original 3-lane flower-field run.
-   Subway Surfers FEEL only (lanes / hop / duck / collect). No copied IP or art.
-   PLACEHOLDER sprites until Franz drops final art into assets/runner/ (same filenames).
-   Do NOT use meadow-day plate or front-facing Haven here.
-   Sparse flowers. Obstacles stumble (time penalty) — never kill. Sunset ends the run. */
+   Subway Surfers FEEL only (lanes / hop / duck / collect). No copied IP.
+   Franz HAVENS-GARDEN-RUNNER-V1 art: projected flat textures, independent
+   obstacles/flowers, 6-frame rear gait. Phone reference plate is LOOK ONLY —
+   never scrolled or drawn as the world. */
 
 const HGRunner = (() => {
   const LANES = 3;
@@ -15,23 +15,42 @@ const HGRunner = (() => {
   const LANE_LERP = 14;
   const SWIPE_MIN = 28;
   const SWIPE_RATIO = 1.05;
-  /** Sparse field: slower spawns, flower-heavy but low density overall. */
   const SPAWN_EVERY = 0.95;
-  const FLOWER_CHANCE = 0.48; // fewer flowers than obstacles+empty space
+  const FLOWER_CHANCE = 0.48;
   const SCROLL0 = 280;
   const SCROLL_MAX = 420;
+
+  /** Haven body ≈ 230px on 1266px-tall Franz reference screen. */
+  const HAVEN_H_RATIO = 230 / 1266;
+  /** Shared Franz frame 256×320; draw by content body height, keep aspect. */
+  const FRAME_W = 256;
+  const FRAME_H = 320;
+  const BODY_IN_FRAME = 230 / 320; // content fills most of the frame height
+
+  /** Run cadence — Franz strides are subtle; slightly snappy + bob so it reads. */
+  const RUN_FRAME_DT = 0.078; // ~12.8 fps across 6 frames ≈ 2.1 strides/sec
+  const RUN_BOB_PX = 5.5;
 
   const SPECIES = ['daisy', 'tulip', 'sunflower', 'bluebell'];
   const OB_KINDS = ['hay', 'puddle', 'fence', 'rock', 'wheelbarrow', 'sprinkler', 'log'];
 
-  /** Franz drop-in keys (file basenames under assets/runner/). */
   const ART = {
-    plate: 'lane-field',
-    havenRun: 'haven-back-run',
-    havenJump: 'haven-back-jump',
-    havenDuck: 'haven-back-duck',
+    sky: (p) => 'sky-' + p,
+    horizon: (p) => 'horizon-' + p,
+    dirt: 'tex-dirt',
+    grass: 'tex-grass',
+    hedge: 'tex-hedgerow',
+    roadside: 'tex-roadside',
+    run: (i) => 'haven-run-0' + (((i | 0) % 6) + 1),
+    jump: 'haven-jump',
+    duck: 'haven-duck',
+    leanL: 'haven-lean-left',
+    leanR: 'haven-lean-right',
+    stumble: 'haven-stumble',
+    pick: 'haven-pick',
     flower: (sp) => 'flower-' + sp,
-    obs: (k) => 'obs-' + k
+    obs: (k) => 'obs-' + k,
+    water: 'obs-sprinkler-water'
   };
 
   let active = false;
@@ -41,9 +60,12 @@ const HGRunner = (() => {
   let dist = 0;
   let lane = 1;
   let laneX = 0;
+  let laneAnim = 0; // -1 left lean, +1 right lean residual
   let jumpT = 0;
   let duckT = 0;
   let stumbleT = 0;
+  let pickFlash = 0;
+  let runPhase = 0;
   let spawnAcc = 0;
   let seed = 1;
   let entities = [];
@@ -56,6 +78,7 @@ const HGRunner = (() => {
   let W = 390, H = 844;
   let playTop = 80, playBot = 760;
   let continueHit = null;
+  let patterns = { dirt: null, grass: null, dirtKey: null, grassKey: null };
 
   function rng() {
     seed = (seed * 1664525 + 1013904223) >>> 0;
@@ -66,6 +89,26 @@ const HGRunner = (() => {
     const mid = W * 0.5;
     const gap = Math.min(118, W * 0.28);
     return [mid - gap, mid, mid + gap];
+  }
+
+  /** Franz map_lanes (585×1266) scaled into playfield — bottom & horizon boundaries. */
+  function laneBoundsAt(y) {
+    const horizon = horizonY();
+    const foot = footY();
+    const u = Math.max(0, Math.min(1, (y - horizon) / Math.max(1, foot - horizon)));
+    // Reference bottom: 55,200,385,530 → horizon: 255,280,305,330 on 585-wide
+    const bot = [0.094, 0.342, 0.658, 0.906];
+    const hor = [0.436, 0.479, 0.521, 0.564];
+    const out = [];
+    for (let i = 0; i < 4; i++) out.push(W * (hor[i] + (bot[i] - hor[i]) * u));
+    return out;
+  }
+
+  function horizonY() {
+    return playTop + (playBot - playTop) * 0.26;
+  }
+  function footY() {
+    return playBot - 12;
   }
 
   function reset(opts) {
@@ -79,9 +122,12 @@ const HGRunner = (() => {
     scroll = SCROLL0;
     dist = 0;
     lane = 1;
+    laneAnim = 0;
     jumpT = 0;
     duckT = 0;
     stumbleT = 0;
+    pickFlash = 0;
+    runPhase = 0;
     spawnAcc = 0.35;
     seed = (opts.seed != null ? opts.seed : ((Date.now() & 0xffff) ^ 0x9e37)) >>> 0;
     entities = [];
@@ -91,7 +137,6 @@ const HGRunner = (() => {
     ptr = null;
     const xs = laneXs();
     laneX = xs[1];
-    // Sparse prime — only a couple of ahead entities
     for (let i = 0; i < 3; i++) spawnOne(0.8 + i * 0.95);
   }
 
@@ -115,12 +160,15 @@ const HGRunner = (() => {
       else if (ob === 'puddle' || ob === 'sprinkler') mode = 'duck';
       entities.push({ kind: 'ob', type: ob, mode: mode, lane: L, z: z, hit: 0 });
     }
-    // else empty lane stretch — keeps the field sparse
   }
 
   function changeLane(dir) {
     if (stumbleT > 0.15) return;
-    lane = Math.max(0, Math.min(LANES - 1, lane + dir));
+    const next = Math.max(0, Math.min(LANES - 1, lane + dir));
+    if (next !== lane) {
+      lane = next;
+      laneAnim = dir < 0 ? -1 : 1;
+    }
   }
 
   function tryJump() {
@@ -206,6 +254,16 @@ const HGRunner = (() => {
     if (jumpT > 0) jumpT = Math.max(0, jumpT - dt);
     if (duckT > 0) duckT = Math.max(0, duckT - dt);
     if (stumbleT > 0) stumbleT = Math.max(0, stumbleT - dt);
+    if (pickFlash > 0) pickFlash = Math.max(0, pickFlash - dt);
+    if (laneAnim !== 0) {
+      const s = Math.sign(laneAnim);
+      laneAnim -= s * dt * 3.2;
+      if (Math.sign(laneAnim) !== s) laneAnim = 0;
+    }
+
+    if (jumpT <= 0 && duckT <= 0 && stumbleT <= 0) {
+      runPhase += dt / RUN_FRAME_DT;
+    }
 
     const xs = laneXs();
     const target = xs[lane];
@@ -224,6 +282,7 @@ const HGRunner = (() => {
         e.taken = 1;
         collected[e.type] = (collected[e.type] | 0) + 1;
         totalPicked++;
+        pickFlash = 0.28;
       } else if (e.kind === 'ob' && !e.hit) {
         let clear = false;
         if (e.mode === 'jump' && jumpT > 0) clear = true;
@@ -241,7 +300,6 @@ const HGRunner = (() => {
     if (spawnAcc <= 0) {
       spawnAcc = SPAWN_EVERY * (0.85 + rng() * 0.5);
       spawnOne(3.2 + rng() * 1.8);
-      // Occasional second spawn — still sparse
       if (rng() < 0.22) spawnOne(3.8 + rng() * 1.6);
     }
 
@@ -253,9 +311,24 @@ const HGRunner = (() => {
     return Math.max(0, Math.min(1, duskT / RUN_SEC));
   }
 
+  /** Day (0–0.42) → sunset (0.42–0.72) → dusk (0.72–1). Returns blend weights. */
+  function phaseWeights() {
+    const d = duskFactor();
+    if (d < 0.42) {
+      const u = d / 0.42;
+      return { day: 1 - u * 0.35, sunset: u * 0.35, dusk: 0 };
+    }
+    if (d < 0.72) {
+      const u = (d - 0.42) / 0.3;
+      return { day: Math.max(0, 0.65 - u), sunset: 0.35 + u * 0.55, dusk: u * 0.45 };
+    }
+    const u = (d - 0.72) / 0.28;
+    return { day: 0, sunset: Math.max(0, 1 - u), dusk: Math.min(1, u) };
+  }
+
   function zToY(z) {
-    const foot = playBot - 18;
-    const horizon = playTop + (playBot - playTop) * 0.22;
+    const foot = footY();
+    const horizon = horizonY();
     const u = Math.max(0, Math.min(1, (z + 0.4) / 4.2));
     return foot + (horizon - foot) * u;
   }
@@ -284,10 +357,34 @@ const HGRunner = (() => {
     return (Assets.get && (Assets.get('runner_' + key.replace(/-/g, '_')) || Assets.get(key))) || null;
   }
 
+  function ensurePattern(cx, Assets, kind) {
+    const key = kind === 'dirt' ? ART.dirt : ART.grass;
+    const img = imgFor(Assets, key);
+    if (!img || !img.width) return null;
+    if (patterns[kind] && patterns[kind + 'Key'] === img) return patterns[kind];
+    try {
+      patterns[kind] = cx.createPattern(img, 'repeat');
+      patterns[kind + 'Key'] = img;
+    } catch (e) {
+      patterns[kind] = null;
+    }
+    return patterns[kind];
+  }
+
+  /** Draw sprite preserving native aspect; feet at (x,y); h = on-screen height. */
   function drawSprite(cx, img, x, y, h) {
     if (!img || !img.width) return false;
     const fw = h * (img.width / img.height);
     cx.drawImage(img, x - fw / 2, y - h, fw, h);
+    return true;
+  }
+
+  /** Haven frames are 256×320 with ~230px body — draw so body ≈ havenH. */
+  function drawHavenFrame(cx, img, x, y, havenH) {
+    if (!img || !img.width) return false;
+    const frameH = havenH / BODY_IN_FRAME;
+    const frameW = frameH * (FRAME_W / FRAME_H);
+    cx.drawImage(img, x - frameW / 2, y - frameH, frameW, frameH);
     return true;
   }
 
@@ -323,18 +420,157 @@ const HGRunner = (() => {
     cx.restore();
   }
 
-  function drawPlate(cx, Assets) {
-    const plate = imgFor(Assets, ART.plate);
-    if (plate && plate.width) {
-      // Cover playfield with lane plate (Franz or placeholder)
-      const iw = plate.width, ih = plate.height;
-      const scale = Math.max(W / iw, (playBot - playTop) / ih);
-      const dw = iw * scale, dh = ih * scale;
-      const dx = (W - dw) / 2;
-      const dy = playTop + ((playBot - playTop) - dh) / 2;
-      cx.drawImage(plate, dx, dy, dw, dh);
+  function drawCrossfadeLayer(cx, Assets, kind, weights) {
+    const keys = ['day', 'sunset', 'dusk'];
+    const wts = [weights.day, weights.sunset, weights.dusk];
+    let sum = wts[0] + wts[1] + wts[2];
+    if (sum <= 0.001) { wts[0] = 1; sum = 1; }
+    const horizon = horizonY();
+    keys.forEach((p, i) => {
+      const a = wts[i] / sum;
+      if (a < 0.01) return;
+      const img = imgFor(Assets, kind === 'sky' ? ART.sky(p) : ART.horizon(p));
+      if (!img || !img.width) return;
+      cx.globalAlpha = a;
+      if (kind === 'sky') {
+        // Skies are full-phone plates — only paint ABOVE the horizon so baked
+        // meadow in the plate never becomes the scrolling world.
+        const skyH = Math.max(8, horizon - playTop + 4);
+        cx.drawImage(img, 0, 0, img.width, img.height * 0.32, 0, playTop, W, skyH);
+      } else {
+        const hh = (playBot - playTop) * 0.24;
+        const hy = horizon - hh * 0.78;
+        cx.drawImage(img, 0, hy, W, hh);
+      }
+    });
+    cx.globalAlpha = 1;
+  }
+
+  /**
+   * Project flat top-down dirt/grass into perspective strips.
+   * Scrolls world textures in Z (via UV), never a baked phone plate.
+   */
+  function drawProjectedGround(cx, Assets) {
+    const horizon = horizonY();
+    const foot = footY();
+    const strips = 28;
+    const scrollUv = (dist * 0.045) % 256;
+    const dirtPat = ensurePattern(cx, Assets, 'dirt');
+    const grassPat = ensurePattern(cx, Assets, 'grass');
+
+    for (let i = 0; i < strips; i++) {
+      const u0 = i / strips;
+      const u1 = (i + 1) / strips;
+      // Non-linear depth so far strips compress (perspective)
+      const z0 = u0 * u0;
+      const z1 = u1 * u1;
+      const y0 = horizon + (foot - horizon) * z0;
+      const y1 = horizon + (foot - horizon) * z1;
+      if (y1 - y0 < 0.5) continue;
+      const b0 = laneBoundsAt(y0);
+      const b1 = laneBoundsAt(y1);
+
+      // Outer grass (left of lane0, right of lane2)
+      fillTrap(cx, grassPat || '#6db84a',
+        0, y0, b0[0], y0, b1[0], y1, 0, y1, scrollUv, z0);
+      fillTrap(cx, grassPat || '#6db84a',
+        b0[3], y0, W, y0, W, y1, b1[3], y1, scrollUv, z0);
+
+      // Three dirt lanes
+      for (let L = 0; L < 3; L++) {
+        fillTrap(cx, dirtPat || '#c4a06a',
+          b0[L], y0, b0[L + 1], y0, b1[L + 1], y1, b1[L], y1, scrollUv, z0);
+      }
+    }
+
+    // Hedgerow separators between lanes (raised banks)
+    drawHedgerows(cx, Assets, horizon, foot, scrollUv);
+    // Soft roadside accents near the feet
+    drawRoadside(cx, Assets, foot);
+  }
+
+  function fillTrap(cx, fill, x0, y0, x1, y1a, x2, y2, x3, y3, scrollUv, z) {
+    cx.save();
+    cx.beginPath();
+    cx.moveTo(x0, y0);
+    cx.lineTo(x1, y1a);
+    cx.lineTo(x2, y2);
+    cx.lineTo(x3, y3);
+    cx.closePath();
+    cx.clip();
+    if (fill && typeof fill !== 'string') {
+      const sc = 0.45 + z * 1.25;
+      cx.save();
+      cx.translate(0, -scrollUv * sc);
+      cx.scale(sc, sc);
+      cx.fillStyle = fill;
+      // Cover the clipped trap in pattern space
+      cx.fillRect(-W, -H, W * 4 / sc, H * 4 / sc);
+      cx.restore();
     } else {
-      // Minimal procedural lane field if assets missing
+      cx.fillStyle = fill || '#c4a06a';
+      cx.fill();
+    }
+    cx.restore();
+  }
+
+  function drawHedgerows(cx, Assets, horizon, foot, scrollUv) {
+    const hedge = imgFor(Assets, ART.hedge);
+    if (!hedge || !hedge.width) return;
+    // Raised banks BETWEEN lanes — narrow billboards along each divider, not
+    // full-width horizontal strips (512×96 strip is cropped to a short bush).
+    const segs = 22;
+    for (let side = 0; side < 2; side++) {
+      const bi = side + 1; // boundary index between lanes
+      for (let i = 0; i < segs; i++) {
+        const u0 = i / segs;
+        const u1 = (i + 1) / segs;
+        const z0 = u0 * u0;
+        const z1 = u1 * u1;
+        const y0 = horizon + (foot - horizon) * z0;
+        const y1 = horizon + (foot - horizon) * z1;
+        const b0 = laneBoundsAt(y0);
+        const b1 = laneBoundsAt(y1);
+        const mx = (b0[bi] + b1[bi]) * 0.5;
+        const my = (y0 + y1) * 0.5;
+        const sc = 0.22 + z1 * 1.4;
+        // Short bush: keep strip's native pixel aspect on the crop, narrow on screen
+        const hh = 14 * sc + 8;
+        const sliceW = 64; // px from 512-wide strip
+        const dw = hh * (sliceW / hedge.height); // preserve crop aspect
+        const sx = ((scrollUv * 0.5 + i * sliceW * 0.7 + side * 90) % (hedge.width - sliceW));
+        cx.save();
+        cx.globalAlpha = 0.94;
+        cx.drawImage(
+          hedge,
+          sx, 0, sliceW, hedge.height,
+          mx - dw / 2, my - hh * 0.85, dw, hh
+        );
+        cx.restore();
+      }
+    }
+  }
+
+  function drawRoadside(cx, Assets, foot) {
+    const img = imgFor(Assets, ART.roadside);
+    if (!img || !img.width) return;
+    const h = Math.min(90, (playBot - playTop) * 0.12);
+    cx.globalAlpha = 0.55;
+    cx.drawImage(img, -20, foot - h * 0.85, W * 0.38, h);
+    cx.save();
+    cx.translate(W + 20, 0);
+    cx.scale(-1, 1);
+    cx.drawImage(img, -20, foot - h * 0.85, W * 0.38, h);
+    cx.restore();
+    cx.globalAlpha = 1;
+  }
+
+  function drawWorld(cx, Assets) {
+    const wts = phaseWeights();
+    // Sky full-bleed in playfield
+    drawCrossfadeLayer(cx, Assets, 'sky', wts);
+    // Fallback if skies missing
+    if (!imgFor(Assets, ART.sky('day'))) {
       const grd = cx.createLinearGradient(0, playTop, 0, playBot);
       grd.addColorStop(0, '#8ec8f0');
       grd.addColorStop(0.35, '#7eb85a');
@@ -342,33 +578,15 @@ const HGRunner = (() => {
       cx.fillStyle = grd;
       cx.fillRect(0, playTop, W, playBot - playTop);
     }
+    drawProjectedGround(cx, Assets);
+    drawCrossfadeLayer(cx, Assets, 'horizon', wts);
   }
 
   function draw(cx, Assets) {
     const dusk = duskFactor();
     const xs = laneXs();
 
-    drawPlate(cx, Assets);
-
-    // Soft dusk wash (does not paint over Franz plate detail heavily early)
-    const skyA = 0.06 + dusk * 0.38;
-    const grd = cx.createLinearGradient(0, playTop, 0, playBot * 0.55);
-    grd.addColorStop(0, `rgba(250,120,60,${skyA})`);
-    grd.addColorStop(0.55, `rgba(80,60,120,${skyA * 0.5})`);
-    grd.addColorStop(1, `rgba(20,24,48,${dusk * 0.22})`);
-    cx.fillStyle = grd;
-    cx.fillRect(0, playTop, W, playBot - playTop);
-
-    // Lane guides
-    for (let i = 0; i < LANES; i++) {
-      const x = xs[i];
-      cx.strokeStyle = `rgba(255,250,230,${0.16 + (i === lane ? 0.18 : 0)})`;
-      cx.lineWidth = i === lane ? 5 : 3;
-      cx.beginPath();
-      cx.moveTo(x, playBot - 8);
-      cx.lineTo(x + (x - W * 0.5) * 0.15, playTop + (playBot - playTop) * 0.28);
-      cx.stroke();
-    }
+    drawWorld(cx, Assets);
 
     const sorted = entities.slice().sort((a, b) => b.z - a.z);
     sorted.forEach((e) => {
@@ -377,45 +595,59 @@ const HGRunner = (() => {
       const sc = zScale(e.z);
       if (e.kind === 'flower' && !e.taken) {
         const img = imgFor(Assets, ART.flower(e.type));
-        const fh = 44 * sc; // smaller = sparse read
+        // Native 128×160 aspect
+        const fh = 52 * sc;
         if (!drawSprite(cx, img, x, y, fh)) {
           cx.fillStyle = '#ffd23c';
           cx.beginPath(); cx.arc(x, y - fh * 0.55, fh * 0.28, 0, 7); cx.fill();
         }
       } else if (e.kind === 'ob' && !e.hit) {
+        // Obstacles keep native aspect (192×160); water is separate 160×160 sprite
+        if (e.type === 'sprinkler') {
+          const water = imgFor(Assets, ART.water);
+          const wh = 48 * sc;
+          drawSprite(cx, water, x, y - 8 * sc, wh);
+        }
         const img = imgFor(Assets, ART.obs(e.type));
-        const oh = 56 * sc;
+        const oh = (e.type === 'puddle' ? 36 : 58) * sc;
         if (!drawSprite(cx, img, x, y, oh)) drawObstacleFallback(cx, e, x, y, sc);
       }
     });
 
-    // Haven — BACK VIEW only (placeholder or Franz). Never front-facing character art.
-    const girlH = H * 0.15;
+    // Haven — rear view only, ~230px on 1266 reference
+    const havenH = H * HAVEN_H_RATIO;
     let bob = 0;
     if (jumpT > 0) {
       const u = 1 - jumpT / JUMP_DUR;
-      bob = -Math.sin(Math.min(1, u) * Math.PI) * 58;
+      bob = -Math.sin(Math.min(1, u) * Math.PI) * (havenH * 0.42);
+    } else if (duckT <= 0 && stumbleT <= 0) {
+      // Gait bob synced to run phase (two peaks per 6-frame cycle)
+      bob = -Math.abs(Math.sin(runPhase * Math.PI / 3)) * RUN_BOB_PX;
     }
-    const squash = duckT > 0 ? 0.72 : (stumbleT > 0 ? 0.9 : 1);
     const gx = laneX;
-    const gy = playBot - 10 + bob + (stumbleT > 0 ? Math.sin(stumbleT * 40) * 3 : 0);
-    let poseKey = ART.havenRun;
-    if (jumpT > 0) poseKey = ART.havenJump;
-    else if (duckT > 0) poseKey = ART.havenDuck;
+    const gy = footY() - 4 + bob + (stumbleT > 0 ? Math.sin(stumbleT * 40) * 3 : 0);
+
+    let poseKey = ART.run(runPhase | 0);
+    if (jumpT > 0) poseKey = ART.jump;
+    else if (duckT > 0) poseKey = ART.duck;
+    else if (stumbleT > 0) poseKey = ART.stumble;
+    else if (pickFlash > 0) poseKey = ART.pick;
+    else {
+      const dx = xs[lane] - laneX;
+      if (Math.abs(dx) > 12) poseKey = dx > 0 ? ART.leanR : ART.leanL;
+      else if (laneAnim < -0.08) poseKey = ART.leanL;
+      else if (laneAnim > 0.08) poseKey = ART.leanR;
+    }
+
     const himg = imgFor(Assets, poseKey);
-    if (!drawSprite(cx, himg, gx, gy, girlH * squash)) {
-      // Labeled silhouette fallback
+    if (!drawHavenFrame(cx, himg, gx, gy, havenH * (duckT > 0 ? 0.92 : 1))) {
       cx.fillStyle = 'rgba(45,36,28,0.9)';
       cx.beginPath();
-      cx.ellipse(gx, gy - girlH * 0.82, girlH * 0.16, girlH * 0.14, 0, 0, 7);
+      cx.ellipse(gx, gy - havenH * 0.82, havenH * 0.16, havenH * 0.14, 0, 0, 7);
       cx.fill();
       cx.fillStyle = 'rgba(90,50,70,0.95)';
-      roundRect(cx, gx - girlH * 0.14, gy - girlH * 0.72, girlH * 0.28, girlH * 0.42, 8);
+      roundRect(cx, gx - havenH * 0.14, gy - havenH * 0.72, havenH * 0.28, havenH * 0.42, 8);
       cx.fill();
-      cx.fillStyle = 'rgba(255,230,120,0.85)';
-      cx.font = '700 9px system-ui, sans-serif';
-      cx.textAlign = 'center';
-      cx.fillText('PLACEHOLDER', gx, gy - girlH - 4);
     }
 
     // HUD
@@ -431,7 +663,8 @@ const HGRunner = (() => {
     cx.fillStyle = '#fffaf0';
     cx.font = '800 13px Fredoka, system-ui, sans-serif';
     cx.textAlign = 'center';
-    cx.fillText(dusk < 0.85 ? 'Sunset…' : 'Almost dusk!', W / 2, by + 36);
+    const label = dusk < 0.42 ? 'Day run' : (dusk < 0.72 ? 'Sunset…' : 'Almost dusk!');
+    cx.fillText(label, W / 2, by + 36);
     cx.fillText('❀ ' + totalPicked, W / 2, by + 54);
 
     cx.globalAlpha = 0.16;
@@ -500,19 +733,33 @@ const HGRunner = (() => {
       jumpT: jumpT,
       duckT: duckT,
       stumbleT: stumbleT,
+      runPhase: runPhase,
       entityCount: entities.length,
       flowerCount: entities.filter((e) => e.kind === 'flower' && !e.taken).length,
-      continueHit: continueHit
+      continueHit: continueHit,
+      havenHRatio: HAVEN_H_RATIO,
+      usingProjectedWorld: true,
+      phonePlateForbidden: true
     };
   }
 
   function getContinueHit() { return continueHit; }
 
+  /** Test helpers — force dusk phase / pose without waiting full run.
+   *  Pass 0–1 for a fraction of RUN_SEC, or >1 for absolute seconds. */
+  function debugSetDusk(u) {
+    const sec = (u >= 0 && u <= 1) ? u * RUN_SEC : u;
+    duskT = Math.max(0, Math.min(RUN_SEC, sec));
+  }
+  function debugForceJump() { tryJump(); }
+  function debugForceLane(dir) { changeLane(dir); }
+
   return {
     reset, setViewport, update, draw, drawResults, finish, getState, getContinueHit,
     onPointerDown, onPointerMove, onPointerUp,
     changeLane, tryJump, tryDuck,
-    SPECIES, RUN_SEC, ART, FLOWER_CHANCE, SPAWN_EVERY
+    debugSetDusk, debugForceJump, debugForceLane,
+    SPECIES, RUN_SEC, ART, FLOWER_CHANCE, SPAWN_EVERY, HAVEN_H_RATIO, RUN_FRAME_DT
   };
 })();
 

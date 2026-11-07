@@ -1,5 +1,5 @@
-/* Haven's Garden v0.9-play-fix-runner-idle2 — bigger tray blooms + local plant confetti */
-const CACHE = 'havens-garden-play-fix-preview-v0.9-play-fix-runner-idle2';
+/* Haven's Garden v0.9-play-fix-franz-v1 — Franz runner v1 art wired */
+const CACHE = 'havens-garden-play-fix-preview-v0.9-play-fix-franz-v1';
 const PRECACHE = [
   './',
   './index.html',
@@ -27,12 +27,14 @@ const PRECACHE = [
   './assets/icon/app-icon.png',
   './assets/icon/app-icon-192.png',
   './assets/icon/app-icon-512.png',
-  './assets/runner/placeholders/lane-field.png',
-  './assets/runner/placeholders/haven-back-run.png',
-  './assets/runner/placeholders/haven-back-jump.png',
-  './assets/runner/placeholders/haven-back-duck.png',
-  './assets/runner/placeholders/flower-daisy.png',
-  './assets/runner/placeholders/obs-hay.png',
+  './assets/runner/haven-run-01.png',
+  './assets/runner/haven-jump.png',
+  './assets/runner/sky-day.png',
+  './assets/runner/tex-dirt.png',
+  './assets/runner/tex-grass.png',
+  './assets/runner/tex-hedgerow.png',
+  './assets/runner/flower-daisy.png',
+  './assets/runner/obs-hay.png',
   './assets/character/haven-run.png',
   './assets/character/haven-front.png',
   './assets/character/haven-walk-01.png',

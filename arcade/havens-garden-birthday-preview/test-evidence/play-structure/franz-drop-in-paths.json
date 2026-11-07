@@ -1,92 +1,274 @@
 [
   {
-    "key": "runner_lane_field",
+    "key": "runner_haven_run_01",
     "loaded": true,
-    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/placeholders/lane-field.png?v=play-fix-runner",
-    "manifest": "assets/runner/lane-field.png"
+    "w": 256,
+    "h": 320,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/haven-run-01.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/haven-run-01.png"
   },
   {
-    "key": "runner_haven_back_run",
+    "key": "runner_haven_run_02",
     "loaded": true,
-    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/placeholders/haven-back-run.png?v=play-fix-runner",
-    "manifest": "assets/runner/haven-back-run.png"
+    "w": 256,
+    "h": 320,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/haven-run-02.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/haven-run-02.png"
   },
   {
-    "key": "runner_haven_back_jump",
+    "key": "runner_haven_run_03",
     "loaded": true,
-    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/placeholders/haven-back-jump.png?v=play-fix-runner",
-    "manifest": "assets/runner/haven-back-jump.png"
+    "w": 256,
+    "h": 320,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/haven-run-03.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/haven-run-03.png"
   },
   {
-    "key": "runner_haven_back_duck",
+    "key": "runner_haven_run_04",
     "loaded": true,
-    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/placeholders/haven-back-duck.png?v=play-fix-runner",
-    "manifest": "assets/runner/haven-back-duck.png"
+    "w": 256,
+    "h": 320,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/haven-run-04.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/haven-run-04.png"
+  },
+  {
+    "key": "runner_haven_run_05",
+    "loaded": true,
+    "w": 256,
+    "h": 320,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/haven-run-05.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/haven-run-05.png"
+  },
+  {
+    "key": "runner_haven_run_06",
+    "loaded": true,
+    "w": 256,
+    "h": 320,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/haven-run-06.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/haven-run-06.png"
+  },
+  {
+    "key": "runner_haven_jump",
+    "loaded": true,
+    "w": 256,
+    "h": 320,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/haven-jump.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/haven-jump.png"
+  },
+  {
+    "key": "runner_haven_duck",
+    "loaded": true,
+    "w": 256,
+    "h": 320,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/haven-duck.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/haven-duck.png"
+  },
+  {
+    "key": "runner_haven_lean_left",
+    "loaded": true,
+    "w": 256,
+    "h": 320,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/haven-lean-left.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/haven-lean-left.png"
+  },
+  {
+    "key": "runner_haven_lean_right",
+    "loaded": true,
+    "w": 256,
+    "h": 320,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/haven-lean-right.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/haven-lean-right.png"
+  },
+  {
+    "key": "runner_haven_stumble",
+    "loaded": true,
+    "w": 256,
+    "h": 320,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/haven-stumble.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/haven-stumble.png"
+  },
+  {
+    "key": "runner_haven_pick",
+    "loaded": true,
+    "w": 256,
+    "h": 320,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/haven-pick.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/haven-pick.png"
   },
   {
     "key": "runner_flower_daisy",
     "loaded": true,
-    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/placeholders/flower-daisy.png?v=play-fix-runner",
+    "w": 128,
+    "h": 160,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/flower-daisy.png?v=play-fix-franz-v1",
     "manifest": "assets/runner/flower-daisy.png"
   },
   {
     "key": "runner_flower_tulip",
     "loaded": true,
-    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/placeholders/flower-tulip.png?v=play-fix-runner",
+    "w": 128,
+    "h": 160,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/flower-tulip.png?v=play-fix-franz-v1",
     "manifest": "assets/runner/flower-tulip.png"
   },
   {
     "key": "runner_flower_sunflower",
     "loaded": true,
-    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/placeholders/flower-sunflower.png?v=play-fix-runner",
+    "w": 128,
+    "h": 160,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/flower-sunflower.png?v=play-fix-franz-v1",
     "manifest": "assets/runner/flower-sunflower.png"
   },
   {
     "key": "runner_flower_bluebell",
     "loaded": true,
-    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/placeholders/flower-bluebell.png?v=play-fix-runner",
+    "w": 128,
+    "h": 160,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/flower-bluebell.png?v=play-fix-franz-v1",
     "manifest": "assets/runner/flower-bluebell.png"
   },
   {
     "key": "runner_obs_hay",
     "loaded": true,
-    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/placeholders/obs-hay.png?v=play-fix-runner",
+    "w": 192,
+    "h": 160,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/obs-hay.png?v=play-fix-franz-v1",
     "manifest": "assets/runner/obs-hay.png"
   },
   {
     "key": "runner_obs_puddle",
     "loaded": true,
-    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/placeholders/obs-puddle.png?v=play-fix-runner",
+    "w": 192,
+    "h": 160,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/obs-puddle.png?v=play-fix-franz-v1",
     "manifest": "assets/runner/obs-puddle.png"
   },
   {
     "key": "runner_obs_fence",
     "loaded": true,
-    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/placeholders/obs-fence.png?v=play-fix-runner",
+    "w": 192,
+    "h": 160,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/obs-fence.png?v=play-fix-franz-v1",
     "manifest": "assets/runner/obs-fence.png"
   },
   {
     "key": "runner_obs_rock",
     "loaded": true,
-    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/placeholders/obs-rock.png?v=play-fix-runner",
+    "w": 192,
+    "h": 160,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/obs-rock.png?v=play-fix-franz-v1",
     "manifest": "assets/runner/obs-rock.png"
   },
   {
     "key": "runner_obs_wheelbarrow",
     "loaded": true,
-    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/placeholders/obs-wheelbarrow.png?v=play-fix-runner",
+    "w": 192,
+    "h": 160,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/obs-wheelbarrow.png?v=play-fix-franz-v1",
     "manifest": "assets/runner/obs-wheelbarrow.png"
   },
   {
     "key": "runner_obs_sprinkler",
     "loaded": true,
-    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/placeholders/obs-sprinkler.png?v=play-fix-runner",
+    "w": 192,
+    "h": 160,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/obs-sprinkler.png?v=play-fix-franz-v1",
     "manifest": "assets/runner/obs-sprinkler.png"
+  },
+  {
+    "key": "runner_obs_sprinkler_water",
+    "loaded": true,
+    "w": 160,
+    "h": 160,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/obs-sprinkler-water.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/obs-sprinkler-water.png"
   },
   {
     "key": "runner_obs_log",
     "loaded": true,
-    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/placeholders/obs-log.png?v=play-fix-runner",
+    "w": 192,
+    "h": 160,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/obs-log.png?v=play-fix-franz-v1",
     "manifest": "assets/runner/obs-log.png"
+  },
+  {
+    "key": "runner_sky_day",
+    "loaded": true,
+    "w": 585,
+    "h": 1266,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/sky-day.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/sky-day.png"
+  },
+  {
+    "key": "runner_sky_sunset",
+    "loaded": true,
+    "w": 585,
+    "h": 1266,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/sky-sunset.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/sky-sunset.png"
+  },
+  {
+    "key": "runner_sky_dusk",
+    "loaded": true,
+    "w": 585,
+    "h": 1266,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/sky-dusk.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/sky-dusk.png"
+  },
+  {
+    "key": "runner_horizon_day",
+    "loaded": true,
+    "w": 585,
+    "h": 263,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/horizon-day.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/horizon-day.png"
+  },
+  {
+    "key": "runner_horizon_sunset",
+    "loaded": true,
+    "w": 585,
+    "h": 263,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/horizon-sunset.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/horizon-sunset.png"
+  },
+  {
+    "key": "runner_horizon_dusk",
+    "loaded": true,
+    "w": 585,
+    "h": 263,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/horizon-dusk.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/horizon-dusk.png"
+  },
+  {
+    "key": "runner_tex_dirt",
+    "loaded": true,
+    "w": 256,
+    "h": 256,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/tex-dirt.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/tex-dirt.png"
+  },
+  {
+    "key": "runner_tex_grass",
+    "loaded": true,
+    "w": 256,
+    "h": 256,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/tex-grass.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/tex-grass.png"
+  },
+  {
+    "key": "runner_tex_hedgerow",
+    "loaded": true,
+    "w": 512,
+    "h": 96,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/tex-hedgerow.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/tex-hedgerow.png"
+  },
+  {
+    "key": "runner_tex_roadside",
+    "loaded": true,
+    "w": 512,
+    "h": 288,
+    "src": "http://127.0.0.1:8799/arcade/havens-garden-birthday-preview/assets/runner/tex-roadside.png?v=play-fix-franz-v1",
+    "manifest": "assets/runner/tex-roadside.png"
   }
 ]

@@ -4,26 +4,27 @@
 */
 'use strict';
 
-const ASSET_VER = 'play-fix-runner';
+const ASSET_VER = 'play-fix-franz-v1';
 
-/** Runner art: Franz drops final files into assets/runner/ (same names).
- *  Until then, clearly-labeled placeholders/ load automatically. */
+/** Franz HAVENS-GARDEN-RUNNER-V1 finals under assets/runner/.
+ *  Placeholders/ remain as load fallback only. Phone reference plates are NOT listed. */
 const RUNNER_FILES = [
-  'lane-field.png',
-  'haven-back-run.png',
-  'haven-back-jump.png',
-  'haven-back-duck.png',
-  'flower-daisy.png',
-  'flower-tulip.png',
-  'flower-sunflower.png',
-  'flower-bluebell.png',
-  'obs-hay.png',
-  'obs-puddle.png',
-  'obs-fence.png',
-  'obs-rock.png',
-  'obs-wheelbarrow.png',
-  'obs-sprinkler.png',
-  'obs-log.png'
+  // Haven — shared 256×320 anchors
+  'haven-run-01.png', 'haven-run-02.png', 'haven-run-03.png',
+  'haven-run-04.png', 'haven-run-05.png', 'haven-run-06.png',
+  'haven-jump.png', 'haven-duck.png',
+  'haven-lean-left.png', 'haven-lean-right.png',
+  'haven-stumble.png', 'haven-pick.png',
+  // Collectibles (independent objects)
+  'flower-daisy.png', 'flower-tulip.png', 'flower-sunflower.png', 'flower-bluebell.png',
+  // Obstacles + sprinkler water
+  'obs-hay.png', 'obs-puddle.png', 'obs-fence.png', 'obs-rock.png',
+  'obs-wheelbarrow.png', 'obs-sprinkler.png', 'obs-sprinkler-water.png', 'obs-log.png',
+  // Skies + horizons (crossfade day → sunset → dusk)
+  'sky-day.png', 'sky-sunset.png', 'sky-dusk.png',
+  'horizon-day.png', 'horizon-sunset.png', 'horizon-dusk.png',
+  // Flat world textures (project in perspective — never scroll a baked plate)
+  'tex-dirt.png', 'tex-grass.png', 'tex-hedgerow.png', 'tex-roadside.png'
 ];
 
 function runnerAssetKey(file) {
@@ -396,17 +397,25 @@ const Assets = {
     return this.pose('stand');
   },
 
-  /** Runner sprites — basename without .png (e.g. 'haven-back-run', 'flower-daisy'). */
+  /** Runner sprites — basename without .png (e.g. 'haven-run-01', 'flower-daisy'). */
   runner(basename) {
     if (!basename) return null;
     const key = runnerAssetKey(basename.endsWith('.png') ? basename : basename + '.png');
     return this.get(key);
   },
-  runnerPlate() { return this.runner('lane-field'); },
+  runnerPlate() { return null; }, // Franz: no scrolling phone plate — projected textures only
   runnerHaven(pose) {
-    if (pose === 'jump') return this.runner('haven-back-jump');
-    if (pose === 'duck' || pose === 'plant') return this.runner('haven-back-duck');
-    return this.runner('haven-back-run');
+    if (pose === 'jump') return this.runner('haven-jump');
+    if (pose === 'duck' || pose === 'plant') return this.runner('haven-duck');
+    if (pose === 'lean_left' || pose === 'lean-left') return this.runner('haven-lean-left');
+    if (pose === 'lean_right' || pose === 'lean-right') return this.runner('haven-lean-right');
+    if (pose === 'stumble') return this.runner('haven-stumble');
+    if (pose === 'pick') return this.runner('haven-pick');
+    return this.runner('haven-run-01');
+  },
+  runnerRunFrame(i) {
+    const n = ((i | 0) % 6) + 1;
+    return this.runner('haven-run-0' + n);
   },
   runnerFlower(id) { return this.runner('flower-' + (id || 'daisy')); },
   runnerObs(kind) { return this.runner('obs-' + (kind || 'hay')); },
