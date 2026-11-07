@@ -209,13 +209,13 @@ const HGRunner = (() => {
 
   function seedScenery() {
     scenery = [];
-    // Sparse flower clumps on the side grass only (never on the track)
+    // Sparse flower clumps on the side grass only (never on the track / horizon)
     for (let i = 0; i < 7; i++) {
       scenery.push({
         kind: 'clump',
         type: SPECIES[(rng() * SPECIES.length) | 0],
         side: i % 2 === 0 ? -1 : 1,
-        z: 1.15 + rng() * 3.4,
+        z: 1.0 + rng() * 1.7, // stay below ~85% depth
         jitter: (rng() - 0.5) * 0.55,
         scale: 0.7 + rng() * 0.55
       });
@@ -225,7 +225,7 @@ const HGRunner = (() => {
       scenery.push({
         kind: 'fence',
         side: i % 2 === 0 ? -1 : 1,
-        z: 1.4 + i * 0.7 + rng() * 0.35,
+        z: 1.1 + (i % 3) * 0.45 + rng() * 0.25,
         jitter: (rng() - 0.5) * 0.2,
         scale: 1
       });
@@ -295,8 +295,7 @@ const HGRunner = (() => {
     if (stumbleT > 0.2 || jumpT > 0 || duckT > 0.1) return;
     jumpT = JUMP_DUR;
     duckT = 0;
-    // Lock horizontal position to the active lane center for the hop
-    laneX = laneXs()[lane];
+    laneX = laneXs()[lane]; // lock to lane center for the whole arc
   }
 
   function tryDuck() {
@@ -389,23 +388,26 @@ const HGRunner = (() => {
     }
 
     const xs = laneXs();
-    // Match draw(): outer lanes bias inward so Haven's wide plate stays in dirt
-    const _hd = layoutAt(havenFootY()).dirt[lane];
-    const _hm = (_hd[0] + _hd[1]) * 0.5;
-    const _hi = (_hd[1] - _hd[0]) * 0.16;
-    const target = lane === 0 ? _hm + _hi : (lane === 2 ? _hm - _hi : _hm);
-    laneX += (target - laneX) * Math.min(1, LANE_LERP * dt);
+    const target = xs[lane]; // exact dirt-lane center at Haven's feet
+    if (jumpT > 0 || duckT > 0) {
+      // Hold X on lane center for the whole jump/duck arc — no lerp drift
+      laneX = target;
+    } else {
+      laneX += (target - laneX) * Math.min(1, LANE_LERP * dt);
+    }
 
     const speed = scroll;
     entities.forEach((e) => { e.z -= speed * dt * 0.01; });
     scenery.forEach((s) => { s.z -= speed * dt * 0.01; });
-    scenery = scenery.filter((s) => s.z > -0.8);
+    // Drop decor that scrolled past camera or drifted into the far/horizon band
+    scenery = scenery.filter((s) => s.z > -0.8 && s.z < 2.9);
+    // Respawn only mid-field (z ≲ 2.8) — never near the horizon / hill band
     while (scenery.filter((s) => s.kind === 'clump').length < 6) {
       scenery.push({
         kind: 'clump',
         type: SPECIES[(rng() * SPECIES.length) | 0],
         side: rng() < 0.5 ? -1 : 1,
-        z: 3.2 + rng() * 2.2,
+        z: 1.2 + rng() * 1.5,
         jitter: (rng() - 0.5) * 0.55,
         scale: 0.7 + rng() * 0.55
       });
@@ -414,7 +416,7 @@ const HGRunner = (() => {
       scenery.push({
         kind: 'fence',
         side: rng() < 0.5 ? -1 : 1,
-        z: 3.0 + rng() * 2.4,
+        z: 1.3 + rng() * 1.4,
         jitter: (rng() - 0.5) * 0.2,
         scale: 1
       });
@@ -844,10 +846,17 @@ const HGRunner = (() => {
 
     drawWorld(cx, Assets);
 
-    // Sparse field decor on side grass only — fence + flower clumps (never on track)
+    // Sparse field decor on side grass only — never on track, horizon, or hills
+    const horY = horizonY();
+    const foot = footY();
+    const decorDepthMax = 0.85; // cull beyond ~85% depth toward the horizon
     scenery.forEach((s) => {
       if (s.z < 0.6) return;
       const y = zToY(s.z);
+      // Depth fraction 0 at feet → 1 at horizon; skip far decor (floats on treeline)
+      const depthU = (foot - y) / Math.max(1, foot - horY);
+      if (depthU > decorDepthMax) return;
+      if (y <= horY + 28) return; // keep clear of hill band
       const lay = layoutAt(y);
       const sideW = s.side < 0 ? lay.track[0] : (W - lay.track[3]);
       if (sideW < 10) return;
@@ -861,6 +870,7 @@ const HGRunner = (() => {
       if (s.kind === 'fence') {
         const img = imgFor(Assets, ART.obs('fence'));
         const fh = Math.min(38 * sc, sideW * 0.85);
+        if (y - fh < horY + 16) return; // sprite top must stay below hills
         cx.globalAlpha = 0.78;
         if (!drawSprite(cx, img, x, y, fh)) {
           cx.fillStyle = '#8a6238';
@@ -872,6 +882,7 @@ const HGRunner = (() => {
       } else {
         const img = imgFor(Assets, ART.flower(s.type || 'daisy'));
         const fh = Math.min(28 * sc, sideW * 0.7);
+        if (y - fh < horY + 16) return;
         cx.globalAlpha = 0.72;
         drawSprite(cx, img, x, y, fh);
         // small companion bloom for "clump" read
@@ -885,24 +896,21 @@ const HGRunner = (() => {
 
     const sorted = entities.slice().sort((a, b) => b.z - a.z);
     sorted.forEach((e) => {
-      // Depth-correct dirt-lane CENTER — never hedge / never outer grass
+      // Exact dirt-lane CENTER at this depth — no inward/outward bias at any z
       const yGround = zToY(e.z);
       const lay = layoutAt(yGround);
       const d = lay.dirt[e.lane];
-      const mid = (d[0] + d[1]) * 0.5;
-      // Inward bias on outer lanes so large props don't read as edge-hugging
-      const inward = (d[1] - d[0]) * 0.14;
-      const x = e.lane === 0 ? mid + inward : (e.lane === 2 ? mid - inward : mid);
+      const laneW = Math.max(8, d[1] - d[0]);
+      const x = (d[0] + d[1]) * 0.5; // clamp to geometric center
       const y = yGround - (e.high ? 36 * zScale(e.z) : 0);
       const sc = zScale(e.z);
-      // Cap sprite width so props stay inside dirt (no hedge / grass overhang)
-      const laneW = Math.max(8, d[1] - d[0]);
       if (e.kind === 'flower' && !e.taken) {
         const img = imgFor(Assets, ART.flower(e.type));
         let fh = 52 * PROP_SCALE * sc;
         if (img && img.width) {
           const fw = fh * (img.width / img.height);
-          if (fw > laneW * 0.88) fh *= (laneW * 0.88) / fw;
+          // Leave dirt margin on both sides so near-camera blooms don't read as edge-sitters
+          if (fw > laneW * 0.58) fh *= (laneW * 0.58) / fw;
         }
         if (!drawSprite(cx, img, x, y, fh)) {
           cx.fillStyle = '#ffd23c';
@@ -911,14 +919,14 @@ const HGRunner = (() => {
       } else if (e.kind === 'ob' && !e.hit) {
         if (e.type === 'sprinkler') {
           const water = imgFor(Assets, ART.water);
-          const wh = Math.min(44 * PROP_SCALE * sc, laneW * 0.8);
+          const wh = Math.min(44 * PROP_SCALE * sc, laneW * 0.55);
           drawSprite(cx, water, x, y - 8 * sc, wh);
         }
         const img = imgFor(Assets, ART.obs(e.type));
         let oh = (e.type === 'puddle' ? 34 : 52) * PROP_SCALE * sc;
         if (img && img.width) {
           const fw = oh * (img.width / img.height);
-          if (fw > laneW * 0.9) oh *= (laneW * 0.9) / fw;
+          if (fw > laneW * 0.62) oh *= (laneW * 0.62) / fw;
         }
         if (!drawSprite(cx, img, x, y, oh)) drawObstacleFallback(cx, e, x, y, sc * PROP_SCALE);
       }
@@ -933,18 +941,10 @@ const HGRunner = (() => {
     } else if (duckT <= 0 && stumbleT <= 0) {
       bob = -Math.abs(Math.sin(runPhase * Math.PI / 3)) * RUN_BOB_PX;
     }
-    // Horizontally centered on the active dirt lane (hard-lock while jumping/ducking)
-    const havenLay = layoutAt(havenFootY());
-    const havenDirt = havenLay.dirt[lane];
-    const laneMid = (havenDirt[0] + havenDirt[1]) * 0.5;
-    // Outer lanes: sit slightly inward so the wide Haven plate doesn't spill onto grass
-    const havenIn = (havenDirt[1] - havenDirt[0]) * 0.16;
-    const laneFocus = lane === 0 ? laneMid + havenIn : (lane === 2 ? laneMid - havenIn : laneMid);
-    let gx = (jumpT > 0 || duckT > 0) ? laneFocus : laneX;
-    // Clamp visual mass inside dirt
-    const inset = (havenDirt[1] - havenDirt[0]) * 0.22;
-    gx = Math.max(havenDirt[0] + inset, Math.min(havenDirt[1] - inset, gx));
-    if (jumpT > 0 || duckT > 0) laneX = laneFocus;
+    // Exact lane-center X for the whole jump/duck arc (and while running, lerped laneX)
+    const laneMid = xs[lane];
+    const gx = (jumpT > 0 || duckT > 0) ? laneMid : laneX;
+    if (jumpT > 0 || duckT > 0) laneX = laneMid;
     const gy = havenFootY() + bob + (stumbleT > 0 ? Math.sin(stumbleT * 40) * 3 : 0);
 
     let poseKey = ART.run(runPhase | 0);
@@ -1109,29 +1109,23 @@ const HGRunner = (() => {
     const sec = (u >= 0 && u <= 1) ? u * RUN_SEC : u;
     duskT = Math.max(0, Math.min(RUN_SEC, sec));
   }
-  function laneFocusX(L) {
-    const d = layoutAt(havenFootY()).dirt[L];
-    const mid = (d[0] + d[1]) * 0.5;
-    const inn = (d[1] - d[0]) * 0.16;
-    return L === 0 ? mid + inn : (L === 2 ? mid - inn : mid);
-  }
   function debugForceJump() {
     jumpT = JUMP_DUR;
     duckT = 0;
     stumbleT = 0;
-    laneX = laneFocusX(lane);
+    laneX = laneXs()[lane];
   }
   function debugForceDuck() {
     duckT = DUCK_DUR;
     jumpT = 0;
     stumbleT = 0;
-    laneX = laneFocusX(lane);
+    laneX = laneXs()[lane];
   }
-  /** Test helper — lane change ignores stumble lock; snaps X to lane focus. */
+  /** Test helper — lane change ignores stumble lock; snaps X to lane center. */
   function debugForceLane(dir) {
     lane = Math.max(0, Math.min(LANES - 1, lane + dir));
     laneAnim = dir < 0 ? -1 : 1;
-    laneX = laneFocusX(lane);
+    laneX = laneXs()[lane];
   }
   /** Test helper — replace near-field entities for screenshot evidence. */
   function debugSetEntities(list) {
